@@ -17,7 +17,7 @@ export async function linkByToken(
   token: string,
   alive: () => boolean,
   phase: (phase: CardPhase | 'linking') => void,
-): Promise<'bound' | FailReason> {
+): Promise<BoostyStep | FailReason> {
   let step: BoostyStep;
   try {
     step = await payApi.boostyToken(id, token);
@@ -31,6 +31,7 @@ export async function linkByToken(
   try {
     while (alive()) {
       const end = stepEnd(step);
+      if (end === 'bound') return step;
       if (end) return end;
       if (step.url && page.state === 'none') {
         page.state = 'open';

@@ -1946,10 +1946,21 @@
     "trial": {
       "cta_one": "{{count}} gün ücretsiz",
       "cta_other": "{{count}} gün ücretsiz",
-      "starting": "Başlatılıyor…",
-      "error": {
-        "trial_used": "Bu hesap veya bilgisayar zaten STAR denemesini kullandı.",
-        "not_eligible": "Deneme, STAR sahibi olmayan hesaplar içindir.",
+      "title": "Ücretsiz deneme",
+      "terms_one": "{{count}} gün ücretsiz, sonra bu yöntemden ayda {{amount}}. Ödemeden önce istediğin zaman iptal edebilirsin.",
+      "terms_other": "{{count}} gün ücretsiz, sonra bu yöntemden ayda {{amount}}. Ödemeden önce istediğin zaman iptal edebilirsin.",
+      "then": "sonra ayda {{amount}}",
+      "until": "Deneme {{date}} tarihine kadar",
+      "cancel": "Denemeyi iptal et",
+      "cancelConfirm": "STAR hemen biter ve ödeme alınmaz. Deneme bir daha alınamaz.",
+      "canceled": "Deneme iptal edildi",
+      "cancelError": "Deneme iptal edilemedi",
+      "refused": {
+        "used": "Bu hesap denemeyi zaten kullandı.",
+        "has_star": "Zaten STAR sahibisin.",
+        "device_used": "Bu bilgisayarda deneme zaten alındı.",
+        "card_used": "Bu ödeme yöntemi denemeyi zaten kullandı. Bağlı kaldı: STAR onunla alınabilir.",
+        "no_methods": "Şu anda deneme başlatabilecek bir ödeme yöntemi yok.",
         "failed": "Deneme başlatılamadı. Daha sonra tekrar deneyin."
       }
     },

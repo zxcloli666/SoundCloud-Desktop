@@ -47,14 +47,11 @@ async fn a_commit_that_never_finds_its_object_fails_after_a_few_rounds() {
         .await
         .unwrap();
     rig.run();
-    rig.until("the missing object to fail", |rig| {
-        rig.uploads()[0].state == UploadState::Failed
-    })
-    .await;
     assert_eq!(
-        *rig.host.errors.lock().unwrap(),
+        rig.errors(1).await,
         [(id, ChatError::MediaMissing { ids: Vec::new() })]
     );
+    assert_eq!(rig.uploads()[0].state, UploadState::Failed);
     let commits = rig.world.with(|state| state.commits.len());
     assert_eq!(commits, 7);
     assert!(rig.due().is_empty());
@@ -73,14 +70,8 @@ async fn a_star_refusal_fails_the_upload_reports_why_and_a_retry_sends_it() {
         .unwrap();
     let id = views[0].id;
     rig.run();
-    rig.until("the refusal", |rig| {
-        rig.uploads()[0].state == UploadState::Failed
-    })
-    .await;
-    assert_eq!(
-        *rig.host.errors.lock().unwrap(),
-        [(id, ChatError::MediaStarRequired)]
-    );
+    assert_eq!(rig.errors(1).await, [(id, ChatError::MediaStarRequired)]);
+    assert_eq!(rig.uploads()[0].state, UploadState::Failed);
     rig.uploads.retry(id).await.unwrap();
     rig.until("the upload after a retry", |rig| {
         rig.uploads()[0].state == UploadState::Uploaded
@@ -103,26 +94,19 @@ async fn a_full_quota_is_terminal_and_paused_uploads_wait_without_failing() {
         .attach(rig.conversation, None, sources(vec![rig.image(62)]))
         .await
         .unwrap();
+    let id = views[0].id;
     rig.run();
-    rig.until("the pause", |rig| {
-        rig.host.errors.lock().unwrap().len() == 1
-    })
-    .await;
+    assert_eq!(rig.errors(1).await, [(id, ChatError::MediaUploadsPaused)]);
     assert_eq!(rig.uploads()[0].state, UploadState::Queued);
     rig.uploads.wake_all();
-    rig.until("the quota refusal", |rig| {
-        rig.uploads()[0].state == UploadState::Failed
-    })
-    .await;
-    let errors = rig.host.errors.lock().unwrap().clone();
-    let id = views[0].id;
     assert_eq!(
-        errors,
+        rig.errors(2).await,
         [
             (id, ChatError::MediaUploadsPaused),
             (id, ChatError::QuotaExceeded { used: 5, quota: 5 }),
         ]
     );
+    assert_eq!(rig.uploads()[0].state, UploadState::Failed);
     assert_eq!(rig.uploads()[0].attempts, 2);
 }
 

@@ -1,8 +1,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
 import { CORE_CENTER_Y, LivingCore } from '../components/subscription/LivingCore';
 import { phaseOf } from '../components/subscription/PayStatus';
 import {
@@ -39,11 +38,13 @@ import { Console } from '../components/subscription/star/StarConsole';
 import { SuccessPane } from '../components/subscription/star/SuccessPane';
 import { SbpPane } from '../components/subscription/star/sbp/SbpPane';
 import type { TierOption } from '../components/subscription/star/TierSwitch';
+import { TrialPane } from '../components/subscription/star/trial/TrialPane';
+import { useTrialStep } from '../components/subscription/star/trial/useTrialStep';
+import { useBindOnly } from '../components/subscription/star/useBindOnly';
 import { bindState } from '../lib/boosty-bind-state';
 import { refreshBinds, useBinds, useCardSupported, useRemoveBind } from '../lib/boosty-binds';
 import { ChevronLeft } from '../lib/icons';
 import {
-  type BoostyMethod,
   type CheckoutResp,
   type Plan,
   payApi,
@@ -54,7 +55,7 @@ import {
 import { usePremium } from '../lib/premium-cache';
 import { queryClient } from '../lib/query-client';
 import { planPrice } from '../lib/star-format';
-import { type StarIntent, usePaySubscription, useStartTrial } from '../lib/star-offer';
+import { type StarIntent, usePaySubscription } from '../lib/star-offer';
 import {
   perPerson,
   refreshShared,
@@ -83,6 +84,7 @@ export const StarPage = memo(function StarPage() {
 
 function firstStep(intent: StarIntent | null, premium: boolean): Step {
   if (intent === 'invite') return 'invite';
+  if (intent === 'trial' && !premium) return 'trial';
   if (intent) return 'overview';
   return premium ? 'manage' : 'overview';
 }
@@ -110,7 +112,6 @@ const StarFlow = memo(function StarFlow({
   const [renewOn, setRenewOn] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutResp | null>(null);
   const [igniteKey, setIgniteKey] = useState(0);
-  const [relink, setRelink] = useState<BoostyMethod | null>(null);
 
   const plansQuery = useQuery({
     queryKey: ['pay', 'plans'],
@@ -146,7 +147,6 @@ const StarFlow = memo(function StarFlow({
         ? false
         : null
     : null;
-  const relinking = step === 'card' || step === 'sbp' ? relink : null;
   const selectedPlan = plans.find((p) => p.id === planId) ?? null;
   const routeCurrency = currencyOf(chosen?.route);
   const amount = selectedPlan ? planPrice(selectedPlan, routeCurrency) : '';
@@ -199,7 +199,6 @@ const StarFlow = memo(function StarFlow({
   // subscription, not the in-flight order. Shared cache with ManagePane.
   const subQuery = usePaySubscription();
   const status = useStarStatus();
-  const trialAvailable = !premium && subQuery.data?.trial_available === true;
   const referral = useQuery({
     queryKey: REFERRAL_KEY,
     queryFn: payApi.referral,
@@ -208,26 +207,14 @@ const StarFlow = memo(function StarFlow({
   });
   const inviteDays = referral.data?.bonus_days ?? null;
 
-  const { mutate: mutateTrial, isPending: trialPending } = useStartTrial();
-  const startTrial = useCallback(() => {
-    mutateTrial(undefined, {
-      onSuccess: () => {
-        setIgniteKey((k) => k + 1);
-        setStep('success');
-      },
-      onError: (e) => {
-        const code = payErrorCode(e);
-        const known = code === 'trial_used' || code === 'not_eligible';
-        toast.error(t(`starpass.trial.error.${known ? code : 'failed'}`));
-      },
-    });
-  }, [mutateTrial, t]);
-  const trialAsked = useRef(false);
-  useEffect(() => {
-    if (intent !== 'trial' || trialAsked.current || !trialAvailable) return;
-    trialAsked.current = true;
-    startTrial();
-  }, [intent, trialAvailable, startTrial]);
+  const grantTrial = useCallback(() => {
+    setIgniteKey((k) => k + 1);
+    setStep('success');
+  }, []);
+  const trial = useTrialStep(premium, soloPlans, setStep, grantTrial);
+  const bindOnly = useBindOnly(step, setStep, trial.done);
+  const linking = bindOnly.linking;
+  const relinking = linking && !linking.trial;
   const subEndsAt = subQuery.data
     ? (primaryEntitlement(subQuery.data.entitlements)?.ends_at ?? subQuery.data.premium_until ?? 0)
     : 0;
@@ -292,34 +279,25 @@ const StarFlow = memo(function StarFlow({
     [onceRoute, checkoutMut.mutate],
   );
 
-  const startRelink = useCallback((method: BoostyMethod) => {
-    setRelink(method);
-    setStep(method === 'sbp' ? 'sbp' : 'card');
-  }, []);
-
-  const endRelink = useCallback(() => {
-    setRelink(null);
-    refreshBinds();
-    setStep('manage');
-  }, []);
-
   const continueToPay = useCallback(() => {
     if (!chosen) return;
-    setRelink(null);
+    bindOnly.clear();
     if (bindMethod && bound !== true) {
       setStep(bindMethod === 'sbp' ? 'sbp' : 'card');
       return;
     }
     checkoutMut.mutate(chosen);
-  }, [chosen, bindMethod, bound, checkoutMut.mutate]);
+  }, [chosen, bindMethod, bound, checkoutMut.mutate, bindOnly.clear]);
 
-  const lit = step === 'success' || step === 'manage' || relinking !== null;
+  const lit = step === 'success' || step === 'manage' || !!relinking;
   // Where the header "back" returns to, per step (null = no back button).
-  const backTarget: Step | null = relinking
-    ? 'manage'
+  const backTarget: Step | null = linking
+    ? linking.trial
+      ? 'trial'
+      : 'manage'
     : step === 'pay' || step === 'card' || step === 'sbp'
       ? 'method'
-      : step === 'method'
+      : step === 'method' || step === 'trial'
         ? 'overview'
         : step === 'redeem' || step === 'invite' || step === 'gifts' || step === 'plan'
           ? premium
@@ -401,7 +379,7 @@ const StarFlow = memo(function StarFlow({
               />
               <div className="relative mx-auto max-w-[320px]">
                 <CenterReadout
-                  step={relinking ? 'manage' : step}
+                  step={linking ? (linking.trial ? 'trial' : 'manage') : step}
                   phase={phase}
                   handle={handle}
                   plan={selectedPlan}
@@ -419,6 +397,9 @@ const StarFlow = memo(function StarFlow({
                   serialSeed={checkout?.order_id ?? handle}
                   gift={gift}
                   inviteDays={inviteDays}
+                  trial={
+                    trial.offer?.available ? { days: trial.offer.days, amount: trial.amount } : null
+                  }
                   seats={
                     sharedOverview?.owner
                       ? {
@@ -449,9 +430,8 @@ const StarFlow = memo(function StarFlow({
                 onRedeem={() => setStep('redeem')}
                 recipient={recipient}
                 onRecipient={setRecipient}
-                trial={trialAvailable}
-                trialPending={trialPending}
-                onTrial={startTrial}
+                trialDays={trial.offer?.available ? trial.offer.days : null}
+                onTrial={trial.open}
                 refCode={refBonus}
                 onRefCode={setRefBonus}
                 showRef={!premium}
@@ -497,19 +477,33 @@ const StarFlow = memo(function StarFlow({
             )}
             {step === 'card' && (
               <CardPane
-                method={(relinking ?? bindMethod) === 'card_usd' ? 'card_usd' : 'card'}
-                amount={relinking ? null : amount}
-                onLinked={relinking ? endRelink : payChosen}
-                onOnce={relinking ? null : payOnce}
-                onBack={relinking ? endRelink : goMethod}
+                method={(linking?.method ?? bindMethod) === 'card_usd' ? 'card_usd' : 'card'}
+                amount={linking ? null : amount}
+                trial={linking?.trial}
+                onLinked={linking ? bindOnly.end : payChosen}
+                onOnce={linking ? null : payOnce}
+                onBack={linking ? bindOnly.leave : goMethod}
               />
             )}
             {step === 'sbp' && (
               <SbpPane
-                paying={!relinking}
-                onLinked={relinking ? endRelink : payChosen}
-                onOnce={relinking ? null : payOnce}
-                onBack={relinking ? endRelink : goMethod}
+                paying={!linking}
+                trial={linking?.trial}
+                onLinked={linking ? bindOnly.end : payChosen}
+                onOnce={linking ? null : payOnce}
+                onBack={linking ? bindOnly.leave : goMethod}
+              />
+            )}
+            {step === 'trial' && (
+              <TrialPane
+                offer={trial.offer}
+                loading={trial.loading}
+                method={trial.method}
+                amount={trial.amount}
+                blocked={trial.blocked}
+                onPick={trial.pick}
+                onLink={(method) => bindOnly.start(method, true)}
+                onBuy={() => setStep('overview')}
               />
             )}
             {step === 'pay' && checkout && option && (
@@ -522,9 +516,11 @@ const StarFlow = memo(function StarFlow({
                 onOnce={payOnce}
               />
             )}
-            {(step === 'method' || step === 'card' || step === 'sbp' || step === 'pay') && (
-              <LegalNote />
-            )}
+            {(step === 'method' ||
+              step === 'card' ||
+              step === 'sbp' ||
+              step === 'pay' ||
+              step === 'trial') && <LegalNote />}
             {step === 'success' && (
               <SuccessPane
                 onMusic={() => navigate('/home')}
@@ -544,7 +540,8 @@ const StarFlow = memo(function StarFlow({
                 onGift={() => setStep('gifts')}
                 onInvite={() => setStep('invite')}
                 onPlan={() => setStep('plan')}
-                onRelink={startRelink}
+                onRelink={(method) => bindOnly.start(method, false)}
+                onTrialEnded={() => setStep('overview')}
               />
             )}
             {step === 'plan' && <SharedPane onChoose={() => setStep('overview')} />}

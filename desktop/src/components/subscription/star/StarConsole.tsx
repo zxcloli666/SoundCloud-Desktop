@@ -12,7 +12,8 @@ export const Console = memo(function Console({ children }: { children: ReactNode
           'linear-gradient(180deg, rgb(var(--ink) / 0.05), rgb(var(--ink) / 0.012) 60%), rgb(var(--surface) / 0.72)',
         backdropFilter: 'blur(26px) saturate(1.5)',
         WebkitBackdropFilter: 'blur(26px) saturate(1.5)',
-        boxShadow: '0 30px 90px -30px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.08)',
+        boxShadow:
+          '0 30px 90px -30px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.08)',
       }}
     >
       <span
@@ -93,5 +94,34 @@ export const Ttl = memo(function Ttl({ children }: { children: ReactNode }) {
     <div className="mb-3.5 font-mono text-[10.5px] uppercase tracking-[0.2em] text-ink-40">
       {children}
     </div>
+  );
+});
+
+const PILL_TONE = {
+  quiet: 'border-ink/[0.12] text-ink-50 hover:text-ink-90',
+  accent: 'border-accent/60 text-accent hover:bg-accent/10',
+  bad: 'border-bad/50 text-bad',
+} as const;
+
+export const PillBtn = memo(function PillBtn({
+  children,
+  onClick,
+  tone = 'quiet',
+  disabled = false,
+}: {
+  children: ReactNode;
+  onClick: () => void;
+  tone?: keyof typeof PILL_TONE;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`cursor-pointer rounded-[10px] border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors disabled:cursor-default disabled:opacity-50 ${PILL_TONE[tone]}`}
+    >
+      {children}
+    </button>
   );
 });

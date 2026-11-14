@@ -259,6 +259,14 @@ impl Rig {
             tokio::time::sleep(Duration::from_millis(20)).await;
         }
     }
+
+    pub async fn errors(&self, count: usize) -> Vec<(Uuid, ChatError)> {
+        self.until(&format!("{count} reported errors"), |rig| {
+            rig.host.errors.lock().unwrap().len() >= count
+        })
+        .await;
+        self.host.errors.lock().unwrap().clone()
+    }
 }
 
 impl Drop for Rig {

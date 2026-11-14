@@ -87,10 +87,17 @@ function StatusCaption({ status }: { status: StarStatus }) {
   }
   if (status.kind === 'renews') {
     return (
-      <span className="inline-flex items-center gap-1.5 tabular-nums">
-        <RefreshCw size={13} strokeWidth={2.4} className="text-accent" />
-        {passDate(status.at)} ·<span className="font-semibold text-accent">{status.charge}</span>
-      </span>
+      <>
+        {status.trialUntil && (
+          <span className="block">
+            {t('starpass.trial.until', { date: passDate(status.trialUntil) })}
+          </span>
+        )}
+        <span className="inline-flex items-center gap-1.5 tabular-nums">
+          <RefreshCw size={13} strokeWidth={2.4} className="text-accent" />
+          {passDate(status.at)} ·<span className="font-semibold text-accent">{status.charge}</span>
+        </span>
+      </>
     );
   }
   return (
@@ -116,6 +123,7 @@ export const CenterReadout = memo(function CenterReadout({
   gift,
   inviteDays,
   seats,
+  trial,
 }: {
   step: Step;
   phase: PayPhase;
@@ -128,6 +136,7 @@ export const CenterReadout = memo(function CenterReadout({
   gift: boolean;
   inviteDays: number | null;
   seats: { tier: string; used: number; total: number } | null;
+  trial: { days: number; amount: string } | null;
 }) {
   const { t } = useTranslation();
   const price = priceOf(plan, currency);
@@ -140,6 +149,16 @@ export const CenterReadout = memo(function CenterReadout({
         <Caption>
           {t('starpass.shared.centerSeats', { used: seats.used, seats: seats.total })}
         </Caption>
+      </div>
+    );
+  }
+
+  if (step === 'trial' && trial) {
+    return (
+      <div style={SHADOW}>
+        <Eyebrow>✦</Eyebrow>
+        <Hero size={30}>{t('starpass.trial.cta', { count: trial.days })}</Hero>
+        {trial.amount && <Caption>{t('starpass.trial.then', { amount: trial.amount })}</Caption>}
       </div>
     );
   }
@@ -176,7 +195,7 @@ export const CenterReadout = memo(function CenterReadout({
           {passSerial(serialSeed)}
         </div>
         <Caption>
-          {step === 'manage' && status ? (
+          {status && (step === 'manage' || (status.kind === 'renews' && status.trialUntil)) ? (
             <StatusCaption status={status} />
           ) : (
             <>
