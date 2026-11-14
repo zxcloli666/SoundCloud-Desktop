@@ -15,6 +15,7 @@ concurrency:
 env:
   VULKAN_LINUX: 1.3.296
   VULKAN_WINDOWS: 1.4.328.1
+  CUDA_LINUX: 12-6
 
 jobs:
   build:
@@ -30,7 +31,7 @@ jobs:
             flags: -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DGGML_METAL=OFF
           - platform: linux-x86_64
             runner: ubuntu-22.04
-            flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
+            flags: -DGGML_VULKAN=ON -DGGML_CUDA=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
           - platform: linux-aarch64
             runner: ubuntu-22.04-arm
             flags: -DBUILD_SHARED_LIBS=OFF -DGGML_OPENMP=OFF -DGGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16
@@ -49,6 +50,20 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/lunarg.gpg] https://packages.lunarg.com/vulkan/$VULKAN_LINUX jammy main" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan.list
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends vulkan-sdk
+
+      - name: CUDA toolkit
+        if: matrix.platform == 'linux-x86_64'
+        run: |
+          wget -q -O "$RUNNER_TEMP/cuda-keyring.deb" https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          sudo dpkg -i "$RUNNER_TEMP/cuda-keyring.deb"
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends \
+            cuda-nvcc-$CUDA_LINUX cuda-cudart-dev-$CUDA_LINUX cuda-cccl-$CUDA_LINUX \
+            cuda-driver-dev-$CUDA_LINUX libcublas-dev-$CUDA_LINUX
+          root=/usr/local/cuda-${CUDA_LINUX/-/.}
+          echo "$root/bin" >> "$GITHUB_PATH"
+          echo "CUDACXX=$root/bin/nvcc" >> "$GITHUB_ENV"
+          df -h /
 
       - name: Vulkan SDK
         if: runner.os == 'Windows'
@@ -70,6 +85,13 @@ jobs:
         run: |
           redist=$(ls -d "/c/Program Files/Microsoft Visual Studio/"*/*/VC/Redist/MSVC/*/x64/Microsoft.VC*.CRT | tail -1)
           cp "$redist/msvcp140.dll" "$redist/vcruntime140.dll" "$redist/vcruntime140_1.dll" engine/
+
+      - name: CUDA backend
+        if: matrix.platform == 'linux-x86_64'
+        run: |
+          ls -l engine/libggml-cuda.so
+          readelf -d engine/libggml-cuda.so | grep -E 'NEEDED|RUNPATH|SONAME'
+          sha256sum engine/*
 
       - name: Check that it starts
         shell: bash
