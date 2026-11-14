@@ -1,4 +1,5 @@
 use std::ptr;
+use std::sync::{Mutex, MutexGuard, PoisonError};
 
 use sc_chat::{ChatError, ChatResult, KeyName, Zeroizing};
 use windows_sys::Win32::Foundation::{ERROR_INVALID_PARAMETER, ERROR_NOT_FOUND, GetLastError};
@@ -8,11 +9,13 @@ use windows_sys::Win32::Security::Credentials::{
 };
 
 use super::Vault;
-use super::cred_move::{self, Credentials, ENTERPRISE, LOCAL_MACHINE, Localized, Stored};
+use super::cred_move::{self, Credentials, ENTERPRISE, Failure, LOCAL_MACHINE, Localized, Stored};
 use crate::app::diagnostics;
 
 const _: () = assert!(LOCAL_MACHINE == CRED_PERSIST_LOCAL_MACHINE);
 const _: () = assert!(ENTERPRISE == CRED_PERSIST_ENTERPRISE);
+
+static STORE: Mutex<()> = Mutex::new(());
 
 pub struct CredVault {
     service: String,
@@ -35,6 +38,7 @@ impl CredVault {
 impl Vault for CredVault {
     fn load(&self, name: KeyName) -> ChatResult<Option<Zeroizing<Vec<u8>>>> {
         let target = self.target(name);
+        let _held = held();
         let loaded =
             cred_move::load(&WinCred, &target, name.as_str()).map_err(|code| failed(name, code))?;
         let Some((found, localized)) = loaded else {
@@ -42,6 +46,10 @@ impl Vault for CredVault {
         };
         match localized {
             None | Some(Localized::Moved) => {}
+            Some(Localized::Finished) => diagnostics::warn(format!(
+                "[chat] keychain {} finished an interrupted move",
+                name.as_str()
+            )),
             Some(other) => diagnostics::warn(format!(
                 "[chat] keychain {} stays roaming: {other:?}",
                 name.as_str()
@@ -51,15 +59,16 @@ impl Vault for CredVault {
     }
 
     fn save(&self, name: KeyName, secret: &[u8]) -> ChatResult<()> {
-        WinCred
-            .write(&self.target(name), name.as_str(), secret, LOCAL_MACHINE)
-            .map_err(|code| failed(name, code))
+        let target = self.target(name);
+        let _held = held();
+        cred_move::save(&WinCred, &target, name.as_str(), secret)
+            .map_err(|failure| failed_with(name, failure))
     }
 
     fn delete(&self, name: KeyName) -> ChatResult<()> {
-        WinCred
-            .delete(&self.target(name))
-            .map_err(|code| failed(name, code))
+        let target = self.target(name);
+        let _held = held();
+        cred_move::delete(&WinCred, &target).map_err(|failure| failed_with(name, failure))
     }
 }
 
@@ -112,10 +121,8 @@ impl Credentials for WinCred {
         }
         Ok(())
     }
-}
 
-impl WinCred {
-    pub fn delete(&self, target: &str) -> Result<(), u32> {
+    fn delete(&self, target: &str) -> Result<(), u32> {
         let name = wide(target);
         if unsafe { CredDeleteW(name.as_ptr(), CRED_TYPE_GENERIC, 0) } == 0 {
             return match unsafe { GetLastError() } {
@@ -125,6 +132,10 @@ impl WinCred {
         }
         Ok(())
     }
+}
+
+fn held() -> MutexGuard<'static, ()> {
+    STORE.lock().unwrap_or_else(PoisonError::into_inner)
 }
 
 fn wide(text: &str) -> Vec<u16> {
@@ -137,6 +148,19 @@ fn failed(name: KeyName, code: u32) -> ChatError {
         name.as_str()
     ));
     ChatError::Keychain
+}
+
+fn failed_with(name: KeyName, failure: Failure) -> ChatError {
+    match failure {
+        Failure::Os(code) => failed(name, code),
+        Failure::Unconfirmed => {
+            diagnostics::warn(format!(
+                "[chat] keychain {} does not read back what was written",
+                name.as_str()
+            ));
+            ChatError::Keychain
+        }
+    }
 }
 
 #[cfg(test)]
