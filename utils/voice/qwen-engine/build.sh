@@ -2,22 +2,12 @@
 set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
-commit=de2ad833e9bd5c06082231d1da637789f7562816
 src=${QWENTTS_SRC:-$here/build/qwentts.cpp}
 build=${QWEN_BUILD:-$here/build/cmake}
 out=$1
 shift
 
-if [ ! -d "$src/.git" ]; then
-    git init -q "$src"
-    git -C "$src" config core.autocrlf false
-    git -C "$src" remote add origin https://github.com/ServeurpersoCom/qwentts.cpp
-fi
-if [ "$(git -C "$src" rev-parse -q --verify HEAD || true)" != "$commit" ]; then
-    git -C "$src" fetch -q --depth 1 origin "$commit"
-    git -C "$src" checkout -q FETCH_HEAD
-    git -C "$src" submodule update -q --init --depth 1
-fi
+"$here/fetch.sh" "$src"
 if ! git -C "$src" apply --reverse --check "$here/threads.patch" 2>/dev/null; then
     git -C "$src" apply "$here/threads.patch"
 fi

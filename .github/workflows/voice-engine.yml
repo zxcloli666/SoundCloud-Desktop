@@ -3,7 +3,11 @@ name: Voice engine
 on:
   workflow_dispatch:
   push:
-    paths: ['utils/voice/qwen-engine/**', '.github/workflows/voice-engine.yml']
+    branches: ['**']
+    paths:
+      - 'utils/voice/qwen-engine/**'
+      - '.github/actions/apt-packages/**'
+      - '.github/workflows/voice-engine.yml'
 
 permissions:
   contents: read
@@ -13,9 +17,10 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  SAVE: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/voice/main' || github.ref == 'refs/heads/voice/engine-cache' }}
   VULKAN_LINUX: 1.3.296
+  VULKAN_LINUX_PACKAGES: libvulkan-dev=1.3.296.0~rc1-1lunarg22.04-1 shaderc=2024.3~rc1-1lunarg22.04-1 spirv-headers=1.6.1+1.3.296.0~rc1-1lunarg22.04-1
   VULKAN_WINDOWS: 1.4.328.1
-  CUDA_LINUX: 12-6
 
 jobs:
   build:
@@ -24,49 +29,60 @@ jobs:
       matrix:
         include:
           - platform: macos-aarch64
-            runner: macos-latest
+            runner: macos-26
             flags: -DBUILD_SHARED_LIBS=OFF
           - platform: macos-x86_64
-            runner: macos-latest
+            runner: macos-26
             flags: -DBUILD_SHARED_LIBS=OFF -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DGGML_METAL=OFF
           - platform: linux-x86_64
             runner: ubuntu-22.04
-            flags: -DGGML_VULKAN=ON -DGGML_CUDA=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
+            flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
           - platform: linux-aarch64
             runner: ubuntu-22.04-arm
             flags: -DBUILD_SHARED_LIBS=OFF -DGGML_OPENMP=OFF -DGGML_CPU_ARM_ARCH=armv8.2-a+dotprod+fp16
           - platform: windows-x86_64
-            runner: windows-latest
+            runner: windows-2025-vs2026
             flags: -DGGML_VULKAN=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENMP=OFF
     name: ${{ matrix.platform }}
     runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v7
 
-      - name: Vulkan SDK
-        if: matrix.platform == 'linux-x86_64'
+      - uses: oras-project/setup-oras@v2
+        with:
+          version: 1.3.4
+
+      - name: Restore
+        id: restore
+        run: |
+          key=$(printf '%s\n' "$(git rev-parse HEAD:utils/voice/qwen-engine)" "$(git rev-parse HEAD:.github/workflows/voice-engine.yml)" | git hash-object --stdin | cut -c1-16)
+          tag=qwen-engine-${{ matrix.platform }}-$key
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if utils/voice/qwen-engine/ghcr.sh pull "$tag" engine; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Vulkan SDK repository
+        if: steps.restore.outputs.hit != 'true' && matrix.platform == 'linux-x86_64'
         run: |
           wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo gpg --dearmor -o /usr/share/keyrings/lunarg.gpg
           echo "deb [signed-by=/usr/share/keyrings/lunarg.gpg] https://packages.lunarg.com/vulkan/$VULKAN_LINUX jammy main" | sudo tee /etc/apt/sources.list.d/lunarg-vulkan.list
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends vulkan-sdk
-
-      - name: CUDA toolkit
-        if: matrix.platform == 'linux-x86_64'
-        run: |
-          wget -q -O "$RUNNER_TEMP/cuda-keyring.deb" https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
-          sudo dpkg -i "$RUNNER_TEMP/cuda-keyring.deb"
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends \
-            cuda-nvcc-$CUDA_LINUX cuda-cudart-dev-$CUDA_LINUX cuda-cccl-$CUDA_LINUX \
-            cuda-driver-dev-$CUDA_LINUX libcublas-dev-$CUDA_LINUX
-          root=/usr/local/cuda-${CUDA_LINUX/-/.}
-          echo "$root/bin" >> "$GITHUB_PATH"
-          echo "CUDACXX=$root/bin/nvcc" >> "$GITHUB_ENV"
-          df -h /
 
       - name: Vulkan SDK
-        if: runner.os == 'Windows'
+        if: steps.restore.outputs.hit != 'true' && matrix.platform == 'linux-x86_64'
+        uses: ./.github/actions/apt-packages
+        with:
+          packages: ${{ env.VULKAN_LINUX_PACKAGES }}
+          save: ${{ env.SAVE }}
+
+      - name: Vulkan SDK
+        if: steps.restore.outputs.hit != 'true' && runner.os == 'Windows'
         shell: pwsh
         run: |
           $installer = "$env:RUNNER_TEMP\vulkan-sdk.exe"
@@ -76,25 +92,17 @@ jobs:
           Add-Content $env:GITHUB_PATH "C:\VulkanSDK\$env:VULKAN_WINDOWS\Bin"
 
       - name: Build
-        shell: bash
+        if: steps.restore.outputs.hit != 'true'
         run: utils/voice/qwen-engine/build.sh "$PWD/engine" ${{ matrix.flags }}
 
       - name: Runtime libraries
-        if: runner.os == 'Windows'
-        shell: bash
+        if: steps.restore.outputs.hit != 'true' && runner.os == 'Windows'
         run: |
           redist=$(ls -d "/c/Program Files/Microsoft Visual Studio/"*/*/VC/Redist/MSVC/*/x64/Microsoft.VC*.CRT | tail -1)
           cp "$redist/msvcp140.dll" "$redist/vcruntime140.dll" "$redist/vcruntime140_1.dll" engine/
 
-      - name: CUDA backend
-        if: matrix.platform == 'linux-x86_64'
-        run: |
-          ls -l engine/libggml-cuda.so
-          readelf -d engine/libggml-cuda.so | grep -E 'NEEDED|RUNPATH|SONAME'
-          sha256sum engine/*
-
       - name: Check that it starts
-        shell: bash
+        if: steps.restore.outputs.hit != 'true'
         run: |
           mkdir check
           cd check
@@ -105,8 +113,78 @@ jobs:
           test "$code" = 1
           test "$(head -c 1 greeting.bin)" = E
 
+      - name: Save
+        if: steps.restore.outputs.hit != 'true' && env.SAVE == 'true'
+        env:
+          TOKEN: ${{ github.token }}
+        run: utils/voice/qwen-engine/ghcr.sh push "${{ steps.restore.outputs.tag }}" engine
+
+      - name: Files
+        run: cmake -E sha256sum engine/*
+
       - uses: actions/upload-artifact@v7
         with:
           name: qwen-engine-${{ matrix.platform }}
+          path: engine/
+          if-no-files-found: error
+
+  cuda:
+    name: linux-x86_64-cuda
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      CUDA_PACKAGES: cuda-nvcc-12-6=12.6.85-1 cuda-cudart-dev-12-6=12.6.77-1 cuda-cccl-12-6=12.6.77-1 cuda-driver-dev-12-6=12.6.77-1 libcublas-dev-12-6=12.6.4.1-1
+      CUDA_ROOT: /usr/local/cuda-12.6
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oras-project/setup-oras@v2
+        with:
+          version: 1.3.4
+
+      - name: Restore
+        id: restore
+        run: |
+          key=$(printf '%s\n' "$(git rev-parse HEAD:utils/voice/qwen-engine/fetch.sh)" "$(git rev-parse HEAD:utils/voice/qwen-engine/cuda.sh)" "$CUDA_PACKAGES" "$ImageOS" | git hash-object --stdin | cut -c1-16)
+          tag=qwen-engine-cuda-$key
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if utils/voice/qwen-engine/ghcr.sh pull "$tag" engine; then
+            echo "hit=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: CUDA repository
+        if: steps.restore.outputs.hit != 'true'
+        run: |
+          wget -q -O "$RUNNER_TEMP/cuda-keyring.deb" https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb
+          sudo dpkg -i "$RUNNER_TEMP/cuda-keyring.deb"
+
+      - name: CUDA toolkit
+        if: steps.restore.outputs.hit != 'true'
+        uses: ./.github/actions/apt-packages
+        with:
+          packages: ${{ env.CUDA_PACKAGES }}
+          save: ${{ env.SAVE }}
+
+      - name: Build
+        if: steps.restore.outputs.hit != 'true'
+        run: PATH=$CUDA_ROOT/bin:$PATH CUDACXX=$CUDA_ROOT/bin/nvcc utils/voice/qwen-engine/cuda.sh "$PWD/engine"
+
+      - name: Save
+        if: steps.restore.outputs.hit != 'true' && env.SAVE == 'true'
+        env:
+          TOKEN: ${{ github.token }}
+        run: utils/voice/qwen-engine/ghcr.sh push "${{ steps.restore.outputs.tag }}" engine
+
+      - name: Files
+        run: |
+          readelf -d engine/libggml-cuda.so | grep -E 'NEEDED|RUNPATH|SONAME'
+          ls -l engine
+          sha256sum engine/*
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: qwen-engine-linux-x86_64-cuda
           path: engine/
           if-no-files-found: error
