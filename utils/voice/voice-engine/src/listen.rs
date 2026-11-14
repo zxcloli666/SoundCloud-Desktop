@@ -17,7 +17,6 @@ use crate::models;
 
 const CHUNK: usize = 1600;
 const HEARD_OUT: usize = CHUNK * 4;
-const HOTWORDS_SCORE: f32 = 1.5;
 const THREADS: i32 = 2;
 
 pub struct Listen {
@@ -181,9 +180,10 @@ impl Core {
         let Some((vad, asr)) = self.listener_models() else {
             return Err("no_models");
         };
-        let hotwords = match self.config.language {
-            Language::Ru => hotwords::russian(&self.config.boosts.artists),
-            Language::En => Vec::new(),
+        let artists = &self.config.boosts.artists;
+        let (hotwords, hotwords_score) = match self.config.language {
+            Language::Ru => (hotwords::russian(artists), hotwords::RUSSIAN_SCORE),
+            Language::En => (hotwords::english(artists), hotwords::ENGLISH_SCORE),
         };
         let cached = self
             .listener
@@ -199,7 +199,7 @@ impl Core {
             model,
             threads: THREADS,
             hotwords: hotwords.clone(),
-            hotwords_score: HOTWORDS_SCORE,
+            hotwords_score,
         };
         let listener = Listener::open(&options).or_else(|_| {
             options.hotwords.clear();

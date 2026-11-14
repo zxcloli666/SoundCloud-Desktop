@@ -12,8 +12,8 @@ const TAIL: usize = SAMPLE_RATE as usize * 3 / 10;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Model {
-    Zipformer,
-    Moonshine,
+    Streaming,
+    Batch,
 }
 
 pub struct Options {
@@ -63,13 +63,18 @@ impl Listener {
             VoiceActivityDetector::create(&vad_config, 30.0).ok_or("vad model did not load")?;
         let dir = &options.asr_dir;
         let asr = match options.model {
-            Model::Zipformer => Asr::Streaming(Streaming::open(
+            Model::Streaming => Asr::Streaming(Streaming::open(
                 dir,
                 options.threads,
                 &options.hotwords,
                 options.hotwords_score,
             )?),
-            Model::Moonshine => Asr::Batch(Batch::open(dir, options.threads)?),
+            Model::Batch => Asr::Batch(Batch::open(
+                dir,
+                options.threads,
+                &options.hotwords,
+                options.hotwords_score,
+            )?),
         };
         Ok(Self {
             vad,

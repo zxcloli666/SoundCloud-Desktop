@@ -1,6 +1,7 @@
 mod batch;
 mod listener;
 mod resample;
+mod spoken;
 mod streaming;
 mod wav;
 

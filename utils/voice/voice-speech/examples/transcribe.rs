@@ -29,7 +29,7 @@ fn main() {
     let options = Options {
         vad_model: models.join("silero_vad.onnx"),
         asr_dir: models.join("asr"),
-        model: Model::Zipformer,
+        model: Model::Streaming,
         threads: 2,
         hotwords,
         hotwords_score: env::var("HOTWORDS_SCORE")

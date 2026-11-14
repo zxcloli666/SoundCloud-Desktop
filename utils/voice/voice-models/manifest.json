@@ -93,30 +93,40 @@
       ]
     },
     {
-      "id": "sherpa-onnx-moonshine-base-en-quantized-2026-02-27",
+      "id": "sherpa-onnx-zipformer-gigaspeech-2023-12-12",
       "version": "1",
       "kind": "asr",
       "language": "en",
-      "license": "MIT",
-      "unpacked_size": 141300566,
+      "license": "Apache-2.0",
+      "unpacked_size": 75220808,
       "requires": [
         "silero-vad"
       ],
       "files": [
         {
-          "path": "encoder_model.ort",
-          "size": 31326816,
-          "sha256": "7c66495948d0d08ec1af454cd4b5514862ae6511e94712a60e6d83eaec8dc8cf"
+          "path": "encoder.int8.onnx",
+          "size": 72850738,
+          "sha256": "d3eff4b1bd747bd781a47966795988539227d05638524b0313f26d3a166962d7"
         },
         {
-          "path": "decoder_model_merged.ort",
-          "size": 109424400,
-          "sha256": "d9d7b333af34bc552580576ddcf248a1c6c839e0d3b43b09afb9376ed009899d"
+          "path": "decoder.onnx",
+          "size": 2093081,
+          "sha256": "852b65653e65ec5436b61ab8cea819847666c1dd4c5821a94989788f85adbe76"
+        },
+        {
+          "path": "joiner.int8.onnx",
+          "size": 259417,
+          "sha256": "80160e45cca71dd52f6b0a6d3d12be18126f5308b2d4ba03f001300fea377c64"
         },
         {
           "path": "tokens.txt",
-          "size": 549350,
-          "sha256": "2870d843e14c1e187bf1913a521562a63b53933814bd7f2145120468f494a049"
+          "size": 5020,
+          "sha256": "0ef7d736bf4de3ef947292e4b119ef13f6808cd5f3aec225a843a7135ac1c2ce"
+        },
+        {
+          "path": "bpe.vocab",
+          "size": 12552,
+          "sha256": "803718d32d9858e47a5f764ae58c538ea370ecb5db3d58e98a8cda0b31bf4111"
         }
       ]
     },
@@ -449,5 +459,8 @@
       ]
     }
   ],
-  "retired": ["kokoro-int8-multi-lang-v1_0"]
+  "retired": [
+    "kokoro-int8-multi-lang-v1_0",
+    "sherpa-onnx-moonshine-base-en-quantized-2026-02-27"
+  ]
 }

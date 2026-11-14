@@ -2,7 +2,7 @@
 
 Base: `s3://<bucket>/voice-models/<id>/<version>/<path>`, public at `https://storage.scnative.dev/voice-models/<id>/<version>/<path>` (constant `STORAGE_BASE` in `src/manifest.rs`). Files are uploaded unpacked, one object per file, exact bytes, no compression.
 
-Source: `/Users/loli/Developer/SoundCloud/.worktrees/voice-cache/models/` (upstream sherpa-onnx `asr-models` release files, unchanged). `bpe.vocab` (in the Vosk model) is ours, not upstream: generated from `bpe.model` with sentencepiece in podman (`id_to_piece(i)\tget_score(i)` per line); regenerating gives the same sha256.
+Source: `/Users/loli/Developer/SoundCloud/.worktrees/voice-cache/models/` (upstream sherpa-onnx `asr-models` release files, unchanged). `bpe.vocab` (in the Vosk and GigaSpeech models) is ours, not upstream: one `piece\tscore` line per token of `bpe.model`. The Vosk one was generated with sentencepiece in podman (`id_to_piece(i)\tget_score(i)`); `bpe_vocab.py` reads the model file itself and gives the same sha256 for it.
 
 License field: third-party models keep their license name (MIT, Apache-2.0, ...); our own models (wake word, our Russian voices) carry `own`.
 
@@ -42,16 +42,17 @@ Total 229343109 bytes.
 | voice-models/sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16/1/joiner.onnx | 1440448 | fd1d02f45c2ad3d6b67cc149811ad794ab4b020ed49a0a9e2790a8619d1cddd8 |
 | voice-models/sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16/1/tokens.txt | 196 | 17cc514451bcceac9c280068c71502f8448f99e9fb1456b8d0761651fd0392f2 |
 
-## sherpa-onnx-moonshine-base-en-quantized-2026-02-27 (version 1, asr, en, MIT)
+## sherpa-onnx-zipformer-gigaspeech-2023-12-12 (version 1, asr, en, Apache-2.0)
 
-Total 141300566 bytes.
+Total 75220808 bytes. Source: sherpa-onnx `asr-models` release `sherpa-onnx-zipformer-gigaspeech-2023-12-12.tar.bz2`: the int8 encoder and joiner and the full decoder, renamed to the names below, and `tokens.txt` unchanged. `bpe.vocab` is ours: `python3 bpe_vocab.py bpe.model bpe.vocab` (next to this file) writes one `piece\tscore` line per token of the release's `bpe.model`. It replaced `sherpa-onnx-moonshine-base-en-quantized-2026-02-27` (141300566 bytes), which took no name hints.
 
 | target path | size | sha256 |
 |---|---|---|
-| voice-models/sherpa-onnx-moonshine-base-en-quantized-2026-02-27/1/encoder_model.ort | 31326816 | 7c66495948d0d08ec1af454cd4b5514862ae6511e94712a60e6d83eaec8dc8cf |
-| voice-models/sherpa-onnx-moonshine-base-en-quantized-2026-02-27/1/decoder_model_merged.ort | 109424400 | d9d7b333af34bc552580576ddcf248a1c6c839e0d3b43b09afb9376ed009899d |
-| voice-models/sherpa-onnx-moonshine-base-en-quantized-2026-02-27/1/tokens.txt | 549350 | 2870d843e14c1e187bf1913a521562a63b53933814bd7f2145120468f494a049 |
-
+| voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/encoder.int8.onnx | 72850738 | d3eff4b1bd747bd781a47966795988539227d05638524b0313f26d3a166962d7 |
+| voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/decoder.onnx | 2093081 | 852b65653e65ec5436b61ab8cea819847666c1dd4c5821a94989788f85adbe76 |
+| voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/joiner.int8.onnx | 259417 | 80160e45cca71dd52f6b0a6d3d12be18126f5308b2d4ba03f001300fea377c64 |
+| voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/tokens.txt | 5020 | 0ef7d736bf4de3ef947292e4b119ef13f6808cd5f3aec225a843a7135ac1c2ce |
+| voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/bpe.vocab | 12552 | 803718d32d9858e47a5f764ae58c538ea370ecb5db3d58e98a8cda0b31bf4111 |
 
 ## kokoro-multi-lang-v1_0 (version 1, tts, en, Apache-2.0)
 

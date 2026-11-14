@@ -108,6 +108,15 @@ fn said(set: &Path) -> Vec<Said> {
         .collect()
 }
 
+fn liked() -> Vec<String> {
+    CATALOG
+        .lines()
+        .filter_map(|line| line.strip_prefix("artist\t"))
+        .filter_map(|row| row.split('\t').next())
+        .map(String::from)
+        .collect()
+}
+
 fn rms(samples: &[f32]) -> f32 {
     (samples.iter().map(|s| s * s).sum::<f32>() / samples.len().max(1) as f32).sqrt()
 }
@@ -174,6 +183,7 @@ fn listener(set: &Set, language: Language, code: &str, next: &AtomicUsize) -> Ve
         ..Config::default()
     };
     config.speak.replies = false;
+    config.boosts.artists = liked();
     rig.engine.send(Command::Apply(Box::new(config)));
     let mut runs = Vec::new();
     loop {

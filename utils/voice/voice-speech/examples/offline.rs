@@ -7,7 +7,9 @@ use voice_speech::{SAMPLE_RATE, read_mono, to_16k};
 
 fn main() {
     let mut args = env::args().skip(1);
-    let kind = args.next().expect("usage: offline <gigaam|moonshine> <model dir> <wav>...");
+    let kind = args
+        .next()
+        .expect("usage: offline <gigaam|zipformer> <model dir> <wav>...");
     let dir = PathBuf::from(args.next().expect("model dir"));
     let wavs: Vec<String> = args.collect();
     let file = |name: &str| Some(dir.join(name).display().to_string());
@@ -24,8 +26,9 @@ fn main() {
             config.model_config.model_type = Some("nemo_transducer".into());
         }
         _ => {
-            config.model_config.moonshine.encoder = file("encoder_model.ort");
-            config.model_config.moonshine.merged_decoder = file("decoder_model_merged.ort");
+            config.model_config.transducer.encoder = file("encoder.int8.onnx");
+            config.model_config.transducer.decoder = file("decoder.onnx");
+            config.model_config.transducer.joiner = file("joiner.int8.onnx");
         }
     }
     let loaded = Instant::now();
@@ -47,5 +50,8 @@ fn main() {
         audio_seconds += seconds;
         println!("== {wav} ({seconds:.2}s)\n  final: {}", text.trim());
     }
-    println!("audio {audio_seconds:.2}s, compute {spent:.2}s, rtf {:.3}", spent / audio_seconds);
+    println!(
+        "audio {audio_seconds:.2}s, compute {spent:.2}s, rtf {:.3}",
+        spent / audio_seconds
+    );
 }
