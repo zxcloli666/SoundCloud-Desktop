@@ -76,6 +76,8 @@ const KNOWN_ERRORS = [
   'too_many_members',
   'removal_limit',
   'not_a_member',
+  'no_card',
+  'no_sbp',
 ] as const;
 
 /** i18n key of a shared-plan failure; unknown ones fall back to a generic text. */

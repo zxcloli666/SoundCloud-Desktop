@@ -34,7 +34,7 @@
 - **souvlaki** — системные media controls (MPRIS / SMTC / NowPlaying)
 - **discord-rich-presence** — Discord RPC
 - **chrono / tracing / serde / sha2 / base64 / hex** — служебные
-- Внутренние крейты из `../utils/`: `call-client`, `decrypt-client`; `sc-fingerprint` берётся из SoundCloud-Backend по тегу, ядро чата `sc-chat` из SoundCloud-Core по тегу `sc-chat-v<версия>`, правки ядра идут в Core с новым тегом
+- Внутренние крейты из `../utils/`: `boosty-card`, `call-client`, `decrypt-client`; `sc-fingerprint` берётся из SoundCloud-Backend по тегу, ядро чата `sc-chat` из SoundCloud-Core по тегу `sc-chat-v<версия>`, правки ядра идут в Core с новым тегом
 
 ## Структура
 
@@ -108,6 +108,7 @@ desktop/
                          system_proxy (системный прокси на каждом клиенте),
                          netcheck + health (проверка сети, поиск zapret/WinDivert, вердикт),
                          call (call-client agent, флаг enabled в `call_enabled.json`)
+      boosty_card/       оплата картой через Boosty: окно 3DS и команды; логика в `../utils/boosty-card`
       track_cache/       commands, state, direct_download, sc_anon/{mod,hls}
       discord/           mod + commands
       import/            ym (Yandex Music likes → SoundCloud)
@@ -211,6 +212,21 @@ desktop/
 - **Диагностика.** Тяжёлые/подозрительные операции логировать через `app::diagnostics::log_native` (пишет в
   `app_log_dir/desktop.log`). Фронту аналог — `trackedInvoke` + watchdog event-loop в `lib/diagnostics.ts`.
 - **Проверка**: `cargo check` после каждого изменения в Rust.
+
+## Оплата через Boosty: карта и СБП
+
+Способы оплаты и автопродление приходят из `GET /api/plans` → `routes` (`components/subscription/providers.ts`): переключатель автопродления берёт `renew`, выключенный берёт `once`. Маршруты в клиенте не зашивать, их решает pay.
+
+СБП привязывается без Lua: pay отдаёт QR, клиент опрашивает `step` раз в 3 с и при уходе зовёт `cancel` (`lib/boosty-sbp.ts`, `components/subscription/star/sbp/`). Привязки и их снятие: `lib/boosty-binds.ts`.
+
+Карта вводится в форме STAR (`components/subscription/star/card/`) без имени держателя (оба Lua шлют `CARD HOLDER`) и уходит только из Lua, который pay отдаёт в подписанном bundle: рублёвая (`card`, entry `bind`) в Smart Glocal, долларовая (`card_usd`, entry `token`) в Yuno. Крейт `utils/boosty-card` без tauri: подпись Ed25519, серийник на диске для каждого entry (`boosty_bundle_serial.txt` и `boosty_bundle_serial_token.txt`), песочница Lua, список хостов, поток bind -> 3DS -> status и поток token.
+
+- Долларовая карта: Lua отдаёт одноразовый токен, фронт шлёт его в `POST /api/boosty/token` и опрашивает `step` (`lib/boosty-card/token-link.ts`). Страницу 3DS из ответа pay открывает `boosty_card_page` один раз и только на хостах рядом с хостами bundle; окно закрывается, когда `step` не pending. Цены этого способа в долларах (`price_usd_cents`, `currencyOf`).
+- Публичные ключи `kid:base64,...` берутся при сборке из секрета `BOOSTY_BUNDLE_KEYS` (как `LASTFM_API_KEY`). Без них автопродление картой недоступно (`boosty_card_supported`), СБП от ключей не зависит.
+- Этот Lua работает только у клиента, который начал платёж, никогда на релеях. HTTP идёт напрямую (не через `net_fetch`, не через relay), без редиректов.
+- Карту не логировать, не хранить, не слать в наш бэкенд, телеметрию и отчёты. В `Card` нет `Debug`/`Clone`, поля чистятся при `Drop`; Lua `log` ничего не пишет; из ответа Lua наружу идут только `state`, `url`, `status`, `reason`, у token ещё сам `token`.
+- Окно 3DS (`boosty-3ds`) без IPC, приватный профиль; `app/navigation.rs` и `lib.rs` его не перехватывают, навигацию решает `boosty_card/three_ds.rs`.
+- Тесты крейта: `cargo test` в `utils/boosty-card/` (в CI отдельный шаг "Boosty card").
 
 ## Акцентный цвет и CSS-переменные
 

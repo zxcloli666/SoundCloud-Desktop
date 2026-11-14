@@ -8,10 +8,18 @@ import { phaseOf } from '../components/subscription/PayStatus';
 import {
   type ActivationOption,
   activationOptions,
+  bindOf,
+  type ChosenRoute,
+  chooseRoute,
+  currencyOf,
+  type RouteContext,
+  renewFor,
   toCheckout,
+  usable,
 } from '../components/subscription/providers';
 import { StarAtmosphere } from '../components/subscription/StarAtmosphere';
 import { CenterReadout } from '../components/subscription/star/CenterReadout';
+import { CardPane } from '../components/subscription/star/card/CardPane';
 import { GIFTS_KEY, GiftsPane } from '../components/subscription/star/GiftsPane';
 import { InvitePane, REFERRAL_KEY } from '../components/subscription/star/InvitePane';
 import { ManagePane } from '../components/subscription/star/ManagePane';
@@ -28,7 +36,9 @@ import type { RefBonus } from '../components/subscription/star/RefField';
 import { SharedPane } from '../components/subscription/star/SharedPane';
 import { Console } from '../components/subscription/star/StarConsole';
 import { SuccessPane } from '../components/subscription/star/SuccessPane';
+import { SbpPane } from '../components/subscription/star/sbp/SbpPane';
 import type { TierOption } from '../components/subscription/star/TierSwitch';
+import { refreshBinds, useBinds, useCardSupported, useRemoveBind } from '../lib/boosty-binds';
 import { ChevronLeft } from '../lib/icons';
 import {
   type CheckoutResp,
@@ -40,6 +50,7 @@ import {
 } from '../lib/pay-client';
 import { usePremium } from '../lib/premium-cache';
 import { queryClient } from '../lib/query-client';
+import { planPrice } from '../lib/star-format';
 import { type StarIntent, usePaySubscription, useStartTrial } from '../lib/star-offer';
 import {
   perPerson,
@@ -92,7 +103,7 @@ const StarFlow = memo(function StarFlow({
   const gift = recipient === 'gift' && tier === 'solo';
   const [planId, setPlanId] = useState<string | null>(presetPlan);
   const [option, setOption] = useState<ActivationOption | null>(null);
-  const [recurring, setRecurring] = useState(false);
+  const [renewOn, setRenewOn] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutResp | null>(null);
   const [igniteKey, setIgniteKey] = useState(0);
 
@@ -103,11 +114,35 @@ const StarFlow = memo(function StarFlow({
   });
   const soloPlans = plansQuery.data?.plans ?? [];
   const plans = tierPlans(tier, soloPlans, plansQuery.data?.shared);
-  const options = useMemo(
-    () => (plansQuery.data ? activationOptions(plansQuery.data) : []),
-    [plansQuery.data],
+  const cardSupported = useCardSupported();
+  const routeCtx = useMemo<RouteContext>(
+    () => ({ planId, gift, shared: tier !== 'solo', cardSupported }),
+    [planId, gift, tier, cardSupported],
   );
+  const options = useMemo(
+    () =>
+      plansQuery.data ? activationOptions(plansQuery.data).filter((o) => usable(o, routeCtx)) : [],
+    [plansQuery.data, routeCtx],
+  );
+  const picked = options.find((o) => o.kind === option?.kind) ?? null;
+  const renewRoute = picked ? renewFor(picked, routeCtx) : null;
+  const chosen = useMemo(
+    () => (picked ? chooseRoute(picked, renewOn, routeCtx) : null),
+    [picked, renewOn, routeCtx],
+  );
+  const bindMethod = chosen?.recurring ? bindOf(chosen.route) : null;
+  const binds = useBinds(bindMethod !== null);
+  const removeBind = useRemoveBind();
+  const bound = bindMethod
+    ? binds.data
+      ? binds.data.binds[bindMethod]
+      : binds.isError
+        ? false
+        : null
+    : null;
   const selectedPlan = plans.find((p) => p.id === planId) ?? null;
+  const routeCurrency = currencyOf(chosen?.route);
+  const amount = selectedPlan ? planPrice(selectedPlan, routeCurrency) : '';
   const sharedOverview = useSharedOverview().data;
   const preview = useSharedPreview(tier, planId, premium);
   const tierOptions = useMemo<TierOption[]>(() => {
@@ -191,11 +226,10 @@ const StarFlow = memo(function StarFlow({
   const centerEndsAt = step === 'manage' ? subEndsAt : (order.data?.premium_until ?? subEndsAt);
 
   const checkoutMut = useMutation({
-    mutationFn: () => {
-      if (!option || !planId) throw new Error('no selection');
-      const allowRecurring = !gift && option.recurring && selectedPlan?.months === 1 && recurring;
+    mutationFn: (route: ChosenRoute) => {
+      if (!planId) throw new Error('no plan');
       return payApi.checkout({
-        ...toCheckout(option, planId, allowRecurring),
+        ...toCheckout(route, planId),
         gift: gift || undefined,
         tier: tier === 'solo' ? undefined : (tier as SharedTierId),
         ref: !gift && refBonus ? refBonus.code : undefined,
@@ -205,8 +239,9 @@ const StarFlow = memo(function StarFlow({
       setCheckout(resp);
       setStep('pay');
     },
-    onError: () => {
+    onError: (_error, route) => {
       if (step === 'pay') setStep('method');
+      if (bindOf(route.route)) refreshBinds();
     },
   });
   const checkoutError = checkoutMut.isError
@@ -216,7 +251,10 @@ const StarFlow = memo(function StarFlow({
           : 'starpass.checkoutError',
       )
     : null;
-  const refreshQr = useCallback(() => checkoutMut.mutate(), [checkoutMut.mutate]);
+  const lastRoute = checkoutMut.variables;
+  const refreshQr = useCallback(() => {
+    if (lastRoute) checkoutMut.mutate(lastRoute);
+  }, [checkoutMut.mutate, lastRoute]);
 
   const reset = useCallback(() => {
     setCheckout(null);
@@ -228,11 +266,37 @@ const StarFlow = memo(function StarFlow({
     setStep('method');
   }, [reset]);
 
-  const canRecur = !gift && !!option?.recurring && selectedPlan?.months === 1;
+  const payChosen = useCallback(() => {
+    setStep('method');
+    if (chosen) checkoutMut.mutate(chosen);
+  }, [chosen, checkoutMut.mutate]);
+
+  const onceRoute = picked?.once ?? null;
+  const payOnce = useMemo(
+    () =>
+      onceRoute
+        ? () => {
+            setRenewOn(false);
+            setStep('method');
+            checkoutMut.mutate({ route: onceRoute, recurring: false });
+          }
+        : null,
+    [onceRoute, checkoutMut.mutate],
+  );
+
+  const continueToPay = useCallback(() => {
+    if (!chosen) return;
+    if (bindMethod && bound !== true) {
+      setStep(bindMethod === 'sbp' ? 'sbp' : 'card');
+      return;
+    }
+    checkoutMut.mutate(chosen);
+  }, [chosen, bindMethod, bound, checkoutMut.mutate]);
+
   const lit = step === 'success' || step === 'manage';
   // Where the header "back" returns to, per step (null = no back button).
   const backTarget: Step | null =
-    step === 'pay'
+    step === 'pay' || step === 'card' || step === 'sbp'
       ? 'method'
       : step === 'method'
         ? 'overview'
@@ -320,6 +384,15 @@ const StarFlow = memo(function StarFlow({
                   phase={phase}
                   handle={handle}
                   plan={selectedPlan}
+                  currency={
+                    step === 'pay'
+                      ? checkout?.currency === 'USD'
+                        ? 'USD'
+                        : 'RUB'
+                      : step === 'overview'
+                        ? 'RUB'
+                        : routeCurrency
+                  }
                   endsAt={centerEndsAt}
                   serialSeed={checkout?.order_id ?? handle}
                   gift={gift}
@@ -371,17 +444,44 @@ const StarFlow = memo(function StarFlow({
             {step === 'method' && (
               <MethodPane
                 options={options}
-                selected={option}
+                selected={picked}
                 onSelect={setOption}
-                canRecur={canRecur}
-                recurring={recurring}
-                onRecurring={setRecurring}
-                amount={selectedPlan ? `${selectedPlan.price_rub} ₽` : ''}
+                renew={{
+                  available: renewRoute !== null,
+                  forced: renewRoute !== null && !picked?.once,
+                  on: chosen?.recurring === true,
+                  periodDays: renewRoute?.period_days ?? null,
+                  otherProvider:
+                    !!renewRoute && !!picked?.once && renewRoute.provider !== picked.once.provider,
+                }}
+                onRenew={setRenewOn}
+                bind={
+                  bindMethod
+                    ? {
+                        method: bindMethod,
+                        bound,
+                        removing: removeBind.isPending,
+                        onRemove: () => removeBind.mutate(bindMethod),
+                      }
+                    : null
+                }
+                amount={amount}
                 pending={checkoutMut.isPending}
                 error={checkoutError}
-                onContinue={() => checkoutMut.mutate()}
+                onOnce={bindMethod && checkoutMut.isError ? payOnce : null}
+                onContinue={continueToPay}
               />
             )}
+            {step === 'card' && (
+              <CardPane
+                method={bindMethod === 'card_usd' ? 'card_usd' : 'card'}
+                amount={amount}
+                onLinked={payChosen}
+                onOnce={payOnce}
+                onBack={goMethod}
+              />
+            )}
+            {step === 'sbp' && <SbpPane onLinked={payChosen} onOnce={payOnce} onBack={goMethod} />}
             {step === 'pay' && checkout && option && (
               <PayPane
                 checkout={checkout}
@@ -389,6 +489,7 @@ const StarFlow = memo(function StarFlow({
                 phase={phase}
                 onChangeMethod={goMethod}
                 onRefresh={refreshQr}
+                onOnce={payOnce}
               />
             )}
             {step === 'success' && (

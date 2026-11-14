@@ -56,6 +56,7 @@ libc = "0.2"
 url = "2"
 regex = { version = "1", default-features = false, features = ["std"] }
 bytes = "1"
+boosty-card = { path = "../../utils/boosty-card" }
 call-client = { path = "../../utils/call/client" }
 decrypt-client = { path = "../../utils/decrypt-client" }
 ffmpeg-sidecar = "2.5.2"
