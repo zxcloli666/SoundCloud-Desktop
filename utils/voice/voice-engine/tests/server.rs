@@ -11,6 +11,7 @@ use voice_engine::{
 };
 
 const LINE: &str = "Ставлю на паузу.";
+const OTHER: &str = "Делаю громче.";
 const BUSY: &str = "voice_speak_busy";
 const LOCAL_LEVEL: f32 = 0.5;
 const LOCAL_LENGTH: usize = 9_000;
@@ -80,6 +81,10 @@ fn asked(text: &str) -> (String, String, bool) {
     ("loli".into(), text.into(), true)
 }
 
+fn kept(rig: &Rig) -> usize {
+    std::fs::read_dir(&rig.phrases).map_or(0, |files| files.count())
+}
+
 fn wait_until(what: impl Fn() -> bool, within: Duration) -> bool {
     let until = Instant::now() + within;
     while Instant::now() < until {
@@ -110,6 +115,40 @@ fn the_same_line_again_comes_from_the_cache_without_a_request() {
     reply(&rig, LINE);
     assert_eq!(server.asked(), [asked(LINE)]);
     assert_eq!(rig.heard.voiced(), SERVED * 2);
+}
+
+#[test]
+fn a_line_kept_under_an_older_revision_of_the_server_voice_is_asked_for_again() {
+    let server = FakeServer::new(Answer::Tone);
+    let rig = rig_served(server.clone(), None, "loli", timing());
+    reply(&rig, LINE);
+    server.names(Some("2"));
+    reply(&rig, OTHER);
+    reply(&rig, LINE);
+    reply(&rig, LINE);
+    assert_eq!(server.asked(), [asked(LINE), asked(OTHER), asked(LINE)]);
+}
+
+#[test]
+fn a_copy_on_this_computer_is_not_used_while_the_revision_of_the_server_voice_is_unknown() {
+    let server = FakeServer::new(Answer::Tone);
+    let rig = rig_served(server.clone(), None, "loli", timing());
+    reply(&rig, LINE);
+    server.names(None);
+    reply(&rig, OTHER);
+    reply(&rig, LINE);
+    assert_eq!(server.asked(), [asked(LINE), asked(OTHER), asked(LINE)]);
+}
+
+#[test]
+fn a_server_that_names_no_revision_leaves_no_copy_on_this_computer() {
+    let server = FakeServer::new(Answer::Tone);
+    server.names(None);
+    let rig = rig_served(server.clone(), None, "loli", timing());
+    reply(&rig, LINE);
+    reply(&rig, LINE);
+    assert_eq!(server.asked(), [asked(LINE), asked(LINE)]);
+    assert_eq!(kept(&rig), 0);
 }
 
 #[test]

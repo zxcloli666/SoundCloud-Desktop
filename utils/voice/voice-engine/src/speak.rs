@@ -205,7 +205,7 @@ impl Core {
         let voice = voices::find(&self.config.speak.voice);
         let local = self.local_voice(voice);
         match self.server(voice) {
-            Some(server) => models::server(&self.deps.store, voice, server, local),
+            Some(server) => models::server(voice, server, local),
             None => local,
         }
     }
@@ -490,7 +490,7 @@ mod tests {
     use voice_qwen::{Paths, Sink};
 
     use super::*;
-    use crate::server::Ask;
+    use crate::server::{Ask, Said};
     use crate::tts::Voice;
 
     const WRITTEN: &str = "Громкость 50%, включаю что-нибудь…";
@@ -511,7 +511,7 @@ mod tests {
     struct Down;
 
     impl Server for Down {
-        fn say(&self, _: &Ask, _: &dyn Fn() -> bool) -> Result<Clip, String> {
+        fn say(&self, _: &Ask, _: &dyn Fn() -> bool) -> Result<Said, String> {
             Err("down".into())
         }
     }
@@ -539,7 +539,6 @@ mod tests {
     fn server() -> Source {
         Source::Server {
             voice: "loli",
-            cached_as: "loli".into(),
             server: Arc::new(Down),
             local: None,
         }

@@ -10,11 +10,11 @@ use ogg::{PacketWriteEndInfo, PacketWriter};
 use serde_json::{Value, json};
 use tokio::net::TcpListener;
 use tokio::time::Instant;
-use voice_engine::Clip;
+use voice_engine::Said;
 use warp::Filter;
 use warp::http::Response;
 
-use super::answer::{CLIP_MOST, Made, polled, posted};
+use super::answer::{CLIP_MOST, Made, REVISION, polled, posted};
 use super::{CANCELLED, OGG, POLLED, POSTED, RETRY, TIMEOUT, TOTAL, checked, made, opus, within};
 use crate::network::fetch::configured;
 use crate::voice::api::{NETWORK, Request, Told};
@@ -25,6 +25,7 @@ const SILENT: usize = 2_400;
 const FRAME: usize = 960;
 const SERIAL: u32 = 7;
 const PAGE: &[u8] = b"<html><body>Bad gateway</body></html>";
+const NAMED: &str = "7";
 
 type Reply = (u16, Vec<u8>);
 
@@ -128,16 +129,20 @@ fn shown<T>(told: Told<T, String>, took: fn(T) -> String) -> String {
 
 fn made_shown(made: Made) -> String {
     match made {
-        Made::Clip(clip) => format!("clip {}", clip.samples.len()),
+        Made::Clip(said) => format!("clip {}", said.clip.samples.len()),
         Made::Ticket(ticket) => format!("ticket {ticket}"),
     }
 }
 
-fn polled_shown(clip: Option<Clip>) -> String {
-    match clip {
-        Some(clip) => format!("clip {}", clip.samples.len()),
+fn polled_shown(said: Option<Said>) -> String {
+    match said {
+        Some(said) => format!("clip {}", said.clip.samples.len()),
         None => "later".into(),
     }
+}
+
+fn heard(said: Said) -> (usize, Option<String>) {
+    (said.clip.samples.len(), said.revision)
 }
 
 fn reply((status, body): Reply) -> Response<Vec<u8>> {
@@ -148,6 +153,7 @@ fn reply((status, body): Reply) -> Response<Vec<u8>> {
     Response::builder()
         .status(status)
         .header("content-type", kind)
+        .header(REVISION, NAMED)
         .body(body)
         .unwrap()
 }
@@ -229,7 +235,8 @@ fn the_answer_to_the_post_is_a_clip_a_ticket_or_a_failure() {
         (502, PAGE.to_vec(), "lost http_502"),
     ];
     for (status, body, want) in cases {
-        assert_eq!(shown(posted(status, &body), made_shown), want, "{status}");
+        let told = posted(status, &body, None);
+        assert_eq!(shown(told, made_shown), want, "{status}");
     }
 }
 
@@ -248,7 +255,8 @@ fn the_answer_to_a_poll_is_a_clip_not_yet_or_a_failure() {
         (500, PAGE.to_vec(), "lost http_500"),
     ];
     for (status, body, want) in cases {
-        assert_eq!(shown(polled(status, &body), polled_shown), want, "{status}");
+        let told = polled(status, &body, None);
+        assert_eq!(shown(told, polled_shown), want, "{status}");
     }
 }
 
@@ -271,8 +279,8 @@ fn a_body_that_is_not_an_ogg_opus_clip_is_refused() {
     ];
     for (body, why) in cases {
         let want = format!("lost bad_clip: {why}");
-        assert_eq!(shown(posted(200, &body), made_shown), want);
-        assert_eq!(shown(polled(200, &body), polled_shown), want);
+        assert_eq!(shown(posted(200, &body, None), made_shown), want);
+        assert_eq!(shown(polled(200, &body, None), polled_shown), want);
     }
 }
 
@@ -298,8 +306,8 @@ async fn the_wait_ends_at_once_when_the_line_is_not_wanted_any_more() {
 async fn a_clip_the_server_already_has_comes_with_the_post() {
     let served = serve((200, ogg(SPOKEN)), Vec::new()).await;
     let (client, body) = (client(), body());
-    let clip = made(&request(&client, &[served.url.clone()], &body)).await;
-    assert_eq!(clip.map(|clip| clip.samples.len()), Ok(SPOKEN / 2));
+    let said = made(&request(&client, &[served.url.clone()], &body)).await;
+    assert_eq!(said.map(heard), Ok((SPOKEN / 2, Some(NAMED.to_string()))));
     assert_eq!(served.asked(), [format!("POST {TOKEN}")]);
     assert_eq!(*served.sent.lock().unwrap(), [body]);
 }
@@ -310,8 +318,8 @@ async fn a_ticket_is_polled_on_the_base_that_gave_it_until_the_clip_is_ready() {
     let served = serve((202, ticket("t-1")), polls).await;
     let (client, body) = (client(), body());
     let urls = [nowhere().await, served.url.clone()];
-    let clip = made(&request(&client, &urls, &body)).await;
-    assert_eq!(clip.map(|clip| clip.samples.len()), Ok(SPOKEN / 2));
+    let said = made(&request(&client, &urls, &body)).await;
+    assert_eq!(said.map(heard), Ok((SPOKEN / 2, Some(NAMED.to_string()))));
     let poll = format!("GET t-1 {TOKEN}");
     let asked = [format!("POST {TOKEN}"), poll.clone(), poll.clone(), poll];
     assert_eq!(served.asked(), asked);

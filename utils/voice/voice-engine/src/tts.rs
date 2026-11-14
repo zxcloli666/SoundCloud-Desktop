@@ -11,10 +11,11 @@ use crate::clip::Clip;
 use crate::config::Language;
 use crate::kokoro::{Frontends, Line};
 use crate::qwen;
-use crate::server::{Ask, Server};
+use crate::server::{Ask, Said, Server};
 use crate::shape::Shaper;
 
 const REST: Duration = Duration::from_secs(120);
+const SERVED: &str = "server";
 
 pub trait Voice: Send {
     fn rate(&self) -> u32;
@@ -35,7 +36,6 @@ pub enum Source {
     },
     Server {
         voice: &'static str,
-        cached_as: String,
         server: Arc<dyn Server>,
         local: Option<Box<Source>>,
     },
@@ -76,6 +76,7 @@ struct Voices {
     kokoro: Frontends,
     qwen: Qwen,
     cache: Cache,
+    revision: Option<String>,
 }
 
 struct Out<'a> {
@@ -107,6 +108,7 @@ impl Tts {
                     kokoro: Frontends::default(),
                     qwen: Qwen::default(),
                     cache: Cache::new(phrases),
+                    revision: None,
                 };
                 loop {
                     match inbox.recv_timeout(REST) {
@@ -233,17 +235,9 @@ impl Voices {
             } => self.qwen(say, paths, speaker, cached_as, out),
             Source::Server {
                 voice,
-                cached_as,
                 server,
                 local,
-            } => self.server(
-                say,
-                voice,
-                cached_as,
-                server.as_ref(),
-                local.as_deref(),
-                out,
-            ),
+            } => self.server(say, voice, server.as_ref(), local.as_deref(), out),
             Source::Given(voice) => given(say, voice, out),
         }
     }
@@ -301,14 +295,13 @@ impl Voices {
         &mut self,
         say: &Say,
         voice: &str,
-        cached_as: &str,
         server: &dyn Server,
         local: Option<&Source>,
         out: &Out,
     ) -> Result<(), String> {
-        let Some(key) = self.to_make(say, cached_as, out) else {
+        if !speakable(&say.text) || self.served(say, voice, out) {
             return Ok(());
-        };
+        }
         let ask = Ask {
             voice,
             text: &say.text,
@@ -319,9 +312,13 @@ impl Voices {
             return Ok(());
         }
         match said {
-            Ok(clip) => {
-                shaped(say, clip.samples.clone(), out);
-                self.keep(say, &key, clip.samples);
+            Ok(said) => {
+                shaped(say, said.clip.samples.clone(), out);
+                if let Some(revision) = &said.revision {
+                    let key = served_as(revision, voice, &say.text);
+                    self.keep(say, &key, said.clip.samples);
+                }
+                self.revision = said.revision;
                 Ok(())
             }
             Err(error) => self.instead(say, local, error, out),
@@ -343,17 +340,28 @@ impl Voices {
         self.speak(say, local, out)
     }
 
+    fn served(&self, say: &Say, voice: &str, out: &Out) -> bool {
+        match &self.revision {
+            Some(revision) => self.cached(say, &served_as(revision, voice, &say.text), out),
+            None => false,
+        }
+    }
+
     fn to_make(&self, say: &Say, cached_as: &str, out: &Out) -> Option<String> {
-        if !say.text.chars().any(char::is_alphanumeric) {
+        if !speakable(&say.text) {
             return None;
         }
         let key = cache::key(&[cached_as, &say.text]);
-        match self.cache.get(&key).filter(|clip| clip.rate == RATE) {
+        (!self.cached(say, &key, out)).then_some(key)
+    }
+
+    fn cached(&self, say: &Say, key: &str, out: &Out) -> bool {
+        match self.cache.get(key).filter(|clip| clip.rate == RATE) {
             Some(clip) => {
                 shaped(say, clip.samples, out);
-                None
+                true
             }
-            None => Some(key),
+            None => false,
         }
     }
 
@@ -376,11 +384,19 @@ fn shaped(say: &Say, samples: Vec<f32>, out: &Out) {
     out.audio(RATE, shaper.finish());
 }
 
-fn at_rate(clip: Clip) -> Result<Clip, String> {
-    if clip.rate == RATE {
-        Ok(clip)
+fn speakable(text: &str) -> bool {
+    text.chars().any(char::is_alphanumeric)
+}
+
+fn served_as(revision: &str, voice: &str, text: &str) -> String {
+    cache::key(&[SERVED, revision, voice, text])
+}
+
+fn at_rate(said: Said) -> Result<Said, String> {
+    if said.clip.rate == RATE {
+        Ok(said)
     } else {
-        Err(format!("the server voice came at {} Hz", clip.rate))
+        Err(format!("the server voice came at {} Hz", said.clip.rate))
     }
 }
 
@@ -388,4 +404,20 @@ fn given(say: &Say, voice: &Mutex<dyn Voice>, out: &Out) -> Result<(), String> {
     let mut voice = voice.lock().map_err(|_| "the voice is broken")?;
     let rate = voice.rate();
     voice.say(&say.text, &mut Plain { out, rate })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEXT: &str = "Ставлю на паузу.";
+
+    #[test]
+    fn a_clip_of_the_server_never_shares_a_key_with_one_made_here() {
+        let served = served_as("1", "loli", TEXT);
+        assert_ne!(served, cache::key(&["loli", TEXT]));
+        assert_ne!(served, cache::key(&["qwen-loli/1/loli", TEXT]));
+        assert_ne!(served, served_as("2", "loli", TEXT));
+        assert_ne!(served, served_as("1", "moriarty", TEXT));
+    }
 }

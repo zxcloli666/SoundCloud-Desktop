@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use serde_json::{Value, json};
 use tokio::runtime::Handle;
-use voice_engine::{Ask, Clip, Server};
+use voice_engine::{Ask, Said, Server};
 
 use self::answer::Made;
 use super::api::{self, Patience, Request};
@@ -39,7 +39,7 @@ pub struct ApiServer {
 }
 
 impl Server for ApiServer {
-    fn say(&self, ask: &Ask, wanted: &dyn Fn() -> bool) -> Result<Clip, String> {
+    fn say(&self, ask: &Ask, wanted: &dyn Fn() -> bool) -> Result<Said, String> {
         let body = json!({ "voice": ask.voice, "text": ask.text, "keep": ask.kept });
         let said = speak(&self.app, &body);
         self.rt.block_on(within(said, TOTAL, wanted))
@@ -47,37 +47,37 @@ impl Server for ApiServer {
 }
 
 async fn within(
-    said: impl Future<Output = Result<Clip, String>>,
+    said: impl Future<Output = Result<Said, String>>,
     total: Duration,
     wanted: &dyn Fn() -> bool,
-) -> Result<Clip, String> {
+) -> Result<Said, String> {
     tokio::select! {
         said = tokio::time::timeout(total, said) => said.unwrap_or_else(|_| Err(TIMEOUT.into())),
         () = dropped(wanted) => Err(CANCELLED.into()),
     }
 }
 
-async fn speak(app: &AppHandle, body: &Value) -> Result<Clip, String> {
+async fn speak(app: &AppHandle, body: &Value) -> Result<Said, String> {
     let request = Request::post(app, PATH, OGG, body, POSTED).await?;
     made(&request).await
 }
 
-async fn made(request: &Request<'_>) -> Result<Clip, String> {
+async fn made(request: &Request<'_>) -> Result<Said, String> {
     let judge = |response, limit| answer::judged(response, limit, answer::posted);
     let (made, base) = api::send(request, api::NETWORK.to_string(), judge).await?;
     let ticket = match made {
-        Made::Clip(clip) => return Ok(clip),
+        Made::Clip(said) => return Ok(said),
         Made::Ticket(ticket) => ticket,
     };
     let poll = request.get_at(format!("{base}/{ticket}"), POLLED);
     loop {
-        if let Some(clip) = checked(&poll).await? {
-            return Ok(clip);
+        if let Some(said) = checked(&poll).await? {
+            return Ok(said);
         }
     }
 }
 
-async fn checked(poll: &Request<'_>) -> Result<Option<Clip>, String> {
+async fn checked(poll: &Request<'_>) -> Result<Option<Said>, String> {
     let judge = |response, limit| answer::judged(response, limit, answer::polled);
     let lost = || api::NETWORK.to_string();
     let said = match api::send(poll, lost(), judge).await {
@@ -87,7 +87,7 @@ async fn checked(poll: &Request<'_>) -> Result<Option<Clip>, String> {
         }
         said => said,
     };
-    said.map(|(clip, _)| clip)
+    said.map(|(said, _)| said)
 }
 
 async fn dropped(wanted: &dyn Fn() -> bool) {

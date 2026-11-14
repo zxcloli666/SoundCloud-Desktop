@@ -59,7 +59,7 @@ pub use event::{
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
 pub use output::Output;
-pub use server::{Ask, Server};
+pub use server::{Ask, Said, Server};
 pub use stream::Stream;
 pub use tts::Voice;
 pub use turn::Chat;

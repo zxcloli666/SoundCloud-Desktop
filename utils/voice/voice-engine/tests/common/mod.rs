@@ -10,8 +10,8 @@ use std::time::{Duration, Instant};
 use voice_audio::source::{Msg, OpenFn, SourceCtx};
 use voice_audio::{Capture, CaptureError, Device, DeviceList, RefTap, Transport};
 use voice_engine::{
-    Ask, Catalog, Chat, Clip, Command, Config, Deps, Engine, Event, Output, Server, Source, Spoke,
-    State, Stream, Timing, Voice,
+    Ask, Catalog, Chat, Clip, Command, Config, Deps, Engine, Event, Output, Said, Server, Source,
+    Spoke, State, Stream, Timing, Voice,
 };
 use voice_models::{Fetch, FetchError, Response, Store};
 use voice_nlu::{Kind, Variant};
@@ -126,11 +126,13 @@ pub enum Answer {
 }
 
 pub const SERVED: usize = 12_000;
+pub const REVISION: &str = "1";
 
 pub struct FakeServer {
     pub answer: Answer,
     pub asked: Mutex<Vec<(String, String, bool)>>,
     pub let_go: AtomicBool,
+    pub revision: Mutex<Option<String>>,
 }
 
 impl FakeServer {
@@ -139,7 +141,19 @@ impl FakeServer {
             answer,
             asked: Mutex::default(),
             let_go: AtomicBool::new(false),
+            revision: Mutex::new(Some(REVISION.into())),
         })
+    }
+
+    pub fn names(&self, revision: Option<&str>) {
+        *self.revision.lock().unwrap() = revision.map(String::from);
+    }
+
+    fn tone(&self) -> Said {
+        Said {
+            clip: tone(),
+            revision: self.revision.lock().unwrap().clone(),
+        }
     }
 
     pub fn asked(&self) -> Vec<(String, String, bool)> {
@@ -148,14 +162,14 @@ impl FakeServer {
 }
 
 impl Server for FakeServer {
-    fn say(&self, ask: &Ask, wanted: &dyn Fn() -> bool) -> Result<Clip, String> {
+    fn say(&self, ask: &Ask, wanted: &dyn Fn() -> bool) -> Result<Said, String> {
         let asked = (ask.voice.to_string(), ask.text.to_string(), ask.kept);
         self.asked.lock().unwrap().push(asked);
         match self.answer {
-            Answer::Tone => Ok(tone()),
+            Answer::Tone => Ok(self.tone()),
             Answer::Late(after) => {
                 std::thread::sleep(after);
-                Ok(tone())
+                Ok(self.tone())
             }
             Answer::Down(code) => Err(code.into()),
             Answer::Hold => {

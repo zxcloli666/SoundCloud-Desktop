@@ -102,19 +102,17 @@ pub fn source(store: &Store, voice: &Voice) -> Option<Source> {
 }
 
 pub fn server(
-    store: &Store,
     voice: &'static Voice,
     server: Arc<dyn Server>,
     local: Option<Source>,
 ) -> Option<Source> {
-    match cached_as(store, voice) {
-        Some(cached_as) => Some(Source::Server {
+    match voice.kind {
+        voices::Kind::Qwen { .. } => Some(Source::Server {
             voice: voice.id,
-            cached_as,
             server,
             local: local.map(Box::new),
         }),
-        None => local,
+        voices::Kind::Kokoro { .. } => local,
     }
 }
 
