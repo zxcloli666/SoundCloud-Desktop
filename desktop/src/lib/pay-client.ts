@@ -351,7 +351,12 @@ export const payApi = {
   checkout: (req: CheckoutReq) =>
     payRequest<CheckoutResp>('/api/checkout', { method: 'POST', body: JSON.stringify(req) }),
   order: (id: string) => payRequest<OrderStatus>(`/api/orders/${encodeURIComponent(id)}`),
-  subscription: () => payRequest<PaySubscription>('/api/me/subscription'),
+  subscription: (deviceId: string | null) =>
+    payRequest<PaySubscription>(
+      deviceId
+        ? `/api/me/subscription?device_id=${encodeURIComponent(deviceId)}`
+        : '/api/me/subscription',
+    ),
   cancel: (source: string) =>
     payRequest<{ ok: boolean; premium_until: number }>('/api/subscription/cancel', {
       method: 'POST',

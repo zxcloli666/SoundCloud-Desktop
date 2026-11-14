@@ -24,6 +24,7 @@ const REFUSALS: Record<string, TrialRefusal> = {
   device_used: 'device_used',
   trial_device_used: 'device_used',
   card_used: 'card_used',
+  trial_card_used: 'card_used',
 };
 
 const CARD_METHODS: BoostyMethod[] = ['card', 'card_usd'];
@@ -70,12 +71,12 @@ export function trialOutcome(
 export function trialRenewal(sub: PaySubscription): Renewal | null {
   const active = sub.trial?.active;
   if (!active) return sub.renewal ?? null;
-  const base = sub.renewal ?? {
+  return {
     source: 'boosty_card',
+    at: active.charge_at,
     amount: active.amount_minor,
     currency: active.currency,
     period_days: 30,
     method: active.method,
   };
-  return { ...base, at: active.charge_at };
 }

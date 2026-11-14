@@ -19,7 +19,7 @@ export function usePaySubscription(enabled = true) {
   const hasSession = useAuthStore((s) => s.hasSession);
   return useQuery({
     queryKey: PAY_SUB_KEY,
-    queryFn: payApi.subscription,
+    queryFn: async () => payApi.subscription(await deviceId()),
     staleTime: 60_000,
     refetchInterval: 30 * 60_000,
     enabled: enabled && hasSession,

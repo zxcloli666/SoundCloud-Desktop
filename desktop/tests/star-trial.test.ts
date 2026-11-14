@@ -67,6 +67,8 @@ test('start and step codes map to one refusal each', () => {
   assert.equal(trialRefusal('trial_has_star'), 'has_star');
   assert.equal(trialRefusal('trial_device_used'), 'device_used');
   assert.equal(trialRefusal('card_used'), 'card_used');
+  assert.equal(trialRefusal('trial_card_used'), 'card_used');
+  assert.equal(trialRefusal('trial_disabled'), null);
   assert.equal(trialRefusal('trial_needs_bind'), null);
   assert.equal(trialRefusal(null), null);
 });
@@ -86,20 +88,29 @@ test('a bound step carries the trial or why it was refused', () => {
   assert.equal(trialOutcome({ trial_refused: 'something_new' }), null);
 });
 
-test('during a trial the renewal date is the trial charge date', () => {
+test('during a trial the renewal comes from the trial, not from the trial entitlement', () => {
   const active = { ...GRANT, method: 'sbp' as const, charge_at: 1_800_300_000 };
-  const renewal = {
+  const fromTrial = {
     source: 'boosty_card',
+    at: 1_800_300_000,
+    amount: 149,
+    currency: 'RUB',
+    period_days: 30,
+    method: 'sbp',
+  };
+  const trialEntitlement = {
+    source: 'trial',
     at: 1_800_259_200,
     amount: 149,
     currency: 'RUB',
     period_days: 30,
   };
-  assert.equal(trialRenewal(sub({ ...OFFER, active }, { renewal }))?.at, 1_800_300_000);
-  const alone = trialRenewal(sub({ ...OFFER, active }));
-  assert.equal(alone?.at, 1_800_300_000);
-  assert.equal(alone?.amount, 149);
-  assert.equal(alone?.method, 'sbp');
+  assert.deepEqual(
+    trialRenewal(sub({ ...OFFER, active }, { renewal: trialEntitlement })),
+    fromTrial,
+  );
+  assert.deepEqual(trialRenewal(sub({ ...OFFER, active })), fromTrial);
+  const renewal = { ...trialEntitlement, source: 'boosty_card' };
   assert.equal(trialRenewal(sub(OFFER, { renewal })), renewal);
   assert.equal(trialRenewal(sub()), null);
 });
