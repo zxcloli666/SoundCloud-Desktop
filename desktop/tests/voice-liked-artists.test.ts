@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { SCUser } from '../src/lib/hooks';
-import { likedArtists } from '../src/lib/voice/liked-artists.ts';
+import { changesLikedArtists, likedArtists } from '../src/lib/voice/liked-artists.ts';
 import type { Track } from '../src/stores/player';
 
 function by(uploader: string, artist?: string): Track {
@@ -37,4 +37,11 @@ test('the list stops at two hundred names', () => {
   assert.equal(artists.length, 200);
   assert.equal(artists[149], 'liked 149');
   assert.equal(artists[199], 'followed 49');
+});
+
+test('a liked track and a follow change the list, a liked playlist and a repost do not', () => {
+  assert.equal(changesLikedArtists('/likes/tracks/soundcloud%3Atracks%3A1'), true);
+  assert.equal(changesLikedArtists('/me/followings/soundcloud%3Ausers%3A2'), true);
+  assert.equal(changesLikedArtists('/likes/playlists/soundcloud%3Aplaylists%3A3'), false);
+  assert.equal(changesLikedArtists('/reposts/tracks/soundcloud%3Atracks%3A1'), false);
 });

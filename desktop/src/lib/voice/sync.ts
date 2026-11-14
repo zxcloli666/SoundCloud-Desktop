@@ -2,15 +2,17 @@ import { loadVoiceLocales } from '../../i18n';
 import { useAuthStore } from '../../stores/auth';
 import type { Track } from '../../stores/player';
 import { api } from '../api';
+import { onApiWrite } from '../api-writes';
 import { type PagedResponse, pagedUrl, type SCUser } from '../hooks';
 import { voiceIpc } from './ipc';
-import { likedArtists } from './liked-artists';
+import { changesLikedArtists, likedArtists } from './liked-artists';
 import { engineConfig } from './names';
 import { useVoiceRuntime } from './runtime';
 import { useVoiceStore } from './store';
 
 const APPLY_DEBOUNCE_MS = 120;
 const LIKED_PAGE = 200;
+const LIKED_SETTLE_MS = 5_000;
 
 function push() {
   loadVoiceLocales()
@@ -64,8 +66,24 @@ function followLikedArtists() {
   });
 }
 
+let settling: ReturnType<typeof setTimeout> | null = null;
+
+function rereadLikedArtists() {
+  settling = null;
+  const owner = useAuthStore.getState().user?.urn ?? null;
+  if (!owner || likedOf !== owner || !useVoiceStore.getState().config.enabled) return;
+  readLikedArtists().catch(() => {});
+}
+
+function followLikeWrites(path: string) {
+  if (!changesLikedArtists(path)) return;
+  if (settling) clearTimeout(settling);
+  settling = setTimeout(rereadLikedArtists, LIKED_SETTLE_MS);
+}
+
 export function startLikedArtists() {
   followLikedArtists();
   useAuthStore.subscribe(followLikedArtists);
   useVoiceStore.subscribe(followLikedArtists);
+  onApiWrite(followLikeWrites);
 }
