@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStorage } from '../tauri-storage';
 import type { ToolMark } from './chat/types';
 import { defaultConfig } from './defaults';
+import { SAVED_VERSION, upgradeSaved } from './saved';
 import type {
   ActivationConfig,
   Intent,
@@ -106,13 +107,10 @@ export const useVoiceStore = create<VoiceStore>()(
     }),
     {
       name: 'sc-voice',
-      version: 2,
+      version: SAVED_VERSION,
       storage: createJSONStorage(() => tauriStorage),
-      migrate: (persisted, version) => {
-        const saved = (persisted ?? {}) as Partial<VoiceStore>;
-        if (version >= 2 || !saved.config) return saved;
-        return { ...saved, config: { ...saved.config, llm: true } };
-      },
+      migrate: (persisted, version) =>
+        upgradeSaved((persisted ?? {}) as Partial<VoiceStore>, version),
       partialize: (s) => ({
         config: s.config,
         history: s.history,
