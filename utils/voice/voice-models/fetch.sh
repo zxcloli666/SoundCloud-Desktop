@@ -5,6 +5,7 @@ here=$(cd "$(dirname "$0")" && pwd)
 base=${VOICE_STORAGE:-https://storage.r1.relay.scnative.dev/voice-models}
 out=$1
 shift
+pace=${VOICE_FETCH_RATE:+--limit-rate $VOICE_FETCH_RATE}
 
 for id in "$@"; do
     files=$(jq -r --arg id "$id" '.models[] | select(.id == $id) | .version as $version | .files[]
@@ -15,7 +16,7 @@ for id in "$@"; do
     fi
     mkdir -p "$out/$id"
     echo "$files" | while IFS="$(printf '\t')" read -r version path sha256 executable; do
-        curl -fsSL --retry 8 --retry-all-errors --retry-max-time 300 -o "$out/$id/$path" "$base/$id/$version/$path"
+        curl -fsSL $pace --retry 8 --retry-all-errors --retry-max-time 1200 -o "$out/$id/$path" "$base/$id/$version/$path"
         got=$(openssl dgst -sha256 -r "$out/$id/$path" | cut -d' ' -f1)
         if [ "$got" != "$sha256" ]; then
             echo "$id/$path: sha256 $got, expected $sha256" >&2

@@ -37,8 +37,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Engine and voice from the storage
+      - name: Engine and voice from the storage, at a pace five jobs can share
         shell: bash
+        env:
+          VOICE_FETCH_RATE: 3M
         run: utils/voice/voice-models/fetch.sh models qwen-engine-${{ matrix.platform }} qwen-codec qwen-loli
 
       - name: Rust
