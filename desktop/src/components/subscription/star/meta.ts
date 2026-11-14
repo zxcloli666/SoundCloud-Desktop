@@ -18,6 +18,8 @@ import { SuperHeart } from '../../music/superlike/SuperHeart';
 export type Step =
   | 'overview'
   | 'method'
+  | 'card'
+  | 'sbp'
   | 'pay'
   | 'success'
   | 'redeem'

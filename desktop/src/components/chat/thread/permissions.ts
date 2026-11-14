@@ -1,20 +1,13 @@
+import { isActiveMember, isRequest } from '../../../lib/chat/membership';
 import type { ConversationSummary, Member, Message, UserId } from '../../../lib/chat/types';
 import { canForwardFrom } from '../../../lib/together/room-rows';
+
+export { isActiveMember, isRequest };
 
 const EDIT_WINDOW_MS = 48 * 3_600_000;
 
 function isAdmin(conversation: ConversationSummary): boolean {
   return conversation.role === 'owner' || conversation.role === 'admin';
-}
-
-export function isActiveMember(conversation: ConversationSummary): boolean {
-  return conversation.state === 'active' && conversation.accepted;
-}
-
-export function isRequest(conversation: ConversationSummary): boolean {
-  return (
-    conversation.state === 'invited' || (conversation.state === 'active' && !conversation.accepted)
-  );
 }
 
 export function canEdit(message: Message, now: number): boolean {

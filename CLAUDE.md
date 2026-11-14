@@ -1,21 +1,27 @@
 # Desktop — десктопные приложения (win/mac/linux)
 
-Визуал на React Native. Логика/сеть/аудио — в Rust-ядре (`Core/shared`), мост —
-loopback-facade `sc-rpc` (`bindings/`). RN держит **только визуал**.
+Живое приложение — `desktop/` (Tauri), из него собираются релизы; правила — в
+`desktop/CLAUDE.md`. `App/` и `bindings/` — приостановленный план на React Native,
+ниже он описан как есть.
 
 ```
 Desktop/
-  App/       наше десктоп-приложение (win/mac/linux); экраны + шелл
-  bindings/  Rust: sc-rpc (loopback POST /rpc/{method} + WS /events, токен-гейт)
-  desktop/   ЛЕГАСИ Tauri-донор — дизайн-эталон до Ф6, НЕ трогаем как код
+  desktop/   живое Tauri-приложение, из него собираются релизы
+  App/       приостановленный план: десктоп-приложение на RN (win/mac/linux); экраны + шелл
+  bindings/  приостановленный план: Rust sc-rpc (loopback POST /rpc/{method} + WS /events, токен-гейт)
 ```
+
+## План на RN (приостановлен)
+
+Визуал на React Native. Логика/сеть/аудио — в Rust-ядре (`Core/shared`), мост —
+loopback-facade `sc-rpc` (`bindings/`). RN держит **только визуал**.
 
 Хосты: Linux — react-native-web в Servo-шелле; macOS — react-native-macos;
 Windows — react-native-windows. Экраны десктопа общие для win/mac/linux (пишутся
-на RN-примитивах), кирпичи — из `@sc/ui`. Дизайн 1:1 с `desktop/` (донор), но код
-заново (см. `Core/CLAUDE.md` «Правила кода»).
+на RN-примитивах), кирпичи — из `@sc/ui`. Дизайн 1:1 с `desktop/`, но код заново
+(см. `Core/CLAUDE.md` «Правила кода»).
 
-## Перф: никаких лишних React ре-рендеров (КРИТИЧНО)
+## Перф: никаких лишних React ре-рендеров (КРИТИЧНО, для `App/`)
 
 Полное правило — `Core/CLAUDE.md` п.10. Коротко:
 
@@ -31,7 +37,7 @@ Windows — react-native-windows. Экраны десктопа общие дл�
 - Референс: `App/src/player/position.ts` + потребители (`EstuaryDeck`,
   `NowPlayingBar/ProgressLane/Slider`, `LiveWaveform.progressValue`).
 
-## Инвариант логина
+## Инвариант логина (для `App/`)
 
 Без сессии главный шелл не показываем (гейт `App/src/App.tsx`). Сессия owned ядром —
 `poll_login` не пишет токен, обязателен явный `auth.setSession`.

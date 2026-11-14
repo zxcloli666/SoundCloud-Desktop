@@ -23,6 +23,10 @@ export function passDate(epochSec: number | null | undefined): string {
   return `${p(d.getDate())}.${p(d.getMonth() + 1)}.${d.getFullYear()}`;
 }
 
+export function shortDate(epochSec: number): string {
+  return passDate(epochSec).slice(0, 5);
+}
+
 /** Whole days remaining until an epoch-seconds deadline (never negative). */
 export function daysUntil(epochSec: number | null | undefined): number {
   if (!epochSec) return 0;
@@ -32,4 +36,23 @@ export function daysUntil(epochSec: number | null | undefined): number {
 /** Format an integer ruble amount for the mono price fields, e.g. "2490 ₽". */
 export function rub(amount: number): string {
   return `${amount} ₽`;
+}
+
+export function usd(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+export function planPrice(
+  plan: { price_rub: number; price_usd_cents?: number },
+  currency: 'RUB' | 'USD',
+): string {
+  if (currency === 'USD' && plan.price_usd_cents != null) return usd(plan.price_usd_cents);
+  return rub(plan.price_rub);
+}
+
+const CURRENCY_SIGN: Record<string, string> = { XTR: '★', RUB: '₽' };
+
+export function chargeAmount(amount: number, currency: string): string {
+  if (currency === 'USD') return usd(amount);
+  return `${amount} ${CURRENCY_SIGN[currency] ?? currency}`;
 }

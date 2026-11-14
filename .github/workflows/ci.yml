@@ -193,6 +193,12 @@ jobs:
             cargo test
           fi
 
+      - name: Boosty card
+        working-directory: utils/boosty-card
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/desktop/src-tauri/target
+        run: cargo test
+
       - name: Other volume
         if: runner.os == 'Windows'
         env:

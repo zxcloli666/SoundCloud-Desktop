@@ -1,17 +1,14 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePremium } from '../../lib/premium-cache';
-import { daysUntil, passDate } from '../../lib/star-format';
-import { usePaySubscription } from '../../lib/star-offer';
-import { useStarMoments } from '../../stores/star-moments';
-import { primaryEntitlement } from '../subscription/star/meta';
+import { passDate } from '../../lib/star-format';
+import { URGENT_DAYS, useStarStatus } from '../../lib/star-status';
 import { useOwnTenure } from '../../lib/star-tenure';
+import { useStarMoments } from '../../stores/star-moments';
+import { DayCells } from './DayCells';
 import { LostStreak } from './LostStreak';
 import { MomentCard } from './MomentCard';
 import { StarCta } from './StarCta';
 import { YearCta } from './YearCta';
-
-const WARN_DAYS = 3;
 
 export interface ExpiryMoment {
   key: string;
@@ -22,20 +19,13 @@ export interface ExpiryMoment {
 
 /** A pass that runs out within a few days and was not waved away yet, else null. */
 export function useExpiryMoment(): ExpiryMoment | null {
-  const premium = usePremium();
-  const { data } = usePaySubscription(premium);
+  const status = useStarStatus();
   const seen = useStarMoments((s) => s.seen);
-  if (!premium || !data) return null;
+  if (status?.kind !== 'ends' || status.level !== 'urgent' || status.days < 1) return null;
 
-  const ent = primaryEntitlement(data.entitlements);
-  if (ent?.recurring && ent.auto_renew && !ent.canceled) return null;
-  const endsAt = ent?.ends_at ?? data.premium_until;
-  const days = daysUntil(endsAt);
-  if (days < 1 || days > WARN_DAYS) return null;
-
-  const key = `expiry:${endsAt}:${days <= 1 ? 1 : WARN_DAYS}`;
+  const key = `expiry:${status.at}:${status.days <= 1 ? 1 : URGENT_DAYS}`;
   if (seen.includes(key)) return null;
-  return { key, endsAt, days, trial: ent?.source === 'trial' };
+  return { key, endsAt: status.at, days: status.days, trial: status.trial };
 }
 
 /** A few days before STAR runs out: the pass visibly burning down, one tap to extend. */
@@ -48,7 +38,7 @@ export const ExpiryNudge = memo(function ExpiryNudge({ moment }: { moment: Expir
   return (
     <MomentCard onClose={close}>
       <div className="flex items-center gap-3.5 pr-6">
-        <FadingStar left={moment.days / WARN_DAYS} />
+        <FadingStar left={moment.days / URGENT_DAYS} />
         <div className="min-w-0">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-45">
             {moment.trial ? t('starMoments.expiry.trial') : 'STAR'}
@@ -61,7 +51,7 @@ export const ExpiryNudge = memo(function ExpiryNudge({ moment }: { moment: Expir
           </div>
         </div>
       </div>
-      <DayCells total={WARN_DAYS} left={moment.days} />
+      <DayCells total={URGENT_DAYS} left={moment.days} />
       {tenure && tenure.months >= 1 && !moment.trial && <LostStreak tenure={tenure} />}
       <div className="mt-3.5 flex flex-wrap items-center justify-end gap-2">
         <StarCta intent={moment.trial ? 'buy' : 'extend'} onOpen={close} />
@@ -88,23 +78,6 @@ const FadingStar = memo(function FadingStar({ left }: { left: number }) {
       >
         ✦
       </span>
-    </div>
-  );
-});
-
-const DayCells = memo(function DayCells({ total, left }: { total: number; left: number }) {
-  return (
-    <div className="mt-3.5 flex gap-1.5">
-      {Array.from({ length: total }, (_, i) => (
-        <span
-          key={i}
-          className="h-1.5 flex-1 rounded-full"
-          style={{
-            background: i < left ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.08)',
-            boxShadow: i < left ? '0 0 10px var(--color-accent-glow)' : undefined,
-          }}
-        />
-      ))}
     </div>
   );
 });

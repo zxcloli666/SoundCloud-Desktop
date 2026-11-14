@@ -15,13 +15,13 @@ export const SHARED_KEY = ['pay', 'shared'] as const;
 
 export const INVITE_RE = /^JOIN(-[0-9A-Z]{4}){3}$/;
 
-export function useSharedOverview() {
+export function useSharedOverview(enabled = true) {
   const hasSession = useAuthStore((s) => s.hasSession);
   return useQuery({
     queryKey: SHARED_KEY,
     queryFn: payApi.shared,
     staleTime: 30_000,
-    enabled: hasSession,
+    enabled: enabled && hasSession,
   });
 }
 
@@ -76,6 +76,8 @@ const KNOWN_ERRORS = [
   'too_many_members',
   'removal_limit',
   'not_a_member',
+  'no_card',
+  'no_sbp',
 ] as const;
 
 /** i18n key of a shared-plan failure; unknown ones fall back to a generic text. */

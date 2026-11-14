@@ -1,9 +1,11 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check, Loader2 } from '../../../lib/icons';
+import { Check, Loader2, RefreshCw } from '../../../lib/icons';
 import type { Plan } from '../../../lib/pay-client';
-import { daysUntil, passDate, passSerial } from '../../../lib/star-format';
+import { daysUntil, passDate, passSerial, usd } from '../../../lib/star-format';
+import type { StarStatus } from '../../../lib/star-status';
 import type { PayPhase } from '../PayStatus';
+import type { Currency } from '../providers';
 import { monthsKey, type Step } from './meta';
 
 // Layered shadow: a tight dark halo keeps the display glyphs crisp over the
@@ -48,6 +50,19 @@ function Hero({ children, unit, size }: { children: ReactNode; unit?: ReactNode;
   );
 }
 
+function priceOf(plan: Plan | null, currency: Currency) {
+  if (!plan) return { amount: '—', unit: '₽', perMonth: '' };
+  const cents = currency === 'USD' ? plan.price_usd_cents : undefined;
+  if (cents != null) {
+    return { amount: usd(cents), unit: undefined, perMonth: usd(Math.round(cents / plan.months)) };
+  }
+  return {
+    amount: `${plan.price_rub}`,
+    unit: '₽',
+    perMonth: `${Math.round(plan.price_rub / plan.months)} ₽`,
+  };
+}
+
 /** Secondary line under the hero — one style for price / validity / status. */
 function Caption({ children }: { children: ReactNode }) {
   return (
@@ -57,13 +72,46 @@ function Caption({ children }: { children: ReactNode }) {
   );
 }
 
+const LEFT_TONE = { calm: 'text-accent', soon: 'text-amber-400', urgent: 'text-bad' } as const;
+
+function StatusCaption({ status }: { status: StarStatus }) {
+  const { t } = useTranslation();
+  if (status.kind === 'open') return t('star.active');
+  if (status.kind === 'relink') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-amber-400">
+        <RefreshCw size={13} strokeWidth={2.4} />
+        {t('star.relink')}
+      </span>
+    );
+  }
+  if (status.kind === 'renews') {
+    return (
+      <span className="inline-flex items-center gap-1.5 tabular-nums">
+        <RefreshCw size={13} strokeWidth={2.4} className="text-accent" />
+        {passDate(status.at)} ·<span className="font-semibold text-accent">{status.charge}</span>
+      </span>
+    );
+  }
+  return (
+    <>
+      {t('starpass.until')} {passDate(status.at)} ·{' '}
+      <span className={`font-semibold ${LEFT_TONE[status.level]}`}>
+        {t('starpass.daysLeft', { count: status.days })}
+      </span>
+    </>
+  );
+}
+
 /** The content that lives inside the living core's dark "well", per flow state. */
 export const CenterReadout = memo(function CenterReadout({
   step,
   phase,
   handle,
   plan,
+  currency,
   endsAt,
+  status,
   serialSeed,
   gift,
   inviteDays,
@@ -73,13 +121,16 @@ export const CenterReadout = memo(function CenterReadout({
   phase: PayPhase;
   handle: string;
   plan: Plan | null;
+  currency: Currency;
   endsAt: number;
+  status: StarStatus | null;
   serialSeed: string;
   gift: boolean;
   inviteDays: number | null;
   seats: { tier: string; used: number; total: number } | null;
 }) {
   const { t } = useTranslation();
+  const price = priceOf(plan, currency);
 
   if (step === 'plan' && seats) {
     return (
@@ -125,10 +176,16 @@ export const CenterReadout = memo(function CenterReadout({
           {passSerial(serialSeed)}
         </div>
         <Caption>
-          {t('starpass.until')} {passDate(endsAt)} ·{' '}
-          <span className="font-semibold text-accent">
-            {t('starpass.daysLeft', { count: daysUntil(endsAt) })}
-          </span>
+          {step === 'manage' && status ? (
+            <StatusCaption status={status} />
+          ) : (
+            <>
+              {t('starpass.until')} {passDate(endsAt)} ·{' '}
+              <span className="font-semibold text-accent">
+                {t('starpass.daysLeft', { count: daysUntil(endsAt) })}
+              </span>
+            </>
+          )}
         </Caption>
       </div>
     );
@@ -138,8 +195,8 @@ export const CenterReadout = memo(function CenterReadout({
     return (
       <div style={SHADOW}>
         <Eyebrow>✦</Eyebrow>
-        <Hero size={48} unit="₽">
-          {plan?.price_rub ?? ''}
+        <Hero size={48} unit={plan ? price.unit : undefined}>
+          {plan ? price.amount : ''}
         </Hero>
         <Caption>
           <span className="inline-flex items-center gap-2">
@@ -174,18 +231,16 @@ export const CenterReadout = memo(function CenterReadout({
   }
 
   // overview / method
-  const amount = plan ? `${plan.price_rub}` : '—';
-  const perMonth = plan ? Math.round(plan.price_rub / plan.months) : 0;
   return (
     <div style={SHADOW}>
       <Eyebrow>✦</Eyebrow>
-      <Hero size={60} unit="₽">
-        {amount}
+      <Hero size={60} unit={price.unit}>
+        {price.amount}
       </Hero>
       <Caption>
         {plan ? (
           <>
-            {t(`starpass.plan.${monthsKey(plan.months)}`)} · {perMonth} ₽/
+            {t(`starpass.plan.${monthsKey(plan.months)}`)} · {price.perMonth}/
             {t('starpass.perMonthShort')}
             {plan.savings_pct > 0 && (
               <span className="font-semibold text-accent"> · −{plan.savings_pct}%</span>

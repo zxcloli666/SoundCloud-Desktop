@@ -1674,7 +1674,11 @@
   "star": {
     "title": "Star Abonelik",
     "active": "Aktif",
+    "relink": "Bağlantı bekleniyor",
     "getIt": "Daha fazla bilgi",
+    "until": "{{date}} tarihine kadar",
+    "in_one": "{{count}} gün sonra",
+    "in_other": "{{count}} gün sonra",
     "modalTitle": "Star",
     "modalSub": "Projeyi destekle — bonuslar kazan",
     "perkGoPlus": "GO+ parçalarına erişim",
@@ -1726,7 +1730,7 @@
     "ignite": "Yıldızını yak",
     "back": "Geri",
     "perMonthShort": "ay",
-    "recurringSub": "otomatik tahsil edilir, istediğin zaman iptal et",
+    "legal": "Ödeme yaparak <offer>satış koşullarını</offer> ve <refund>iade politikasını</refund> kabul edersin.",
     "perk": {
       "goPlus": {
         "title": "GO+ parçalar",
@@ -1820,8 +1824,7 @@
     "planSub": "Süre uzadıkça ay ucuzlar. Tüm sınıflar aynı ayrıcalıkları açar.",
     "toActivation": "Aktivasyona geç",
     "providerTitle": "Aktivasyon yöntemi",
-    "providerSub": "Tek paso — ona birkaç yol. Uygun olanı seç, fiyat değişmez.",
-    "recurring": "Otomatik yenileme (Telegram Stars, aylık)",
+    "howToPay": "Nasıl ödenir",
     "creating": "Sipariş oluşturuluyor…",
     "continueWith": "{{method}} ile devam et",
     "continue": "Devam et",
@@ -1878,7 +1881,7 @@
       "title": "Pasın",
       "sub": "Pasın süresi, otomatik yenileme ve kaynağı.",
       "autoRenew": "Otomatik yenileme",
-      "autoRenewOn": "{{date}} tarihinde tekrar tahsil edeceğiz",
+      "refund": "İade politikası",
       "autoRenewOff": "Kapalı. Erişim ödenen sürenin sonuna kadar.",
       "source": "Kaynak",
       "sourceSub": "Nereden geldiği",
@@ -1897,7 +1900,8 @@
         "community": "Topluluk ödülü",
         "trial": "Ücretsiz deneme",
         "referral": "Arkadaş daveti",
-        "shared": "Duo veya Family planı"
+        "shared": "Duo veya Family planı",
+        "boosty_card": "Bağlı kart veya SBP"
       }
     },
     "discord": {
@@ -1973,6 +1977,37 @@
       "failed": "Kod doğrulanamadı."
     },
     "qrRefreshing": "QR süresi doldu, yenisi oluşturuluyor…",
+    "card": {
+      "title": "Banka kartı",
+      "field": {
+        "number": "Kart numarası",
+        "expiry": "Son kullanma",
+        "cvv": "CVV"
+      },
+      "confirmHint": "Banka penceresinde tamamlayın",
+      "secure": "Doğrudan banka işlemcisine gider, bize değil",
+      "step": {
+        "sending": "Gönderiliyor",
+        "confirm": "Banka onayı",
+        "checking": "Kontrol",
+        "linking": "Bağlanıyor"
+      },
+      "linked": "Kart bağlandı",
+      "cancel": "İptal",
+      "linkOther": "Başka kart bağla",
+      "fail": {
+        "busy": "Şu an başka bir kart bağlanıyor. Bir dakika sonra tekrar deneyin.",
+        "unavailable": "Kartla ödeme şu an kullanılamıyor.",
+        "bundle": "Kartla ödeme için uygulamanın yeni sürümü gerekli.",
+        "declined": "Banka kartı kabul etmedi.",
+        "closed": "Banka onay penceresi kapatıldı.",
+        "timeout": "Banka zamanında yanıt vermedi.",
+        "expired": "Banka onayının süresi doldu. Tekrar deneyin.",
+        "network": "Bağlantı sorunu. Tekrar deneyin.",
+        "inUse": "Bu kart zaten başka bir hesaba bağlı. Başka bir kart bağlayın ya da otomatik yenileme olmadan ödeyin.",
+        "page": "Banka sayfası açılamadı."
+      }
+    },
     "tier": {
       "solo": "Kişisel",
       "duo": "Duo",
@@ -2039,9 +2074,68 @@
         "member_of_plan": "Kendi planınızı almadan önce mevcut plandan ayrılın.",
         "too_many_members": "Önce üyeleri çıkarın: küçük planda daha az yer var.",
         "removal_limit": "Bu yer bu ay iki kez değişti. Sonra deneyin.",
-        "not_a_member": "Bu kişi planda değil."
+        "not_a_member": "Bu kişi planda değil.",
+        "no_card": "Bağlı kart yok. Önce bir kart bağlayın.",
+        "no_sbp": "Bağlı SBP yok. Önce bağlayın."
       },
       "centerSeats": "{{seats}} yerden {{used}} dolu"
+    },
+    "renew": {
+      "title": "Otomatik yenileme",
+      "every_one": "Her {{count}} günde bir otomatik tahsil edilir",
+      "every_other": "Her {{count}} günde bir otomatik tahsil edilir",
+      "refund": "Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz, 6 ayda bir kez",
+      "unavailable": "Bu yöntem veya süre için yok",
+      "everyOther_one": "Her {{count}} günde bir başka bir sağlayıcı üzerinden tahsil edilir: ayrı bir bağlama gerekir",
+      "everyOther_other": "Her {{count}} günde bir başka bir sağlayıcı üzerinden tahsil edilir: ayrı bir bağlama gerekir",
+      "onceNote": "Otomatik yenileme olmadan: tek seferlik ödeme, bağlama yok"
+    },
+    "bind": {
+      "linkPay": "Bağla ve öde",
+      "link": "Bağla",
+      "relink": "Yeniden bağla",
+      "rebind": "Yeniden bağlanmalı",
+      "linkedSub": "Otomatik yenileme için",
+      "keep": "Kalsın",
+      "remove": "Kaldır",
+      "removeError": "Bağ kaldırılamadı",
+      "chargeFailed": "Ödeme geçmedi: bakiye yetersiz ya da abonelik bankada iptal edildi.",
+      "payOnce": "Otomatik yenileme olmadan öde",
+      "card": {
+        "linked": "Kart bağlandı",
+        "removeYes": "Kartı kaldır",
+        "removed": "Kart kaldırıldı",
+        "charging": "Bağlı karttan çekiliyor…"
+      },
+      "card_usd": {
+        "linked": "USD kartı bağlandı",
+        "removeYes": "Kartı kaldır"
+      },
+      "sbp": {
+        "title": "SBP otomatik yenileme",
+        "linked": "SBP bağlandı",
+        "removeYes": "SBP bağını kaldır",
+        "removed": "SBP bağı kaldırıldı",
+        "cancelInBank": "Aboneliği banka uygulamasında da iptal edin: burada kaldırmak orada durdurmaz.",
+        "charging": "Bağlı SBP üzerinden tahsil ediliyor…",
+        "step": {
+          "1": "QR'ı banka uygulamanızla tarayın ve bağlamaya izin verin.",
+          "2": "Bu ekranı açık tutun: ödeme hemen ardından yapılır."
+        },
+        "cameraHelp": "Banka bağlanamıyor mu diyor? QR'ı banka uygulaması yerine telefon kamerasıyla tarayın: SBP sayfası tarayıcıda açılır, bankanızı orada seçin.",
+        "relinkNote": "Banka hesabın Boosty'ye zaten bağlı olduğunu söylerse yine de onaylayın: bağlama gerçekleşir.",
+        "showAgain": "QR'ı yeniden göster",
+        "expired": "QR'ın süresi doldu.",
+        "fail": {
+          "exists": "Bu hesap zaten bağlı. Abonelik daha önce bankada iptal edildiyse yeniden bağlayın.",
+          "qr": "QR gösterilemedi. Yenisini gösterin.",
+          "ambiguous": "Hesabın kime ait olduğu anlaşılamadı: aynı anda başka biri de bağladı. Yeni bir QR tarayın.",
+          "other": "Bağlama gerçekleşmedi. Yeni bir QR deneyin.",
+          "limit": "Çok fazla deneme. Daha sonra tekrar deneyin.",
+          "unavailable": "SBP bağlama şu an kullanılamıyor.",
+          "network": "Bağlantı sorunu. Tekrar deneyin."
+        }
+      }
     }
   },
   "soundwaveLock": {
@@ -2611,6 +2705,16 @@
     "gift": "STAR hediye et",
     "invite": "Davet et",
     "later": "Sonra",
+    "charge": {
+      "off": "Kapat",
+      "keep": "Kalsın"
+    },
+    "os": {
+      "ends_one": "{{count}} gün sonra bitiyor",
+      "ends_other": "{{count}} gün sonra bitiyor",
+      "charge_one": "{{count}} gün sonra {{charge}} tahsil edilecek",
+      "charge_other": "{{count}} gün sonra {{charge}} tahsil edilecek"
+    },
     "expiry": {
       "trial": "STAR deneme",
       "left_one": "{{count}} gün kaldı",

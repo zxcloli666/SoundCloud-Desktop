@@ -3,7 +3,11 @@ import type { ActivationKind } from './providers';
 
 /* Provider glyphs. SBP keeps its real brand violet/blue (the one functional
  * color exception); everything else derives from the accent / neutral ink. */
-export const ProviderGlyph = memo(function ProviderGlyph({ kind }: { kind: ActivationKind }) {
+export const ProviderGlyph = memo(function ProviderGlyph({
+  kind,
+}: {
+  kind: ActivationKind | 'boosty_card';
+}) {
   switch (kind) {
     case 'sbp':
       return (
@@ -26,6 +30,28 @@ export const ProviderGlyph = memo(function ProviderGlyph({ kind }: { kind: Activ
             strokeWidth="1.5"
           />
           <path d="M2.5 9h19" stroke="#fff" strokeOpacity=".8" strokeWidth="1.5" />
+        </svg>
+      );
+    case 'boosty_card':
+      return (
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <rect
+            x="2.5"
+            y="5"
+            width="19"
+            height="14"
+            rx="2.5"
+            stroke="var(--color-accent)"
+            strokeWidth="1.5"
+          />
+          <path d="M2.5 9.5h19" stroke="var(--color-accent)" strokeWidth="1.5" />
+          <path
+            d="M15 15.2a2.2 2.2 0 11-.7-1.6M15.2 12.8v1.7h-1.7"
+            stroke="var(--color-accent)"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       );
     case 'card_intl':

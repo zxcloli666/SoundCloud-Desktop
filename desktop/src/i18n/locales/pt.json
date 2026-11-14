@@ -1668,7 +1668,13 @@
   "star": {
     "title": "Assinatura Star",
     "active": "Ativa",
+    "relink": "Aguardando vínculo",
     "getIt": "Saiba mais",
+    "until": "até {{date}}",
+    "in_one": "em {{count}} dia",
+    "in_other": "em {{count}} dias",
+    "in_many": "em {{count}} dias",
+    "in_zero": "em {{count}} dias",
     "modalTitle": "Star",
     "modalSub": "Apoie o projeto — ganhe vantagens",
     "perkGoPlus": "Acesso a faixas GO+",
@@ -1722,7 +1728,7 @@
     "ignite": "Acenda sua estrela",
     "back": "Voltar",
     "perMonthShort": "mês",
-    "recurringSub": "cobrança automática, cancele quando quiser",
+    "legal": "Ao pagar, você aceita os <offer>termos de venda</offer> e a <refund>política de reembolso</refund>.",
     "perk": {
       "goPlus": {
         "title": "Catálogo completo",
@@ -1809,8 +1815,7 @@
     "planSub": "Prazo maior, mês mais barato.",
     "toActivation": "Ir para ativação",
     "providerTitle": "Forma de pagamento",
-    "providerSub": "Um só preço, você escolhe o caminho.",
-    "recurring": "Renovação automática (Telegram Stars, mensal)",
+    "howToPay": "Como pagar",
     "creating": "Criando pedido…",
     "continueWith": "Continuar com {{method}}",
     "continue": "Continuar",
@@ -1867,7 +1872,7 @@
       "title": "Seu passe",
       "sub": "Prazo, renovação automática e origem.",
       "autoRenew": "Renovação automática",
-      "autoRenewOn": "cobraremos de novo em {{date}}",
+      "refund": "Política de reembolso",
       "autoRenewOff": "Desativada. O acesso vale até o fim do prazo pago.",
       "source": "Origem",
       "sourceSub": "De onde veio",
@@ -1886,7 +1891,8 @@
         "community": "Recompensa da comunidade",
         "trial": "Teste grátis",
         "referral": "Convite de amigo",
-        "shared": "Plano Duo ou Family"
+        "shared": "Plano Duo ou Family",
+        "boosty_card": "Cartão ou SBP vinculado"
       }
     },
     "discord": {
@@ -1968,6 +1974,37 @@
       "failed": "Não foi possível verificar o código."
     },
     "qrRefreshing": "O QR expirou, gerando um novo…",
+    "card": {
+      "title": "Cartão bancário",
+      "field": {
+        "number": "Número do cartão",
+        "expiry": "Validade",
+        "cvv": "CVV"
+      },
+      "confirmHint": "Conclua na janela do banco",
+      "secure": "Vai direto ao processador do banco, não para nós",
+      "step": {
+        "sending": "Enviando",
+        "confirm": "Confirmação do banco",
+        "checking": "Verificando",
+        "linking": "Vinculando"
+      },
+      "linked": "Cartão vinculado",
+      "cancel": "Cancelar",
+      "linkOther": "Vincular outro cartão",
+      "fail": {
+        "busy": "Outro cartão está sendo vinculado. Tente em um minuto.",
+        "unavailable": "O pagamento com cartão não está disponível agora.",
+        "bundle": "O pagamento com cartão exige uma versão mais nova do app.",
+        "declined": "O banco não aceitou o cartão.",
+        "closed": "A janela de confirmação do banco foi fechada.",
+        "timeout": "O banco não respondeu a tempo.",
+        "expired": "A confirmação do banco expirou. Tente de novo.",
+        "network": "Problema de conexão. Tente de novo.",
+        "inUse": "Este cartão já está vinculado a outra conta. Vincule outro cartão ou pague sem renovação automática.",
+        "page": "Não foi possível abrir a página do banco."
+      }
+    },
     "tier": {
       "solo": "Pessoal",
       "duo": "Duo",
@@ -2034,9 +2071,70 @@
         "member_of_plan": "Saia do plano atual antes de comprar o seu.",
         "too_many_members": "Remova membros primeiro: o plano menor tem menos vagas.",
         "removal_limit": "Esta vaga já mudou duas vezes neste mês. Tente depois.",
-        "not_a_member": "Esta pessoa não está no plano."
+        "not_a_member": "Esta pessoa não está no plano.",
+        "no_card": "Nenhum cartão vinculado. Vincule um primeiro.",
+        "no_sbp": "Nenhum SBP vinculado. Vincule primeiro."
       },
       "centerSeats": "{{used}} de {{seats}} vagas ocupadas"
+    },
+    "renew": {
+      "title": "Renovação automática",
+      "every_one": "Cobrança automática a cada {{count}} dia",
+      "every_other": "Cobrança automática a cada {{count}} dias",
+      "every_many": "Cobrança automática a cada {{count}} dias",
+      "every_zero": "Cobrança automática a cada {{count}} dias",
+      "refund": "Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
+      "unavailable": "Indisponível para este método ou prazo",
+      "everyOther_one": "Cobrado a cada {{count}} dia por outro provedor: precisa de vínculo próprio",
+      "everyOther_other": "Cobrado a cada {{count}} dias por outro provedor: precisa de vínculo próprio",
+      "onceNote": "Sem renovação automática: pagamento único, sem vínculo"
+    },
+    "bind": {
+      "linkPay": "Vincular e pagar",
+      "link": "Vincular",
+      "relink": "Vincular de novo",
+      "rebind": "Precisa vincular de novo",
+      "linkedSub": "Usado na renovação automática",
+      "keep": "Manter",
+      "remove": "Remover",
+      "removeError": "Não foi possível desvincular",
+      "chargeFailed": "O pagamento não passou: saldo insuficiente ou a assinatura foi cancelada no banco.",
+      "payOnce": "Pagar sem renovação automática",
+      "card": {
+        "linked": "Cartão vinculado",
+        "removeYes": "Remover cartão",
+        "removed": "Cartão removido",
+        "charging": "Cobrando no cartão vinculado…"
+      },
+      "card_usd": {
+        "linked": "Cartão em USD vinculado",
+        "removeYes": "Remover cartão"
+      },
+      "sbp": {
+        "title": "SBP com renovação automática",
+        "linked": "SBP vinculado",
+        "removeYes": "Desvincular SBP",
+        "removed": "SBP desvinculado",
+        "cancelInBank": "Cancele a assinatura também no app do banco: desvincular aqui não a cancela lá.",
+        "charging": "Cobrando pelo SBP vinculado…",
+        "step": {
+          "1": "Escaneie o QR no app do banco e permita a vinculação.",
+          "2": "Mantenha esta tela aberta: o pagamento vem logo depois."
+        },
+        "cameraHelp": "O banco diz que não dá para vincular? Escaneie o QR com a câmera do celular, não com o app do banco: a página do SBP abre no navegador, escolha o banco lá.",
+        "relinkNote": "Se o banco disser que a conta já está vinculada ao Boosty, confirme mesmo assim: a vinculação funciona.",
+        "showAgain": "Mostrar QR de novo",
+        "expired": "O QR expirou.",
+        "fail": {
+          "exists": "Esta conta já está vinculada. Se a assinatura foi cancelada no banco antes, vincule de novo.",
+          "qr": "Não foi possível mostrar o QR. Mostre um novo.",
+          "ambiguous": "Não deu para saber de quem é a conta: outra pessoa vinculou no mesmo instante. Escaneie um novo QR.",
+          "other": "A vinculação não passou. Tente um novo QR.",
+          "limit": "Tentativas demais. Tente mais tarde.",
+          "unavailable": "A vinculação por SBP não está disponível agora.",
+          "network": "Problema de conexão. Tente de novo."
+        }
+      }
     }
   },
   "soundwaveLock": {
@@ -2671,6 +2769,20 @@
     "gift": "Presentear STAR",
     "invite": "Convidar",
     "later": "Depois",
+    "charge": {
+      "off": "Desativar",
+      "keep": "Manter"
+    },
+    "os": {
+      "ends_one": "Termina em {{count}} dia",
+      "ends_other": "Termina em {{count}} dias",
+      "ends_many": "Termina em {{count}} dias",
+      "ends_zero": "Termina em {{count}} dias",
+      "charge_one": "{{charge}} será cobrado em {{count}} dia",
+      "charge_other": "{{charge}} será cobrado em {{count}} dias",
+      "charge_many": "{{charge}} será cobrado em {{count}} dias",
+      "charge_zero": "{{charge}} será cobrado em {{count}} dias"
+    },
     "expiry": {
       "trial": "Teste do STAR",
       "left_one": "{{count}} dia restante",

@@ -1758,7 +1758,11 @@
   "star": {
     "title": "Star Subscription",
     "active": "Active",
+    "relink": "Waiting for a link",
     "getIt": "Learn more",
+    "until": "until {{date}}",
+    "in_one": "in {{count}} day",
+    "in_other": "in {{count}} days",
     "modalTitle": "Star",
     "modalSub": "Support the project — get perks",
     "perkGoPlus": "Access to GO+ tracks",
@@ -1810,7 +1814,7 @@
     "ignite": "Ignite your star",
     "back": "Back",
     "perMonthShort": "mo",
-    "recurringSub": "charged automatically, cancel anytime",
+    "legal": "By paying you accept the <offer>terms of sale</offer> and the <refund>refund policy</refund>.",
     "perk": {
       "goPlus": {
         "title": "Full catalog",
@@ -1897,8 +1901,7 @@
     "planSub": "Longer term, cheaper month.",
     "toActivation": "To activation",
     "providerTitle": "Payment method",
-    "providerSub": "One price — your choice of route.",
-    "recurring": "Auto-renew (Telegram Stars, monthly)",
+    "howToPay": "How to pay",
     "creating": "Creating order…",
     "continueWith": "Continue with {{method}}",
     "continue": "Continue",
@@ -1955,7 +1958,7 @@
       "title": "Your pass",
       "sub": "Term, auto-renew and source.",
       "autoRenew": "Auto-renew",
-      "autoRenewOn": "we'll charge again on {{date}}",
+      "refund": "Refund policy",
       "autoRenewOff": "Off. Access lasts to the end of the paid term.",
       "source": "Source",
       "sourceSub": "Where it came from",
@@ -1974,7 +1977,8 @@
         "community": "Community reward",
         "trial": "Free trial",
         "referral": "Friend invite",
-        "shared": "Duo or Family plan"
+        "shared": "Duo or Family plan",
+        "boosty_card": "Linked card or SBP"
       }
     },
     "discord": {
@@ -2050,6 +2054,37 @@
       "failed": "Couldn't check the code."
     },
     "qrRefreshing": "QR expired, making a new one…",
+    "card": {
+      "title": "Bank card",
+      "field": {
+        "number": "Card number",
+        "expiry": "Expires",
+        "cvv": "CVV"
+      },
+      "confirmHint": "Finish in the bank window",
+      "secure": "Sent straight to the bank processor, not to us",
+      "step": {
+        "sending": "Sending",
+        "confirm": "Bank confirm",
+        "checking": "Checking",
+        "linking": "Linking"
+      },
+      "linked": "Card linked",
+      "cancel": "Cancel",
+      "linkOther": "Link another card",
+      "fail": {
+        "busy": "Another card is being linked. Try again in a minute.",
+        "unavailable": "Card payment isn't available right now.",
+        "bundle": "Card payment needs a newer app version.",
+        "declined": "The bank didn't accept the card.",
+        "closed": "Bank confirmation was closed.",
+        "timeout": "The bank didn't answer in time.",
+        "expired": "Bank confirmation timed out. Try again.",
+        "network": "Connection problem. Try again.",
+        "inUse": "This card is already linked to another account. Link a different card or pay without auto-renew.",
+        "page": "Couldn't open the bank page."
+      }
+    },
     "tier": {
       "solo": "Personal",
       "duo": "Duo",
@@ -2116,9 +2151,68 @@
         "member_of_plan": "Leave your current plan before buying your own.",
         "too_many_members": "Remove members first: the smaller plan has fewer seats.",
         "removal_limit": "This seat was changed twice this month. Try later.",
-        "not_a_member": "This person is not in the plan."
+        "not_a_member": "This person is not in the plan.",
+        "no_card": "No linked card. Link one first.",
+        "no_sbp": "No linked SBP. Link it first."
       },
       "centerSeats": "{{used}} of {{seats}} seats taken"
+    },
+    "renew": {
+      "title": "Auto-renew",
+      "every_one": "Charged automatically every {{count}} day",
+      "every_other": "Charged automatically every {{count}} days",
+      "refund": "Forgot to turn it off? Email us within 7 days for a full refund, once every 6 months",
+      "unavailable": "Not for this method or term",
+      "everyOther_one": "Charged every {{count}} day through another provider: it needs its own link",
+      "everyOther_other": "Charged every {{count}} days through another provider: it needs its own link",
+      "onceNote": "Without auto-renew: a one-off payment, no link"
+    },
+    "bind": {
+      "linkPay": "Link & pay",
+      "link": "Link",
+      "relink": "Link again",
+      "rebind": "Needs linking again",
+      "linkedSub": "Used for auto-renew",
+      "keep": "Keep",
+      "remove": "Remove",
+      "removeError": "Couldn't unlink",
+      "chargeFailed": "The payment didn't go through: not enough money, or the subscription was cancelled in the bank.",
+      "payOnce": "Pay without auto-renew",
+      "card": {
+        "linked": "Card linked",
+        "removeYes": "Remove card",
+        "removed": "Card removed",
+        "charging": "Charging the linked card…"
+      },
+      "card_usd": {
+        "linked": "USD card linked",
+        "removeYes": "Remove card"
+      },
+      "sbp": {
+        "title": "SBP auto-renew",
+        "linked": "SBP linked",
+        "removeYes": "Unlink SBP",
+        "removed": "SBP unlinked",
+        "cancelInBank": "Also cancel the subscription in your bank app: unlinking here doesn't stop it there.",
+        "charging": "Charging through linked SBP…",
+        "step": {
+          "1": "Scan the QR in your bank app and allow the link.",
+          "2": "Keep this screen open: payment goes right after."
+        },
+        "cameraHelp": "Bank says it can't link? Scan the QR with the phone camera instead of the bank app: the SBP page opens in the browser, pick your bank there.",
+        "relinkNote": "If the bank says the account is already linked to Boosty, confirm anyway: the link goes through.",
+        "showAgain": "Show QR again",
+        "expired": "The QR expired.",
+        "fail": {
+          "exists": "This account is already linked. If the subscription was cancelled in the bank earlier, link it again.",
+          "qr": "Couldn't show the QR. Show a new one.",
+          "ambiguous": "Couldn't tell whose account this is: someone else linked at the same moment. Scan a new QR.",
+          "other": "The link didn't go through. Try a new QR.",
+          "limit": "Too many tries. Try again later.",
+          "unavailable": "SBP linking isn't available right now.",
+          "network": "Connection problem. Try again."
+        }
+      }
     }
   },
   "soundwaveLock": {
@@ -2712,6 +2806,16 @@
     "gift": "Gift STAR",
     "invite": "Invite",
     "later": "Later",
+    "charge": {
+      "off": "Turn off",
+      "keep": "Keep"
+    },
+    "os": {
+      "ends_one": "Ends in {{count}} day",
+      "ends_other": "Ends in {{count}} days",
+      "charge_one": "{{charge}} will be charged in {{count}} day",
+      "charge_other": "{{charge}} will be charged in {{count}} days"
+    },
     "expiry": {
       "trial": "STAR trial",
       "left_one": "{{count}} day left",

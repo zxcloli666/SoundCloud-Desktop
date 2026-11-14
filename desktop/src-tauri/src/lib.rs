@@ -1,6 +1,7 @@
 mod app;
 mod audio;
 mod auth;
+mod boosty_card;
 mod chat;
 mod diag;
 mod discord;
@@ -229,6 +230,11 @@ pub fn run() {
 
             chat::start(app.handle(), rt_handle.clone(), &data_dir);
 
+            app.manage(Arc::new(boosty_card::BoostyCard::new(
+                &data_dir,
+                rt_handle.clone(),
+            )));
+
             let call_state = network::call::CallState::init(data_dir.clone(), rt_handle);
             network::call::manage_state(app.handle(), call_state.clone());
             network::call::maybe_autostart(app.handle(), call_state);
@@ -236,6 +242,8 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| match event {
+            tauri::WindowEvent::CloseRequested { .. }
+                if window.label() == boosty_card::three_ds::LABEL => {}
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 if window.label() == "main" && app::close_action::quits_on_close() {
                     app::tray::run_action(window.app_handle(), "quit");
@@ -273,6 +281,12 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
+            boosty_card::commands::boosty_card_supported,
+            boosty_card::commands::boosty_card_open,
+            boosty_card::commands::boosty_card_submit,
+            boosty_card::commands::boosty_card_page,
+            boosty_card::commands::boosty_card_abort,
+            boosty_card::commands::boosty_card_close,
             app::diagnostics::diagnostics_log,
             app::diagnostics::diagnostics_log_dir,
             app::diagnostics::diagnostics_open_log_dir,
