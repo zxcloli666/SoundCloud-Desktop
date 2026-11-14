@@ -74,7 +74,6 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="voice-hero"]` | Top block of Settings > Voice |
 | `[data-ui="voice-locked"]` | Voice block without STAR |
 | `[data-ui="voice-device"]` | A microphone tile, with `data-on` |
-| `[data-ui="voice-teach"]` | Wake word training panel |
 | `[data-ui="voice-speaker"]` | Alice or Salut tile |
 | `[data-ui="voice-link-code"]` | Link code panel |
 | `[data-ui="voice-credits"]` | Licenses list in Settings > Voice |
