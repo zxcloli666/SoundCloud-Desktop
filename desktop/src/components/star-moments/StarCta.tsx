@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Star } from '../../lib/icons';
-import { type StarIntent, TRIAL_DAYS, useOpenStar, useStarOffer } from '../../lib/star-offer';
+import { type StarIntent, useOpenStar, useStarOffer } from '../../lib/star-offer';
 
 const LABEL: Record<StarIntent, string> = {
   trial: 'starMoments.tryFree',
@@ -22,10 +22,10 @@ export const StarCta = memo(function StarCta({
   size?: 'sm' | 'md';
 }) {
   const { t } = useTranslation();
-  const { trial } = useStarOffer();
+  const { trial, trialDays } = useStarOffer();
   const openStar = useOpenStar();
   const wanted = intent ?? (trial ? 'trial' : 'buy');
-  const label = t(LABEL[wanted], { count: TRIAL_DAYS });
+  const label = t(LABEL[wanted], { count: trialDays });
 
   return (
     <button

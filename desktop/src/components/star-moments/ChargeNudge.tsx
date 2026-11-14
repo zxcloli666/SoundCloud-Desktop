@@ -14,6 +14,7 @@ export interface ChargeMoment {
   at: number;
   days: number;
   charge: string;
+  trial: boolean;
 }
 
 export function useChargeMoment(): ChargeMoment | null {
@@ -24,7 +25,13 @@ export function useChargeMoment(): ChargeMoment | null {
 
   const key = `charge:${status.at}:${status.days <= 1 ? 1 : URGENT_DAYS}`;
   if (seen.includes(key)) return null;
-  return { key, at: status.at, days: status.days, charge: status.charge };
+  return {
+    key,
+    at: status.at,
+    days: status.days,
+    charge: status.charge,
+    trial: status.trialUntil !== null,
+  };
 }
 
 export const ChargeNudge = memo(function ChargeNudge({ moment }: { moment: ChargeMoment }) {
@@ -50,7 +57,7 @@ export const ChargeNudge = memo(function ChargeNudge({ moment }: { moment: Charg
         </span>
         <div className="min-w-0">
           <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-45">
-            {t('starpass.manage.autoRenew')}
+            {t(moment.trial ? 'starpass.trial.title' : 'starpass.manage.autoRenew')}
           </div>
           <div className="mt-0.5 text-[20px] font-bold leading-tight tracking-tight tabular-nums text-ink">
             {moment.charge}

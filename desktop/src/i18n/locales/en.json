@@ -2023,10 +2023,21 @@
     "trial": {
       "cta_one": "{{count}} day free",
       "cta_other": "{{count}} days free",
-      "starting": "Starting…",
-      "error": {
-        "trial_used": "This account or computer already had a STAR trial.",
-        "not_eligible": "The trial is for accounts that never had STAR.",
+      "title": "Free trial",
+      "terms_one": "{{count}} day free, then {{amount}} a month from this method. Cancel any time before the charge.",
+      "terms_other": "{{count}} days free, then {{amount}} a month from this method. Cancel any time before the charge.",
+      "then": "then {{amount}} a month",
+      "until": "Trial until {{date}}",
+      "cancel": "Cancel trial",
+      "cancelConfirm": "STAR ends right away and nothing is charged. The trial can't be taken again.",
+      "canceled": "Trial cancelled",
+      "cancelError": "Couldn't cancel the trial",
+      "refused": {
+        "used": "This account already had a trial.",
+        "has_star": "You already have STAR.",
+        "device_used": "This computer already had a trial.",
+        "card_used": "This payment method already had a trial. It stays linked: you can get STAR with it.",
+        "no_methods": "No payment method can start a trial right now.",
         "failed": "Couldn't start the trial. Try again later."
       }
     },

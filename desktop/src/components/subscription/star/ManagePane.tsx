@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 import { linkedBinds } from '../../../lib/boosty-bind-state';
@@ -20,6 +20,7 @@ import { MemberCard } from './MemberCard';
 import { primaryEntitlement } from './meta';
 import { GhostBtn } from './StarConsole';
 import { TenurePanel } from './TenurePanel';
+import { TrialRow } from './TrialRow';
 
 /** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem / gift / invite. */
 export const ManagePane = memo(function ManagePane({
@@ -29,6 +30,7 @@ export const ManagePane = memo(function ManagePane({
   onInvite,
   onPlan,
   onRelink,
+  onTrialEnded,
 }: {
   onExtend: () => void;
   onRedeem: () => void;
@@ -36,6 +38,7 @@ export const ManagePane = memo(function ManagePane({
   onInvite: () => void;
   onPlan: () => void;
   onRelink: (method: BoostyMethod) => void;
+  onTrialEnded: () => void;
 }) {
   const { t } = useTranslation();
   const { data, isLoading } = usePaySubscription();
@@ -51,6 +54,8 @@ export const ManagePane = memo(function ManagePane({
   const linked = linkedBinds(useBinds().data);
   const cardSupported = useCardSupported();
   const removeBind = useRemoveBind();
+  const trial = data?.trial?.active ?? null;
+  const [askTrial, setAskTrial] = useState(false);
 
   const cancel = useMutation({
     mutationFn: () => payApi.cancel(renewSource ?? ''),
@@ -98,6 +103,16 @@ export const ManagePane = memo(function ManagePane({
       <TenurePanel />
       <DiscordCard discord={data?.discord ?? null} />
 
+      {trial && (
+        <TrialRow
+          until={trial.ends_at}
+          asking={askTrial}
+          onAsk={() => setAskTrial(true)}
+          onKeep={() => setAskTrial(false)}
+          onEnded={onTrialEnded}
+        />
+      )}
+
       {linked.map(({ method, rebind }) => (
         <LinkedBind
           key={method}
@@ -139,7 +154,10 @@ export const ManagePane = memo(function ManagePane({
           role="switch"
           aria-checked={autoRenew}
           disabled={!autoRenew || cancel.isPending || isLoading}
-          onClick={() => autoRenew && !cancel.isPending && cancel.mutate()}
+          onClick={() => {
+            if (trial) setAskTrial(true);
+            else if (autoRenew && !cancel.isPending) cancel.mutate();
+          }}
           className="relative h-6 w-11 shrink-0 cursor-pointer rounded-full border border-ink/[0.12] transition-all duration-300 disabled:cursor-default"
           style={{
             background: autoRenew

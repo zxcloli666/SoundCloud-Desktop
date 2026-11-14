@@ -7,6 +7,7 @@ import { useStarMoments } from '../../stores/star-moments';
 function reminderKey(status: StarStatus | null): string | null {
   if (!status || status.kind === 'open' || status.kind === 'relink') return null;
   if (status.days < 1 || status.days > URGENT_DAYS) return null;
+  if (status.kind === 'renews' && !status.soon) return null;
   const step = status.days <= 1 ? 1 : URGENT_DAYS;
   return `os:${status.kind}:${status.at}:${step}`;
 }

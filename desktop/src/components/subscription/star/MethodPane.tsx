@@ -2,9 +2,9 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from '../../../lib/icons';
 import type { BoostyMethod } from '../../../lib/pay-client';
-import { ProviderGlyph } from '../ProviderGlyph';
 import type { ActivationOption } from '../providers';
 import { LinkedBind } from './LinkedBind';
+import { MethodTiles } from './MethodTiles';
 import { LinkBtn, PrimaryBtn, Ttl } from './StarConsole';
 
 export interface RenewSwitch {
@@ -52,38 +52,14 @@ export const MethodPane = memo(function MethodPane({
   return (
     <div>
       <Ttl>{t('starpass.howToPay')}</Ttl>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-        {options.map((opt) => {
-          const on = opt.kind === selected?.kind;
-          return (
-            <button
-              key={opt.kind}
-              type="button"
-              onClick={() => onSelect(opt)}
-              className="cursor-pointer rounded-[13px] border p-3 text-left transition-all duration-200 ease-[var(--ease-apple)] hover:-translate-y-0.5"
-              style={{
-                borderColor: on
-                  ? 'color-mix(in srgb, var(--color-accent) 60%, transparent)'
-                  : 'rgb(var(--ink) / 0.10)',
-                background: 'rgb(var(--ink) / 0.025)',
-                boxShadow: on
-                  ? '0 0 24px -8px var(--color-accent-glow), inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 35%, transparent)'
-                  : undefined,
-              }}
-            >
-              <span className="mb-2.5 grid size-[30px] place-items-center rounded-[9px] border border-ink/[0.08] bg-ink/[0.04]">
-                <ProviderGlyph kind={opt.kind} />
-              </span>
-              <div className="text-[12.5px] font-semibold text-ink-90">
-                {t(`starpass.method.${opt.i18n}.title`)}
-              </div>
-              <div className="mt-0.5 font-mono text-[9px] tracking-[0.06em] text-ink-40">
-                {opt.tag}
-              </div>
-            </button>
-          );
-        })}
-      </div>
+      <MethodTiles
+        tiles={options}
+        selected={selected?.kind ?? null}
+        onSelect={(kind) => {
+          const opt = options.find((o) => o.kind === kind);
+          if (opt) onSelect(opt);
+        }}
+      />
 
       {selected && <RenewToggle renew={renew} onRenew={onRenew} />}
 

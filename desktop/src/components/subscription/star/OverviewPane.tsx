@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { ArrowRight, Gift, RefreshCw } from '../../../lib/icons';
 import type { Plan, SharedPreview, TierId } from '../../../lib/pay-client';
 import { passDate } from '../../../lib/star-format';
-import { TRIAL_DAYS } from '../../../lib/star-offer';
 import { monthsKey, type Recipient } from './meta';
 import { PerkGrid } from './PerkGrid';
 import { RecipientSwitch } from './RecipientSwitch';
@@ -23,8 +22,7 @@ export const OverviewPane = memo(function OverviewPane({
   onRedeem,
   recipient,
   onRecipient,
-  trial,
-  trialPending,
+  trialDays,
   onTrial,
   refCode,
   onRefCode,
@@ -46,8 +44,7 @@ export const OverviewPane = memo(function OverviewPane({
   onRedeem: () => void;
   recipient: Recipient;
   onRecipient: (next: Recipient) => void;
-  trial: boolean;
-  trialPending: boolean;
+  trialDays: number | null;
   onTrial: () => void;
   refCode: RefBonus;
   onRefCode: (next: RefBonus) => void;
@@ -149,12 +146,8 @@ export const OverviewPane = memo(function OverviewPane({
           {gift ? t('starpass.gift.ignite') : t('starpass.ignite')}
           <ArrowRight size={16} />
         </PrimaryBtn>
-        {trial && !gift && !shared && (
-          <GhostBtn onClick={onTrial}>
-            {trialPending
-              ? t('starpass.trial.starting')
-              : t('starpass.trial.cta', { count: TRIAL_DAYS })}
-          </GhostBtn>
+        {trialDays !== null && !gift && !shared && (
+          <GhostBtn onClick={onTrial}>{t('starpass.trial.cta', { count: trialDays })}</GhostBtn>
         )}
         <LinkBtn onClick={onRedeem}>{t('starpass.haveCode')}</LinkBtn>
       </div>
