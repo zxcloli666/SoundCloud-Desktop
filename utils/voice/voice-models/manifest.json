@@ -210,54 +210,54 @@
     },
     {
       "id": "qwen-engine-macos-aarch64",
-      "version": "1",
+      "version": "2",
       "kind": "engine",
       "language": "any",
       "license": "MIT",
-      "unpacked_size": 7503816,
+      "unpacked_size": 7503864,
       "platform": "macos-aarch64",
       "requires": [],
       "files": [
         {
           "path": "scd-qwen",
-          "size": 7503816,
-          "sha256": "e69044e3da43918e210fdc08247bb16416c170a652f951a63a257ca1dba9825c",
+          "size": 7503864,
+          "sha256": "e31932508d0aa3facda7e2a40eb748b7a0846aa80deffc062cef0de663c5546b",
           "executable": true
         }
       ]
     },
     {
       "id": "qwen-engine-macos-x86_64",
-      "version": "1",
+      "version": "2",
       "kind": "engine",
       "language": "any",
       "license": "MIT",
-      "unpacked_size": 2527048,
+      "unpacked_size": 2527080,
       "platform": "macos-x86_64",
       "requires": [],
       "files": [
         {
           "path": "scd-qwen",
-          "size": 2527048,
-          "sha256": "6786308bb2e2d245ebe78d33d655df44e50d516105de613b605f5dafe6cf6cdd",
+          "size": 2527080,
+          "sha256": "d2b70f95ce185ffa80a401bbd974b2b3f55eafc9cda8042abf7b8e8ab0123530",
           "executable": true
         }
       ]
     },
     {
       "id": "qwen-engine-linux-x86_64",
-      "version": "1",
+      "version": "3",
       "kind": "engine",
       "language": "any",
       "license": "MIT",
-      "unpacked_size": 53013872,
+      "unpacked_size": 53013960,
       "platform": "linux-x86_64",
       "requires": [],
       "files": [
         {
           "path": "scd-qwen",
-          "size": 407936,
-          "sha256": "fa4fdae5344685bfa0eabcc2f29819240209481ed015dea68659dbbbcc60adb7",
+          "size": 408024,
+          "sha256": "4b6fb96d4556c3abc4d9588f58e9be365a65ad594977bbfb5915a2eb5398170b",
           "executable": true
         },
         {
@@ -349,97 +349,97 @@
     },
     {
       "id": "qwen-engine-linux-aarch64",
-      "version": "1",
+      "version": "2",
       "kind": "engine",
       "language": "any",
       "license": "MIT",
-      "unpacked_size": 1987056,
+      "unpacked_size": 1991296,
       "platform": "linux-aarch64",
       "requires": [],
       "files": [
         {
           "path": "scd-qwen",
-          "size": 1987056,
-          "sha256": "166486213ea92c3c5f0f830ad0d4b7c73310088d89d9630ea890a5a85665419c",
+          "size": 1991296,
+          "sha256": "6ee9298127540123bfe5fb7f398328963b020795f28ea82b00ddb25c00d19162",
           "executable": true
         }
       ]
     },
     {
       "id": "qwen-engine-windows-x86_64",
-      "version": "1",
+      "version": "2",
       "kind": "engine",
       "language": "any",
       "license": "MIT",
-      "unpacked_size": 51457840,
+      "unpacked_size": 51458352,
       "platform": "windows-x86_64",
       "requires": [],
       "files": [
         {
           "path": "scd-qwen.exe",
-          "size": 315904,
-          "sha256": "d01610a1a87070fb2f684d7d1e14a710424d8412c929da866ba053819210bb09",
+          "size": 316416,
+          "sha256": "ead2edd4c786eaee37f84ade09a00337ad0d7017e608d0fdb8aeb83100381e02",
           "executable": true
         },
         {
           "path": "ggml-base.dll",
           "size": 714752,
-          "sha256": "5d40aca215bd882cb4d7b43fb311457f692ddba4849afa55e17569590aba8408"
+          "sha256": "5800f7a7467a612e1eaa9444591727ffcf5766ed951e95ec9710fb5311fc9a14"
         },
         {
           "path": "ggml-cpu-alderlake.dll",
           "size": 999424,
-          "sha256": "6454e446723a5f24a62ba1abb90faf00d8a41a9354dfbee3ae45739abb933759"
+          "sha256": "128f303916e9b12391e2811da4e55ae3b754e3cd93c075db3952fbb8bdeb6e28"
         },
         {
           "path": "ggml-cpu-cannonlake.dll",
           "size": 1041408,
-          "sha256": "1a9d8642507df796ef8c42bd8c9e7f359dbf9b8d8b3b996d9780ed900090c73a"
+          "sha256": "dd1a6525c0f63d607f39f69b75eeea50d0f36c0999eeef6e67d19e809ea98fbe"
         },
         {
           "path": "ggml-cpu-cascadelake.dll",
           "size": 1055232,
-          "sha256": "f6adee60bec05675a8a30ebf28dee8daf356ac15e970cdefd20608cac8d97e55"
+          "sha256": "cab1b6cbd6b7e5f4009e871a5064aab303555fd6dda79492ae0600464f92c9b0"
         },
         {
           "path": "ggml-cpu-haswell.dll",
           "size": 1000960,
-          "sha256": "e644dc5ba4330922a31161aff68d5267388f90672da375a96fe2b78626cbe3b2"
+          "sha256": "a7e0e4f7234cb4b7fe0aa2c99e47718213531f603203788c4cdab6d710f2fa4f"
         },
         {
           "path": "ggml-cpu-icelake.dll",
           "size": 1055232,
-          "sha256": "85673f9fc1abc41f9f40e87fa623ae2b61eb23f5d0be3f9587c5b629e2032e57"
+          "sha256": "73989eb5ebdda18b510f616d4fd221b725859fce27012319677eceef5c38da05"
         },
         {
           "path": "ggml-cpu-sandybridge.dll",
           "size": 1048064,
-          "sha256": "6efbffdf6d350eb4be08494657a994cce6428c0897430ff13d70293337557ad5"
+          "sha256": "d897a1885c8c8410ab23a1c3be6fc996ef7a93755111b954783f530720eb0d23"
         },
         {
           "path": "ggml-cpu-skylakex.dll",
           "size": 1041408,
-          "sha256": "bbe3747e28fcf4ab65446b107d78dec2fb9e49defb65698e112f30f57dc05dab"
+          "sha256": "1f91ee18d708f29e85afc2d1aff1de93b2e6f193497f087cd60e7126aa2fad9c"
         },
         {
           "path": "ggml-cpu-sse42.dll",
           "size": 883712,
-          "sha256": "75032feb9177d6d92c2cc0faf776e969b9653ffb1e6bdce61ba744e67c288fee"
+          "sha256": "54c42da8f5f88c3adfbaaed2fc3c3b2be2f1b7f595760be79ec9d139f6ed9be6"
         },
         {
           "path": "ggml-cpu-x64.dll",
           "size": 887296,
-          "sha256": "7513b2e55e9602deb0eb61351cb0885818b1bb4f7093b653b7ab3ff3361938cf"
+          "sha256": "c046da9a6e67f99723cba9ab3d4ea584e7464bfeecefa025a743dfa67d5ec5ce"
         },
         {
           "path": "ggml-vulkan.dll",
           "size": 40480256,
-          "sha256": "6d39650648a71deb11512ec0b73d78190e212bc40379ed25535f0ef61471b2e6"
+          "sha256": "0b300e284aa3523be62a12c273c3aa38ac829e9b9336bd8345ad3d60d1bae4bb"
         },
         {
           "path": "ggml.dll",
           "size": 61952,
-          "sha256": "3ad575f0af5be07a082a7dcf7c3706e2f324123d51c73f0ac9098af59a7b506c"
+          "sha256": "32ca6a1955936e85639b03bfddc19e67780a466c33d7692349110e2533738c20"
         },
         {
           "path": "msvcp140.dll",
