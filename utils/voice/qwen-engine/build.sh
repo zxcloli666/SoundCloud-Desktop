@@ -17,6 +17,9 @@ if [ "$(git -C "$src" rev-parse -q --verify HEAD || true)" != "$commit" ]; then
     git -C "$src" checkout -q FETCH_HEAD
     git -C "$src" submodule update -q --init --depth 1
 fi
+if ! git -C "$src" apply --reverse --check "$here/threads.patch" 2>/dev/null; then
+    git -C "$src" apply "$here/threads.patch"
+fi
 
 cmake -S "$src" -B "$build" \
     -DCMAKE_BUILD_TYPE=Release \

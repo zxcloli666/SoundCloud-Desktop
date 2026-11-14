@@ -1,0 +1,14 @@
+--- a/src/backend.h
++++ b/src/backend.h
+@@ -28,6 +28,11 @@
+ // Used for GGML CPU thread count: GEMM shares SIMD units across hyperthreads,
+ // so one thread per physical core is optimal.
+ static int backend_cpu_n_threads(void) {
++    const char * asked = std::getenv("SCD_QWEN_THREADS");
++    int          fixed = asked ? std::atoi(asked) : 0;
++    if (fixed > 0) {
++        return fixed;
++    }
+     int n = (int) std::thread::hardware_concurrency() / 2;
+     return n > 0 ? n : 1;
+ }
