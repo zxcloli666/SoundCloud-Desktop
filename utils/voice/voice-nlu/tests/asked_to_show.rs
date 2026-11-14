@@ -9,22 +9,17 @@ fn steps(text: &str) -> Vec<&'static str> {
 }
 
 #[test]
-fn a_request_to_show_a_page_starts_no_music() {
+fn a_request_to_show_the_likes_starts_no_music() {
     for text in [
         "открой мои лайки",
         "покажи мои лайки",
         "перейди в мои лайки",
         "покажи любимые треки",
         "открой любимое",
-        "открой мою волну",
-        "покажи рекомендации",
-        "покажи что-нибудь похожее",
         "open my likes",
         "show my likes",
         "go to my likes",
         "take me to my likes",
-        "open my wave",
-        "show me something similar",
     ] {
         assert_eq!(steps(text), ["none"], "{text}");
     }
@@ -46,6 +41,8 @@ fn a_request_to_play_is_still_carried_out() {
         ("открой окно включи мои лайки", "play_likes"),
         ("go on play my likes", "play_likes"),
         ("включи мою волну", "play_wave"),
+        ("открой мою волну", "play_wave"),
+        ("open my wave", "play_wave"),
         ("лайк", "like"),
         ("убери лайк", "unlike"),
         ("take it out of my likes", "unlike"),

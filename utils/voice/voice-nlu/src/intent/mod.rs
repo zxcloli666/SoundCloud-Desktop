@@ -66,10 +66,10 @@ pub fn detect(toks: &[Tok]) -> Detected {
     if let Some(d) = library::into_likes(&c) {
         return d;
     }
+    if let Some(d) = play::content(&c) {
+        return d;
+    }
     if !play::asks_to_look(&c) {
-        if let Some(d) = play::content(&c) {
-            return d;
-        }
         if let Some(d) = library::like(&c) {
             return d;
         }

@@ -162,6 +162,7 @@ pub fn content(c: &Ctx) -> Option<Detected> {
         .is_some_and(|not| likes_word.or(plural) > Some(not));
     if !saving
         && !refused
+        && !asks_to_look(c)
         && (likes_word.is_some()
             || mine_things
             || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк"))

@@ -282,7 +282,11 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
             if head_only && asks_to_talk(head, window) {
                 continue;
             }
-            if shown && (head_only || matches!(det.intent, Intent::Like | Intent::Unlike)) {
+            let of_likes = matches!(
+                det.intent,
+                Intent::PlayLikes | Intent::Like | Intent::Unlike
+            );
+            if shown && of_likes {
                 continue;
             }
             if (allowed(det.intent) || head_only) && !det.blocked {
