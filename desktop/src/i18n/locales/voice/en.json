@@ -136,6 +136,10 @@
       "duckLabel": "Music level",
       "replies": "Reply by voice"
     },
+    "speak": {
+      "server": "Voice from our servers",
+      "serverDesc": "For a weak computer: the voice model is not downloaded, a reply may wait in a queue"
+    },
     "chat": {
       "title": "Conversation",
       "toggle": "Talk with the character",

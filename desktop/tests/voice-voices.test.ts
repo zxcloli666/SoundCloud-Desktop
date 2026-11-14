@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { DEFAULT_VOICE, knownVoice, VOICE_IDS } from '../src/lib/voice/voice-ids.ts';
+import {
+  DEFAULT_VOICE,
+  hasServerVoice,
+  knownVoice,
+  VOICE_IDS,
+} from '../src/lib/voice/voice-ids.ts';
 
 const LANGUAGES = ['en', 'ru', 'tr', 'ko', 'pt'];
 
@@ -25,4 +30,9 @@ test('every voice has a name in all five languages and no stale ids are left', (
     assert.deepEqual(Object.keys(voices).sort(), [...VOICE_IDS].sort(), lang);
     for (const id of VOICE_IDS) assert.ok(voices[id].name, `${lang}: ${id}`);
   }
+});
+
+test('only the voices the engine can send to our servers offer the server voice', () => {
+  assert.deepEqual(VOICE_IDS.filter(hasServerVoice), ['loli', 'moriarty']);
+  assert.equal(hasServerVoice('robot'), true);
 });

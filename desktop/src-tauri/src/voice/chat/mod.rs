@@ -15,20 +15,19 @@ use tokio::sync::oneshot;
 use voice_chat::ChatEvent;
 use voice_engine::{Chat, Command};
 
-use self::stream::Patience;
 use super::Voice;
+use super::api::{self, Patience, Request};
 use crate::app::diagnostics;
 use crate::diag::trace;
-use crate::network::{edge, fetch};
 use crate::rt::AppHandle;
 
-const BASES: [&str; 2] = ["api-star", "api"];
+const PATH: &str = "/voice/chat";
 const PATIENCE: Patience = Patience {
     answer: Duration::from_secs(30),
     hop: Duration::from_secs(8),
     pro_hop: Duration::from_secs(20),
-    silence: Duration::from_secs(40),
 };
+const SILENCE: Duration = Duration::from_secs(40);
 const CANCELLED_KEPT: usize = 32;
 
 #[derive(Deserialize)]
@@ -38,7 +37,7 @@ pub struct Turn {
     body: Value,
 }
 
-#[derive(Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Refused {
     pub code: &'static str,
 }
@@ -111,12 +110,10 @@ async fn ask(
     cancelled: oneshot::Receiver<()>,
     pass: &(dyn Fn(ChatEvent) + Sync),
 ) -> Result<(), Refused> {
-    let token = crate::auth::session_token(Some(app))
+    let request = Request::post(app, PATH, stream::EVENT_STREAM, body, PATIENCE)
         .await
-        .ok_or(Refused::SESSION)?;
-    let client = fetch::client().ok_or(Refused::NETWORK)?;
-    let urls = BASES.map(|base| format!("https://{}/voice/chat", edge::plain_host(base)));
-    stream::exchange(client, &urls, &token, body, PATIENCE, cancelled, pass).await
+        .map_err(|code| Refused { code })?;
+    stream::exchange(&request, SILENCE, cancelled, pass).await
 }
 
 fn spoken(event: &ChatEvent) -> Option<Chat> {
@@ -129,8 +126,7 @@ fn spoken(event: &ChatEvent) -> Option<Chat> {
 }
 
 impl Refused {
-    pub const SESSION: Refused = Refused { code: "session" };
-    pub const NETWORK: Refused = Refused { code: "network" };
+    pub const NETWORK: Refused = Refused { code: api::NETWORK };
 }
 
 impl Rounds {

@@ -1,3 +1,4 @@
+mod api;
 mod catalog;
 mod chat;
 pub mod commands;
@@ -8,6 +9,7 @@ mod models;
 mod output;
 mod previews;
 mod resolve;
+mod server;
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -54,7 +56,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         store: store.clone(),
         catalog: Arc::new(catalog::ResolveCatalog {
             app: app.clone(),
-            rt,
+            rt: rt.clone(),
         }),
         output: Box::new(output::MasterOutput::new(
             audio.master.clone(),
@@ -65,6 +67,10 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         timing: Timing::default(),
         phrases: cache_dir.join(PHRASES_DIR),
         voice: None,
+        server: Some(Arc::new(server::ApiServer {
+            app: app.clone(),
+            rt,
+        })),
     };
     let (engine, events) = Engine::start(deps);
     engine.send(Command::Star(premium));

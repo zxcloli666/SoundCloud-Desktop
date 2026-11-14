@@ -76,6 +76,7 @@ pub struct Speak {
     pub speed: f32,
     pub pitch: f32,
     pub replies: bool,
+    pub server: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Deserialize)]
@@ -119,6 +120,7 @@ impl Default for Speak {
             speed: 1.0,
             pitch: 0.0,
             replies: true,
+            server: false,
         }
     }
 }

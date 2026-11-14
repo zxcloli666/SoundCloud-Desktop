@@ -1041,6 +1041,14 @@
     "yalnızca yazı",
     "sesli cevap verme"
   ],
+  "voice.speak.server": [
+    "bulut ses",
+    "sunucuda ses sentezi",
+    "ses modelini indirme",
+    "indirmeden ses",
+    "çevrimiçi seslendirme",
+    "internetten seslendirme"
+  ],
   "voice.chat.title": [
     "loli ile konuş",
     "asistanla muhabbet",

@@ -10,8 +10,8 @@ use std::time::{Duration, Instant};
 use voice_audio::source::{Msg, OpenFn, SourceCtx};
 use voice_audio::{Capture, CaptureError, Device, DeviceList, RefTap, Transport};
 use voice_engine::{
-    Catalog, Chat, Command, Config, Deps, Engine, Event, Output, Source, Spoke, State, Stream,
-    Timing, Voice,
+    Ask, Catalog, Chat, Clip, Command, Config, Deps, Engine, Event, Output, Server, Source, Spoke,
+    State, Stream, Timing, Voice,
 };
 use voice_models::{Fetch, FetchError, Response, Store};
 use voice_nlu::{Kind, Variant};
@@ -114,6 +114,65 @@ impl Output for FakeOutput {
     fn hush(&self) {
         self.calls.push("hush".into());
         self.hushed.lock().unwrap().store(true, Ordering::Relaxed);
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum Answer {
+    Tone,
+    Late(Duration),
+    Down(&'static str),
+    Hold,
+}
+
+pub const SERVED: usize = 12_000;
+
+pub struct FakeServer {
+    pub answer: Answer,
+    pub asked: Mutex<Vec<(String, String, bool)>>,
+    pub let_go: AtomicBool,
+}
+
+impl FakeServer {
+    pub fn new(answer: Answer) -> Arc<FakeServer> {
+        Arc::new(FakeServer {
+            answer,
+            asked: Mutex::default(),
+            let_go: AtomicBool::new(false),
+        })
+    }
+
+    pub fn asked(&self) -> Vec<(String, String, bool)> {
+        self.asked.lock().unwrap().clone()
+    }
+}
+
+impl Server for FakeServer {
+    fn say(&self, ask: &Ask, wanted: &dyn Fn() -> bool) -> Result<Clip, String> {
+        let asked = (ask.voice.to_string(), ask.text.to_string(), ask.kept);
+        self.asked.lock().unwrap().push(asked);
+        match self.answer {
+            Answer::Tone => Ok(tone()),
+            Answer::Late(after) => {
+                std::thread::sleep(after);
+                Ok(tone())
+            }
+            Answer::Down(code) => Err(code.into()),
+            Answer::Hold => {
+                while wanted() {
+                    std::thread::sleep(Duration::from_millis(5));
+                }
+                self.let_go.store(true, Ordering::Relaxed);
+                Err("cancelled".into())
+            }
+        }
+    }
+}
+
+fn tone() -> Clip {
+    Clip {
+        samples: vec![0.25; SERVED],
+        rate: 24_000,
     }
 }
 
@@ -254,6 +313,7 @@ pub fn timing() -> Timing {
         lookup: Duration::from_millis(300),
         chat: Duration::from_secs(20),
         synth: Duration::from_secs(5),
+        server: Duration::from_secs(5),
         release: Duration::from_millis(80),
         opening: Duration::from_millis(150),
     }
@@ -264,7 +324,7 @@ pub fn rig_with(open: OpenFn, catalog: Arc<dyn Catalog>, root: PathBuf, timing: 
 }
 
 pub fn rig_on(open: OpenFn, catalog: Arc<dyn Catalog>, store: Arc<Store>, timing: Timing) -> Rig {
-    let rig = rig_of(open, catalog, store, timing, None);
+    let rig = rig_of(open, catalog, store, timing, None, None);
     let mut config = Config {
         enabled: true,
         ..Config::default()
@@ -287,9 +347,10 @@ pub fn rig_speaking_on(
     let rig = rig_of(
         silent(),
         catalog,
-        store(std::env::temp_dir().join("voice-engine-no-models")),
+        store(no_models()),
         timing,
         Some(Arc::new(Mutex::new(voice))),
+        None,
     );
     let config = Config {
         enabled: true,
@@ -299,12 +360,36 @@ pub fn rig_speaking_on(
     rig
 }
 
+pub fn rig_served(
+    server: Arc<dyn Server>,
+    local: Option<Arc<Mutex<dyn Voice>>>,
+    voice: &str,
+    timing: Timing,
+) -> Rig {
+    let catalog = Arc::new(FixtureCatalog::from_tsv(CATALOG, true));
+    let store = store(no_models());
+    let rig = rig_of(silent(), catalog, store, timing, local, Some(server));
+    let mut config = Config {
+        enabled: true,
+        ..Config::default()
+    };
+    config.speak.voice = voice.into();
+    config.speak.server = true;
+    rig.engine.send(Command::Apply(Box::new(config)));
+    rig
+}
+
+pub fn no_models() -> PathBuf {
+    std::env::temp_dir().join("voice-engine-no-models")
+}
+
 fn rig_of(
     open: OpenFn,
     catalog: Arc<dyn Catalog>,
     store: Arc<Store>,
     timing: Timing,
     voice: Option<Arc<Mutex<dyn Voice>>>,
+    server: Option<Arc<dyn Server>>,
 ) -> Rig {
     let calls = Calls::default();
     let heard = Heard::default();
@@ -325,6 +410,7 @@ fn rig_of(
         timing,
         phrases: phrases.clone(),
         voice,
+        server,
     };
     let (engine, events) = Engine::start(deps);
     engine.send(Command::Star(true));
@@ -342,7 +428,7 @@ pub fn rig() -> Rig {
     rig_with(
         silent(),
         Arc::new(FixtureCatalog::from_tsv(CATALOG, true)),
-        std::env::temp_dir().join("voice-engine-no-models"),
+        no_models(),
         timing(),
     )
 }

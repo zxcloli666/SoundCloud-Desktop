@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MessageCircle, Music, SlidersHorizontal, Volume2 } from '../../../lib/icons';
+import { Cloud, MessageCircle, Music, SlidersHorizontal, Volume2 } from '../../../lib/icons';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import type { SpeakMode } from '../../../lib/voice/types';
+import { hasServerVoice } from '../../../lib/voice/voice-ids';
 import { Card, RangeSlider, Segmented, Toggle } from '../../settings/primitives';
 import { Speaker } from '../icons';
 import { VOICES } from '../voices';
@@ -86,6 +87,21 @@ export function VoicePickerCard() {
         ))}
       </div>
       <div className="mt-5 divide-y divide-ink/[0.05] border-t border-ink/[0.05] pt-1">
+        {hasServerVoice(speak.voice) && (
+          <Block
+            data-ui="settings-row"
+            icon={<Cloud size={14} />}
+            title={t('voice.speak.server')}
+            desc={t('voice.speak.serverDesc')}
+            control={
+              <Toggle
+                checked={speak.server}
+                onChange={() => patchSpeak({ server: !speak.server })}
+                label={t('voice.speak.server')}
+              />
+            }
+          />
+        )}
         <Block
           data-ui="settings-row"
           icon={<SlidersHorizontal size={14} />}

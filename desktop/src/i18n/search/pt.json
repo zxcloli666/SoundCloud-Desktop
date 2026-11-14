@@ -1029,6 +1029,14 @@
     "desligar a narração",
     "só texto"
   ],
+  "voice.speak.server": [
+    "voz na nuvem",
+    "síntese de voz no servidor",
+    "não baixar o modelo de voz",
+    "voz sem download",
+    "narração online",
+    "gerar voz pela internet"
+  ],
   "voice.chat.title": [
     "conversar com a loli",
     "bater papo com a assistente",

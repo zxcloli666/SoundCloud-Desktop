@@ -1,10 +1,12 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use voice_models::{Kind, Status, Store};
 use voice_qwen::Paths;
 use voice_speech::Model;
 
 use crate::config::{Config, Language};
+use crate::server::Server;
 use crate::tts::Source;
 use crate::voices::{self, Voice};
 
@@ -47,12 +49,18 @@ pub fn hearing(config: &Config) -> [&'static str; 2] {
 
 pub fn required(config: &Config, store: &Store) -> Vec<String> {
     let mut ids: Vec<String> = hearing(config).iter().map(|id| id.to_string()).collect();
+    let voice = voices::find(&config.speak.voice);
     if config.speak.replies
-        && let Some(parts) = parts(voices::find(&config.speak.voice), store)
+        && !on_server(config, voice)
+        && let Some(parts) = parts(voice, store)
     {
         ids.extend(parts.into_iter().map(str::to_string));
     }
     ids
+}
+
+pub fn on_server(config: &Config, voice: &Voice) -> bool {
+    config.speak.server && matches!(voice.kind, voices::Kind::Qwen { .. })
 }
 
 pub fn ready(store: &Store, id: &str) -> bool {
@@ -85,13 +93,35 @@ pub fn source(store: &Store, voice: &Voice) -> Option<Source> {
             file,
             speaker,
         }),
-        voices::Kind::Qwen { speaker, .. } => {
-            let version = &store.manifest().get(voice.model).ok()?.version;
-            Some(Source::Qwen {
-                paths: qwen(store, voice)?,
-                speaker,
-                cached_as: format!("{}/{version}/{speaker}", voice.model),
-            })
-        }
+        voices::Kind::Qwen { speaker, .. } => Some(Source::Qwen {
+            paths: qwen(store, voice)?,
+            speaker,
+            cached_as: cached_as(store, voice)?,
+        }),
     }
+}
+
+pub fn server(
+    store: &Store,
+    voice: &'static Voice,
+    server: Arc<dyn Server>,
+    local: Option<Source>,
+) -> Option<Source> {
+    match cached_as(store, voice) {
+        Some(cached_as) => Some(Source::Server {
+            voice: voice.id,
+            cached_as,
+            server,
+            local: local.map(Box::new),
+        }),
+        None => local,
+    }
+}
+
+fn cached_as(store: &Store, voice: &Voice) -> Option<String> {
+    let voices::Kind::Qwen { speaker, .. } = voice.kind else {
+        return None;
+    };
+    let version = &store.manifest().get(voice.model).ok()?.version;
+    Some(format!("{}/{version}/{speaker}", voice.model))
 }

@@ -17,8 +17,18 @@ const LIKED_SETTLE_MS = 5_000;
 function push() {
   loadVoiceLocales()
     .then((locales) => voiceIpc.apply(engineConfig(useVoiceStore.getState().config, locales)))
-    .then(() => useVoiceRuntime.setState({ availability: 'ready' }))
+    .then(() => {
+      useVoiceRuntime.setState({ availability: 'ready' });
+      loadModels();
+    })
     .catch(() => useVoiceRuntime.setState({ availability: 'missing' }));
+}
+
+function loadModels() {
+  voiceIpc
+    .models()
+    .then((models) => useVoiceRuntime.getState().setModels(models))
+    .catch(() => {});
 }
 
 export function refreshEngine() {
@@ -28,10 +38,7 @@ export function refreshEngine() {
       useVoiceRuntime.setState({ status, devices: status.devices, availability: 'ready' }),
     )
     .catch(() => useVoiceRuntime.setState({ availability: 'missing' }));
-  voiceIpc
-    .models()
-    .then((models) => useVoiceRuntime.getState().setModels(models))
-    .catch(() => {});
+  loadModels();
 }
 
 export function startConfigSync() {

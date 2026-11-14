@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::sync::Arc;
 use std::sync::mpsc::Receiver;
 use std::time::{Duration, Instant};
 
@@ -11,10 +12,11 @@ use crate::draft::Draft;
 use crate::event::{Event, Spoke, State};
 use crate::machine::{Core, Msg, Phase};
 use crate::pauses::{Mark, Pauses};
+use crate::server::Server;
 use crate::speech::Speech;
 use crate::stream::Stream;
 use crate::tts::{Piece, Say, Source};
-use crate::{models, plain, speaker, voices};
+use crate::{Timing, models, plain, speaker, voices};
 
 const SPEECH_INPUT: &str = "speech";
 const GRACE: Duration = Duration::from_secs(3);
@@ -60,6 +62,13 @@ impl Reply {
         }
     }
 
+    fn patience(&self, timing: &Timing) -> Duration {
+        match self.source {
+            Source::Server { .. } => timing.server,
+            _ => timing.synth,
+        }
+    }
+
     fn line(&mut self, r#gen: u64, text: String, until: Instant, turn: Option<&str>) -> Say {
         if self.lines.is_empty() {
             self.until = Some(until);
@@ -71,7 +80,7 @@ impl Reply {
         self.said.0 += 1;
         self.said.1 += text.chars().count();
         let text = match self.source {
-            Source::Qwen { .. } => plain::text(&text, self.language),
+            Source::Qwen { .. } | Source::Server { .. } => plain::text(&text, self.language),
             _ => text,
         };
         self.lines.push_back(Line {
@@ -178,10 +187,11 @@ impl Core {
             self.reply = Some(Reply::new(source, &self.config));
         }
         let r#gen = self.next_gen();
-        let until = Instant::now() + self.deps.timing.synth;
+        let timing = self.deps.timing;
         let Some(reply) = self.reply.as_mut().filter(|reply| !reply.broken) else {
             return false;
         };
+        let until = Instant::now() + reply.patience(&timing);
         let say = reply.line(r#gen, text, until, turn);
         if fresh {
             self.tts.say(say);
@@ -192,10 +202,24 @@ impl Core {
     }
 
     fn voice(&self) -> Option<Source> {
+        let voice = voices::find(&self.config.speak.voice);
+        let local = self.local_voice(voice);
+        match self.server(voice) {
+            Some(server) => models::server(&self.deps.store, voice, server, local),
+            None => local,
+        }
+    }
+
+    fn local_voice(&self, voice: &voices::Voice) -> Option<Source> {
         if let Some(given) = &self.deps.voice {
             return Some(Source::Given(given.clone()));
         }
-        models::source(&self.deps.store, voices::find(&self.config.speak.voice))
+        models::source(&self.deps.store, voice)
+    }
+
+    fn server(&self, voice: &voices::Voice) -> Option<Arc<dyn Server>> {
+        let server = self.deps.server.clone()?;
+        models::on_server(&self.config, voice).then_some(server)
     }
 
     pub fn warm_voice(&self) {
@@ -204,6 +228,7 @@ impl Core {
         }
         let voice = voices::find(&self.config.speak.voice);
         if let voices::Kind::Qwen { speaker, .. } = voice.kind
+            && self.server(voice).is_none()
             && let Some(paths) = models::qwen(&self.deps.store, voice)
         {
             self.tts.warm(paths, speaker);
@@ -215,10 +240,11 @@ impl Core {
             return self.emit(Event::Trouble(trouble));
         }
         let now = Instant::now();
-        let until = now + self.deps.timing.synth;
+        let timing = self.deps.timing;
         let Some(reply) = self.reply.as_mut() else {
             return;
         };
+        let until = now + reply.patience(&timing);
         if reply.lines.front().map(|line| line.r#gen) != Some(r#gen) {
             return;
         }
@@ -464,6 +490,7 @@ mod tests {
     use voice_qwen::{Paths, Sink};
 
     use super::*;
+    use crate::server::Ask;
     use crate::tts::Voice;
 
     const WRITTEN: &str = "Громкость 50%, включаю что-нибудь…";
@@ -478,6 +505,14 @@ mod tests {
 
         fn say(&mut self, _: &str, _: &mut dyn Sink) -> Result<(), String> {
             Ok(())
+        }
+    }
+
+    struct Down;
+
+    impl Server for Down {
+        fn say(&self, _: &Ask, _: &dyn Fn() -> bool) -> Result<Clip, String> {
+            Err("down".into())
         }
     }
 
@@ -501,6 +536,15 @@ mod tests {
         }
     }
 
+    fn server() -> Source {
+        Source::Server {
+            voice: "loli",
+            cached_as: "loli".into(),
+            server: Arc::new(Down),
+            local: None,
+        }
+    }
+
     fn line(source: Source) -> Say {
         let mut reply = Reply::new(source, &Config::default());
         reply.line(1, WRITTEN.into(), Instant::now(), None)
@@ -509,6 +553,11 @@ mod tests {
     #[test]
     fn a_qwen_voice_gets_the_text_in_plain_words() {
         assert_eq!(line(qwen()).text, PLAIN);
+    }
+
+    #[test]
+    fn the_server_voice_gets_the_text_in_plain_words_like_the_local_one() {
+        assert_eq!(line(server()).text, PLAIN);
     }
 
     #[test]

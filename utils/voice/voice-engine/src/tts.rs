@@ -11,6 +11,7 @@ use crate::clip::Clip;
 use crate::config::Language;
 use crate::kokoro::{Frontends, Line};
 use crate::qwen;
+use crate::server::{Ask, Server};
 use crate::shape::Shaper;
 
 const REST: Duration = Duration::from_secs(120);
@@ -31,6 +32,12 @@ pub enum Source {
         paths: Paths,
         speaker: &'static str,
         cached_as: String,
+    },
+    Server {
+        voice: &'static str,
+        cached_as: String,
+        server: Arc<dyn Server>,
+        local: Option<Box<Source>>,
     },
     Given(Arc<Mutex<dyn Voice>>),
 }
@@ -206,15 +213,7 @@ impl Voices {
     }
 
     fn say(&mut self, say: &Say, out: &Out) -> bool {
-        let result = match &say.source {
-            Source::Kokoro { dir, file, speaker } => self.kokoro(say, dir, file, *speaker, out),
-            Source::Qwen {
-                paths,
-                speaker,
-                cached_as,
-            } => self.qwen(say, paths, speaker, cached_as, out),
-            Source::Given(voice) => given(say, voice, out),
-        };
+        let result = self.speak(say, &say.source, out);
         let spoke = result.is_ok();
         let piece = match result {
             Ok(()) => Piece::End,
@@ -222,6 +221,31 @@ impl Voices {
         };
         (out.reply)(out.r#gen, piece);
         spoke
+    }
+
+    fn speak(&mut self, say: &Say, source: &Source, out: &Out) -> Result<(), String> {
+        match source {
+            Source::Kokoro { dir, file, speaker } => self.kokoro(say, dir, file, *speaker, out),
+            Source::Qwen {
+                paths,
+                speaker,
+                cached_as,
+            } => self.qwen(say, paths, speaker, cached_as, out),
+            Source::Server {
+                voice,
+                cached_as,
+                server,
+                local,
+            } => self.server(
+                say,
+                voice,
+                cached_as,
+                server.as_ref(),
+                local.as_deref(),
+                out,
+            ),
+            Source::Given(voice) => given(say, voice, out),
+        }
     }
 
     fn kokoro(
@@ -253,16 +277,10 @@ impl Voices {
         cached_as: &str,
         out: &Out,
     ) -> Result<(), String> {
-        if !say.text.chars().any(char::is_alphanumeric) {
+        let Some(key) = self.to_make(say, cached_as, out) else {
             return Ok(());
-        }
+        };
         let mut shaper = Shaper::new(RATE, say.speed, say.pitch);
-        let key = cache::key(&[cached_as, &say.text]);
-        if let Some(clip) = self.cache.get(&key).filter(|clip| clip.rate == RATE) {
-            out.audio(RATE, shaper.push(clip.samples));
-            out.audio(RATE, shaper.finish());
-            return Ok(());
-        }
         let mut live = Live {
             out,
             shaper: &mut shaper,
@@ -275,14 +293,94 @@ impl Voices {
             return Ok(());
         }
         out.audio(RATE, shaper.finish());
-        if say.kept {
-            let clip = Clip {
-                samples: raw,
-                rate: RATE,
-            };
-            self.cache.put(&key, &clip);
-        }
+        self.keep(say, &key, raw);
         Ok(())
+    }
+
+    fn server(
+        &mut self,
+        say: &Say,
+        voice: &str,
+        cached_as: &str,
+        server: &dyn Server,
+        local: Option<&Source>,
+        out: &Out,
+    ) -> Result<(), String> {
+        let Some(key) = self.to_make(say, cached_as, out) else {
+            return Ok(());
+        };
+        let ask = Ask {
+            voice,
+            text: &say.text,
+            kept: say.kept,
+        };
+        let said = server.say(&ask, &|| out.wanted()).and_then(at_rate);
+        if !out.wanted() {
+            return Ok(());
+        }
+        match said {
+            Ok(clip) => {
+                shaped(say, clip.samples.clone(), out);
+                self.keep(say, &key, clip.samples);
+                Ok(())
+            }
+            Err(error) => self.instead(say, local, error, out),
+        }
+    }
+
+    fn instead(
+        &mut self,
+        say: &Say,
+        local: Option<&Source>,
+        error: String,
+        out: &Out,
+    ) -> Result<(), String> {
+        let Some(local) = local else {
+            return Err(error);
+        };
+        let trouble = format!("server voice failed, speaking on this computer: {error}");
+        (out.reply)(out.r#gen, Piece::Trouble(trouble));
+        self.speak(say, local, out)
+    }
+
+    fn to_make(&self, say: &Say, cached_as: &str, out: &Out) -> Option<String> {
+        if !say.text.chars().any(char::is_alphanumeric) {
+            return None;
+        }
+        let key = cache::key(&[cached_as, &say.text]);
+        match self.cache.get(&key).filter(|clip| clip.rate == RATE) {
+            Some(clip) => {
+                shaped(say, clip.samples, out);
+                None
+            }
+            None => Some(key),
+        }
+    }
+
+    fn keep(&self, say: &Say, key: &str, samples: Vec<f32>) {
+        if say.kept {
+            self.cache.put(
+                key,
+                &Clip {
+                    samples,
+                    rate: RATE,
+                },
+            );
+        }
+    }
+}
+
+fn shaped(say: &Say, samples: Vec<f32>, out: &Out) {
+    let mut shaper = Shaper::new(RATE, say.speed, say.pitch);
+    out.audio(RATE, shaper.push(samples));
+    out.audio(RATE, shaper.finish());
+}
+
+fn at_rate(clip: Clip) -> Result<Clip, String> {
+    if clip.rate == RATE {
+        Ok(clip)
+    } else {
+        Err(format!("the server voice came at {} Hz", clip.rate))
     }
 }
 

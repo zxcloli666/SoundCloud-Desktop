@@ -28,6 +28,7 @@ export interface SpeakConfig {
   speed: number;
   pitch: number;
   replies: boolean;
+  server: boolean;
 }
 
 export interface VoiceConfig {

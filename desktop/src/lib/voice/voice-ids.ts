@@ -1,11 +1,11 @@
 export type VoiceGender = 'female' | 'male';
 
 const VOICES = [
-  { id: 'loli', gender: 'female' },
-  { id: 'moriarty', gender: 'male' },
-  { id: 'af_heart', gender: 'female' },
-  { id: 'am_michael', gender: 'male' },
-] as const satisfies { id: string; gender: VoiceGender }[];
+  { id: 'loli', gender: 'female', server: true },
+  { id: 'moriarty', gender: 'male', server: true },
+  { id: 'af_heart', gender: 'female', server: false },
+  { id: 'am_michael', gender: 'male', server: false },
+] as const satisfies { id: string; gender: VoiceGender; server: boolean }[];
 
 export type VoiceId = (typeof VOICES)[number]['id'];
 
@@ -23,4 +23,8 @@ export function knownVoice(id: unknown): VoiceId {
 
 export function voiceGender(id: unknown): VoiceGender {
   return declared(id).gender;
+}
+
+export function hasServerVoice(id: unknown): boolean {
+  return declared(id).server;
 }

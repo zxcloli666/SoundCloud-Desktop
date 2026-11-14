@@ -28,6 +28,7 @@ export function defaultConfig(): VoiceConfig {
       speed: 1,
       pitch: 0,
       replies: true,
+      server: false,
     },
     duck: 0.3,
     echo: 'auto',

@@ -22,6 +22,7 @@ mod plan;
 mod qwen;
 mod read;
 mod sentences;
+mod server;
 mod shape;
 mod speak;
 mod speaker;
@@ -58,6 +59,7 @@ pub use event::{
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
 pub use output::Output;
+pub use server::{Ask, Server};
 pub use stream::Stream;
 pub use tts::Voice;
 pub use turn::Chat;
@@ -102,6 +104,7 @@ pub struct Timing {
     pub lookup: Duration,
     pub chat: Duration,
     pub synth: Duration,
+    pub server: Duration,
     pub release: Duration,
     pub opening: Duration,
 }
@@ -116,6 +119,7 @@ impl Default for Timing {
             lookup: Duration::from_millis(1200),
             chat: Duration::from_secs(60),
             synth: Duration::from_secs(30),
+            server: Duration::from_secs(100),
             release: Duration::from_millis(80),
             opening: Duration::from_millis(700),
         }
@@ -131,6 +135,7 @@ pub struct Deps {
     pub timing: Timing,
     pub phrases: PathBuf,
     pub voice: Option<Arc<Mutex<dyn Voice>>>,
+    pub server: Option<Arc<dyn Server>>,
 }
 
 #[derive(Clone)]

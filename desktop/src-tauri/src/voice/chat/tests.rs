@@ -8,9 +8,10 @@ use tokio::net::TcpListener;
 use tokio::sync::{Notify, oneshot};
 use voice_chat::ChatEvent;
 
-use super::stream::{Patience, exchange};
+use super::stream::{EVENT_STREAM, exchange};
 use super::{CANCELLED_KEPT, Refused, Rounds, Tally, spoken};
 use crate::network::fetch::configured;
+use crate::voice::api::{Patience, Request};
 
 const TOKEN: &str = "session-for-tests";
 const STREAM: &str =
@@ -84,7 +85,23 @@ fn patient() -> Patience {
         answer: LONG,
         hop: LONG,
         pro_hop: LONG,
-        silence: LONG,
+    }
+}
+
+fn post<'a>(
+    client: &'a wreq::Client,
+    urls: &[String],
+    body: &'a Value,
+    patience: Patience,
+) -> Request<'a> {
+    Request {
+        client,
+        method: wreq::Method::POST,
+        urls: urls.to_vec(),
+        token: TOKEN.into(),
+        accept: EVENT_STREAM,
+        body: Some(body),
+        patience,
     }
 }
 
@@ -180,9 +197,20 @@ async fn nowhere() -> String {
 }
 
 async fn talk(urls: &[String], patience: Patience, heard: &Heard) -> Result<(), Refused> {
+    talk_within(urls, patience, LONG, heard).await
+}
+
+async fn talk_within(
+    urls: &[String],
+    patience: Patience,
+    silence: Duration,
+    heard: &Heard,
+) -> Result<(), Refused> {
     let (_stay, cancelled) = oneshot::channel();
     let pass = |event| heard.pass(event);
-    exchange(&client(), urls, TOKEN, &body(), patience, cancelled, &pass).await
+    let (client, body) = (client(), body());
+    let post = post(&client, urls, &body, patience);
+    exchange(&post, silence, cancelled, &pass).await
 }
 
 #[tokio::test]
@@ -393,11 +421,9 @@ async fn no_answer_in_time_is_a_network_refusal() {
 async fn a_reply_that_goes_silent_ends_with_a_network_error() {
     let served = serve(vec![send(STREAM), send(HELLO), Step::Hold]).await;
     let heard = Heard::default();
-    let brief = Patience {
-        silence: Duration::from_millis(300),
-        ..patient()
-    };
-    assert_eq!(talk(&[served.url], brief, &heard).await, Ok(()));
+    let brief = Duration::from_millis(300);
+    let result = talk_within(&[served.url], patient(), brief, &heard).await;
+    assert_eq!(result, Ok(()));
     assert_eq!(heard.list(), [say("Сделала "), ChatEvent::error("network")]);
     assert!(tokio::time::timeout(LONG, served.left).await.is_ok());
 }
@@ -410,7 +436,8 @@ async fn cancel_in_the_middle_closes_the_request() {
     let pass = |event| heard.pass(event);
     let urls = [served.url];
     let (client, asked) = (client(), body());
-    let round = exchange(&client, &urls, TOKEN, &asked, patient(), cancelled, &pass);
+    let post = post(&client, &urls, &asked, patient());
+    let round = exchange(&post, LONG, cancelled, &pass);
     let stop = async {
         heard.first.notified().await;
         let _ = cancel.send(());
@@ -430,7 +457,8 @@ async fn cancel_before_the_answer_closes_the_request() {
     let (cancel, cancelled) = oneshot::channel();
     let pass = |event| heard.pass(event);
     let (client, urls, sent) = (client(), [url], body());
-    let round = exchange(&client, &urls, TOKEN, &sent, patient(), cancelled, &pass);
+    let post = post(&client, &urls, &sent, patient());
+    let round = exchange(&post, LONG, cancelled, &pass);
     let stop = async {
         let _ = asked.await;
         let _ = cancel.send(());

@@ -1193,6 +1193,14 @@
     "text only replies",
     "do not speak"
   ],
+  "voice.speak.server": [
+    "cloud voice",
+    "speech synthesis on the server",
+    "do not download the voice model",
+    "voice without a download",
+    "online tts",
+    "remote voice generation"
+  ],
   "voice.chat.title": [
     "talk with loli",
     "talk to lolya",

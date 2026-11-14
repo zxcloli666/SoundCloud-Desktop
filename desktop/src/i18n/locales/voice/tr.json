@@ -136,6 +136,10 @@
       "duckLabel": "Müzik seviyesi",
       "replies": "Sesle yanıtla"
     },
+    "speak": {
+      "server": "Sunucularımızdan ses",
+      "serverDesc": "Zayıf bir bilgisayar için: ses modeli indirilmez, yanıt sırada bekleyebilir"
+    },
     "chat": {
       "title": "Muhabbet",
       "toggle": "Karakterle muhabbet",

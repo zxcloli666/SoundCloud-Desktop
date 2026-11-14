@@ -141,6 +141,10 @@
       "duckLabel": "Volume da música",
       "replies": "Responder por voz"
     },
+    "speak": {
+      "server": "Voz dos nossos servidores",
+      "serverDesc": "Para um computador fraco: o modelo de voz não é baixado, a resposta pode esperar na fila"
+    },
     "chat": {
       "title": "Conversa",
       "toggle": "Conversar com a personagem",

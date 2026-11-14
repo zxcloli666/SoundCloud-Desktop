@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Download, Lock, Play } from '../../../lib/icons';
 import { SPEECH } from '../../../lib/voice/levels';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
+import { useVoiceStore } from '../../../lib/voice/store';
+import { hasServerVoice } from '../../../lib/voice/voice-ids';
 import { percent, useFormatBytes } from '../format';
 import { StopSquare } from '../icons';
 import { VoiceAvatar } from '../VoiceAvatar';
@@ -70,6 +72,7 @@ export const VoiceTile = memo(function VoiceTile({
   const { t } = useTranslation();
   const name = t(`voice.voices.${voice.id}.name`);
   const speaking = useVoiceRuntime((s) => s.previewing === voice.id);
+  const served = useVoiceStore((s) => s.config.speak.server) && hasServerVoice(voice.id);
   return (
     <div className="relative">
       <button
@@ -122,7 +125,7 @@ export const VoiceTile = memo(function VoiceTile({
                   {t(`voice.tags.${tag}`)}
                 </span>
               ))}
-              <ModelBadge id={voice.model} />
+              {!served && <ModelBadge id={voice.model} />}
             </span>
           )}
         </span>
