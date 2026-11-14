@@ -32,7 +32,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="sidebar"]` | Left navigation |
 | `[data-ui="nav-item"]` | A link in the left navigation |
 | `[data-ui="sidebar-pins"]` | Pinned artists in the left navigation |
-| `[data-ui="star-card"]` | STAR card in the left navigation |
+| `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
 | `[data-ui="page"]` | A page. `data-page` names it: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |
@@ -51,6 +51,9 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player-title"]` | Track title in the player |
 | `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
+| `[data-ui="player-tuning"]` | Speed and pitch button in the player |
+| `[data-ui="player-eq"]` | Equalizer button in the player |
+| `[data-ui="player-effects"]` | Effects button in the player (reverb, 8D, bass boost) |
 | `[data-ui="progress"]` | Progress bar |
 | `[data-ui="volume"]` | Volume |
 | `[data-ui="namecard"]` | Card that opens from the track title |
@@ -88,6 +91,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="tab"]` | A tab |
 | `[data-ui="chip"]` | Genre and filter chips |
 | `[data-ui="shelf"]` | Horizontal shelf |
+| `[data-ui="sync-wait"]` | Your library is still in the sync queue: placeholders, the queue card, a strip in place of a shelf, the STAR lane. `[data-stage]` is `calm`, `long` or `priority`, `[data-kind]` is `syncing` or `stalled` |
 
 ### Controls
 
@@ -104,6 +108,12 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-nav"]` | Section list in Settings |
 | `[data-ui="settings-nav-item"]` | A section in that list |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="settings-search"]` | Search field at the top of the Settings section list |
+| `[data-ui="settings-search-result"]` | Search result row, `[data-active]` is `true` on the lit one |
+| `[data-ui="settings-search-results"]` | Results list in Settings search |
+| `[data-ui="settings-search-count"]` | Result count next to the Settings search title |
+| `[data-ui="settings-search-empty"]` | Nothing-found block in Settings search |
+| `[data-ui="settings-search-clear"]` | Clear button in the search field |
 | `[data-ui="switch"]` | On/off switch |
 | `[data-ui="segmented"]` | Group of options |
 | `[data-ui="segment"]` | One option in a group |

@@ -91,7 +91,7 @@ export function CustomCssAssets() {
   };
 
   return (
-    <div className="space-y-2">
+    <div data-ui="settings-row" className="space-y-2">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
           <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-30">

@@ -665,7 +665,7 @@ const EqBtn = React.memo(() => {
   const eqEnabled = useSettingsStore((s) => s.eqEnabled);
   return (
     <EqualizerPanel>
-      <button type="button" className={btnClass(eqEnabled, 'sm')}>
+      <button type="button" data-ui="player-eq" className={btnClass(eqEnabled, 'sm')}>
         {audioLines16}
       </button>
     </EqualizerPanel>
@@ -857,7 +857,11 @@ const TuningBtn = React.memo(() => {
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
-        <button type="button" title={t('player.soundTuning')} className={btnClass(isActive, 'sm')}>
+        <button
+          type="button"
+          data-ui="player-tuning"
+          title={t('player.soundTuning')}
+          className={btnClass(isActive, 'sm')}>
           {slidersHorizontal16}
         </button>
       </Popover.Trigger>

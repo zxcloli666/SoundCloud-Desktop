@@ -22,6 +22,7 @@ import { CenterReadout } from '../components/subscription/star/CenterReadout';
 import { CardPane } from '../components/subscription/star/card/CardPane';
 import { GIFTS_KEY, GiftsPane } from '../components/subscription/star/GiftsPane';
 import { InvitePane, REFERRAL_KEY } from '../components/subscription/star/InvitePane';
+import { LegalNote } from '../components/subscription/star/LegalNote';
 import { ManagePane } from '../components/subscription/star/ManagePane';
 import { MethodPane } from '../components/subscription/star/MethodPane';
 import {
@@ -60,6 +61,7 @@ import {
   useSharedOverview,
   useSharedPreview,
 } from '../lib/star-shared';
+import { useStarStatus } from '../lib/star-status';
 import { useOrderPoll } from '../lib/useOrderPoll';
 import { useAuthStore } from '../stores/auth';
 
@@ -191,6 +193,7 @@ const StarFlow = memo(function StarFlow({
   // Active-membership end date (manage/success centre readout) — comes from the
   // subscription, not the in-flight order. Shared cache with ManagePane.
   const subQuery = usePaySubscription();
+  const status = useStarStatus();
   const trialAvailable = !premium && subQuery.data?.trial_available === true;
   const referral = useQuery({
     queryKey: REFERRAL_KEY,
@@ -394,6 +397,7 @@ const StarFlow = memo(function StarFlow({
                         : routeCurrency
                   }
                   endsAt={centerEndsAt}
+                  status={status}
                   serialSeed={checkout?.order_id ?? handle}
                   gift={gift}
                   inviteDays={inviteDays}
@@ -491,6 +495,9 @@ const StarFlow = memo(function StarFlow({
                 onRefresh={refreshQr}
                 onOnce={payOnce}
               />
+            )}
+            {(step === 'method' || step === 'card' || step === 'sbp' || step === 'pay') && (
+              <LegalNote />
             )}
             {step === 'success' && (
               <SuccessPane

@@ -34,6 +34,7 @@ export function OverlayPanel() {
 
   return (
     <Panel
+      data-ui="settings-row"
       icon={<MonitorPlay size={17} />}
       title={t('settings.obsOverlay')}
       desc={t('settings.obsOverlayDesc')}
@@ -42,7 +43,7 @@ export function OverlayPanel() {
     >
       <ServerBadge status={status} port={port} />
       {running && <OverlayPreview url={overlayUrl({ ...options, scale: PREVIEW_SCALE })} />}
-      <div className="space-y-2">
+      <div data-ui="settings-row" className="space-y-2">
         <Label>{t('settings.obsTheme')}</Label>
         <ThemePicker value={theme} onChange={setTheme} />
       </div>
@@ -54,13 +55,13 @@ export function OverlayPanel() {
           <Toggle checked={hidePaused} onChange={() => setHidePaused(!hidePaused)} />
         </Row>
       </div>
-      <div className="space-y-2">
+      <div data-ui="settings-row" className="space-y-2">
         <Label>{t('settings.obsLink')}</Label>
         <CopyField value={link} />
         <Hint>{t('settings.obsOverlayHint')}</Hint>
       </div>
       <PortField port={port} onChange={setPort} />
-      <div className="space-y-2">
+      <div data-ui="settings-row" className="space-y-2">
         <div className="space-y-0.5">
           <Label>{t('settings.obsApi')}</Label>
           <Hint>{t('settings.obsApiDesc')}</Hint>

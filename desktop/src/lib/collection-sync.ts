@@ -1,6 +1,7 @@
 import { type QueryKey, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from './api';
+import { waitAnchor } from './sync-wait';
 
 export interface CollectionSync {
   status: string;
@@ -17,6 +18,7 @@ export interface CollectionSyncInfo {
   state: CollectionSyncState;
   errorCode: string | null;
   queuedSince: string | null;
+  waitingSince: number;
   retryAt: number;
 }
 
@@ -155,8 +157,9 @@ export function useCollectionSync(
       : stalled
         ? 'stalled'
         : 'syncing';
+  const waitingSince = waitAnchor(probeUrl, head ? state : null, queuedSince, Date.now());
   return useMemo(
-    () => ({ state, errorCode, queuedSince, retryAt }),
-    [state, errorCode, queuedSince, retryAt],
+    () => ({ state, errorCode, queuedSince, waitingSince, retryAt }),
+    [state, errorCode, queuedSince, waitingSince, retryAt],
   );
 }

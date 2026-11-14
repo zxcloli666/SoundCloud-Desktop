@@ -1018,6 +1018,9 @@
   },
   "settings": {
     "title": "Configurações",
+    "search": "Buscar",
+    "searchClear": "Limpar",
+    "searchEmpty": "Nada encontrado",
     "cache": "Cache",
     "total": "Total",
     "audioCacheSize": "Áudio",
@@ -1468,6 +1471,8 @@
     "searchPlaybackResults": "Resultados da busca",
     "searchPlaybackSimilarDesc": "A faixa escolhida inicia uma onda de músicas parecidas, em vez do próximo resultado da busca",
     "searchPlaybackResultsDesc": "Os resultados da busca tocam um após o outro, na ordem",
+    "pointerPlayer": "Player",
+    "pointerApp": "App",
     "storageLocation": "Local do cache",
     "storageLocationDesc": "Onde ficam as faixas em cache e as faixas curtidas",
     "storageDefault": "Padrão",
@@ -1664,6 +1669,11 @@
     "title": "Assinatura Star",
     "active": "Ativa",
     "getIt": "Saiba mais",
+    "until": "até {{date}}",
+    "in_one": "em {{count}} dia",
+    "in_other": "em {{count}} dias",
+    "in_many": "em {{count}} dias",
+    "in_zero": "em {{count}} dias",
     "modalTitle": "Star",
     "modalSub": "Apoie o projeto — ganhe vantagens",
     "perkGoPlus": "Acesso a faixas GO+",
@@ -1717,6 +1727,7 @@
     "ignite": "Acenda sua estrela",
     "back": "Voltar",
     "perMonthShort": "mês",
+    "legal": "Ao pagar, você aceita os <offer>termos de venda</offer> e a <refund>política de reembolso</refund>.",
     "perk": {
       "goPlus": {
         "title": "Catálogo completo",
@@ -1860,7 +1871,7 @@
       "title": "Seu passe",
       "sub": "Prazo, renovação automática e origem.",
       "autoRenew": "Renovação automática",
-      "autoRenewOn": "cobraremos de novo em {{date}}",
+      "refund": "Política de reembolso",
       "autoRenewOff": "Desativada. O acesso vale até o fim do prazo pago.",
       "source": "Origem",
       "sourceSub": "De onde veio",
@@ -2067,8 +2078,11 @@
     },
     "renew": {
       "title": "Renovação automática",
-      "every_one": "Cobrado a cada {{count}} dia, cancele quando quiser",
-      "every_other": "Cobrado a cada {{count}} dias, cancele quando quiser",
+      "every_one": "Cobrança automática a cada {{count}} dia",
+      "every_other": "Cobrança automática a cada {{count}} dias",
+      "every_many": "Cobrança automática a cada {{count}} dias",
+      "every_zero": "Cobrança automática a cada {{count}} dias",
+      "refund": "Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
       "unavailable": "Indisponível para este método ou prazo",
       "everyOther_one": "Cobrado a cada {{count}} dia por outro provedor: precisa de vínculo próprio",
       "everyOther_other": "Cobrado a cada {{count}} dias por outro provedor: precisa de vínculo próprio",
@@ -2752,6 +2766,20 @@
     "gift": "Presentear STAR",
     "invite": "Convidar",
     "later": "Depois",
+    "charge": {
+      "off": "Desativar",
+      "keep": "Manter"
+    },
+    "os": {
+      "ends_one": "Termina em {{count}} dia",
+      "ends_other": "Termina em {{count}} dias",
+      "ends_many": "Termina em {{count}} dias",
+      "ends_zero": "Termina em {{count}} dias",
+      "charge_one": "{{charge}} será cobrado em {{count}} dia",
+      "charge_other": "{{charge}} será cobrado em {{count}} dias",
+      "charge_many": "{{charge}} será cobrado em {{count}} dias",
+      "charge_zero": "{{charge}} será cobrado em {{count}} dias"
+    },
     "expiry": {
       "trial": "Teste do STAR",
       "left_one": "{{count}} dia restante",
@@ -2778,7 +2806,8 @@
     "sync": {
       "free": "Agora",
       "freeTime": "horas",
-      "starTime": "~2 min"
+      "starTime": "~2 min",
+      "queued": "Na fila"
     },
     "year": {
       "cta": "Ano",

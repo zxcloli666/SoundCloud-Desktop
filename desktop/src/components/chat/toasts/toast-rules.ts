@@ -1,3 +1,4 @@
+import { isRequest } from '../../../lib/chat/membership';
 import type {
   ConversationSummary,
   Message,
@@ -5,7 +6,6 @@ import type {
   SystemEvent,
   UserId,
 } from '../../../lib/chat/types';
-import { isRequest } from '../../../stores/chat/list';
 import { isMuted, isMutedForever } from '../list/mute';
 
 const FRESH_MS = 60_000;

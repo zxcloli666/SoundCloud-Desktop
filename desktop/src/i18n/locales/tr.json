@@ -1035,6 +1035,9 @@
   },
   "settings": {
     "title": "Ayarlar",
+    "search": "Ara",
+    "searchClear": "Temizle",
+    "searchEmpty": "Sonuç yok",
     "cache": "Önbellek",
     "total": "Toplam",
     "audioCacheSize": "Ses",
@@ -1478,6 +1481,8 @@
     "searchPlaybackResults": "Arama sonuçları",
     "searchPlaybackSimilarDesc": "Seçilen parça, sonraki arama sonucu yerine benzer müzik dalgası başlatır",
     "searchPlaybackResultsDesc": "Arama sonuçları sırayla art arda çalar",
+    "pointerPlayer": "Oynatıcı",
+    "pointerApp": "Uygulama",
     "storageLocation": "Önbellek konumu",
     "storageLocationDesc": "Önbelleğe alınan parçaların ve beğenilerin saklandığı yer",
     "storageDefault": "Varsayılan",
@@ -1670,6 +1675,9 @@
     "title": "Star Abonelik",
     "active": "Aktif",
     "getIt": "Daha fazla bilgi",
+    "until": "{{date}} tarihine kadar",
+    "in_one": "{{count}} gün sonra",
+    "in_other": "{{count}} gün sonra",
     "modalTitle": "Star",
     "modalSub": "Projeyi destekle — bonuslar kazan",
     "perkGoPlus": "GO+ parçalarına erişim",
@@ -1721,6 +1729,7 @@
     "ignite": "Yıldızını yak",
     "back": "Geri",
     "perMonthShort": "ay",
+    "legal": "Ödeme yaparak <offer>satış koşullarını</offer> ve <refund>iade politikasını</refund> kabul edersin.",
     "perk": {
       "goPlus": {
         "title": "GO+ parçalar",
@@ -1871,7 +1880,7 @@
       "title": "Pasın",
       "sub": "Pasın süresi, otomatik yenileme ve kaynağı.",
       "autoRenew": "Otomatik yenileme",
-      "autoRenewOn": "{{date}} tarihinde tekrar tahsil edeceğiz",
+      "refund": "İade politikası",
       "autoRenewOff": "Kapalı. Erişim ödenen sürenin sonuna kadar.",
       "source": "Kaynak",
       "sourceSub": "Nereden geldiği",
@@ -2072,8 +2081,9 @@
     },
     "renew": {
       "title": "Otomatik yenileme",
-      "every_one": "Her {{count}} günde bir tahsil edilir, istediğiniz zaman iptal edin",
-      "every_other": "Her {{count}} günde bir tahsil edilir, istediğiniz zaman iptal edin",
+      "every_one": "Her {{count}} günde bir otomatik tahsil edilir",
+      "every_other": "Her {{count}} günde bir otomatik tahsil edilir",
+      "refund": "Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz, 6 ayda bir kez",
       "unavailable": "Bu yöntem veya süre için yok",
       "everyOther_one": "Her {{count}} günde bir başka bir sağlayıcı üzerinden tahsil edilir: ayrı bir bağlama gerekir",
       "everyOther_other": "Her {{count}} günde bir başka bir sağlayıcı üzerinden tahsil edilir: ayrı bir bağlama gerekir",
@@ -2692,6 +2702,16 @@
     "gift": "STAR hediye et",
     "invite": "Davet et",
     "later": "Sonra",
+    "charge": {
+      "off": "Kapat",
+      "keep": "Kalsın"
+    },
+    "os": {
+      "ends_one": "{{count}} gün sonra bitiyor",
+      "ends_other": "{{count}} gün sonra bitiyor",
+      "charge_one": "{{count}} gün sonra {{charge}} tahsil edilecek",
+      "charge_other": "{{count}} gün sonra {{charge}} tahsil edilecek"
+    },
     "expiry": {
       "trial": "STAR deneme",
       "left_one": "{{count}} gün kaldı",
@@ -2716,7 +2736,8 @@
     "sync": {
       "free": "Şimdi",
       "freeTime": "saat",
-      "starTime": "~2 dk"
+      "starTime": "~2 dk",
+      "queued": "Sırada"
     },
     "year": {
       "cta": "Yıl",

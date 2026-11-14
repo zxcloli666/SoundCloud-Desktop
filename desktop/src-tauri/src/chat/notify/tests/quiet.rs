@@ -96,13 +96,26 @@ fn room_chat_is_silent_except_mentions_and_events_about_me() {
 #[test]
 fn requests_stay_silent_even_for_mentions() {
     let mut stranger = chat(ConversationKind::Direct);
+    stranger.state = MemberState::Invited;
     stranger.accepted = false;
     let mut invite = group("Band");
     invite.state = MemberState::Invited;
+    invite.accepted = false;
     for request in [stranger, invite] {
         assert!(!allowed(Reason::Post, &request, NOW));
         assert!(!allowed(Reason::Mention, &request, NOW));
     }
+}
+
+#[test]
+fn an_unanswered_chat_from_a_known_sender_is_not_a_request() {
+    let mut followed = chat(ConversationKind::Direct);
+    followed.accepted = false;
+    let mut added = group("Band");
+    added.accepted = false;
+    assert!(allowed(Reason::Post, &followed, NOW));
+    assert!(allowed(Reason::Post, &added, NOW));
+    assert!(allowed(Reason::Mention, &added, NOW));
 }
 
 #[test]

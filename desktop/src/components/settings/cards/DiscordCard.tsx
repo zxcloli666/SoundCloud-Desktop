@@ -102,7 +102,7 @@ export function DiscordCard() {
                             {t('settings.discordRpcHint')}
                         </p>
                     </div>
-                    <div className="space-y-2">
+                    <div data-ui="settings-row" className="space-y-2">
                         <p className="text-[12.5px] text-ink-50 font-medium">
                             {t('settings.discordRpcMode')}
                         </p>
@@ -113,7 +113,7 @@ export function DiscordCard() {
                             options={MODES.map((m) => ({id: m.id, label: t(m.labelKey)}))}
                         />
                     </div>
-                    <div className="space-y-2">
+                    <div data-ui="settings-row" className="space-y-2">
                         <div className="space-y-0.5">
                             <p className="text-[12.5px] text-ink-50 font-medium">
                                 {t('settings.discordRpcStatus')}

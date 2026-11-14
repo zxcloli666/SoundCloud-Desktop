@@ -988,6 +988,9 @@
   },
   "settings": {
     "title": "Settings",
+    "search": "Search",
+    "searchClear": "Clear",
+    "searchEmpty": "Nothing found",
     "cache": "Cache",
     "total": "Total",
     "audioCacheSize": "Audio",
@@ -1426,6 +1429,8 @@
     "searchPlaybackResults": "Search results",
     "searchPlaybackSimilarDesc": "The picked track starts a wave of similar music instead of the next search result",
     "searchPlaybackResultsDesc": "Search results play one after another in their order",
+    "pointerPlayer": "Player",
+    "pointerApp": "App",
     "storageLocation": "Cache location",
     "storageLocationDesc": "Where cached tracks and liked tracks are stored",
     "storageDefault": "Default",
@@ -1754,6 +1759,9 @@
     "title": "Star Subscription",
     "active": "Active",
     "getIt": "Learn more",
+    "until": "until {{date}}",
+    "in_one": "in {{count}} day",
+    "in_other": "in {{count}} days",
     "modalTitle": "Star",
     "modalSub": "Support the project — get perks",
     "perkGoPlus": "Access to GO+ tracks",
@@ -1805,6 +1813,7 @@
     "ignite": "Ignite your star",
     "back": "Back",
     "perMonthShort": "mo",
+    "legal": "By paying you accept the <offer>terms of sale</offer> and the <refund>refund policy</refund>.",
     "perk": {
       "goPlus": {
         "title": "Full catalog",
@@ -1948,7 +1957,7 @@
       "title": "Your pass",
       "sub": "Term, auto-renew and source.",
       "autoRenew": "Auto-renew",
-      "autoRenewOn": "we'll charge again on {{date}}",
+      "refund": "Refund policy",
       "autoRenewOff": "Off. Access lasts to the end of the paid term.",
       "source": "Source",
       "sourceSub": "Where it came from",
@@ -2149,8 +2158,9 @@
     },
     "renew": {
       "title": "Auto-renew",
-      "every_one": "Charged every {{count}} day, cancel anytime",
-      "every_other": "Charged every {{count}} days, cancel anytime",
+      "every_one": "Charged automatically every {{count}} day",
+      "every_other": "Charged automatically every {{count}} days",
+      "refund": "Forgot to turn it off? Email us within 7 days for a full refund, once every 6 months",
       "unavailable": "Not for this method or term",
       "everyOther_one": "Charged every {{count}} day through another provider: it needs its own link",
       "everyOther_other": "Charged every {{count}} days through another provider: it needs its own link",
@@ -2793,6 +2803,16 @@
     "gift": "Gift STAR",
     "invite": "Invite",
     "later": "Later",
+    "charge": {
+      "off": "Turn off",
+      "keep": "Keep"
+    },
+    "os": {
+      "ends_one": "Ends in {{count}} day",
+      "ends_other": "Ends in {{count}} days",
+      "charge_one": "{{charge}} will be charged in {{count}} day",
+      "charge_other": "{{charge}} will be charged in {{count}} days"
+    },
     "expiry": {
       "trial": "STAR trial",
       "left_one": "{{count}} day left",
@@ -2817,7 +2837,8 @@
     "sync": {
       "free": "Now",
       "freeTime": "hours",
-      "starTime": "~2 min"
+      "starTime": "~2 min",
+      "queued": "Queued"
     },
     "year": {
       "cta": "Year",

@@ -1,3 +1,4 @@
+import type {ReactNode} from 'react';
 import {useTranslation} from 'react-i18next';
 import {usePerfMode} from '../../lib/perf';
 import type {SettingsCategory, SettingsCategoryId} from './registry';
@@ -6,10 +7,12 @@ import type {SettingsCategory, SettingsCategoryId} from './registry';
 export function SettingsNav({
                                 categories,
                                 active,
+                                search,
                                 onChange,
                             }: {
     categories: SettingsCategory[];
-    active: SettingsCategoryId;
+    active: SettingsCategoryId | null;
+    search: ReactNode;
     onChange: (id: SettingsCategoryId) => void;
 }) {
     const {t} = useTranslation();
@@ -29,6 +32,7 @@ export function SettingsNav({
                     boxShadow: '0 18px 50px rgb(var(--shade) / calc(0.35 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.05)',
                 }}
             >
+                {search}
                 <div className="flex flex-col gap-1">
                     {categories.map((c) => {
                         const on = c.id === active;

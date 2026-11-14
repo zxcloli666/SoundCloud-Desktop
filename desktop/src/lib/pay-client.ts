@@ -152,6 +152,14 @@ export interface Entitlement {
   canceled: boolean;
 }
 
+export interface Renewal {
+  source: string;
+  at: number;
+  amount: number;
+  currency: string;
+  period_days: number;
+}
+
 export interface DiscordLink {
   discord_id: string;
   username: string | null;
@@ -168,6 +176,7 @@ export interface PaySubscription {
   premium_until: number;
   star_since?: number | null;
   entitlements: Entitlement[];
+  renewal?: Renewal | null;
   /** Mirror of the user's linked Discord (bot-owned). Null if not linked. */
   discord: DiscordLink | null;
   /** When the latest STAR of any source ended; null if never had one. */

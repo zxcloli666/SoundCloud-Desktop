@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { chatBridge } from '../../lib/chat/bridge';
+import { isRequest } from '../../lib/chat/membership';
 import type {
   ChatRequest,
   ConversationSummary,
@@ -12,10 +13,6 @@ import type {
 const PAGE_SIZE = 200;
 
 export type ListLoad = 'idle' | 'loading' | 'ready' | 'failed';
-
-export function isRequest(conversation: ConversationSummary): boolean {
-  return conversation.state === 'invited' || !conversation.accepted;
-}
 
 function isListed(conversation: ConversationSummary): boolean {
   if (conversation.kind === 'room' || conversation.kind === 'public') return false;

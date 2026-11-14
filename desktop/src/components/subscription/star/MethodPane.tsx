@@ -135,6 +135,9 @@ const RenewToggle = memo(function RenewToggle({
               })
             : t('starpass.renew.unavailable')}
         </span>
+        {renew.available && (
+          <span className="block text-[11px] text-ink-40">{t('starpass.renew.refund')}</span>
+        )}
         {renew.available && renew.otherProvider && (
           <span className="block text-[11px] text-ink-40">{t('starpass.renew.onceNote')}</span>
         )}

@@ -973,6 +973,9 @@
   },
   "settings": {
     "title": "설정",
+    "search": "검색",
+    "searchClear": "지우기",
+    "searchEmpty": "결과 없음",
     "cache": "캐시",
     "total": "전체",
     "audioCacheSize": "오디오",
@@ -1410,6 +1413,8 @@
     "searchPlaybackResults": "검색 결과",
     "searchPlaybackSimilarDesc": "고른 트랙 다음에 검색 결과 대신 비슷한 음악의 웨이브가 이어져요",
     "searchPlaybackResultsDesc": "검색 결과를 순서대로 이어서 재생해요",
+    "pointerPlayer": "플레이어",
+    "pointerApp": "앱",
     "storageLocation": "캐시 위치",
     "storageLocationDesc": "캐시된 트랙과 좋아요한 트랙을 저장할 위치",
     "storageDefault": "기본값",
@@ -1600,6 +1605,8 @@
     "title": "Star 구독",
     "active": "활성",
     "getIt": "자세히 알아보기",
+    "until": "{{date}}까지",
+    "in_other": "{{count}}일 후",
     "modalTitle": "Star",
     "modalSub": "프로젝트를 후원하고 혜택을 받으세요",
     "perkGoPlus": "GO+ 트랙 이용",
@@ -1650,6 +1657,7 @@
     "ignite": "나의 별 밝히기",
     "back": "뒤로",
     "perMonthShort": "월",
+    "legal": "결제하면 <offer>판매 약관</offer>과 <refund>환불 정책</refund>에 동의하게 돼요.",
     "perk": {
       "goPlus": {
         "title": "전체 카탈로그",
@@ -1793,7 +1801,7 @@
       "title": "내 패스",
       "sub": "기간, 자동 갱신, 출처.",
       "autoRenew": "자동 갱신",
-      "autoRenewOn": "{{date}}에 다시 결제돼요",
+      "refund": "환불 정책",
       "autoRenewOff": "꺼짐. 결제한 기간이 끝날 때까지 이용할 수 있어요.",
       "source": "출처",
       "sourceSub": "패스를 받은 경로",
@@ -1989,7 +1997,8 @@
     },
     "renew": {
       "title": "자동 갱신",
-      "every_other": "{{count}}일마다 결제, 언제든 해지 가능",
+      "every_other": "{{count}}일마다 자동 결제돼요",
+      "refund": "끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요. 6개월에 한 번 가능해요",
       "unavailable": "이 결제 수단이나 기간에는 사용할 수 없습니다",
       "everyOther_other": "{{count}}일마다 다른 결제 대행사를 통해 결제됩니다. 별도 연결이 필요합니다",
       "onceNote": "자동 갱신 없이: 1회 결제, 연결 없음"
@@ -2610,6 +2619,14 @@
     "gift": "STAR 선물하기",
     "invite": "초대하기",
     "later": "나중에",
+    "charge": {
+      "off": "끄기",
+      "keep": "유지"
+    },
+    "os": {
+      "ends_other": "{{count}}일 후 종료돼요",
+      "charge_other": "{{count}}일 후 {{charge}} 결제 예정"
+    },
     "expiry": {
       "trial": "STAR 체험판",
       "left_other": "{{count}}일 남음",
@@ -2633,7 +2650,8 @@
     "sync": {
       "free": "지금",
       "freeTime": "시간",
-      "starTime": "약 2분"
+      "starTime": "약 2분",
+      "queued": "대기 중"
     },
     "year": {
       "cta": "1년",

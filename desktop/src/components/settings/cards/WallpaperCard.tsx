@@ -380,7 +380,7 @@ export function WallpaperCard() {
 
                 {backgroundImage && (
                     <div className="space-y-4 pt-1">
-                        <div className="space-y-2">
+                        <div data-ui="settings-row" className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <label className="text-[13px] text-ink-50 font-medium">
                                     {t('settings.bgDim')}
@@ -397,7 +397,7 @@ export function WallpaperCard() {
                                 onChange={setBackgroundDim}
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div data-ui="settings-row" className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <label className="text-[13px] text-ink-50 font-medium">
                                     {t('settings.bgOpacity')}
@@ -414,7 +414,7 @@ export function WallpaperCard() {
                                 onChange={setBackgroundOpacity}
                             />
                         </div>
-                        <div className="space-y-2">
+                        <div data-ui="settings-row" className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <label className="text-[13px] text-ink-50 font-medium">
                                     {t('settings.bgBlur')}

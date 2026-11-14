@@ -2,6 +2,7 @@ import React, {useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useMyFollowings} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
+import {isWaitKind} from '../../lib/sync-wait';
 import {matchesTerms, queryTerms} from '../../lib/text-match';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
@@ -51,11 +52,12 @@ export const FollowingTab = React.memo(function FollowingTab({filter}: { filter:
                     renderItem={(user) => <UserCard user={user}/>}
                 />
             ) : !filter && notice ? (
-                <div className="py-20">
+                <div className={isWaitKind(notice) ? 'py-8' : 'py-20'}>
                     <SyncNotice
                         kind={notice}
                         info={followingsQuery.syncInfo}
                         ownedByMe
+                        scope="followings"
                         onRetry={() => void followingsQuery.refetch()}
                     />
                 </div>

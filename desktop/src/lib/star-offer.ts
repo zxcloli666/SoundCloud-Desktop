@@ -19,6 +19,7 @@ export function usePaySubscription(enabled = true) {
     queryKey: PAY_SUB_KEY,
     queryFn: payApi.subscription,
     staleTime: 60_000,
+    refetchInterval: 30 * 60_000,
     enabled: enabled && hasSession,
   });
 }
