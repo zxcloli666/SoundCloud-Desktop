@@ -1674,6 +1674,7 @@
   "star": {
     "title": "Star Abonelik",
     "active": "Aktif",
+    "relink": "Bağlantı bekleniyor",
     "getIt": "Daha fazla bilgi",
     "until": "{{date}} tarihine kadar",
     "in_one": "{{count}} gün sonra",

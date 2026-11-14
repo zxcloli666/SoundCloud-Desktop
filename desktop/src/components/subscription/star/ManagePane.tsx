@@ -125,6 +125,8 @@ export const ManagePane = memo(function ManagePane({
                 {' · '}
                 <PageLink page="refund">{t('starpass.manage.refund')}</PageLink>
               </>
+            ) : status?.kind === 'relink' ? (
+              <span className="font-medium text-amber-400">{t('star.relink')}</span>
             ) : renewSource ? (
               t(`starpass.manage.sources.${renewSource}`, { defaultValue: renewSource })
             ) : (

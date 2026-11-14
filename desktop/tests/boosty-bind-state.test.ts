@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { bindState, linkedBinds } from '../src/lib/boosty-bind-state.ts';
+import { bindState, linkedBinds, renewalRelink } from '../src/lib/boosty-bind-state.ts';
 import type { BoostyBinds } from '../src/lib/pay-client.ts';
 
 const BINDS = { card: true, sbp: true, card_usd: false };
@@ -38,4 +38,38 @@ test('rebind without a link is no link at all', () => {
   assert.equal(bindState(gone, 'card'), 'none');
   assert.deepEqual(linkedBinds(gone), []);
   assert.equal(bindState(undefined, 'card'), 'none');
+});
+
+const RENEWAL = {
+  source: 'boosty_card',
+  at: 1_800_000_000,
+  amount: 14900,
+  currency: 'RUB',
+  period_days: 30,
+};
+const RETIRING: BoostyBinds = {
+  bound: true,
+  binds: { card: true, sbp: true, card_usd: true },
+  rebind: { card: true, sbp: false, card_usd: true },
+};
+
+test('a renewal on a retiring link waits for linking again', () => {
+  assert.equal(renewalRelink({ ...RENEWAL, method: 'card' }, RETIRING), 'card');
+  assert.equal(renewalRelink({ ...RENEWAL, method: null }, RETIRING), 'card');
+  assert.equal(renewalRelink({ ...RENEWAL, method: 'sbp' }, RETIRING), null);
+  assert.equal(renewalRelink({ ...RENEWAL, currency: 'USD', amount: 499 }, RETIRING), 'card_usd');
+});
+
+test('without the renewal method a ruble renewal waits only when every ruble link retires', () => {
+  assert.equal(renewalRelink(RENEWAL, RETIRING), null);
+  const cardOnly: BoostyBinds = { ...RETIRING, binds: { card: true, sbp: false, card_usd: false } };
+  assert.equal(renewalRelink(RENEWAL, cardOnly), 'card');
+  const both: BoostyBinds = { ...RETIRING, rebind: { card: true, sbp: true, card_usd: false } };
+  assert.equal(renewalRelink(RENEWAL, both), 'card');
+});
+
+test('other renewals and an older pay never wait', () => {
+  assert.equal(renewalRelink({ ...RENEWAL, source: 'tgstars' }, RETIRING), null);
+  assert.equal(renewalRelink(RENEWAL, { bound: true, binds: BINDS }), null);
+  assert.equal(renewalRelink(RENEWAL, undefined), null);
 });

@@ -28,6 +28,7 @@ const EDGE: Record<Tone, string> = {
 
 function toneOf(status: StarStatus | null): Tone {
   if (status?.kind === 'renews') return status.soon ? 'warn' : 'calm';
+  if (status?.kind === 'relink') return 'warn';
   if (status?.kind !== 'ends' || status.level === 'calm') return 'calm';
   return status.level === 'urgent' ? 'bad' : 'warn';
 }

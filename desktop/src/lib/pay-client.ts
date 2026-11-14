@@ -158,6 +158,7 @@ export interface Renewal {
   amount: number;
   currency: string;
   period_days: number;
+  method?: string | null;
 }
 
 export interface DiscordLink {

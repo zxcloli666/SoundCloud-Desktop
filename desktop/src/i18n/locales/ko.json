@@ -1604,6 +1604,7 @@
   "star": {
     "title": "Star 구독",
     "active": "활성",
+    "relink": "연결 대기 중",
     "getIt": "자세히 알아보기",
     "until": "{{date}}까지",
     "in_other": "{{count}}일 후",

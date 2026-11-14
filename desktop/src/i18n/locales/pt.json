@@ -1668,6 +1668,7 @@
   "star": {
     "title": "Assinatura Star",
     "active": "Ativa",
+    "relink": "Aguardando vínculo",
     "getIt": "Saiba mais",
     "until": "até {{date}}",
     "in_one": "em {{count}} dia",

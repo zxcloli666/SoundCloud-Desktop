@@ -1758,6 +1758,7 @@
   "star": {
     "title": "Star Subscription",
     "active": "Active",
+    "relink": "Waiting for a link",
     "getIt": "Learn more",
     "until": "until {{date}}",
     "in_one": "in {{count}} day",

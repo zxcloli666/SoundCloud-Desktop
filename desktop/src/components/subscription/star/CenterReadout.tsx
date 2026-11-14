@@ -77,6 +77,14 @@ const LEFT_TONE = { calm: 'text-accent', soon: 'text-amber-400', urgent: 'text-b
 function StatusCaption({ status }: { status: StarStatus }) {
   const { t } = useTranslation();
   if (status.kind === 'open') return t('star.active');
+  if (status.kind === 'relink') {
+    return (
+      <span className="inline-flex items-center gap-1.5 text-amber-400">
+        <RefreshCw size={13} strokeWidth={2.4} />
+        {t('star.relink')}
+      </span>
+    );
+  }
   if (status.kind === 'renews') {
     return (
       <span className="inline-flex items-center gap-1.5 tabular-nums">
