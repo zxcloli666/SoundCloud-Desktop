@@ -1,4 +1,5 @@
-const LONGEST: usize = 240;
+pub const LONGEST: usize = 240;
+pub const LONGEST_SERVED: usize = 120;
 const CLAUSE_LEAST: usize = 40;
 const OPENING_READY: usize = 48;
 const OPENING_LEAST: usize = 16;
@@ -25,6 +26,7 @@ pub struct Splitter {
     opening: bool,
     late: bool,
     least: usize,
+    longest: usize,
     held: String,
 }
 
@@ -41,8 +43,14 @@ impl Splitter {
             opening: true,
             late: false,
             least,
+            longest: LONGEST,
             held: String::new(),
         }
+    }
+
+    pub fn within(mut self, longest: usize) -> Splitter {
+        self.longest = longest;
+        self
     }
 
     pub fn push(&mut self, text: &str) -> Vec<String> {
@@ -114,8 +122,8 @@ impl Splitter {
         };
         let end = sentence_end(text).or_else(early).or(rest);
         match end {
-            Some(end) if end > LONGEST => Some(capped(&text[..end])),
-            None if text.len() > LONGEST => Some(capped(text)),
+            Some(end) if end > self.longest => Some(capped(&text[..end], self.longest)),
+            None if text.len() > self.longest => Some(capped(text, self.longest)),
             end => end,
         }
     }
@@ -219,8 +227,8 @@ fn unsettled(text: &[char]) -> bool {
     closed > 0 && ENDS.contains(&text[closed - 1])
 }
 
-fn capped(text: &[char]) -> usize {
-    let limit = text.len().min(LONGEST);
+fn capped(text: &[char], longest: usize) -> usize {
+    let limit = text.len().min(longest);
     let word = || {
         let back = count_back(&text[..limit], |c| !c.is_whitespace());
         Some(limit - back).filter(|at| *at > 0)
@@ -404,6 +412,34 @@ mod tests {
         assert_eq!(
             whole("Sure thing. Playing it now! Anything else?"),
             ["Sure thing.", "Playing it now!", "Anything else?"]
+        );
+    }
+
+    #[test]
+    fn a_voice_made_on_the_server_gets_shorter_pieces() {
+        let long = "Сейчас включу тебе подборку из того, что ты слушал на прошлой неделе, добавлю туда пару новых треков от тех же исполнителей, а потом перейдём к чему-нибудь поспокойнее, чтобы вечер шёл ровно.";
+        let mut whole = Splitter::new(0);
+        let mut one = whole.push(long);
+        one.extend(whole.finish());
+        assert_eq!(one.len(), 1);
+
+        let mut served = Splitter::new(0).within(LONGEST_SERVED);
+        let mut pieces = served.push(long);
+        pieces.extend(served.finish());
+        assert!(pieces.len() > 1, "{pieces:?}");
+        assert!(
+            pieces
+                .iter()
+                .all(|piece| piece.chars().count() <= LONGEST_SERVED),
+            "{pieces:?}"
+        );
+        assert_eq!(
+            pieces
+                .concat()
+                .chars()
+                .filter(|c| !c.is_whitespace())
+                .count(),
+            long.chars().filter(|c| !c.is_whitespace()).count()
         );
     }
 

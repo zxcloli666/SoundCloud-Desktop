@@ -3,8 +3,8 @@ use std::time::Instant;
 use crate::event::{Event, State, TurnEvent};
 use crate::machine::{Core, Phase};
 use crate::plan::{Plan, voiced};
-use crate::sentences::Splitter;
-use crate::voices;
+use crate::sentences::{LONGEST, LONGEST_SERVED, Splitter};
+use crate::{models, voices};
 
 const STREAMED_OPENING: usize = 20;
 
@@ -48,9 +48,10 @@ impl Core {
         };
         let speak = speak && self.config.speak.replies && voiced(source);
         let least = self.opening();
+        let longest = self.longest();
         self.turn = Some(Turn {
             id,
-            splitter: speak.then(|| Splitter::new(least)),
+            splitter: speak.then(|| Splitter::new(least).within(longest)),
             late: None,
         });
         self.watch_turn();
@@ -60,6 +61,14 @@ impl Core {
         let voice = voices::find(&self.config.speak.voice);
         let streams = self.deps.voice.is_none() && voice.streams();
         if streams { STREAMED_OPENING } else { 0 }
+    }
+
+    fn longest(&self) -> usize {
+        let voice = voices::find(&self.config.speak.voice);
+        let served = self.deps.voice.is_none()
+            && self.deps.server.is_some()
+            && models::on_server(&self.config, voice);
+        if served { LONGEST_SERVED } else { LONGEST }
     }
 
     fn watch_turn(&mut self) {
