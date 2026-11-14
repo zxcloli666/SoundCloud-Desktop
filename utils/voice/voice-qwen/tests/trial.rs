@@ -4,7 +4,13 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use voice_qwen::{CPU, Paths, Qwen, Request};
+use voice_qwen::{CPU, Paths, Qwen, Request, Sampling};
+
+const SAMPLING: Sampling = Sampling {
+    temperature: 0.6,
+    top_p: 0.9,
+    sub_temperature: 0.6,
+};
 
 const BEST: &str = "best";
 
@@ -33,6 +39,7 @@ fn trial(speaker: &str) -> Request<'_> {
         lang: "auto",
         seed: 1,
         max_tokens: 250,
+        sampling: SAMPLING,
     }
 }
 

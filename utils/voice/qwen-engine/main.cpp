@@ -23,6 +23,7 @@ namespace {
 enum Kind : uint8_t {
     Say    = 'S',
     Cancel = 'C',
+    Tune   = 'T',
     Ready  = 'R',
     Audio  = 'A',
     Done   = 'D',
@@ -32,6 +33,13 @@ enum Kind : uint8_t {
 const size_t HEAD = 9;
 const uint32_t MAX_PAYLOAD = 1 << 20;
 
+struct Sampling {
+    bool  tuned = false;
+    float temperature;
+    float top_p;
+    float sub_temperature;
+};
+
 struct Job {
     uint32_t    id;
     int64_t     seed;
@@ -39,6 +47,7 @@ struct Job {
     std::string speaker;
     std::string lang;
     std::string text;
+    Sampling    sampling;
 };
 
 std::mutex              out_lock;
@@ -106,10 +115,33 @@ bool parse(uint32_t id, const std::string & payload, Job * job) {
     return job->max_tokens > 0 && !job->text.empty();
 }
 
+bool tune(const std::string & payload, Sampling * sampling) {
+    float        values[3];
+    const char * at = payload.c_str();
+    for (float & value : values) {
+        char * end = nullptr;
+        value      = std::strtof(at, &end);
+        if (end == at) {
+            return false;
+        }
+        at = end;
+    }
+    bool sane = values[0] >= 0 && values[0] <= 2 && values[1] > 0 && values[1] <= 1 && values[2] >= 0 && values[2] <= 2;
+    if (sane) {
+        *sampling = { true, values[0], values[1], values[2] };
+    }
+    return sane;
+}
+
 void speak(qt_context * engine, const Job & job) {
     uint32_t      id = job.id;
     qt_tts_params params;
     qt_tts_default_params(&params);
+    if (job.sampling.tuned) {
+        params.temperature           = job.sampling.temperature;
+        params.top_p                 = job.sampling.top_p;
+        params.subtalker_temperature = job.sampling.sub_temperature;
+    }
     params.text             = job.text.c_str();
     params.lang             = job.lang.c_str();
     params.speaker          = job.speaker.c_str();
@@ -156,6 +188,7 @@ bool read_exact(void * into, size_t size) {
 void listen() {
     uint8_t     head[HEAD];
     std::string payload;
+    Sampling    sampling;
     while (read_exact(head, HEAD)) {
         uint32_t id   = get_u32(head + 1);
         uint32_t size = get_u32(head + 5);
@@ -168,12 +201,15 @@ void listen() {
         }
         if (head[0] == Cancel) {
             cancel_up_to(id);
+        } else if (head[0] == Tune) {
+            tune(payload, &sampling);
         } else if (head[0] == Say) {
             Job job;
             if (!parse(id, payload, &job)) {
                 send_text(Failed, id, "bad request");
                 continue;
             }
+            job.sampling = sampling;
             std::lock_guard<std::mutex> hold(queue_lock);
             queue.push_back(std::move(job));
             queue_ready.notify_one();

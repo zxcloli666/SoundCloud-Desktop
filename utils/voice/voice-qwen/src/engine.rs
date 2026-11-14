@@ -30,6 +30,14 @@ pub struct Request<'a> {
     pub lang: &'a str,
     pub seed: i64,
     pub max_tokens: u32,
+    pub sampling: Sampling,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Sampling {
+    pub temperature: f32,
+    pub top_p: f32,
+    pub sub_temperature: f32,
 }
 
 pub trait Sink {
@@ -129,6 +137,12 @@ impl Engine {
             "{}\n{}\n{}\n{}\n{}",
             request.seed, request.max_tokens, request.speaker, request.lang, request.text
         );
+        let sampling = request.sampling;
+        let tuned = format!(
+            "{}\n{}\n{}",
+            sampling.temperature, sampling.top_p, sampling.sub_temperature
+        );
+        self.send(wire::TUNE, id, tuned.as_bytes())?;
         self.send(wire::SAY, id, payload.as_bytes())?;
         let mut cancelled = false;
         let mut heard = Instant::now();

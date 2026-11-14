@@ -2,6 +2,7 @@ use std::io::{self, Read, Write};
 
 pub const SAY: u8 = b'S';
 pub const CANCEL: u8 = b'C';
+pub const TUNE: u8 = b'T';
 pub const READY: u8 = b'R';
 pub const AUDIO: u8 = b'A';
 pub const DONE: u8 = b'D';

@@ -2,7 +2,13 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use voice_qwen::{CPU, Paths, Qwen, Request, Sink};
+use voice_qwen::{CPU, Paths, Qwen, Request, Sampling, Sink};
+
+const SAMPLING: Sampling = Sampling {
+    temperature: 0.6,
+    top_p: 0.9,
+    sub_temperature: 0.6,
+};
 
 const PHRASE: usize = 12000;
 const DEVICE: f32 = 0.5;
@@ -57,6 +63,7 @@ fn phrase() -> Request<'static> {
         lang: "auto",
         seed: 1,
         max_tokens: 100,
+        sampling: SAMPLING,
     }
 }
 

@@ -1,7 +1,13 @@
 use std::path::PathBuf;
 use std::time::Instant;
 
-use voice_qwen::{Engine, Launch, Paths, Qwen, Request, Sink};
+use voice_qwen::{Engine, Launch, Paths, Qwen, Request, Sampling, Sink};
+
+const SAMPLING: Sampling = Sampling {
+    temperature: 0.6,
+    top_p: 0.9,
+    sub_temperature: 0.6,
+};
 
 struct Heard {
     samples: Vec<f32>,
@@ -48,6 +54,7 @@ fn request<'a>(text: &'a str, speaker: &'a str) -> Request<'a> {
         lang: "auto",
         seed: 1,
         max_tokens: 300,
+        sampling: SAMPLING,
     }
 }
 

@@ -120,6 +120,12 @@ fn cached_as(store: &Store, voice: &Voice) -> Option<String> {
     let voices::Kind::Qwen { speaker, .. } = voice.kind else {
         return None;
     };
-    let version = &store.manifest().get(voice.model).ok()?.version;
-    Some(format!("{}/{version}/{speaker}", voice.model))
+    let manifest = store.manifest();
+    let model = &manifest.get(voice.model).ok()?.version;
+    let engine = &manifest.get(engine(store)?).ok()?.version;
+    Some(format!(
+        "{}/{model}/{speaker}/{engine}/{}",
+        voice.model,
+        crate::qwen::manner()
+    ))
 }
