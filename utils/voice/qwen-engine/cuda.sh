@@ -21,3 +21,4 @@ cmake --build "$build" --target ggml-cuda --parallel "$(getconf _NPROCESSORS_ONL
 mkdir -p "$out"
 cp "$build/libggml-cuda.so" "$out/"
 ls -l "$out"
+
