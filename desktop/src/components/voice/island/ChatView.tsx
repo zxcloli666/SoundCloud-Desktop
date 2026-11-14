@@ -29,7 +29,7 @@ function Face({
   const waiting = coming || (phase === 'live' && silent && !speaking);
   return (
     <span
-      className="relative mt-0.5 shrink-0 transition-opacity duration-500"
+      className="relative mt-0.5 flex shrink-0 transition-opacity duration-500"
       style={{ opacity: phase === 'failed' ? 0.55 : 1 }}
     >
       <VoiceAvatar voice={voice} size={40} speaking={speaking} />
