@@ -332,7 +332,7 @@ pub(super) const RULES: &[Rule] = &[
     rule(
         &[&["remove", "take", "delete", "drop"], LIKES],
         &["from", "off", "out", "of", "my", "1", "songs"],
-        &[],
+        &["to"],
         Intent::Unlike,
     ),
     rule(

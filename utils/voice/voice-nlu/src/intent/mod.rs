@@ -23,6 +23,10 @@ pub fn indirect_hit(toks: &[Tok]) -> bool {
     indirect::detect(&Ctx::new(toks)).is_some()
 }
 
+pub fn asks_to_look(toks: &[Tok]) -> bool {
+    play::asks_to_look(&Ctx::new(toks))
+}
+
 pub fn detect(toks: &[Tok]) -> Detected {
     let c = Ctx::new(toks);
     if c.len() == 0 {
@@ -62,11 +66,13 @@ pub fn detect(toks: &[Tok]) -> Detected {
     if let Some(d) = library::into_likes(&c) {
         return d;
     }
-    if let Some(d) = play::content(&c) {
-        return d;
-    }
-    if let Some(d) = library::like(&c) {
-        return d;
+    if !play::asks_to_look(&c) {
+        if let Some(d) = play::content(&c) {
+            return d;
+        }
+        if let Some(d) = library::like(&c) {
+            return d;
+        }
     }
     if let Some(d) = library::shuffle(&c) {
         return d;

@@ -266,6 +266,7 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
     if !(2..=12).contains(&n) {
         return None;
     }
+    let shown = intent::asks_to_look(toks);
     for len in (1..n).rev() {
         for start in 0..=n - len {
             let end = start + len;
@@ -279,6 +280,9 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
             }
             let head_only = end == n && start > 0 && head_intent(det.intent);
             if head_only && asks_to_talk(head, window) {
+                continue;
+            }
+            if shown && (head_only || matches!(det.intent, Intent::Like | Intent::Unlike)) {
                 continue;
             }
             if (allowed(det.intent) || head_only) && !det.blocked {

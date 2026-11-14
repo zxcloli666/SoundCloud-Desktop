@@ -239,6 +239,18 @@ pub fn content(c: &Ctx) -> Option<Detected> {
     None
 }
 
+pub fn asks_to_look(c: &Ctx) -> bool {
+    let led_to = |at: usize| {
+        let next = |by: usize| c.w.get(at + by).copied();
+        match c.w[at] {
+            "go" => next(1) == Some("to"),
+            "take" => next(1) == Some("me") && next(2) == Some("to"),
+            _ => false,
+        }
+    };
+    (c.has(LOOK) || (0..c.len()).any(led_to)) && find_verb(c).is_none()
+}
+
 fn anything_of_a_kind(c: &Ctx) -> bool {
     let anything = |w: &&str| matches!(*w, "чтонибудь" | "чтото");
     let which = |w: &&str| WAVE_NEEDS_VERB.contains(w) && !anything(w);
