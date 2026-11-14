@@ -55,7 +55,9 @@ fn wav(samples: usize) -> Vec<u8> {
 }
 
 fn error(code: &str) -> Vec<u8> {
-    json!({ "error": code }).to_string().into_bytes()
+    json!({ "code": code, "error": "Reason" })
+        .to_string()
+        .into_bytes()
 }
 
 fn ticket(id: &str) -> Vec<u8> {

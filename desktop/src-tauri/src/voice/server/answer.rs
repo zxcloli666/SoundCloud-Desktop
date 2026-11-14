@@ -59,7 +59,7 @@ fn ticket(body: &[u8]) -> Option<String> {
 }
 
 fn refused<T>(status: u16, body: &[u8]) -> Told<T, String> {
-    match field(body, "error") {
+    match field(body, "code") {
         Some(code) if status >= 500 => Told::Elsewhere(code),
         Some(code) => Told::Refused(code),
         None => stranger(status),
