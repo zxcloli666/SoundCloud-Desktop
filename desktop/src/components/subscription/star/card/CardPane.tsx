@@ -24,7 +24,7 @@ export const CardPane = memo(function CardPane({
   onBack,
 }: {
   method: BoostyCardMethod;
-  amount: string;
+  amount: string | null;
   onLinked: () => void;
   onOnce: (() => void) | null;
   onBack: () => void;
@@ -58,7 +58,7 @@ export const CardStage = memo(function CardStage({
   onBack,
 }: {
   stage: Stage;
-  amount: string;
+  amount: string | null;
   onSubmit: (card: CardFields) => void;
   onRetry: () => void;
   onOnce: (() => void) | null;

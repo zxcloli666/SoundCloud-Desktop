@@ -2091,6 +2091,9 @@
     },
     "bind": {
       "linkPay": "Bağla ve öde",
+      "link": "Bağla",
+      "relink": "Yeniden bağla",
+      "rebind": "Yeniden bağlanmalı",
       "linkedSub": "Otomatik yenileme için",
       "keep": "Kalsın",
       "remove": "Kaldır",
@@ -2121,7 +2124,6 @@
         "cameraHelp": "Banka bağlanamıyor mu diyor? QR'ı banka uygulaması yerine telefon kamerasıyla tarayın: SBP sayfası tarayıcıda açılır, bankanızı orada seçin.",
         "relinkNote": "Banka hesabın Boosty'ye zaten bağlı olduğunu söylerse yine de onaylayın: bağlama gerçekleşir.",
         "showAgain": "QR'ı yeniden göster",
-        "relink": "Yeniden bağla",
         "expired": "QR'ın süresi doldu.",
         "fail": {
           "exists": "Bu hesap zaten bağlı. Abonelik daha önce bankada iptal edildiyse yeniden bağlayın.",

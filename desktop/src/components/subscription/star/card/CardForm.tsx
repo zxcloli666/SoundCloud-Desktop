@@ -43,7 +43,7 @@ export const CardForm = memo(function CardForm({
   invalid,
   onSubmit,
 }: {
-  amount: string;
+  amount: string | null;
   invalid: FieldName[];
   onSubmit: (card: CardFields) => void;
 }) {
@@ -116,7 +116,7 @@ export const CardForm = memo(function CardForm({
         </Field>
         <div className="col-span-2 mt-1 flex flex-wrap items-center gap-3">
           <PrimaryBtn onClick={send}>
-            {t('starpass.bind.linkPay')} · {amount}
+            {amount ? `${t('starpass.bind.linkPay')} · ${amount}` : t('starpass.bind.link')}
           </PrimaryBtn>
           <span className="flex items-center gap-1.5 font-mono text-[10.5px] tracking-[0.06em] text-ink-40">
             <Lock size={12} />

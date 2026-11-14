@@ -11,10 +11,12 @@ const QR_SIZE = 160;
 const PNG_PREFIX = 'data:image/png;base64,';
 
 export const SbpPane = memo(function SbpPane({
+  paying = true,
   onLinked,
   onOnce,
   onBack,
 }: {
+  paying?: boolean;
   onLinked: () => void;
   onOnce: (() => void) | null;
   onBack: () => void;
@@ -31,6 +33,7 @@ export const SbpPane = memo(function SbpPane({
   return (
     <SbpStageView
       stage={stage}
+      paying={paying}
       relinked={relinked}
       onRestart={restart}
       onRelink={() => {
@@ -45,6 +48,7 @@ export const SbpPane = memo(function SbpPane({
 
 export const SbpStageView = memo(function SbpStageView({
   stage,
+  paying = true,
   relinked,
   onRestart,
   onRelink,
@@ -52,6 +56,7 @@ export const SbpStageView = memo(function SbpStageView({
   onBack,
 }: {
   stage: SbpStage;
+  paying?: boolean;
   relinked: boolean;
   onRestart: () => void;
   onRelink: () => void;
@@ -96,7 +101,7 @@ export const SbpStageView = memo(function SbpStageView({
         ) : stage.kind === 'expired' ? (
           <p className="text-[12.5px] text-ink-80">{t('starpass.bind.sbp.expired')}</p>
         ) : (
-          <Steps relinked={relinked} />
+          <Steps paying={paying} relinked={relinked} />
         )}
         <div className="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-2.5">
           <Actions
@@ -130,7 +135,7 @@ const Actions = memo(function Actions({
   if (stage.kind === 'failed' && stage.reason === 'exists') {
     return (
       <>
-        <PrimaryBtn onClick={onRelink}>{t('starpass.bind.sbp.relink')}</PrimaryBtn>
+        <PrimaryBtn onClick={onRelink}>{t('starpass.bind.relink')}</PrimaryBtn>
         {once}
       </>
     );
@@ -160,12 +165,12 @@ const Actions = memo(function Actions({
   );
 });
 
-const Steps = memo(function Steps({ relinked }: { relinked: boolean }) {
+const Steps = memo(function Steps({ paying, relinked }: { paying: boolean; relinked: boolean }) {
   const { t } = useTranslation();
   return (
     <>
       <ol className="flex list-none flex-col gap-2 p-0">
-        {[1, 2].map((n) => (
+        {(paying ? [1, 2] : [1]).map((n) => (
           <li key={n} className="flex gap-2.5 text-[12.5px] text-ink-60">
             <span className="min-w-[16px] font-mono text-[11px] text-accent">
               {String(n).padStart(2, '0')}

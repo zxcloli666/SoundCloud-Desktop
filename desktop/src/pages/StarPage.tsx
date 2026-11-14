@@ -39,9 +39,11 @@ import { Console } from '../components/subscription/star/StarConsole';
 import { SuccessPane } from '../components/subscription/star/SuccessPane';
 import { SbpPane } from '../components/subscription/star/sbp/SbpPane';
 import type { TierOption } from '../components/subscription/star/TierSwitch';
+import { bindState } from '../lib/boosty-bind-state';
 import { refreshBinds, useBinds, useCardSupported, useRemoveBind } from '../lib/boosty-binds';
 import { ChevronLeft } from '../lib/icons';
 import {
+  type BoostyMethod,
   type CheckoutResp,
   type Plan,
   payApi,
@@ -108,6 +110,7 @@ const StarFlow = memo(function StarFlow({
   const [renewOn, setRenewOn] = useState(false);
   const [checkout, setCheckout] = useState<CheckoutResp | null>(null);
   const [igniteKey, setIgniteKey] = useState(0);
+  const [relink, setRelink] = useState<BoostyMethod | null>(null);
 
   const plansQuery = useQuery({
     queryKey: ['pay', 'plans'],
@@ -135,13 +138,15 @@ const StarFlow = memo(function StarFlow({
   const bindMethod = chosen?.recurring ? bindOf(chosen.route) : null;
   const binds = useBinds(bindMethod !== null);
   const removeBind = useRemoveBind();
+  const bindNow = bindMethod ? bindState(binds.data, bindMethod) : 'none';
   const bound = bindMethod
     ? binds.data
-      ? binds.data.binds[bindMethod]
+      ? bindNow === 'linked'
       : binds.isError
         ? false
         : null
     : null;
+  const relinking = step === 'card' || step === 'sbp' ? relink : null;
   const selectedPlan = plans.find((p) => p.id === planId) ?? null;
   const routeCurrency = currencyOf(chosen?.route);
   const amount = selectedPlan ? planPrice(selectedPlan, routeCurrency) : '';
@@ -287,8 +292,20 @@ const StarFlow = memo(function StarFlow({
     [onceRoute, checkoutMut.mutate],
   );
 
+  const startRelink = useCallback((method: BoostyMethod) => {
+    setRelink(method);
+    setStep(method === 'sbp' ? 'sbp' : 'card');
+  }, []);
+
+  const endRelink = useCallback(() => {
+    setRelink(null);
+    refreshBinds();
+    setStep('manage');
+  }, []);
+
   const continueToPay = useCallback(() => {
     if (!chosen) return;
+    setRelink(null);
     if (bindMethod && bound !== true) {
       setStep(bindMethod === 'sbp' ? 'sbp' : 'card');
       return;
@@ -296,10 +313,11 @@ const StarFlow = memo(function StarFlow({
     checkoutMut.mutate(chosen);
   }, [chosen, bindMethod, bound, checkoutMut.mutate]);
 
-  const lit = step === 'success' || step === 'manage';
+  const lit = step === 'success' || step === 'manage' || relinking !== null;
   // Where the header "back" returns to, per step (null = no back button).
-  const backTarget: Step | null =
-    step === 'pay' || step === 'card' || step === 'sbp'
+  const backTarget: Step | null = relinking
+    ? 'manage'
+    : step === 'pay' || step === 'card' || step === 'sbp'
       ? 'method'
       : step === 'method'
         ? 'overview'
@@ -383,7 +401,7 @@ const StarFlow = memo(function StarFlow({
               />
               <div className="relative mx-auto max-w-[320px]">
                 <CenterReadout
-                  step={step}
+                  step={relinking ? 'manage' : step}
                   phase={phase}
                   handle={handle}
                   plan={selectedPlan}
@@ -464,6 +482,7 @@ const StarFlow = memo(function StarFlow({
                     ? {
                         method: bindMethod,
                         bound,
+                        rebind: bindNow === 'rebind',
                         removing: removeBind.isPending,
                         onRemove: () => removeBind.mutate(bindMethod),
                       }
@@ -478,14 +497,21 @@ const StarFlow = memo(function StarFlow({
             )}
             {step === 'card' && (
               <CardPane
-                method={bindMethod === 'card_usd' ? 'card_usd' : 'card'}
-                amount={amount}
-                onLinked={payChosen}
-                onOnce={payOnce}
-                onBack={goMethod}
+                method={(relinking ?? bindMethod) === 'card_usd' ? 'card_usd' : 'card'}
+                amount={relinking ? null : amount}
+                onLinked={relinking ? endRelink : payChosen}
+                onOnce={relinking ? null : payOnce}
+                onBack={relinking ? endRelink : goMethod}
               />
             )}
-            {step === 'sbp' && <SbpPane onLinked={payChosen} onOnce={payOnce} onBack={goMethod} />}
+            {step === 'sbp' && (
+              <SbpPane
+                paying={!relinking}
+                onLinked={relinking ? endRelink : payChosen}
+                onOnce={relinking ? null : payOnce}
+                onBack={relinking ? endRelink : goMethod}
+              />
+            )}
             {step === 'pay' && checkout && option && (
               <PayPane
                 checkout={checkout}
@@ -518,6 +544,7 @@ const StarFlow = memo(function StarFlow({
                 onGift={() => setStep('gifts')}
                 onInvite={() => setStep('invite')}
                 onPlan={() => setStep('plan')}
+                onRelink={startRelink}
               />
             )}
             {step === 'plan' && <SharedPane onChoose={() => setStep('overview')} />}

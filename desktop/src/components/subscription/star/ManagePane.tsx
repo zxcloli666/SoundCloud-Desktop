@@ -2,7 +2,8 @@ import { useMutation } from '@tanstack/react-query';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { useBinds, useRemoveBind } from '../../../lib/boosty-binds';
+import { linkedBinds } from '../../../lib/boosty-bind-state';
+import { useBinds, useCardSupported, useRemoveBind } from '../../../lib/boosty-binds';
 import { Crown, Gift, Users } from '../../../lib/icons';
 import { type BoostyMethod, payApi } from '../../../lib/pay-client';
 import { requestPremiumRecheck } from '../../../lib/premium-cache';
@@ -20,8 +21,6 @@ import { primaryEntitlement } from './meta';
 import { GhostBtn } from './StarConsole';
 import { TenurePanel } from './TenurePanel';
 
-const BIND_METHODS: BoostyMethod[] = ['card', 'card_usd', 'sbp'];
-
 /** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem / gift / invite. */
 export const ManagePane = memo(function ManagePane({
   onExtend,
@@ -29,12 +28,14 @@ export const ManagePane = memo(function ManagePane({
   onGift,
   onInvite,
   onPlan,
+  onRelink,
 }: {
   onExtend: () => void;
   onRedeem: () => void;
   onGift: () => void;
   onInvite: () => void;
   onPlan: () => void;
+  onRelink: (method: BoostyMethod) => void;
 }) {
   const { t } = useTranslation();
   const { data, isLoading } = usePaySubscription();
@@ -47,8 +48,8 @@ export const ManagePane = memo(function ManagePane({
   const autoRenew = renewSource !== null;
   const ending =
     status?.kind === 'ends' && status.level !== 'calm' && status.canExtend ? status : null;
-  const binds = useBinds().data?.binds;
-  const linked = BIND_METHODS.filter((method) => binds?.[method]);
+  const linked = linkedBinds(useBinds().data);
+  const cardSupported = useCardSupported();
   const removeBind = useRemoveBind();
 
   const cancel = useMutation({
@@ -97,12 +98,14 @@ export const ManagePane = memo(function ManagePane({
       <TenurePanel />
       <DiscordCard discord={data?.discord ?? null} />
 
-      {linked.map((method) => (
+      {linked.map(({ method, rebind }) => (
         <LinkedBind
           key={method}
           method={method}
+          rebind={rebind}
           removing={removeBind.isPending && removeBind.variables === method}
           onRemove={() => removeBind.mutate(method)}
+          onRelink={method === 'sbp' || cardSupported ? () => onRelink(method) : undefined}
         />
       ))}
 

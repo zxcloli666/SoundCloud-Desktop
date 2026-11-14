@@ -18,6 +18,7 @@ export interface RenewSwitch {
 export interface BindRow {
   method: BoostyMethod;
   bound: boolean | null;
+  rebind: boolean;
   removing: boolean;
   onRemove: () => void;
 }
@@ -86,9 +87,14 @@ export const MethodPane = memo(function MethodPane({
 
       {selected && <RenewToggle renew={renew} onRenew={onRenew} />}
 
-      {bind?.bound && (
+      {(bind?.bound || bind?.rebind) && (
         <div className="mt-3.5">
-          <LinkedBind method={bind.method} removing={bind.removing} onRemove={bind.onRemove} />
+          <LinkedBind
+            method={bind.method}
+            rebind={bind.rebind}
+            removing={bind.removing}
+            onRemove={bind.onRemove}
+          />
         </div>
       )}
 
