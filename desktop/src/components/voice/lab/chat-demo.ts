@@ -20,6 +20,7 @@ interface Script {
 const SCRIPTS: Script[] = [
   { match: /лимит|limit/i, reject: 'rate_limited', rounds: [] },
   { match: /сервер|server/i, reject: 'unavailable', rounds: [] },
+  { match: /связь|connection/i, reject: 'network', rounds: [] },
   {
     match: /ошибк|error/i,
     rounds: [

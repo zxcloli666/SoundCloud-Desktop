@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { type ChatStep, unanswered } from '../src/lib/voice/chat/step.ts';
+import { type ChatStep, refusal } from '../src/lib/voice/chat/step.ts';
 import type { TurnEnd } from '../src/lib/voice/chat/types';
 import { execute } from '../src/lib/voice/execute.ts';
 import type { UndoEntry } from '../src/lib/voice/undo';
@@ -269,13 +269,27 @@ test('a phrase read again without the chat gets a fixed line and the chat is not
   assert.deepEqual(asked, []);
 });
 
-test('a phrase is unanswered only when the chat failed before it said or did anything', async () => {
+test('the fixed line names why the chat is away', async () => {
+  const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] });
+  const cmd = command('none', { heard: 'как дела', chatless: true });
+  const said = async (refused: string, lang: 'ru' | 'en' = 'ru') =>
+    (await execute(cmd, fakePort(), { ...ctx([], lang), chat, refused })).outcome.speech;
+  assert.match(await said('rate_limited'), /много вопросов подряд.*музыку включу/);
+  assert.match(await said('network'), /со связью.*музыку включу/);
+  assert.match(await said('deadline'), /со связью/);
+  assert.match(await said('unavailable'), /не могу поболтать/);
+  assert.match(await said('rate_limited', 'en'), /questions in a row.*play music/);
+  assert.match(await said('network', 'en'), /connection.*play music/);
+  assert.deepEqual(asked, []);
+});
+
+test('a chat refuses a phrase only when it failed before it said or did anything', async () => {
   const left = async (end: TurnEnd) => {
     const { chat } = chatting(end);
-    return unanswered(await execute(command('none'), fakePort(), { ...ctx(), chat }));
+    return refusal(await execute(command('none'), fakePort(), { ...ctx(), chat }));
   };
   for (const code of ['rate_limited', 'unavailable', 'network', 'deadline', 'failed']) {
-    assert.equal(await left({ status: 'failed', code, say: ' ', marks: [] }), true, code);
+    assert.equal(await left({ status: 'failed', code, say: ' ', marks: [] }), code);
   }
   const answered: TurnEnd[] = [
     { status: 'failed', code: 'star_required', say: '', marks: [] },
@@ -285,7 +299,7 @@ test('a phrase is unanswered only when the chat failed before it said or did any
     { status: 'ok', say: 'Привет!', marks: [] },
     { status: 'ok', say: '', marks: [] },
   ];
-  for (const end of answered) assert.equal(await left(end), false, JSON.stringify(end));
+  for (const end of answered) assert.equal(await left(end), null, JSON.stringify(end));
   const plain = await execute(command('pause'), fakePort(), ctx());
-  assert.equal(unanswered(plain), false);
+  assert.equal(refusal(plain), null);
 });

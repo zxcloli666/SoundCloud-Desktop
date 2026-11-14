@@ -9,7 +9,7 @@ import {
   rowReply,
   stopChat,
 } from './chat/session';
-import { unanswered } from './chat/step';
+import { refusal } from './chat/step';
 import { execute, revert, type StepResult } from './execute';
 import { dismiss } from './hud';
 import { voiceIpc } from './ipc';
@@ -33,6 +33,7 @@ interface GroupRun {
 let stack: UndoEntry[] = [];
 let chain: Promise<void> = Promise.resolve();
 let group: GroupRun | null = null;
+let refused: string | undefined;
 const undoListeners = new Set<() => void>();
 
 const ROW_RESULT: Record<StepResult['kind'], RowResult> = {
@@ -155,10 +156,15 @@ async function handle(cmd: VoiceCommand) {
     now: Date.now(),
     stack,
     chat: chatOn() ? chatStep : undefined,
+    refused,
   });
   dropChatAhead(cmd.id);
   stack = res.stack;
-  if (unanswered(res) && (await reread(cmd.id))) return;
+  const code = refusal(res);
+  if (code !== null) {
+    refused = code;
+    if (await reread(cmd.id)) return;
+  }
   if (res.kind === 'done') {
     run.items = [
       ...run.items,

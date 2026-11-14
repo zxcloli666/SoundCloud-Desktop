@@ -10,10 +10,10 @@ export interface ChatStep {
   undo: boolean;
 }
 
-export function unanswered(res: StepResult): boolean {
+export function refusal(res: StepResult): string | null {
   const end = res.chat;
-  if (end?.status !== 'failed' || end.code === 'star_required') return false;
-  return !end.say.trim() && end.marks.length === 0;
+  if (end?.status !== 'failed' || end.code === 'star_required') return null;
+  return !end.say.trim() && end.marks.length === 0 ? end.code : null;
 }
 
 export function awayResult(cmd: VoiceCommand, line: Reply, stack: UndoEntry[]): StepResult {
