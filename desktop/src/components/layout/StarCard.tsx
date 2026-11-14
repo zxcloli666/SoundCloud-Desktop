@@ -112,8 +112,10 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
               {line ?? t('star.getIt')}
             </span>
             {charging && (
-              <span className="text-[9.5px] font-medium text-ink-50">
-                {t('star.in', { count: charging.days })}
+              <span className="whitespace-nowrap text-[9.5px] font-medium tabular-nums text-ink-50">
+                {charging.trialUntil
+                  ? `↻ ${t('star.in', { count: charging.days })} · ${charging.charge}`
+                  : t('star.in', { count: charging.days })}
               </span>
             )}
           </div>

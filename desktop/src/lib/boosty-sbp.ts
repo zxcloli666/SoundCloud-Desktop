@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { refreshBinds } from './boosty-binds';
-import { type BoostyQr, type BoostyStep, PayError, payApi } from './pay-client';
+import {
+  type BoostyQr,
+  type BoostyStep,
+  PayError,
+  payApi,
+  payErrorCode,
+  type TrialRefusal,
+} from './pay-client';
+import { trialStart } from './star-offer';
+import { isGranted, type TrialOutcome, trialOutcome, trialRefusal } from './star-trial';
 
 const POLL_MS = 3_000;
 const ERRORS_IN_A_ROW = 5;
@@ -17,7 +26,8 @@ const FAIL_OF_REASON: Record<string, SbpFail> = {
 export type SbpStage =
   | { kind: 'starting' }
   | { kind: 'waiting'; qr: BoostyQr | null; expiresAt: number }
-  | { kind: 'linked' }
+  | { kind: 'linked'; trial: TrialOutcome | null }
+  | { kind: 'refused'; refusal: TrialRefusal }
   | { kind: 'expired' }
   | { kind: 'failed'; reason: SbpFail };
 
@@ -30,7 +40,7 @@ function startFailure(error: unknown): SbpFail {
 }
 
 function settled(step: BoostyStep): SbpStage | null {
-  if (step.status === 'bound') return { kind: 'linked' };
+  if (step.status === 'bound') return { kind: 'linked', trial: trialOutcome(step) };
   if (step.status === 'expired') return { kind: 'expired' };
   if (step.status === 'failed') {
     return { kind: 'failed', reason: FAIL_OF_REASON[step.reason ?? ''] ?? 'other' };
@@ -64,15 +74,22 @@ async function watch(
   return null;
 }
 
-function begin(setStage: SetStage, before?: () => Promise<unknown>): () => void {
+function begin(setStage: SetStage, trial: boolean, before?: () => Promise<unknown>): () => void {
   let live = true;
   let id: number | null = null;
   let linked = false;
   const alive = () => live;
   setStage({ kind: 'starting' });
   (before ? before() : Promise.resolve())
-    .then(() => payApi.boostyStartSbp())
+    .then(() => (trial ? trialStart() : undefined))
+    .then((purpose) => payApi.boostyStartSbp(purpose))
     .then(async (started) => {
+      if (isGranted(started)) {
+        if (!live) return;
+        linked = true;
+        refreshBinds();
+        return setStage({ kind: 'linked', trial: { kind: 'granted', grant: started.trial } });
+      }
       id = started.session_id;
       if (!live) return cancel(id);
       setStage({ kind: 'waiting', qr: started.qr ?? null, expiresAt: started.expires_at });
@@ -82,7 +99,13 @@ function begin(setStage: SetStage, before?: () => Promise<unknown>): () => void 
       if (linked) refreshBinds();
       setStage(end);
     })
-    .catch((error) => live && setStage({ kind: 'failed', reason: startFailure(error) }));
+    .catch((error) => {
+      if (!live) return;
+      const refusal = trialRefusal(payErrorCode(error));
+      setStage(
+        refusal ? { kind: 'refused', refusal } : { kind: 'failed', reason: startFailure(error) },
+      );
+    });
   return () => {
     live = false;
     if (id !== null && !linked) cancel(id);
@@ -93,27 +116,27 @@ function cancel(id: number) {
   void payApi.boostyCancel(id).catch(() => {});
 }
 
-export function useSbpLink() {
+export function useSbpLink(trial = false) {
   const [stage, setStage] = useState<SbpStage>({ kind: 'starting' });
   const stop = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    stop.current = begin(setStage);
+    stop.current = begin(setStage, trial);
     return () => stop.current?.();
-  }, []);
+  }, [trial]);
 
   const restart = useCallback(() => {
     stop.current?.();
-    stop.current = begin(setStage);
-  }, []);
+    stop.current = begin(setStage, trial);
+  }, [trial]);
 
   const relink = useCallback(() => {
     stop.current?.();
-    stop.current = begin(setStage, async () => {
+    stop.current = begin(setStage, trial, async () => {
       await payApi.boostyRemove('sbp');
       refreshBinds();
     });
-  }, []);
+  }, [trial]);
 
   return { stage, restart, relink };
 }

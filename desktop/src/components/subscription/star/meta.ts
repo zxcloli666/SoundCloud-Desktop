@@ -26,7 +26,8 @@ export type Step =
   | 'manage'
   | 'invite'
   | 'gifts'
-  | 'plan';
+  | 'plan'
+  | 'trial';
 
 /** Who the pass is for: the buyer, or a friend through a gift code. */
 export type Recipient = 'self' | 'gift';

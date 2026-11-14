@@ -1,11 +1,13 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth';
+import { useCardSupported } from './boosty-binds';
 import { trackedInvoke as invoke } from './diagnostics';
-import { payApi } from './pay-client';
+import { payApi, type TrialStart } from './pay-client';
 import { requestPremiumRecheck, usePremium } from './premium-cache';
 import { queryClient } from './query-client';
+import { trialOffer } from './star-trial';
 
 export const PAY_SUB_KEY = ['pay', 'subscription'] as const;
 
@@ -28,7 +30,9 @@ export function usePaySubscription(enabled = true) {
 export function useStarOffer() {
   const premium = usePremium();
   const sub = usePaySubscription(!premium).data;
-  return { premium, trial: !premium && sub?.trial_available === true };
+  const cardSupported = useCardSupported();
+  const offer = premium ? null : trialOffer(sub, cardSupported);
+  return { premium, trial: offer?.available === true, trialDays: offer?.days ?? TRIAL_DAYS };
 }
 
 export function useOpenStar() {
@@ -47,12 +51,11 @@ async function deviceId(): Promise<string | null> {
   }
 }
 
-export function useStartTrial() {
-  return useMutation({
-    mutationFn: async () => payApi.trial(await deviceId()),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: PAY_SUB_KEY });
-      requestPremiumRecheck();
-    },
-  });
+export async function trialStart(): Promise<TrialStart> {
+  return { purpose: 'trial', device_id: await deviceId() };
+}
+
+export function refreshSubscription() {
+  void queryClient.invalidateQueries({ queryKey: PAY_SUB_KEY });
+  requestPremiumRecheck();
 }

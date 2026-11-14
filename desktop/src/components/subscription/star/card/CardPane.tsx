@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   type FailReason,
@@ -10,32 +10,28 @@ import { Check } from '../../../../lib/icons';
 import type { BoostyCardMethod } from '../../../../lib/pay-client';
 import { AccentSpinner } from '../AccentSpinner';
 import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from '../StarConsole';
+import { type OnLinked, useLinkEnd } from '../useLinkEnd';
 import { CardFace } from './CardFace';
 import { CardForm } from './CardForm';
 import { CardProgress } from './CardProgress';
 
-const LINKED_HOLD_MS = 1200;
-
 export const CardPane = memo(function CardPane({
   method,
   amount,
+  trial = false,
   onLinked,
   onOnce,
   onBack,
 }: {
   method: BoostyCardMethod;
   amount: string | null;
-  onLinked: () => void;
+  trial?: boolean;
+  onLinked: OnLinked;
   onOnce: (() => void) | null;
   onBack: () => void;
 }) {
-  const { stage, submit, retry } = useCardLink(method);
-
-  useEffect(() => {
-    if (stage.kind !== 'linked') return;
-    const timer = setTimeout(onLinked, LINKED_HOLD_MS);
-    return () => clearTimeout(timer);
-  }, [stage.kind, onLinked]);
+  const { stage, submit, retry } = useCardLink(method, trial);
+  useLinkEnd(stage, onLinked);
 
   return (
     <CardStage

@@ -1939,10 +1939,23 @@
       "cta_other": "{{count}} dias grátis",
       "cta_many": "{{count}} dias grátis",
       "cta_zero": "{{count}} dias grátis",
-      "starting": "Iniciando…",
-      "error": {
-        "trial_used": "Esta conta ou computador já usou um teste do STAR.",
-        "not_eligible": "O teste é para contas que nunca tiveram o STAR.",
+      "title": "Teste grátis",
+      "terms_one": "{{count}} dia grátis, depois {{amount}} por mês neste método. Cancele quando quiser antes da cobrança.",
+      "terms_other": "{{count}} dias grátis, depois {{amount}} por mês neste método. Cancele quando quiser antes da cobrança.",
+      "terms_many": "{{count}} dias grátis, depois {{amount}} por mês neste método. Cancele quando quiser antes da cobrança.",
+      "terms_zero": "{{count}} dias grátis, depois {{amount}} por mês neste método. Cancele quando quiser antes da cobrança.",
+      "then": "depois {{amount}} por mês",
+      "until": "Teste até {{date}}",
+      "cancel": "Cancelar teste",
+      "cancelConfirm": "O STAR acaba na hora e nada é cobrado. O teste não pode ser usado de novo.",
+      "canceled": "Teste cancelado",
+      "cancelError": "Não foi possível cancelar o teste",
+      "refused": {
+        "used": "Esta conta já usou o teste.",
+        "has_star": "Você já tem o STAR.",
+        "device_used": "Este computador já usou o teste.",
+        "card_used": "Este método de pagamento já usou o teste. Ele continua vinculado: dá para assinar o STAR com ele.",
+        "no_methods": "Nenhum método de pagamento pode iniciar o teste agora.",
         "failed": "Não foi possível iniciar o teste. Tente mais tarde."
       }
     },

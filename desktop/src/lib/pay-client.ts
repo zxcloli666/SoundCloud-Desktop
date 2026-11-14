@@ -182,7 +182,7 @@ export interface PaySubscription {
   discord: DiscordLink | null;
   /** When the latest STAR of any source ended; null if never had one. */
   last_ended_at?: number | null;
-  trial_available?: boolean;
+  trial?: TrialOffer;
 }
 
 export interface Gift {
@@ -301,6 +301,40 @@ export interface BoostyStep {
   reason?: string;
   qr?: BoostyQr;
   url?: string;
+  trial?: TrialGrant;
+  trial_refused?: string;
+}
+
+export interface TrialGrant {
+  ends_at: number;
+  charge_at: number;
+  amount_minor: number;
+  currency: string;
+}
+
+export interface TrialActive extends TrialGrant {
+  method: BoostyMethod;
+}
+
+export type TrialRefusal = 'used' | 'has_star' | 'device_used' | 'card_used';
+export type TrialReason = TrialRefusal | 'no_methods';
+
+export interface TrialOffer {
+  available: boolean;
+  days: number;
+  methods: BoostyMethod[];
+  reason: TrialReason | null;
+  active: TrialActive | null;
+}
+
+export interface BoostyGranted {
+  status: 'granted';
+  trial: TrialGrant;
+}
+
+export interface TrialStart {
+  purpose: 'trial';
+  device_id: string | null;
 }
 
 export interface BoostyBinds {
@@ -325,11 +359,7 @@ export const payApi = {
     }),
   redeem: (code: string) =>
     payRequest<RedeemResp>('/api/redeem', { method: 'POST', body: JSON.stringify({ code }) }),
-  trial: (deviceId: string | null) =>
-    payRequest<{ premium_until: number }>('/api/trial', {
-      method: 'POST',
-      body: JSON.stringify({ device_id: deviceId }),
-    }),
+  trialCancel: () => payRequest<{ premium_until: number }>('/api/trial/cancel', { method: 'POST' }),
   shared: () => payRequest<SharedOverview>('/api/shared'),
   sharedPreview: (tier: SharedTierId, planId: string) =>
     payRequest<SharedPreview>(
@@ -348,9 +378,10 @@ export const payApi = {
     }),
   regenerateInvite: () =>
     payRequest<{ invite_code: string }>('/api/shared/invite', { method: 'POST' }),
-  boostyStartCard: (method: BoostyCardMethod) =>
-    boostyPost<BoostyCardStart>('/api/boosty/start', { method }),
-  boostyStartSbp: () => boostyPost<BoostySbpStart>('/api/boosty/start', { method: 'sbp' }),
+  boostyStartCard: (method: BoostyCardMethod, trial?: TrialStart) =>
+    boostyPost<BoostyCardStart | BoostyGranted>('/api/boosty/start', { method, ...trial }),
+  boostyStartSbp: (trial?: TrialStart) =>
+    boostyPost<BoostySbpStart | BoostyGranted>('/api/boosty/start', { method: 'sbp', ...trial }),
   boostyStep: (sessionId: number) =>
     boostyPost<BoostyStep>('/api/boosty/step', { session_id: sessionId }),
   boostyToken: (sessionId: number, token: string) =>

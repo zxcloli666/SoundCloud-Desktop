@@ -16,6 +16,14 @@ export type ActivationKind =
   | 'crypto_bot'
   | 'tgstars';
 
+export interface MethodTile {
+  kind: ActivationKind;
+  /** i18n suffix under starpass.method.* */
+  i18n: string;
+  /** mono tag, e.g. "TON / USDT" */
+  tag: string;
+}
+
 export interface ActivationOption {
   kind: ActivationKind;
   method: RouteMethod;
@@ -75,6 +83,21 @@ export function activationOptions(plans: PlansResponse): ActivationOption[] {
 }
 
 export type Currency = 'RUB' | 'USD';
+
+const KIND_OF_BIND: Record<BoostyMethod, ActivationKind> = {
+  card: 'card_ru',
+  sbp: 'sbp',
+  card_usd: 'card_intl',
+};
+
+export function bindTile(method: BoostyMethod): MethodTile {
+  const kind = KIND_OF_BIND[method];
+  return { kind, i18n: I18N[kind], tag: TAGS[kind] };
+}
+
+export function bindCurrency(method: BoostyMethod): Currency {
+  return method === 'card_usd' ? 'USD' : 'RUB';
+}
 
 export function bindOf(route: PayRoute): BoostyMethod | null {
   if (route.provider !== 'boostycard') return null;

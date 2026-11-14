@@ -2,10 +2,7 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { BoostyMethod } from '../../../lib/pay-client';
 import { ProviderGlyph } from '../ProviderGlyph';
-import { LinkBtn } from './StarConsole';
-
-const PILL =
-  'cursor-pointer rounded-[10px] border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.12em] transition-colors disabled:cursor-default disabled:opacity-50';
+import { LinkBtn, PillBtn } from './StarConsole';
 
 export const LinkedBind = memo(function LinkedBind({
   method,
@@ -52,22 +49,17 @@ export const LinkedBind = memo(function LinkedBind({
           <LinkBtn onClick={() => setAsking(false)}>{t('starpass.bind.keep')}</LinkBtn>
         )}
         {rebind && onRelink && !asking && (
-          <button
-            type="button"
-            onClick={onRelink}
-            className={`${PILL} border-accent/60 text-accent hover:bg-accent/10`}
-          >
+          <PillBtn tone="accent" onClick={onRelink}>
             {t('starpass.bind.relink')}
-          </button>
+          </PillBtn>
         )}
-        <button
-          type="button"
+        <PillBtn
+          tone={asking ? 'bad' : 'quiet'}
           disabled={removing}
           onClick={() => (asking ? onRemove() : setAsking(true))}
-          className={`${PILL} ${asking ? 'border-bad/50 text-bad' : 'border-ink/[0.12] text-ink-50 hover:text-ink-90'}`}
         >
           {asking ? t(`starpass.bind.${method}.removeYes`) : t('starpass.bind.remove')}
-        </button>
+        </PillBtn>
       </span>
     </div>
   );

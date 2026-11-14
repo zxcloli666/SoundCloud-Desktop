@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { refreshBinds } from '../boosty-binds';
-import { type BoostyCardMethod, PayError, payApi } from '../pay-client';
+import {
+  type BoostyCardMethod,
+  type BoostyStep,
+  PayError,
+  payApi,
+  payErrorCode,
+  type TrialRefusal,
+} from '../pay-client';
+import { trialStart } from '../star-offer';
+import { isGranted, type TrialOutcome, trialOutcome, trialRefusal } from '../star-trial';
 import { type CardPhase, cardNative, nativeCode, onCardPhase } from './native';
 import { type FailReason, stepEnd, verdictFailure } from './reasons';
 import { linkByToken } from './token-link';
@@ -15,7 +24,8 @@ export type Stage =
   | { kind: 'starting' }
   | { kind: 'form'; invalid: FieldName[] }
   | { kind: 'working'; phase: CardPhase | 'linking'; via3ds: boolean }
-  | { kind: 'linked' }
+  | { kind: 'linked'; trial: TrialOutcome | null }
+  | { kind: 'refused'; refusal: TrialRefusal }
   | { kind: 'failed'; reason: FailReason };
 
 const FIELD_OF_CODE: Record<string, FieldName> = {
@@ -34,11 +44,13 @@ function startFailure(error: unknown): FailReason {
   return code === 'native' ? 'network' : 'bundle';
 }
 
-async function waitBound(id: number, alive: () => boolean): Promise<'bound' | FailReason> {
+async function waitBound(id: number, alive: () => boolean): Promise<BoostyStep | FailReason> {
   const until = Date.now() + LINK_WAIT_MS;
   while (alive() && Date.now() < until) {
     try {
-      const end = stepEnd(await payApi.boostyStep(id));
+      const step = await payApi.boostyStep(id);
+      const end = stepEnd(step);
+      if (end === 'bound') return step;
       if (end) return end;
     } catch (error) {
       if (error instanceof PayError && error.status === 409) return 'busy';
@@ -50,6 +62,7 @@ async function waitBound(id: number, alive: () => boolean): Promise<'bound' | Fa
 
 function begin(
   method: BoostyCardMethod,
+  trial: boolean,
   setStage: (stage: Stage) => void,
   session: { current: number | null },
   finished: { current: boolean },
@@ -59,9 +72,15 @@ function begin(
   let opened = false;
   finished.current = false;
   setStage({ kind: 'starting' });
-  payApi
-    .boostyStartCard(method)
+  (trial ? trialStart() : Promise.resolve(undefined))
+    .then((purpose) => payApi.boostyStartCard(method, purpose))
     .then(async (start) => {
+      if (isGranted(start)) {
+        if (!live) return;
+        finished.current = true;
+        refreshBinds();
+        return setStage({ kind: 'linked', trial: { kind: 'granted', grant: start.trial } });
+      }
       id = start.session_id;
       if (!live) return leave(id, false);
       await cardNative.open(start);
@@ -70,7 +89,13 @@ function begin(
       session.current = start.session_id;
       setStage({ kind: 'form', invalid: [] });
     })
-    .catch((error) => live && setStage({ kind: 'failed', reason: startFailure(error) }));
+    .catch((error) => {
+      if (!live) return;
+      const refusal = trialRefusal(payErrorCode(error));
+      setStage(
+        refusal ? { kind: 'refused', refusal } : { kind: 'failed', reason: startFailure(error) },
+      );
+    });
   return () => {
     live = false;
     if (!finished.current) leave(id, opened);
@@ -78,16 +103,16 @@ function begin(
   };
 }
 
-export function useCardLink(method: BoostyCardMethod) {
+export function useCardLink(method: BoostyCardMethod, trial = false) {
   const [stage, setStage] = useState<Stage>({ kind: 'starting' });
   const session = useRef<number | null>(null);
   const finished = useRef(false);
   const stop = useRef<(() => void) | null>(null);
 
   useEffect(() => {
-    stop.current = begin(method, setStage, session, finished);
+    stop.current = begin(method, trial, setStage, session, finished);
     return () => stop.current?.();
-  }, [method]);
+  }, [method, trial]);
 
   const submit = useCallback(async (card: CardFields) => {
     const id = session.current;
@@ -111,7 +136,7 @@ export function useCardLink(method: BoostyCardMethod) {
         const reason = verdict.state === 'timeout' ? 'timeout' : verdictFailure(verdict.reason);
         return fail(id, reason, setStage, finished);
       }
-      let result: 'bound' | FailReason;
+      let result: BoostyStep | FailReason;
       if (verdict.state === 'tokenized') {
         result = await linkByToken(id, verdict.token, alive, toPhase);
       } else {
@@ -119,12 +144,12 @@ export function useCardLink(method: BoostyCardMethod) {
         result = await waitBound(id, alive);
       }
       if (!alive()) return;
-      if (result !== 'bound') return fail(id, result, setStage, finished);
+      if (typeof result === 'string') return fail(id, result, setStage, finished);
       finished.current = true;
       session.current = null;
       void cardNative.close().catch(() => {});
       refreshBinds();
-      setStage({ kind: 'linked' });
+      setStage({ kind: 'linked', trial: trialOutcome(result) });
     } catch (error) {
       if (!alive()) return;
       const field = FIELD_OF_CODE[nativeCode(error)];
@@ -137,8 +162,8 @@ export function useCardLink(method: BoostyCardMethod) {
 
   const retry = useCallback(() => {
     stop.current?.();
-    stop.current = begin(method, setStage, session, finished);
-  }, [method]);
+    stop.current = begin(method, trial, setStage, session, finished);
+  }, [method, trial]);
   return { stage, submit, retry };
 }
 

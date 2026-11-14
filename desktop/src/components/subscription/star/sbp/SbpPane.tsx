@@ -5,30 +5,27 @@ import { Check } from '../../../../lib/icons';
 import { QrCode } from '../../../auth/QrCode';
 import { AccentSpinner } from '../AccentSpinner';
 import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from '../StarConsole';
+import { type OnLinked, useLinkEnd } from '../useLinkEnd';
 
-const LINKED_HOLD_MS = 1200;
 const QR_SIZE = 160;
 const PNG_PREFIX = 'data:image/png;base64,';
 
 export const SbpPane = memo(function SbpPane({
   paying = true,
+  trial = false,
   onLinked,
   onOnce,
   onBack,
 }: {
   paying?: boolean;
-  onLinked: () => void;
+  trial?: boolean;
+  onLinked: OnLinked;
   onOnce: (() => void) | null;
   onBack: () => void;
 }) {
-  const { stage, restart, relink } = useSbpLink();
+  const { stage, restart, relink } = useSbpLink(trial);
   const [relinked, setRelinked] = useState(false);
-
-  useEffect(() => {
-    if (stage.kind !== 'linked') return;
-    const timer = setTimeout(onLinked, LINKED_HOLD_MS);
-    return () => clearTimeout(timer);
-  }, [stage.kind, onLinked]);
+  useLinkEnd(stage, onLinked);
 
   return (
     <SbpStageView
@@ -66,6 +63,7 @@ export const SbpStageView = memo(function SbpStageView({
   const { t } = useTranslation();
   const once = onOnce && <LinkBtn onClick={onOnce}>{t('starpass.bind.payOnce')}</LinkBtn>;
 
+  if (stage.kind === 'refused') return null;
   if (stage.kind === 'linked') {
     return (
       <div>
