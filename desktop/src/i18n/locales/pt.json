@@ -1668,6 +1668,7 @@
   "star": {
     "title": "Assinatura Star",
     "active": "Ativa",
+    "relink": "Aguardando vínculo",
     "getIt": "Saiba mais",
     "until": "até {{date}}",
     "in_one": "em {{count}} dia",
@@ -2090,6 +2091,9 @@
     },
     "bind": {
       "linkPay": "Vincular e pagar",
+      "link": "Vincular",
+      "relink": "Vincular de novo",
+      "rebind": "Precisa vincular de novo",
       "linkedSub": "Usado na renovação automática",
       "keep": "Manter",
       "remove": "Remover",
@@ -2120,7 +2124,6 @@
         "cameraHelp": "O banco diz que não dá para vincular? Escaneie o QR com a câmera do celular, não com o app do banco: a página do SBP abre no navegador, escolha o banco lá.",
         "relinkNote": "Se o banco disser que a conta já está vinculada ao Boosty, confirme mesmo assim: a vinculação funciona.",
         "showAgain": "Mostrar QR de novo",
-        "relink": "Vincular de novo",
         "expired": "O QR expirou.",
         "fail": {
           "exists": "Esta conta já está vinculada. Se a assinatura foi cancelada no banco antes, vincule de novo.",

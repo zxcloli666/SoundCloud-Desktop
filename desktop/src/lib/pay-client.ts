@@ -158,6 +158,7 @@ export interface Renewal {
   amount: number;
   currency: string;
   period_days: number;
+  method?: string | null;
 }
 
 export interface DiscordLink {
@@ -305,6 +306,7 @@ export interface BoostyStep {
 export interface BoostyBinds {
   bound: boolean;
   binds: Record<BoostyMethod, boolean>;
+  rebind?: Partial<Record<BoostyMethod, boolean>>;
 }
 
 const boostyPost = <T>(path: string, body?: object) =>

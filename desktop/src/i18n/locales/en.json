@@ -1758,6 +1758,7 @@
   "star": {
     "title": "Star Subscription",
     "active": "Active",
+    "relink": "Waiting for a link",
     "getIt": "Learn more",
     "until": "until {{date}}",
     "in_one": "in {{count}} day",
@@ -2168,6 +2169,9 @@
     },
     "bind": {
       "linkPay": "Link & pay",
+      "link": "Link",
+      "relink": "Link again",
+      "rebind": "Needs linking again",
       "linkedSub": "Used for auto-renew",
       "keep": "Keep",
       "remove": "Remove",
@@ -2198,7 +2202,6 @@
         "cameraHelp": "Bank says it can't link? Scan the QR with the phone camera instead of the bank app: the SBP page opens in the browser, pick your bank there.",
         "relinkNote": "If the bank says the account is already linked to Boosty, confirm anyway: the link goes through.",
         "showAgain": "Show QR again",
-        "relink": "Link again",
         "expired": "The QR expired.",
         "fail": {
           "exists": "This account is already linked. If the subscription was cancelled in the bank earlier, link it again.",
