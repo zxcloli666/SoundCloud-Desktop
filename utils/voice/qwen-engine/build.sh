@@ -10,6 +10,7 @@ shift
 
 if [ ! -d "$src/.git" ]; then
     git init -q "$src"
+    git -C "$src" config core.autocrlf false
     git -C "$src" remote add origin https://github.com/ServeurpersoCom/qwentts.cpp
 fi
 if [ "$(git -C "$src" rev-parse -q --verify HEAD || true)" != "$commit" ]; then
