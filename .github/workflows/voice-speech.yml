@@ -17,7 +17,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  models:
+    name: voice and codec
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Voice and codec from the storage, once for every platform
+        run: utils/voice/voice-models/fetch.sh models qwen-codec qwen-loli
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: voice-models
+          path: models/
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
   speak:
+    needs: models
     strategy:
       fail-fast: false
       matrix:
@@ -37,11 +55,14 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Engine and voice from the storage, at a pace five jobs can share
+      - uses: actions/download-artifact@v8
+        with:
+          name: voice-models
+          path: models
+
+      - name: Engine from the storage
         shell: bash
-        env:
-          VOICE_FETCH_RATE: 3M
-        run: utils/voice/voice-models/fetch.sh models qwen-engine-${{ matrix.platform }} qwen-codec qwen-loli
+        run: utils/voice/voice-models/fetch.sh models qwen-engine-${{ matrix.platform }}
 
       - name: Rust
         shell: bash
