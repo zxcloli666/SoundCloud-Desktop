@@ -9,11 +9,20 @@ const STAR: &str = "star_required";
 #[derive(Clone, Debug, PartialEq, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum ChatEvent {
-    Action { name: String, args: Value },
-    Say { text: String },
+    Action {
+        name: String,
+        args: Value,
+    },
+    Say {
+        text: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        spoken: Option<String>,
+    },
     Quiet,
     Done,
-    Error { code: String },
+    Error {
+        code: String,
+    },
     Cancelled,
 }
 
@@ -27,6 +36,8 @@ struct Action {
 #[derive(Deserialize)]
 struct Say {
     text: String,
+    #[serde(default)]
+    spoken: Option<String>,
 }
 
 #[derive(Default, Deserialize)]
@@ -47,7 +58,9 @@ impl ChatEvent {
             }
             "say" => {
                 let say: Say = serde_json::from_str(&frame.data).ok()?;
-                (!say.text.is_empty()).then_some(ChatEvent::Say { text: say.text })
+                let spoken = say.spoken.filter(|spoken| !spoken.trim().is_empty());
+                let text = say.text;
+                (!text.is_empty()).then_some(ChatEvent::Say { text, spoken })
             }
             "quiet" => Some(ChatEvent::Quiet),
             "done" => Some(ChatEvent::Done),
@@ -114,7 +127,22 @@ mod tests {
         assert_eq!(
             decoded("say", r#"{"text":"Сделала потише"}"#),
             Some(ChatEvent::Say {
-                text: "Сделала потише".into()
+                text: "Сделала потише".into(),
+                spoken: None,
+            })
+        );
+        assert_eq!(
+            decoded("say", r#"{"text":"Psychosis","spoken":"Сайкозис"}"#),
+            Some(ChatEvent::Say {
+                text: "Psychosis".into(),
+                spoken: Some("Сайкозис".into()),
+            })
+        );
+        assert_eq!(
+            decoded("say", r#"{"text":"Psychosis","spoken":" "}"#),
+            Some(ChatEvent::Say {
+                text: "Psychosis".into(),
+                spoken: None,
             })
         );
         assert_eq!(decoded("quiet", "{}"), Some(ChatEvent::Quiet));
@@ -170,9 +198,17 @@ mod tests {
         );
         assert_eq!(
             json(ChatEvent::Say {
-                text: "да".into()
+                text: "да".into(),
+                spoken: None,
             }),
             json!({"kind": "say", "text": "да"})
+        );
+        assert_eq!(
+            json(ChatEvent::Say {
+                text: "Psychosis".into(),
+                spoken: Some("Сайкозис".into()),
+            }),
+            json!({"kind": "say", "text": "Psychosis", "spoken": "Сайкозис"})
         );
         assert_eq!(json(ChatEvent::Quiet), json!({"kind": "quiet"}));
         assert_eq!(json(ChatEvent::Done), json!({"kind": "done"}));

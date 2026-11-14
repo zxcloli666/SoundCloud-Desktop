@@ -118,7 +118,9 @@ async fn ask(
 
 fn spoken(event: &ChatEvent) -> Option<Chat> {
     match event {
-        ChatEvent::Say { text } => Some(Chat::Text(text.clone())),
+        ChatEvent::Say { text, spoken } => {
+            Some(Chat::Text(spoken.as_ref().unwrap_or(text).clone()))
+        }
         ChatEvent::Done => Some(Chat::Close),
         ChatEvent::Error { .. } => Some(Chat::Cut),
         ChatEvent::Action { .. } | ChatEvent::Quiet | ChatEvent::Cancelled => None,
@@ -191,7 +193,7 @@ impl Tally {
             .unwrap_or_else(|poison| poison.into_inner());
         counts.first.get_or_insert(self.asked.elapsed());
         match event {
-            ChatEvent::Say { text } => {
+            ChatEvent::Say { text, .. } => {
                 counts.says += 1;
                 counts.chars += text.chars().count();
             }

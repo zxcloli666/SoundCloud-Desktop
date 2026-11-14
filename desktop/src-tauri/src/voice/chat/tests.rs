@@ -7,6 +7,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 use tokio::sync::{Notify, oneshot};
 use voice_chat::ChatEvent;
+use voice_engine::Chat;
 
 use super::stream::{EVENT_STREAM, exchange};
 use super::{CANCELLED_KEPT, Refused, Rounds, Tally, spoken};
@@ -66,7 +67,10 @@ fn send(text: &str) -> Step {
 }
 
 fn say(text: &str) -> ChatEvent {
-    ChatEvent::Say { text: text.into() }
+    ChatEvent::Say {
+        text: text.into(),
+        spoken: None,
+    }
 }
 
 fn action() -> ChatEvent {
@@ -246,6 +250,16 @@ async fn events_arrive_while_the_reply_is_still_coming() {
     assert!(head.contains("accept: text/event-stream"), "{head}");
     assert!(head.contains("content-type: application/json"), "{head}");
     assert_eq!(serde_json::from_str::<Value>(sent).unwrap(), body());
+}
+
+#[test]
+fn a_name_goes_to_the_voice_by_its_reading_and_plain_text_as_written() {
+    let name = ChatEvent::Say {
+        text: "Psychosis".into(),
+        spoken: Some("Сайкозис".into()),
+    };
+    assert!(matches!(spoken(&name), Some(Chat::Text(read)) if read == "Сайкозис"));
+    assert!(matches!(spoken(&say("Включаю ")), Some(Chat::Text(read)) if read == "Включаю "));
 }
 
 #[tokio::test]

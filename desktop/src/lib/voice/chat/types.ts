@@ -3,7 +3,7 @@ import type { UndoEntry } from '../undo';
 
 export type ChatEvent =
   | { kind: 'action'; name: string; args: Record<string, unknown> }
-  | { kind: 'say'; text: string }
+  | { kind: 'say'; text: string; spoken?: string }
   | { kind: 'quiet' }
   | { kind: 'done' }
   | { kind: 'error'; code: string }
