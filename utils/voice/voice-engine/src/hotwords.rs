@@ -9,6 +9,8 @@ const COMMANDS: [&str; 24] = [
     "UNLIKE", "QUEUE", "ADD", "REMOVE", "PLAYLIST",
 ];
 
+const BETWEEN_WORDS: [char; 5] = ['-', '/', ',', '.', ':'];
+
 pub fn russian(names: &[String]) -> Vec<String> {
     let cased = |name: &str| name.to_lowercase().replace('ё', "е");
     named(names, Vec::new(), cased, |c| ('а'..='я').contains(&c))
@@ -16,7 +18,7 @@ pub fn russian(names: &[String]) -> Vec<String> {
 
 pub fn english(names: &[String]) -> Vec<String> {
     let commands = COMMANDS.iter().map(|word| word.to_string()).collect();
-    let cased = |name: &str| name.to_uppercase();
+    let cased = |name: &str| name.to_uppercase().replace('&', " AND ");
     named(names, commands, cased, |c| {
         c == '\'' || c.is_ascii_uppercase()
     })
@@ -30,7 +32,7 @@ fn named(
 ) -> Vec<String> {
     let limit = out.len() + MAX;
     for name in names {
-        let text = cased(name).replace('-', " ");
+        let text = cased(name).replace(BETWEEN_WORDS, " ");
         let text = text.split_whitespace().collect::<Vec<_>>().join(" ");
         let known = text.chars().all(|c| c == ' ' || spelled(c));
         let length = text.chars().count();
@@ -72,12 +74,25 @@ mod tests {
             "Кино",
             "Blink-182",
             "Guns N' Roses",
-            "AC-DC",
+            "AC/DC",
         ]));
         assert_eq!(got[..COMMANDS.len()], COMMANDS);
         assert_eq!(
             got[COMMANDS.len()..],
             ["DUA LIPA", "GUNS N' ROSES", "AC DC"]
+        );
+    }
+
+    #[test]
+    fn english_spells_a_name_the_way_it_is_said() {
+        let got = english(&names(&[
+            "Tyler, The Creator",
+            "Florence & The Machine",
+            "P!nk",
+        ]));
+        assert_eq!(
+            got[COMMANDS.len()..],
+            ["TYLER THE CREATOR", "FLORENCE AND THE MACHINE"]
         );
     }
 
