@@ -23,6 +23,7 @@ mod types;
 
 pub use analyser::start_fft_thread;
 pub use commands::*;
+pub use decode::is_ogg_opus;
 pub use device::start_default_output_monitor;
 pub use media_controls::start_media_controls;
 pub use state::{AudioState, init};

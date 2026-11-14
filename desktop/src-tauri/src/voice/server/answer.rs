@@ -3,9 +3,10 @@ use serde_json::Value;
 use tokio::time::Instant;
 use voice_engine::Clip;
 
+use super::opus;
 use crate::voice::api::{self, Told};
 
-const WAV_MOST: usize = 32 << 20;
+pub const CLIP_MOST: usize = 2 << 20;
 
 pub enum Made {
     Clip(Clip),
@@ -21,15 +22,15 @@ pub async fn judged<T>(
     if status != 200 {
         return decide(status, &api::said(response, limit).await);
     }
-    match wav(response, limit).await {
-        Some(wav) => decide(status, &wav),
+    match whole(response, limit).await {
+        Some(body) => decide(status, &body),
         None => Told::Lost(None),
     }
 }
 
 pub fn posted(status: u16, body: &[u8]) -> Told<Made, String> {
     match status {
-        200 => clip(status, body, Made::Clip),
+        200 => clip(body, Made::Clip),
         202 => match ticket(body) {
             Some(ticket) => Told::Took(Made::Ticket(ticket)),
             None => stranger(status),
@@ -40,16 +41,21 @@ pub fn posted(status: u16, body: &[u8]) -> Told<Made, String> {
 
 pub fn polled(status: u16, body: &[u8]) -> Told<Option<Clip>, String> {
     match status {
-        200 => clip(status, body, Some),
+        200 => clip(body, Some),
         204 => Told::Took(None),
         _ => refused(status, body),
     }
 }
 
-fn clip<T>(status: u16, body: &[u8], took: fn(Clip) -> T) -> Told<T, String> {
-    match Clip::from_wav(body) {
+fn clip<T>(body: &[u8], took: fn(Clip) -> T) -> Told<T, String> {
+    let clip = if body.len() > CLIP_MOST {
+        Err(format!("over {CLIP_MOST} bytes"))
+    } else {
+        opus::clip(body)
+    };
+    match clip {
         Ok(clip) => Told::Took(took(clip)),
-        Err(_) => stranger(status),
+        Err(why) => Told::Lost(Some(format!("bad_clip: {why}"))),
     }
 }
 
@@ -75,16 +81,15 @@ fn stranger<T>(status: u16) -> Told<T, String> {
     Told::Lost(Some(format!("http_{status}")))
 }
 
-async fn wav(response: wreq::Response, limit: Instant) -> Option<Vec<u8>> {
-    let mut wav = Vec::new();
+async fn whole(response: wreq::Response, limit: Instant) -> Option<Vec<u8>> {
+    let mut body = Vec::new();
     let mut chunks = std::pin::pin!(response.bytes_stream());
-    loop {
+    while body.len() <= CLIP_MOST {
         match tokio::time::timeout_at(limit, chunks.next()).await {
-            Ok(Some(Ok(chunk))) if wav.len() + chunk.len() <= WAV_MOST => {
-                wav.extend_from_slice(&chunk)
-            }
-            Ok(None) => return Some(wav),
+            Ok(Some(Ok(chunk))) => body.extend_from_slice(&chunk),
+            Ok(None) => return Some(body),
             _ => return None,
         }
     }
+    Some(body)
 }

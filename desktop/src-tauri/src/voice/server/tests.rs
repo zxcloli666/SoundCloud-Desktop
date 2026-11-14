@@ -1,8 +1,12 @@
 use std::collections::VecDeque;
+use std::io::Cursor;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
+use audiopus::coder::Encoder;
+use audiopus::{Application, Channels, SampleRate};
+use ogg::{PacketWriteEndInfo, PacketWriter};
 use serde_json::{Value, json};
 use tokio::net::TcpListener;
 use tokio::time::Instant;
@@ -10,13 +14,16 @@ use voice_engine::Clip;
 use warp::Filter;
 use warp::http::Response;
 
-use super::answer::{Made, polled, posted};
-use super::{CANCELLED, POLLED, POSTED, RETRY, TIMEOUT, TOTAL, WAV, checked, made, within};
+use super::answer::{CLIP_MOST, Made, polled, posted};
+use super::{CANCELLED, OGG, POLLED, POSTED, RETRY, TIMEOUT, TOTAL, checked, made, opus, within};
 use crate::network::fetch::configured;
 use crate::voice::api::{NETWORK, Request, Told};
 
 const TOKEN: &str = "session-for-tests";
-const SAMPLES: usize = 240;
+const SPOKEN: usize = 9_000;
+const SILENT: usize = 2_400;
+const FRAME: usize = 960;
+const SERIAL: u32 = 7;
 const PAGE: &[u8] = b"<html><body>Bad gateway</body></html>";
 
 type Reply = (u16, Vec<u8>);
@@ -33,25 +40,49 @@ impl Served {
     }
 }
 
-fn wav(samples: usize) -> Vec<u8> {
-    let data = (samples * 2) as u32;
-    let mut wav = Vec::new();
-    wav.extend_from_slice(b"RIFF");
-    wav.extend_from_slice(&(36 + data).to_le_bytes());
-    wav.extend_from_slice(b"WAVEfmt ");
-    wav.extend_from_slice(&16u32.to_le_bytes());
-    wav.extend_from_slice(&1u16.to_le_bytes());
-    wav.extend_from_slice(&1u16.to_le_bytes());
-    wav.extend_from_slice(&24_000u32.to_le_bytes());
-    wav.extend_from_slice(&48_000u32.to_le_bytes());
-    wav.extend_from_slice(&2u16.to_le_bytes());
-    wav.extend_from_slice(&16u16.to_le_bytes());
-    wav.extend_from_slice(b"data");
-    wav.extend_from_slice(&data.to_le_bytes());
-    for _ in 0..samples {
-        wav.extend_from_slice(&8192i16.to_le_bytes());
+fn sound(at: usize) -> f32 {
+    let tone = (std::f32::consts::TAU * 440.0 * at as f32 / 48_000.0).sin() * 0.5;
+    if at < SILENT { 0.0 } else { tone }
+}
+
+fn ogg(spoken: usize) -> Vec<u8> {
+    let encoder = Encoder::new(SampleRate::Hz48000, Channels::Mono, Application::Audio).unwrap();
+    let pre_skip = encoder.lookahead().unwrap() as u16;
+    let end = pre_skip as usize + spoken;
+    let mut writer = PacketWriter::new(Cursor::new(Vec::new()));
+    let mut head = b"OpusHead".to_vec();
+    head.extend([1, 1]);
+    head.extend(pre_skip.to_le_bytes());
+    head.extend(48_000u32.to_le_bytes());
+    head.extend([0, 0, 0]);
+    let page = PacketWriteEndInfo::EndPage;
+    writer.write_packet(head, SERIAL, page, 0).unwrap();
+    let mut tags = b"OpusTags".to_vec();
+    tags.extend([0; 8]);
+    writer.write_packet(tags, SERIAL, page, 0).unwrap();
+    let frames = end.div_ceil(FRAME);
+    for index in 0..frames {
+        let pcm: Vec<f32> = (index * FRAME..(index + 1) * FRAME).map(sound).collect();
+        let mut data = vec![0u8; 4000];
+        let made = encoder.encode_float(&pcm, &mut data).unwrap();
+        data.truncate(made);
+        let (info, granule) = if index + 1 == frames {
+            (PacketWriteEndInfo::EndStream, end)
+        } else {
+            (PacketWriteEndInfo::NormalPacket, (index + 1) * FRAME)
+        };
+        writer
+            .write_packet(data, SERIAL, info, granule as u64)
+            .unwrap();
     }
-    wav
+    writer.into_inner().into_inner()
+}
+
+fn onset(samples: &[f32]) -> usize {
+    samples
+        .iter()
+        .position(|sample| sample.abs() > 0.1)
+        .unwrap()
 }
 
 fn error(code: &str) -> Vec<u8> {
@@ -80,7 +111,7 @@ fn request<'a>(client: &'a wreq::Client, urls: &[String], body: &'a Value) -> Re
         method: wreq::Method::POST,
         urls: urls.to_vec(),
         token: TOKEN.into(),
-        accept: WAV,
+        accept: OGG,
         body: Some(body),
         patience: POSTED,
     }
@@ -111,7 +142,7 @@ fn polled_shown(clip: Option<Clip>) -> String {
 
 fn reply((status, body): Reply) -> Response<Vec<u8>> {
     let kind = match status {
-        200 => "audio/wav",
+        200 => "audio/ogg",
         _ => "application/json",
     };
     Response::builder()
@@ -182,8 +213,8 @@ async fn hanging_up() -> (String, Arc<AtomicUsize>) {
 #[test]
 fn the_answer_to_the_post_is_a_clip_a_ticket_or_a_failure() {
     let cases = [
-        (200, wav(SAMPLES), "took clip 240"),
-        (200, PAGE.to_vec(), "lost http_200"),
+        (200, ogg(SPOKEN), "took clip 4500"),
+        (200, PAGE.to_vec(), "lost bad_clip: not an ogg opus file"),
         (202, ticket("t-1"), "took ticket t-1"),
         (202, ticket("../t-1"), "lost http_202"),
         (204, Vec::new(), "lost http_204"),
@@ -205,7 +236,7 @@ fn the_answer_to_the_post_is_a_clip_a_ticket_or_a_failure() {
 #[test]
 fn the_answer_to_a_poll_is_a_clip_not_yet_or_a_failure() {
     let cases = [
-        (200, wav(SAMPLES), "took clip 240"),
+        (200, ogg(SPOKEN), "took clip 4500"),
         (204, Vec::new(), "took later"),
         (202, ticket("t-1"), "lost http_202"),
         (
@@ -218,6 +249,30 @@ fn the_answer_to_a_poll_is_a_clip_not_yet_or_a_failure() {
     ];
     for (status, body, want) in cases {
         assert_eq!(shown(polled(status, &body), polled_shown), want, "{status}");
+    }
+}
+
+#[test]
+fn an_ogg_opus_clip_comes_at_the_engine_rate_without_the_pre_skip_and_the_padding() {
+    let clip = opus::clip(&ogg(SPOKEN)).unwrap();
+    assert_eq!(clip.rate, 24_000);
+    assert_eq!(clip.samples.len(), SPOKEN / 2);
+    let late = onset(&clip.samples).abs_diff(SILENT / 2);
+    assert!(late < 80, "the sound starts {late} samples off");
+}
+
+#[test]
+fn a_body_that_is_not_an_ogg_opus_clip_is_refused() {
+    let cases = [
+        (b"not a clip".to_vec(), "not an ogg opus file".to_string()),
+        (Vec::new(), "not an ogg opus file".into()),
+        (ogg(0), "the clip has no audio".into()),
+        (vec![0; CLIP_MOST + 1], format!("over {CLIP_MOST} bytes")),
+    ];
+    for (body, why) in cases {
+        let want = format!("lost bad_clip: {why}");
+        assert_eq!(shown(posted(200, &body), made_shown), want);
+        assert_eq!(shown(polled(200, &body), polled_shown), want);
     }
 }
 
@@ -241,22 +296,22 @@ async fn the_wait_ends_at_once_when_the_line_is_not_wanted_any_more() {
 
 #[tokio::test]
 async fn a_clip_the_server_already_has_comes_with_the_post() {
-    let served = serve((200, wav(SAMPLES)), Vec::new()).await;
+    let served = serve((200, ogg(SPOKEN)), Vec::new()).await;
     let (client, body) = (client(), body());
     let clip = made(&request(&client, &[served.url.clone()], &body)).await;
-    assert_eq!(clip.map(|clip| clip.samples.len()), Ok(SAMPLES));
+    assert_eq!(clip.map(|clip| clip.samples.len()), Ok(SPOKEN / 2));
     assert_eq!(served.asked(), [format!("POST {TOKEN}")]);
     assert_eq!(*served.sent.lock().unwrap(), [body]);
 }
 
 #[tokio::test]
 async fn a_ticket_is_polled_on_the_base_that_gave_it_until_the_clip_is_ready() {
-    let polls = vec![(204, Vec::new()), (204, Vec::new()), (200, wav(SAMPLES))];
+    let polls = vec![(204, Vec::new()), (204, Vec::new()), (200, ogg(SPOKEN))];
     let served = serve((202, ticket("t-1")), polls).await;
     let (client, body) = (client(), body());
     let urls = [nowhere().await, served.url.clone()];
     let clip = made(&request(&client, &urls, &body)).await;
-    assert_eq!(clip.map(|clip| clip.samples.len()), Ok(SAMPLES));
+    assert_eq!(clip.map(|clip| clip.samples.len()), Ok(SPOKEN / 2));
     let poll = format!("GET t-1 {TOKEN}");
     let asked = [format!("POST {TOKEN}"), poll.clone(), poll.clone(), poll];
     assert_eq!(served.asked(), asked);
@@ -275,7 +330,7 @@ async fn a_failed_poll_ends_the_wait_with_its_code() {
 #[tokio::test]
 async fn a_refused_post_is_not_polled_and_keeps_its_code() {
     let served = serve((429, error("voice_speak_limited")), Vec::new()).await;
-    let spare = serve((200, wav(SAMPLES)), Vec::new()).await;
+    let spare = serve((200, ogg(SPOKEN)), Vec::new()).await;
     let (client, body) = (client(), body());
     let urls = [served.url.clone(), spare.url.clone()];
     let said = made(&request(&client, &urls, &body)).await;

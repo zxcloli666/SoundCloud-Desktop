@@ -1,4 +1,5 @@
 mod answer;
+mod opus;
 
 #[cfg(test)]
 mod tests;
@@ -15,7 +16,7 @@ use super::api::{self, Patience, Request};
 use crate::rt::AppHandle;
 
 const PATH: &str = "/voice/speak";
-const WAV: &str = "audio/wav";
+const OGG: &str = "audio/ogg";
 const TOTAL: Duration = Duration::from_secs(100);
 const POSTED: Patience = Patience {
     answer: Duration::from_secs(20),
@@ -57,7 +58,7 @@ async fn within(
 }
 
 async fn speak(app: &AppHandle, body: &Value) -> Result<Clip, String> {
-    let request = Request::post(app, PATH, WAV, body, POSTED).await?;
+    let request = Request::post(app, PATH, OGG, body, POSTED).await?;
     made(&request).await
 }
 
