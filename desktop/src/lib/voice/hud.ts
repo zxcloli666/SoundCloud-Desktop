@@ -1,5 +1,5 @@
 import type { HudView } from './runtime';
-import type { VoiceErrorCode } from './types';
+import type { EngineState, VoiceErrorCode } from './types';
 
 export interface DismissPort {
   declineLink(id: string): void;
@@ -21,6 +21,10 @@ export function dismiss(hud: HudView, port: DismissPort) {
   if (hud.kind === 'chat') port.stopChat(hud.id);
   if (CANCELS_ENGINE.has(hud.kind)) port.cancelEngine();
   port.hide();
+}
+
+export function voiceComing(hud: HudView, engine: EngineState, previewing: string | null) {
+  return engine === 'thinking' && hud.kind === 'chat' && hud.phase === 'done' && !previewing;
 }
 
 export function afterError(hud: HudView, code: VoiceErrorCode): HudView {

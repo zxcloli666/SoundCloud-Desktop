@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import type { TFunction } from 'i18next';
 import { failureLine } from '../src/components/voice/chatFailure.ts';
-import { afterError, type DismissPort, dismiss } from '../src/lib/voice/hud.ts';
+import { afterError, type DismissPort, dismiss, voiceComing } from '../src/lib/voice/hud.ts';
 import type { HudView } from '../src/lib/voice/runtime';
 
 type ChatHud = Extract<HudView, { kind: 'chat' }>;
@@ -121,4 +121,20 @@ test('chat failure lines are written in all five interface languages', () => {
       assert.notEqual(line, english[i], `${lang} line ${i} is not translated`);
     });
   }
+});
+
+test('a written reply waits on screen while its voice is still being made', () => {
+  assert.equal(voiceComing(chatHud('done'), 'thinking', null), true);
+});
+
+test('no voice is awaited while the reply is written, once it sounds, or after it', () => {
+  assert.equal(voiceComing(chatHud('live'), 'thinking', null), false);
+  assert.equal(voiceComing(chatHud('done'), 'speaking', null), false);
+  assert.equal(voiceComing(chatHud('done'), 'idle', null), false);
+  assert.equal(voiceComing(chatHud('failed'), 'thinking', null), false);
+  assert.equal(voiceComing({ kind: 'thinking' }, 'thinking', null), false);
+});
+
+test('a voice preview in the settings does not hold the reply on screen', () => {
+  assert.equal(voiceComing(chatHud('done'), 'thinking', 'loli'), false);
 });

@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/shallow';
 import { isMac } from '../../lib/platform';
 import { replyLength } from '../../lib/voice/chat/live';
 import { answerAsk, dismissHud, undoById } from '../../lib/voice/executor';
+import { voiceComing } from '../../lib/voice/hud';
 import { voiceIpc } from '../../lib/voice/ipc';
 import { type HudView, summarize, useVoiceRuntime } from '../../lib/voice/runtime';
 import { UNDO_WINDOW_MS } from './island/DoneView';
@@ -48,6 +49,7 @@ const handlers: IslandHandlers = {
 export function VoiceIsland() {
   const hud = useVoiceRuntime((s) => s.hud);
   const speaking = useVoiceRuntime((s) => s.engine === 'speaking');
+  const coming = useVoiceRuntime((s) => voiceComing(s.hud, s.engine, s.previewing));
   const settingsOpen = useVoiceRuntime((s) => s.settingsOpen);
   const summary = useVoiceRuntime(useShallow((s) => summarize(s.models)));
   const mac = isMac();
@@ -64,7 +66,7 @@ export function VoiceIsland() {
     arm.current = () => {
       clearTimeout(timer);
       const wait = hideAfter(hud, spokenRef.current === hud);
-      if (!wait || hovered.current || speaking) return;
+      if (!wait || hovered.current || speaking || coming) return;
       timer = setTimeout(() => {
         if (hudRef.current !== hud) return;
         if (hud.kind === 'asking') dismissHud();
@@ -73,7 +75,7 @@ export function VoiceIsland() {
     };
     arm.current();
     return () => clearTimeout(timer);
-  }, [hud, speaking]);
+  }, [hud, speaking, coming]);
 
   const hover = (over: boolean) => {
     hovered.current = over;

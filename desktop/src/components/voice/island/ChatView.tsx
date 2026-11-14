@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { VolumeX } from '../../../lib/icons';
 import { useChatLive } from '../../../lib/voice/chat/live';
+import { voiceComing } from '../../../lib/voice/hud';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import { failureLine } from '../chatFailure';
@@ -13,16 +14,26 @@ import { ReplyText } from './ReplyText';
 
 type Phase = 'live' | 'done' | 'failed';
 
-function Face({ voice, phase, speaking }: { voice: VoiceInfo; phase: Phase; speaking: boolean }) {
+function Face({
+  voice,
+  phase,
+  speaking,
+  coming,
+}: {
+  voice: VoiceInfo;
+  phase: Phase;
+  speaking: boolean;
+  coming: boolean;
+}) {
   const silent = useChatLive((s) => s.parts.length === 0);
-  const thinking = phase === 'live' && silent && !speaking;
+  const waiting = coming || (phase === 'live' && silent && !speaking);
   return (
     <span
       className="relative mt-0.5 shrink-0 transition-opacity duration-500"
       style={{ opacity: phase === 'failed' ? 0.55 : 1 }}
     >
       <VoiceAvatar voice={voice} size={40} speaking={speaking} />
-      {thinking && (
+      {waiting && (
         <span
           aria-hidden
           className="absolute -inset-[3px] rounded-full motion-reduce:animate-none"
@@ -77,10 +88,11 @@ export function ChatView({
   const { t } = useTranslation();
   const voice = voiceById(useVoiceStore((s) => s.config.speak.voice));
   const speaking = useVoiceRuntime((s) => s.engine === 'speaking' && !s.previewing);
-  const busy = phase === 'live' || speaking;
+  const coming = useVoiceRuntime((s) => voiceComing(s.hud, s.engine, s.previewing));
+  const busy = phase === 'live' || speaking || coming;
   return (
     <span className="flex min-w-0 flex-1 items-start gap-3 py-0.5">
-      <Face voice={voice} phase={phase} speaking={speaking} />
+      <Face voice={voice} phase={phase} speaking={speaking} coming={coming} />
       <span className="min-w-0 flex-1">
         <span className="flex min-w-0 items-baseline gap-1.5 leading-tight">
           <span className="shrink-0 text-[12px] font-bold text-ink-85">
