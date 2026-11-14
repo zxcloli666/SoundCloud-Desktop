@@ -18,12 +18,14 @@ export const PayPane = memo(function PayPane({
   phase,
   onChangeMethod,
   onRefresh,
+  onOnce,
 }: {
   checkout: CheckoutResp;
   option: ActivationOption;
   phase: PayPhase;
   onChangeMethod: () => void;
   onRefresh: () => void;
+  onOnce: (() => void) | null;
 }) {
   const { t } = useTranslation();
   const serial = passSerial(checkout.order_id);
@@ -65,6 +67,26 @@ export const PayPane = memo(function PayPane({
     setRefreshes((n) => n + 1);
     onRefresh();
   }, [willRefresh, onRefresh]);
+
+  if (checkout.provider === 'boostycard') {
+    const bind = option.method === 'sbp' ? 'sbp' : 'card';
+    return (
+      <div>
+        <Ttl>
+          {t(`starpass.method.${option.i18n}.title`)} · {serial}
+        </Ttl>
+        <p className="text-[12.5px] leading-relaxed text-ink-60">
+          {t(phase === 'failed' ? 'starpass.bind.chargeFailed' : `starpass.bind.${bind}.charging`)}
+        </p>
+        {phase === 'failed' && (
+          <div className="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-2.5">
+            <PrimaryBtn onClick={onChangeMethod}>{t('starpass.retry')}</PrimaryBtn>
+            {onOnce && <LinkBtn onClick={onOnce}>{t('starpass.bind.payOnce')}</LinkBtn>}
+          </div>
+        )}
+      </div>
+    );
+  }
 
   if (willRefresh) {
     return (
@@ -116,9 +138,7 @@ export const PayPane = memo(function PayPane({
             ))}
           </ol>
         ) : (
-          <p className="text-[12.5px] leading-relaxed text-ink-60">
-            {t('starpass.externalHint')}
-          </p>
+          <p className="text-[12.5px] leading-relaxed text-ink-60">{t('starpass.externalHint')}</p>
         )}
 
         <div className="mt-3.5 flex flex-wrap items-center gap-2.5">

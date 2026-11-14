@@ -29,6 +29,7 @@ pub fn is_image_upstream(url: &str) -> bool {
 
 pub const LASTFM_API_KEY: Option<&str> = option_env!("LASTFM_API_KEY");
 pub const LASTFM_API_SECRET: Option<&str> = option_env!("LASTFM_API_SECRET");
+pub const BOOSTY_BUNDLE_KEYS: Option<&str> = option_env!("BOOSTY_BUNDLE_KEYS");
 
 #[cfg(test)]
 mod tests {

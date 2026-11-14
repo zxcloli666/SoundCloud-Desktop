@@ -21,7 +21,9 @@ static ASKING: AtomicBool = AtomicBool::new(false);
 
 pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
     let builder = Builder::new("navigation").on_navigation(|webview, url| {
-        if allowed(url, dev_server(webview).as_ref()) {
+        if webview.label() == crate::boosty_card::three_ds::LABEL
+            || allowed(url, dev_server(webview).as_ref())
+        {
             return true;
         }
         diagnostics::warn(format!(

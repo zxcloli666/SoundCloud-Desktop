@@ -44,7 +44,7 @@ async function payRequest<T>(path: string, init: RequestInit = {}): Promise<T> {
   return text ? (JSON.parse(text) as T) : (undefined as T);
 }
 
-export type ProviderId = 'platega' | 'cryptobot' | 'tgstars';
+export type ProviderId = 'platega' | 'cryptobot' | 'tgstars' | 'boostycard';
 export type PlategaMethod = 'sbp' | 'card_ru' | 'card_intl' | 'crypto';
 
 export interface Plan {
@@ -52,6 +52,7 @@ export interface Plan {
   months: number;
   period_days: number;
   price_rub: number;
+  price_usd_cents?: number;
   savings_pct: number;
   stars: number;
 }
@@ -67,26 +68,37 @@ export interface SharedTier {
   plans: Plan[];
 }
 
-export interface RecurringRule {
+export type RouteMethod = 'sbp' | 'card_ru' | 'card_intl' | 'crypto' | 'stars';
+
+export interface PayRoute {
   provider: ProviderId;
-  method: PlategaMethod | null;
+  method: string;
+}
+
+export interface RenewRoute extends PayRoute {
   plans: string[];
   period_days: number;
+}
+
+export interface MethodRoutes {
+  method: RouteMethod;
+  once: PayRoute | null;
+  renew: RenewRoute | null;
 }
 
 export interface PlansResponse {
   monthly_rub: number;
   plans: Plan[];
   shared?: SharedTier[];
-  providers: Record<ProviderId, boolean>;
+  providers: Partial<Record<ProviderId, boolean>>;
   methods: { platega: PlategaMethod[] };
-  recurring?: RecurringRule[];
+  routes?: MethodRoutes[];
 }
 
 export interface CheckoutReq {
   plan_id: string;
   provider: ProviderId;
-  method?: PlategaMethod;
+  method?: string;
   recurring?: boolean;
   gift?: boolean;
   tier?: SharedTierId;
@@ -233,6 +245,71 @@ export interface SharedPreview {
   ends_at: number;
 }
 
+export interface BoostyBundle {
+  serial: number;
+  not_after: number;
+  kid: string;
+  entry: string;
+  allowed_hosts: string[];
+  script: string;
+  sig: string;
+}
+
+export interface BoostySgParams {
+  provider: string;
+  payment_id: string | number;
+  public_token: string;
+  widget_name: string | null;
+}
+
+export interface BoostyYunoParams {
+  provider: 'yuno';
+  public_api_key: string;
+  checkout_session: string;
+}
+
+export type BoostyParams = BoostySgParams | BoostyYunoParams;
+
+export type BoostyCardMethod = 'card' | 'card_usd';
+export type BoostyMethod = BoostyCardMethod | 'sbp';
+
+export interface BoostyQr {
+  uri: string;
+  png: string;
+}
+
+export interface BoostyCardStart {
+  session_id: number;
+  method: BoostyCardMethod;
+  expires_at: number;
+  bundle: BoostyBundle;
+  params: BoostyParams;
+}
+
+export interface BoostySbpStart {
+  session_id: number;
+  method: 'sbp';
+  expires_at: number;
+  qr?: BoostyQr;
+}
+
+export type BoostyStepStatus = 'pending' | 'bound' | 'expired' | 'failed';
+
+export interface BoostyStep {
+  status: BoostyStepStatus;
+  reason?: string;
+  qr?: BoostyQr;
+  url?: string;
+}
+
+export interface BoostyBinds {
+  bound: boolean;
+  binds: Record<BoostyMethod, boolean>;
+}
+
+const boostyPost = <T>(path: string, body?: object) =>
+  payRequest<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
+
 export const payApi = {
   plans: () => payRequest<PlansResponse>('/api/plans'),
   checkout: (req: CheckoutReq) =>
@@ -269,6 +346,17 @@ export const payApi = {
     }),
   regenerateInvite: () =>
     payRequest<{ invite_code: string }>('/api/shared/invite', { method: 'POST' }),
+  boostyStartCard: (method: BoostyCardMethod) =>
+    boostyPost<BoostyCardStart>('/api/boosty/start', { method }),
+  boostyStartSbp: () => boostyPost<BoostySbpStart>('/api/boosty/start', { method: 'sbp' }),
+  boostyStep: (sessionId: number) =>
+    boostyPost<BoostyStep>('/api/boosty/step', { session_id: sessionId }),
+  boostyToken: (sessionId: number, token: string) =>
+    boostyPost<BoostyStep>('/api/boosty/token', { session_id: sessionId, token }),
+  boostyCancel: (sessionId: number) =>
+    boostyPost<BoostyBinds>('/api/boosty/cancel', { session_id: sessionId }),
+  boostyBinds: () => payRequest<BoostyBinds>('/api/boosty/card'),
+  boostyRemove: (method: BoostyMethod) => boostyPost<BoostyBinds>('/api/boosty/remove', { method }),
   gifts: () => payRequest<{ gifts: Gift[] }>('/api/me/gifts'),
   referral: () => payRequest<Referral>('/api/me/referral'),
   checkRef: (code: string) =>

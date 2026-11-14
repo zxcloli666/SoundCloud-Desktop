@@ -38,8 +38,21 @@ export function rub(amount: number): string {
   return `${amount} ₽`;
 }
 
+export function usd(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+export function planPrice(
+  plan: { price_rub: number; price_usd_cents?: number },
+  currency: 'RUB' | 'USD',
+): string {
+  if (currency === 'USD' && plan.price_usd_cents != null) return usd(plan.price_usd_cents);
+  return rub(plan.price_rub);
+}
+
 const CURRENCY_SIGN: Record<string, string> = { XTR: '★', RUB: '₽' };
 
 export function chargeAmount(amount: number, currency: string): string {
+  if (currency === 'USD') return usd(amount);
   return `${amount} ${CURRENCY_SIGN[currency] ?? currency}`;
 }

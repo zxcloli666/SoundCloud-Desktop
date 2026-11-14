@@ -2,8 +2,9 @@ import { useMutation } from '@tanstack/react-query';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { useBinds, useRemoveBind } from '../../../lib/boosty-binds';
 import { Crown, Gift, Users } from '../../../lib/icons';
-import { payApi } from '../../../lib/pay-client';
+import { type BoostyMethod, payApi } from '../../../lib/pay-client';
 import { requestPremiumRecheck } from '../../../lib/premium-cache';
 import { queryClient } from '../../../lib/query-client';
 import { passDate } from '../../../lib/star-format';
@@ -13,10 +14,13 @@ import { useStarStatus } from '../../../lib/star-status';
 import { DiscordCard } from '../DiscordCard';
 import { ExpiringRow } from './ExpiringRow';
 import { PageLink } from './LegalNote';
+import { LinkedBind } from './LinkedBind';
 import { MemberCard } from './MemberCard';
 import { primaryEntitlement } from './meta';
 import { GhostBtn } from './StarConsole';
 import { TenurePanel } from './TenurePanel';
+
+const BIND_METHODS: BoostyMethod[] = ['card', 'card_usd', 'sbp'];
 
 /** Manage — Discord link, auto-renew (cancel-only), source; extend / redeem / gift / invite. */
 export const ManagePane = memo(function ManagePane({
@@ -43,6 +47,9 @@ export const ManagePane = memo(function ManagePane({
   const autoRenew = renewSource !== null;
   const ending =
     status?.kind === 'ends' && status.level !== 'calm' && status.canExtend ? status : null;
+  const binds = useBinds().data?.binds;
+  const linked = BIND_METHODS.filter((method) => binds?.[method]);
+  const removeBind = useRemoveBind();
 
   const cancel = useMutation({
     mutationFn: () => payApi.cancel(renewSource ?? ''),
@@ -89,6 +96,15 @@ export const ManagePane = memo(function ManagePane({
       )}
       <TenurePanel />
       <DiscordCard discord={data?.discord ?? null} />
+
+      {linked.map((method) => (
+        <LinkedBind
+          key={method}
+          method={method}
+          removing={removeBind.isPending && removeBind.variables === method}
+          onRemove={() => removeBind.mutate(method)}
+        />
+      ))}
 
       <div className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/[0.08] bg-ink/[0.03] px-4 py-3">
         <div>
