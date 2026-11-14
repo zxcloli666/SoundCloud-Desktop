@@ -241,11 +241,3 @@ export async function previewDemo() {
   await wait(200);
   await speak('button', 2600);
 }
-
-export async function teachDemo() {
-  talking = 'mac-mic';
-  const wasMetering = meter !== null;
-  setMeter(true);
-  await wait(1400);
-  if (!wasMetering) setMeter(false);
-}

@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check } from '../../../lib/icons';
 import { falseWakesToday, useVoiceStore, type WakeMark } from '../../../lib/voice/store';
+import { wakeNames } from '../../../lib/voice/wake-names';
 import { RangeSlider } from '../../settings/primitives';
 import { Pill, SmallButton } from './Block';
-import { TeachPanel } from './TeachPanel';
 
 const HOUR = 3_600_000;
 
@@ -39,12 +38,13 @@ export function WakeBlock() {
   const wake = useVoiceStore((s) => s.config.activation.wake);
   const echo = useVoiceStore((s) => s.config.echo);
   const log = useVoiceStore((s) => s.wakeLog);
-  const taught = useVoiceStore((s) => s.wakeTaught);
+  const language = useVoiceStore((s) => s.config.language);
+  const voice = useVoiceStore((s) => s.config.speak.voice);
   const patchWake = useVoiceStore((s) => s.patchWake);
   const patch = useVoiceStore((s) => s.patch);
-  const [teaching, setTeaching] = useState(false);
   const [now] = useState(() => Date.now());
   const falses = falseWakesToday(log, now);
+  const names = wakeNames(language, voice);
 
   return (
     <div className="space-y-4">
@@ -58,6 +58,13 @@ export function WakeBlock() {
           </SmallButton>
         </div>
       )}
+      <ul aria-label={t('voice.activation.names')} className="flex flex-wrap items-center gap-1.5">
+        {names.map((name) => (
+          <li key={name}>
+            <Pill tone="accent">{name}</Pill>
+          </li>
+        ))}
+      </ul>
       <div>
         <div className="mb-2 flex items-center justify-between text-[11.5px] font-medium text-ink-45">
           <span>{t('voice.activation.rarer')}</span>
@@ -84,21 +91,7 @@ export function WakeBlock() {
             <span className="text-ink-40">{t('voice.activation.lastDay')}</span>
           </span>
         </div>
-        <span className="ml-auto flex items-center gap-2">
-          {taught && (
-            <Pill tone="ok">
-              <Check size={11} />
-              {t('voice.teach.taught')}
-            </Pill>
-          )}
-          {!teaching && (
-            <SmallButton onClick={() => setTeaching(true)}>
-              {taught ? t('voice.teach.retrain') : t('voice.teach.open')}
-            </SmallButton>
-          )}
-        </span>
       </div>
-      {teaching && <TeachPanel onClose={() => setTeaching(false)} />}
     </div>
   );
 }

@@ -30,6 +30,8 @@ mod stream;
 mod tts;
 mod turn;
 mod voices;
+mod wake;
+mod watch;
 mod wire;
 
 use std::path::PathBuf;
@@ -51,6 +53,7 @@ pub use config::{
 pub use event::{
     Ahead, CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, HeardEvent, LevelEvent,
     Looked, Outcome, PartialEvent, ScoredEvent, Source, Spoke, State, StateEvent, Timed, TurnEvent,
+    WakeEvent,
 };
 pub use gesture::{Press, Presses};
 pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
@@ -149,13 +152,24 @@ impl Engine {
         let memory = engine.memory.clone();
         std::thread::Builder::new()
             .name("voice-engine".into())
-            .spawn(move || machine::Core::new(deps, memory, events_tx, inbox).run(messages))
+            .spawn(move || {
+                let core = machine::Core::new(deps, memory, events_tx, inbox);
+                if let Some(stopped) = core.run(messages) {
+                    let _ = stopped.send(());
+                }
+            })
             .expect("spawn voice-engine");
         (engine, events)
     }
 
     pub fn send(&self, command: Command) {
         let _ = self.inbox.send(machine::Msg::Command(command));
+    }
+
+    pub fn quit(&self, within: Duration) -> bool {
+        let (stopped, wait) = channel();
+        let _ = self.inbox.send(machine::Msg::Quit(stopped));
+        wait.recv_timeout(within).is_ok()
     }
 
     pub fn candidates(

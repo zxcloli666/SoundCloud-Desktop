@@ -5,12 +5,7 @@ import i18next from 'i18next';
 import { VOICE_IDS, voiceGender } from '../src/lib/voice/voice-ids.ts';
 
 const LANGUAGES = ['en', 'ru', 'tr', 'ko', 'pt'];
-const GENDERED = [
-  'voice.hero.state.off',
-  'voice.hero.state.ready',
-  'voice.error.asr_failed',
-  'voice.teach.done',
-];
+const GENDERED = ['voice.hero.state.off', 'voice.hero.state.ready', 'voice.error.asr_failed'];
 
 function locale(lang: string) {
   const url = new URL(`../src/i18n/locales/voice/${lang}.json`, import.meta.url);
@@ -41,8 +36,8 @@ test('the gender is declared with every voice', () => {
 });
 
 test('russian phrases about the assistant follow the gender of the voice', () => {
-  const feminine = ['Выключена', 'Готова', 'Не расслышала', 'Запомнила ваш голос'];
-  const masculine = ['Выключен', 'Готов', 'Не расслышал', 'Запомнил ваш голос'];
+  const feminine = ['Выключена', 'Готова', 'Не расслышала'];
+  const masculine = ['Выключен', 'Готов', 'Не расслышал'];
   assert.deepEqual(said('ru', 'loli'), feminine);
   assert.deepEqual(said('ru', 'af_heart'), feminine);
   assert.deepEqual(said('ru', 'moriarty'), masculine);

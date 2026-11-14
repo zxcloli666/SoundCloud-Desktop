@@ -2,8 +2,6 @@ import { isMac } from '../platform';
 import type { VoiceConfig, VoiceLanguage } from './types';
 import { DEFAULT_VOICE } from './voice-ids';
 
-export const WAKE_PHRASE = 'лоля';
-
 export function defaultHotkey(): string {
   return isMac() ? 'Shift+Super+Space' : 'Control+Shift+Space';
 }
@@ -20,7 +18,7 @@ export function defaultConfig(): VoiceConfig {
       hotkey: defaultHotkey(),
       hold: true,
       headset: 'off',
-      wake: { on: false, phrase: WAKE_PHRASE, sensitivity: 0.5 },
+      wake: { on: false, sensitivity: 0.5 },
     },
     listen: { mode: 'chosen', devices: [] },
     speak: {

@@ -62,7 +62,8 @@ fn hear(path: &str, language: Language) -> Option<(Vec<String>, voice_engine::Co
             | Event::Trouble(_)
             | Event::Timed(_)
             | Event::Spoke(_)
-            | Event::Heard(_) => {}
+            | Event::Heard(_)
+            | Event::Wake(_) => {}
         }
     }
 }

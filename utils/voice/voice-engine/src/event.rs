@@ -45,6 +45,11 @@ pub struct PartialEvent {
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
+pub struct WakeEvent {
+    pub phrase: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct EntityEvent {
     pub kind: &'static str,
     pub name: String,
@@ -161,6 +166,7 @@ pub enum Event {
     Timed(Timed),
     Spoke(Spoke),
     Heard(HeardEvent),
+    Wake(WakeEvent),
 }
 
 impl Event {
@@ -176,6 +182,7 @@ impl Event {
             Event::Timed(_) => "voice:timed",
             Event::Spoke(_) => "voice:spoke",
             Event::Heard(_) => "voice:heard",
+            Event::Wake(_) => "voice:wake",
         }
     }
 

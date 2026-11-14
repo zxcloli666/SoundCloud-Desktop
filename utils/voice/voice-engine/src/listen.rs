@@ -15,7 +15,7 @@ use crate::hotwords;
 use crate::machine::{Core, Msg, Phase};
 use crate::models;
 
-const CHUNK: usize = 1600;
+pub const CHUNK: usize = 1600;
 const HEARD_OUT: usize = CHUNK * 4;
 const THREADS: i32 = 2;
 
@@ -23,6 +23,7 @@ pub struct Listen {
     pub r#gen: u64,
     pub session: Session,
     pub for_ask: bool,
+    pub woken: bool,
     pub started: Instant,
     pub speech_seen: bool,
     pub finals: Vec<String>,
@@ -54,7 +55,7 @@ pub fn capture_code(error: &CaptureError) -> &'static str {
     }
 }
 
-fn forward(events: Receiver<CaptureEvent>, inbox: Sender<Msg>, r#gen: u64, meter: bool) {
+pub fn forward(events: Receiver<CaptureEvent>, inbox: Sender<Msg>, r#gen: u64, meter: bool) {
     let _ = std::thread::Builder::new()
         .name("voice-forward".into())
         .spawn(move || {
@@ -74,7 +75,7 @@ fn forward(events: Receiver<CaptureEvent>, inbox: Sender<Msg>, r#gen: u64, meter
         });
 }
 
-fn take_events(session: &mut Session) -> Receiver<CaptureEvent> {
+pub fn take_events(session: &mut Session) -> Receiver<CaptureEvent> {
     std::mem::replace(&mut session.events, channel().1)
 }
 
@@ -86,6 +87,7 @@ impl Core {
         if self.listener_models().is_none() {
             return self.refuse("no_models", None, for_ask);
         }
+        self.unwatch();
         let request = self.request(Purpose::Utterance);
         let mut session = match self.deps.capture.start(&request, &self.deps.devices) {
             Ok(session) => session,
@@ -111,6 +113,7 @@ impl Core {
             r#gen,
             session,
             for_ask,
+            woken: false,
             started: Instant::now(),
             speech_seen: false,
             finals: Vec::new(),
@@ -181,10 +184,16 @@ impl Core {
             return Err("no_models");
         };
         let artists = &self.config.boosts.artists;
-        let (hotwords, hotwords_score) = match self.config.language {
+        let (names, hotwords_score) = match self.config.language {
             Language::Ru => (hotwords::russian(artists), hotwords::RUSSIAN_SCORE),
             Language::En => (hotwords::english(artists), hotwords::ENGLISH_SCORE),
         };
+        let mut hotwords = if self.config.activation.wake.on {
+            self.ear().hints()
+        } else {
+            Vec::new()
+        };
+        hotwords.extend(names);
         let cached = self
             .listener
             .as_ref()
@@ -215,6 +224,9 @@ impl Core {
     }
 
     pub fn capture(&mut self, r#gen: u64, event: CaptureEvent) {
+        if self.watching(r#gen) {
+            return self.watched(event);
+        }
         let Phase::Listening(listen) = &mut self.phase else {
             return;
         };
@@ -327,11 +339,21 @@ impl Core {
             }
         }
         let for_ask = listen.for_ask;
+        let woken = listen.woken;
         self.close(listen);
-        let text = finals.join(" ").trim().to_string();
-        if text.is_empty() {
+        let heard = finals.join(" ");
+        let heard = heard.trim();
+        let text = if woken {
+            self.addressed(heard, true)
+        } else {
+            Some(heard.to_string()).filter(|text| !text.is_empty())
+        };
+        let Some(text) = text else {
             self.go_idle();
             return;
+        };
+        if text.is_empty() {
+            return self.listen(false);
         }
         if for_ask {
             self.spoken_answer(text);
@@ -353,6 +375,9 @@ impl Core {
     }
 
     pub fn closed(&mut self, r#gen: u64) {
+        if self.watching(r#gen) {
+            return self.watch_lost();
+        }
         let lost = match &mut self.phase {
             Phase::Listening(listen) if listen.r#gen == r#gen => listen.lost.take(),
             _ => return,

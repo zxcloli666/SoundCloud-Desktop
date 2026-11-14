@@ -6,7 +6,6 @@ export type EchoMode = 'auto' | 'on' | 'off';
 
 export interface WakeConfig {
   on: boolean;
-  phrase: string;
   sensitivity: number;
 }
 
@@ -159,7 +158,7 @@ export interface ErrorEvent {
 }
 
 export type ModelState = 'missing' | 'partial' | 'ready' | 'corrupted' | 'downloading';
-export type ModelKind = 'vad' | 'asr' | 'tts' | 'wake' | 'g2p' | 'llm' | string;
+export type ModelKind = 'vad' | 'asr' | 'tts' | 'g2p' | 'llm' | string;
 
 export interface Model {
   id: string;
@@ -197,7 +196,6 @@ export interface Devices {
 
 export interface WakeEvent {
   phrase: string;
-  score: number;
 }
 
 export interface Outcome {
@@ -214,5 +212,3 @@ export interface Status {
   devices: Devices;
   error: ErrorEvent | null;
 }
-
-export type WakeTeachStep = 'start' | 'sample' | 'finish' | 'reset';

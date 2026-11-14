@@ -9,7 +9,6 @@ import {
 import { GLOBAL_HOTKEY_ACTIONS, withDefaults } from '../../../lib/hotkeys/actions';
 import { Keyboard, X } from '../../../lib/icons';
 import { isMac, isWindows } from '../../../lib/platform';
-import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import type { HeadsetGesture } from '../../../lib/voice/types';
 import { useSettingsStore } from '../../../stores/settings';
@@ -32,7 +31,6 @@ export function ActivationCard() {
   const activation = useVoiceStore((s) => s.config.activation);
   const patchActivation = useVoiceStore((s) => s.patchActivation);
   const patchWake = useVoiceStore((s) => s.patchWake);
-  const wakeModel = useVoiceRuntime((s) => s.models.some((m) => m.kind === 'wake'));
   const globalOn = useSettingsStore((s) => s.globalHotkeysEnabled);
   const globalKeys = withDefaults(useSettingsStore((s) => s.globalHotkeys));
   const [problem, setProblem] = useState<string | null>(null);
@@ -107,22 +105,20 @@ export function ActivationCard() {
             <HeadsetTester key={activation.headset} gesture={activation.headset} />
           )}
         </Block>
-        {wakeModel && (
-          <Block
-            data-ui="settings-row"
-            icon={<WandSparkles size={14} />}
-            title={t('voice.activation.wake')}
-            control={
-              <Toggle
-                checked={activation.wake.on}
-                onChange={() => patchWake({ on: !activation.wake.on })}
-                label={t('voice.activation.wake')}
-              />
-            }
-          >
-            {activation.wake.on && <WakeBlock />}
-          </Block>
-        )}
+        <Block
+          data-ui="settings-row"
+          icon={<WandSparkles size={14} />}
+          title={t('voice.activation.wake')}
+          control={
+            <Toggle
+              checked={activation.wake.on}
+              onChange={() => patchWake({ on: !activation.wake.on })}
+              label={t('voice.activation.wake')}
+            />
+          }
+        >
+          {activation.wake.on && <WakeBlock />}
+        </Block>
       </div>
     </Card>
   );

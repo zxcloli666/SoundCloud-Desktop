@@ -13,6 +13,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use tauri::Manager;
 use tokio::runtime::Handle;
@@ -26,6 +27,7 @@ use crate::rt::AppHandle;
 pub const MAIN: &str = "main";
 const MODELS_DIR: &str = "voice-models";
 const PHRASES_DIR: &str = "voice-phrases";
+const QUIT_WITHIN: Duration = Duration::from_millis(500);
 
 pub struct Voice {
     pub engine: Engine,
@@ -103,6 +105,12 @@ impl Voice {
 
     pub fn active(&self) -> bool {
         self.star.load(Ordering::Relaxed) && self.config.lock().unwrap().enabled
+    }
+}
+
+pub fn quit(app: &AppHandle) {
+    if let Some(voice) = app.try_state::<Voice>() {
+        voice.engine.quit(QUIT_WITHIN);
     }
 }
 

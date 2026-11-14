@@ -11,7 +11,6 @@ const LICENSES: Record<string, string> = {
   'asr-en': 'MIT',
   'tts-ru': 'own',
   'tts-en': 'Apache-2.0',
-  wake: 'own',
   llm: 'Apache-2.0',
 };
 
@@ -62,7 +61,6 @@ export function readyModels(): Model[] {
     model('asr-en', 'asr', 'en', 61, 'ready'),
     model('tts-ru', 'tts', 'ru', 84, 'ready'),
     model('tts-en', 'tts', 'en', 92, 'ready'),
-    model('wake', 'wake', 'ru', 3.2, 'ready'),
     model('llm', 'llm', 'any', 412, 'missing', 0, true),
   ];
 }
@@ -74,7 +72,6 @@ export function firstRunModels(): Model[] {
     model('asr-en', 'asr', 'en', 61, 'missing'),
     model('tts-ru', 'tts', 'ru', 84, 'partial', 0.31),
     model('tts-en', 'tts', 'en', 92, 'missing'),
-    model('wake', 'wake', 'ru', 3.2, 'missing'),
     model('llm', 'llm', 'any', 412, 'missing', 0, true),
   ];
 }
@@ -85,8 +82,7 @@ export function downloadingModels(): Model[] {
     model('asr-ru', 'asr', 'ru', 68, 'ready'),
     model('asr-en', 'asr', 'en', 61, 'downloading', 0.64),
     model('tts-ru', 'tts', 'ru', 84, 'downloading', 0.22),
-    model('tts-en', 'tts', 'en', 92, 'missing'),
-    model('wake', 'wake', 'ru', 3.2, 'corrupted', 0.9),
+    model('tts-en', 'tts', 'en', 92, 'corrupted', 0.9),
     model('llm', 'llm', 'any', 412, 'missing', 0, true),
   ];
 }

@@ -303,7 +303,6 @@ pub fn run() {
             voice::commands::voice_model_get,
             voice::commands::voice_model_delete,
             voice::commands::voice_preview,
-            voice::commands::voice_wake_teach,
             app::hotkeys::hotkeys_backend,
             app::updater::updater_info,
             app::updater::updater_install,
@@ -544,7 +543,10 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app, event| match event {
-            tauri::RunEvent::Exit => app::themes::sentinel::clear_applying(app),
+            tauri::RunEvent::Exit => {
+                app::themes::sentinel::clear_applying(app);
+                voice::quit(app);
+            }
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen { .. } => app::visibility::show_main(app),
             _ => {}

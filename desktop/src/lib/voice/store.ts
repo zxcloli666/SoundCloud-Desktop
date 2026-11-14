@@ -50,7 +50,6 @@ interface VoiceStore {
   history: HistoryRow[];
   notes: string[];
   wakeLog: WakeMark[];
-  wakeTaught: boolean;
   patch: (patch: Partial<VoiceConfig>) => void;
   patchActivation: (patch: Partial<ActivationConfig>) => void;
   patchWake: (patch: Partial<WakeConfig>) => void;
@@ -61,7 +60,6 @@ interface VoiceStore {
   clearHistory: () => void;
   setNotes: (notes: string[]) => void;
   markWake: (mark: WakeMark) => void;
-  setWakeTaught: (taught: boolean) => void;
 }
 
 export const useVoiceStore = create<VoiceStore>()(
@@ -71,7 +69,6 @@ export const useVoiceStore = create<VoiceStore>()(
       history: [],
       notes: [],
       wakeLog: [],
-      wakeTaught: false,
       patch: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
       patchActivation: (patch) =>
         set((s) => ({ config: { ...s.config, activation: { ...s.config.activation, ...patch } } })),
@@ -103,7 +100,6 @@ export const useVoiceStore = create<VoiceStore>()(
         set((s) => ({
           wakeLog: [...s.wakeLog.filter((m) => mark.at - m.at < WAKE_WINDOW_MS), mark],
         })),
-      setWakeTaught: (wakeTaught) => set({ wakeTaught }),
     }),
     {
       name: 'sc-voice',
@@ -116,7 +112,6 @@ export const useVoiceStore = create<VoiceStore>()(
         history: s.history,
         notes: s.notes,
         wakeLog: s.wakeLog,
-        wakeTaught: s.wakeTaught,
       }),
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<VoiceStore>;

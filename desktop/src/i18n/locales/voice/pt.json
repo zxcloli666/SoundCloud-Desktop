@@ -92,8 +92,9 @@
       "stopTest": "Parar",
       "headsetWorks": "Funciona",
       "again": "De novo",
-      "wake": "Diga “Loli”",
-      "needsEcho": "Sem cancelamento de eco a música acorda a Loli",
+      "wake": "Pelo nome",
+      "names": "Responde a",
+      "needsEcho": "Sem cancelamento de eco a música aciona",
       "echoOn": "Ligar",
       "rarer": "Menos",
       "oftener": "Mais fácil",
@@ -103,19 +104,6 @@
       "headsetHow_many": "Aperte o botão {{count}} vezes seguidas",
       "pressNow_many": "Aperte {{count}} vezes agora",
       "falseCount_many": "{{count}} falsos"
-    },
-    "teach": {
-      "open": "Ensinar minha voz",
-      "retrain": "Reensinar",
-      "taught": "Conhece sua voz",
-      "prompt": "Diga “Loli” cinco vezes",
-      "speak": "Diga “Loli”",
-      "saving": "Salvando",
-      "done": "Sua voz foi salva",
-      "failed": "Não deu certo",
-      "start": "Começar",
-      "next": "Próximo",
-      "progress": "{{count}} de {{total}}"
     },
     "mics": {
       "title": "Microfones",

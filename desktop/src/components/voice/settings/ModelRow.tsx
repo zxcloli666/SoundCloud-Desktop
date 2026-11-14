@@ -4,7 +4,7 @@ import { Check, Download, RotateCcw, Trash2 } from '../../../lib/icons';
 import { deleteModel, downloadModel } from '../../../lib/voice/models';
 import type { Model } from '../../../lib/voice/types';
 import { percent, useFormatBytes } from '../format';
-import { AudioWaveform, Brain, Cpu, Ear, Languages, Speaker, WandSparkles } from '../icons';
+import { AudioWaveform, Brain, Cpu, Ear, Languages, Speaker } from '../icons';
 import { voiceOfModel } from '../voices';
 import { Pill, SmallButton } from './Block';
 
@@ -12,7 +12,6 @@ function kindIcon(kind: string): ReactNode {
   if (kind === 'asr') return <Ear size={16} />;
   if (kind === 'vad') return <AudioWaveform size={16} />;
   if (kind === 'tts') return <Speaker size={16} />;
-  if (kind === 'wake') return <WandSparkles size={16} />;
   if (kind === 'llm') return <Brain size={16} />;
   if (kind === 'engine') return <Cpu size={16} />;
   return <Languages size={16} />;

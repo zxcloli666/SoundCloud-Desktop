@@ -15,6 +15,7 @@ use crate::speak::Reply;
 use crate::speaker::Playing;
 use crate::tts::{Piece, Tts};
 use crate::turn::Turn;
+use crate::watch::{self, Watch};
 use crate::{Command, Deps};
 
 const IDLE_WAIT: Duration = Duration::from_secs(3600);
@@ -28,6 +29,7 @@ pub enum Msg {
     Spoken(u64),
     Previewed(u64),
     Read(u64, Read),
+    Quit(Sender<()>),
 }
 
 pub enum Phase {
@@ -55,6 +57,9 @@ pub struct Core {
     pub turn: Option<Turn>,
     pub playing: Option<Playing>,
     pub meter: Option<(u64, Session)>,
+    pub watch: Option<Watch>,
+    pub watch_refused: bool,
+    pub watch_told: Option<&'static str>,
     pub preview: Option<u64>,
     pub last_input: Option<String>,
     pub last_release: Option<Instant>,
@@ -93,6 +98,9 @@ impl Core {
             turn: None,
             playing: None,
             meter: None,
+            watch: None,
+            watch_refused: false,
+            watch_told: None,
             preview: None,
             last_input: None,
             last_release: None,
@@ -102,7 +110,7 @@ impl Core {
         }
     }
 
-    pub fn run(mut self, messages: Receiver<Msg>) {
+    pub fn run(mut self, messages: Receiver<Msg>) -> Option<Sender<()>> {
         loop {
             let now = Instant::now();
             let wait = self
@@ -110,9 +118,10 @@ impl Core {
                 .map(|at| at.saturating_duration_since(now))
                 .unwrap_or(IDLE_WAIT);
             match messages.recv_timeout(wait) {
+                Ok(Msg::Quit(stopped)) => return Some(stopped),
                 Ok(msg) => self.handle(msg),
                 Err(RecvTimeoutError::Timeout) => self.tick(Instant::now()),
-                Err(RecvTimeoutError::Disconnected) => return,
+                Err(RecvTimeoutError::Disconnected) => return None,
             }
         }
     }
@@ -154,6 +163,7 @@ impl Core {
         self.release_at = None;
         self.deps.output.duck(1.0);
         self.emit_state(State::Idle, None);
+        self.keep_watch();
     }
 
     fn deadline(&self) -> Option<Instant> {
@@ -205,6 +215,7 @@ impl Core {
             Msg::Synth(r#gen, piece) => self.synthesized(r#gen, piece),
             Msg::Spoken(r#gen) => self.spoken(r#gen),
             Msg::Read(serial, read) => self.understood(serial, read),
+            Msg::Quit(_) => {}
             Msg::Previewed(r#gen) => {
                 if self.preview == Some(r#gen) {
                     self.preview = None;
@@ -233,11 +244,16 @@ impl Core {
                 if !star {
                     self.cancel();
                 }
+                self.rewatch();
             }
-            Command::Devices(devices) => self.deps.devices = devices,
+            Command::Devices(devices) => {
+                self.deps.devices = devices;
+                self.rewatch();
+            }
             Command::Models => {
                 if !matches!(self.phase, Phase::Listening(_)) {
                     self.listener = None;
+                    self.rewatch();
                 }
             }
             Command::Start(source) => self.start(source),
@@ -261,6 +277,7 @@ impl Core {
 
     fn apply(&mut self, config: Config) {
         let language_changed = config.language != self.config.language;
+        let alike = watch::alike(&self.config, &config);
         let enabled = config.enabled;
         self.config = config;
         if language_changed {
@@ -275,6 +292,12 @@ impl Core {
         }
         if enabled && self.star && matches!(self.phase, Phase::Idle) {
             let _ = self.ensure_listener();
+        }
+        if alike {
+            self.keep_watch();
+        } else {
+            self.watch_told = None;
+            self.rewatch();
         }
     }
 
@@ -361,6 +384,7 @@ impl Core {
                 self.close(*listen);
             }
         }
+        self.unwatch();
         self.drop_turn();
         self.drop_reading();
         self.drop_reply();

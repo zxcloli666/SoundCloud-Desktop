@@ -48,7 +48,6 @@ pub enum Echo {
 #[serde(default)]
 pub struct Wake {
     pub on: bool,
-    pub phrase: String,
     pub sensitivity: f32,
 }
 

@@ -106,7 +106,7 @@ export function applyScene(scene: Scene) {
   if (scene === 'first') {
     base(firstRunModels());
     configure(false);
-    useVoiceStore.setState({ history: [], wakeLog: [], wakeTaught: false });
+    useVoiceStore.setState({ history: [], wakeLog: [] });
     store.patchActivation({ headset: 'off' });
     store.patchWake({ on: false });
     return;
@@ -114,7 +114,7 @@ export function applyScene(scene: Scene) {
   if (scene === 'downloading') {
     base(downloadingModels());
     configure(true);
-    useVoiceStore.setState({ history: [], wakeLog: [], wakeTaught: false });
+    useVoiceStore.setState({ history: [], wakeLog: [] });
     startDownload('asr-en');
     startDownload('tts-ru');
     return;
@@ -122,7 +122,7 @@ export function applyScene(scene: Scene) {
   if (scene === 'errors') {
     base(
       readyModels().map((m) =>
-        m.id === 'wake' ? { ...m, state: 'corrupted', done: Math.round(m.total * 0.9) } : m,
+        m.id === 'tts-en' ? { ...m, state: 'corrupted', done: Math.round(m.total * 0.9) } : m,
       ),
       {
         code: 'mic_denied',
@@ -133,7 +133,6 @@ export function applyScene(scene: Scene) {
     useVoiceStore.setState({
       history: labHistory(now).slice(0, 3),
       wakeLog: labWakeLog(now),
-      wakeTaught: false,
     });
     useVoiceRuntime.getState().setHud({ kind: 'error', code: 'mic_denied' });
     return;
@@ -156,7 +155,6 @@ export function applyScene(scene: Scene) {
     history: labHistory(now),
     notes: labNotes(),
     wakeLog: labWakeLog(now),
-    wakeTaught: true,
   });
   if (scene === 'ready' || scene === 'hud') playVolume();
   if (scene === 'chat') askLoli();

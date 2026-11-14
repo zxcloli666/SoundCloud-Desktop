@@ -21,7 +21,7 @@ function config(voice: string): VoiceConfig {
       hotkey: null,
       hold: true,
       headset: 'off',
-      wake: { on: false, phrase: 'лоля', sensitivity: 0.5 },
+      wake: { on: false, sensitivity: 0.5 },
     },
     listen: { mode: 'chosen', devices: [] },
     speak: { mode: 'with_music', device: null, voice, speed: 1, pitch: 0, replies: true },

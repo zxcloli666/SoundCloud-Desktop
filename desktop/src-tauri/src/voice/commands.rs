@@ -148,8 +148,3 @@ pub fn voice_preview(voice: Managed<'_, Voice>, voice_id: String) -> Result<(), 
     voice.engine.send(Command::Preview(clip.to_vec()));
     Ok(())
 }
-
-#[tauri::command]
-pub fn voice_wake_teach(step: String) -> Result<u32, String> {
-    Err(format!("wake word is not available yet ({step})"))
-}

@@ -1,13 +1,5 @@
 import { trackedInvoke as invoke } from '../diagnostics';
-import type {
-  Devices,
-  EngineConfig,
-  Model,
-  Outcome,
-  StartSource,
-  Status,
-  WakeTeachStep,
-} from './types';
+import type { Devices, EngineConfig, Model, Outcome, StartSource, Status } from './types';
 
 export const voiceIpc = {
   status: () => invoke<Status>('voice_status'),
@@ -26,5 +18,4 @@ export const voiceIpc = {
   modelGet: (id: string) => invoke<void>('voice_model_get', { id }),
   modelDelete: (id: string) => invoke<void>('voice_model_delete', { id }),
   preview: (voiceId: string) => invoke<void>('voice_preview', { voiceId }),
-  wakeTeach: (step: WakeTeachStep) => invoke<number>('voice_wake_teach', { step }),
 };

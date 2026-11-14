@@ -1,4 +1,5 @@
 pub const DEFAULT: &str = "loli";
+pub const MORIARTY: &str = "moriarty";
 pub const KOKORO: &str = "kokoro-multi-lang-v1_0";
 pub const QWEN_CODEC: &str = "qwen-codec";
 pub const QWEN_CODEC_FILE: &str = "qwen-tokenizer-12hz-Q8_0.gguf";
@@ -30,7 +31,7 @@ const VOICES: [Voice; 4] = [
         },
     },
     Voice {
-        id: "moriarty",
+        id: MORIARTY,
         model: "qwen-moriarty",
         kind: Kind::Qwen {
             file: "qwen-talker-1.7b-moriarty-Q4_K_M.gguf",

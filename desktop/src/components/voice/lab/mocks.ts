@@ -4,15 +4,7 @@ import type { ChatEvent, ChatRequest } from '../../../lib/voice/chat/types';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import type { EntityKind } from '../../../lib/voice/types';
 import { cancelChatDemo, chatDemo, rereadDemo, resolveDemo, textDemo } from './chat-demo';
-import {
-  answerDemo,
-  isOffline,
-  previewDemo,
-  runDemo,
-  setMeter,
-  startDownload,
-  teachDemo,
-} from './engine';
+import { answerDemo, isOffline, previewDemo, runDemo, setMeter, startDownload } from './engine';
 import { labDevices } from './fixtures';
 
 type Args = Record<string, unknown> | undefined;
@@ -52,8 +44,6 @@ function voiceCommand(cmd: string, args: Args): unknown {
     case 'voice_preview':
       void previewDemo();
       return null;
-    case 'voice_wake_teach':
-      return args?.step === 'sample' ? teachDemo().then(() => 1) : 0;
     case 'voice_text':
       void textDemo(String(args?.text), args?.id as string | undefined);
       return null;
