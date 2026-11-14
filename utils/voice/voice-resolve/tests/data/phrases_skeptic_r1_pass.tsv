@@ -1,0 +1,677 @@
+phrase	intent	kind	entity	number	category	alt
+включи скрипт она	play	artist	Скриптонит		asr	
+поставь скрипта нит притон	play	track	Скриптонит - Притон		asr	
+включи скрипто нита	play	artist	Скриптонит		asr	
+включи скриптонито	play	artist	Скриптонит		asr	
+включи скриптонитом	play	artist	Скриптонит		asr	
+включи макс корш	play	artist	Макс Корж		asr	
+включи макскорж	play	artist	Макс Корж		asr	
+включи морген штерн	play	artist	Моргенштерн		asr	
+включи моргинштерн	play	artist	Моргенштерн		misspelling	
+включи моргенштерна кадилак	play	track	Моргенштерн - Cadillac		asr	
+включи мани скин	play	artist	Måneskin		asr	
+включи имаджин драгонз белевер	play	track	Imagine Dragons - Believer		asr	
+включи билли элиш	play	artist	Billie Eilish		translit	
+включи били айлиш бэд гай	play	track	Billie Eilish - bad guy		asr	
+включи зе викенд блайндинг лайтс	play	track	The Weeknd - Blinding Lights		translit	
+включи уикенда старбой	play	track	The Weeknd - Starboy		morphology	
+включи блиндинг лайтс	play	track	The Weeknd - Blinding Lights		translit	
+включи блайндинг лайт	play	track	The Weeknd - Blinding Lights		asr	
+включи сейв ёр тирс	play	track	The Weeknd - Save Your Tears		translit	
+включи кант фил май фэйс	play	track	The Weeknd - Can't Feel My Face		translit	
+включи дай фор ю уикенда	play	track	The Weeknd - Die for You		translit	
+включи хиллз	play	track	The Weeknd - The Hills		translit	
+включи дрейка	play	artist	Drake		morphology	
+включи годс плэн	play	track	Drake - God's Plan		translit	
+включи хотлайн блинк	play	track	Drake - Hotline Bling		asr	
+включи ван дэнс дрейка	play	track	Drake - One Dance		translit	
+поставь тейлор свифт	play	artist	Taylor Swift		plain	
+включи тейлор свифт круел саммер	play	track	Taylor Swift - Cruel Summer		translit	
+включи шейк ит офф	play	track	Taylor Swift - Shake It Off		translit	
+включи бланк спэйс	play	track	Taylor Swift - Blank Space		translit	
+включи антихиро	play	track	Taylor Swift - Anti-Hero		asr	
+включи короля и шута	play	artist	Король и Шут		morphology	
+включи король и шут лесник	play	track	Король и Шут - Лесник		plain	
+включи кукла колдуна	play	track	Король и Шут - Кукла колдуна		plain	
+включи куклу колдуна	play	track	Король и Шут - Кукла колдуна		morphology	
+включи киш	play	artist	Король и Шут		asr	
+включи лесника	play	track	Король и Шут - Лесник		morphology	
+включи группу кино	play	artist	Кино		plain	
+включи цоя	play	artist	Кино		morphology	
+включи кукушку кино	play	track	Кино - Кукушка		ambiguous	
+включи кукушку	play	track	Кино - Кукушка		ambiguous	ask
+включи двадцать пять семнадцать	play	artist	25/17		numbers	
+включи 25 17	play	artist	25/17		numbers	
+включи пятницу	play	artist	5'Nizza		numbers	ask;artist:Пятница
+включи пятница солдат	play	track	5'Nizza - Солдат		numbers	
+включи солдата пятницы	play	track	5'Nizza - Солдат		morphology	
+включи сто четыре	play	artist	104		numbers	
+включи блинк сто восемьдесят два	play	artist	Blink-182		numbers	
+включи блинк сто восемьдесят два ол зе смол тингз	play	track	Blink-182 - All the Small Things		numbers	
+включи фифти цент	play	artist	50 Cent		translit	
+включи пятьдесят центов	play	artist	50 Cent		numbers	
+включи фифти сент ин да клаб	play	track	50 Cent - In Da Club		translit	
+включи тупака	play	artist	2Pac		morphology	
+включи ту пак калифорния лав	play	track	2Pac - California Love		asr	
+включи эминема луз ёрселф	play	track	Eminem - Lose Yourself		translit	
+включи иминем	play	artist	Eminem		asr	
+включи рэп гад	play	track	Eminem - Rap God		asr	
+включи оксимирона	play	artist	Oxxxymiron		morphology	
+включи оксиморона	play	artist	Oxxxymiron		asr	
+включи мияги минор	play	track	Miyagi & Эндшпиль - Minor		translit	
+включи капитан мияги	play	track	Miyagi & Эндшпиль - Captain		translit	
+включи мияги и энди шпиль	play	artist	Miyagi & Эндшпиль		asr	
+включи джахалиф лейла	play	track	Jah Khalib - Лейла		asr	
+включи лейлу	play	track	Jah Khalib - Лейла		morphology	
+включи элджея розовое вино	play	track	Элджей - Розовое вино		morphology	
+включи эл джей	play	artist	Элджей		translit	
+включи нойз эмси	play	artist	Noize MC		translit	
+включи эл эс пи	play	artist	ЛСП		asr	
+включи би два	play	artist	Би-2		numbers	
+включи литл бик	play	artist	Little Big		asr	
+включи дэдэтэ	play	artist	ДДТ		asr	
+включи наутилус	play	artist	Наутилус Помпилиус		plain	
+включи агату кристи	play	artist	Агата Кристи		morphology	
+включи пугачёву	play	artist	Алла Пугачёва		morphology	
+включи тиму белорусских мокрые кроссы	play	track	Тима Белорусских - Мокрые кроссы		morphology	
+включи мокрые кроссовки	play	track	Тима Белорусских - Мокрые кроссы		misspelling	
+включи клаву коку покинула чат	play	track	Клава Кока - Покинула чат		morphology	
+включи егора крида	play	artist	Егор Крид		morphology	
+включи зиверт лайф	play	track	Zivert - Life		translit	
+включи дору	play	artist	Дора		morphology	
+включи фейса	play	artist	Face		morphology	
+включи рамштайн ду хаст	play	track	Rammstein - Du Hast		translit	
+включи раммштайн зонне	play	track	Rammstein - Sonne		translit	
+включи нирвану	play	artist	Nirvana		morphology	
+включи квинов богемскую рапсодию	play	track	Queen - Bohemian Rhapsody		morphology	
+включи богемская рапсодия	play	track	Queen - Bohemian Rhapsody		translit	
+включи линкин парк намб	play	track	Linkin Park - Numb		translit	
+включи колд плей йеллоу	play	track	Coldplay - Yellow		asr	
+включи эда ширана	play	artist	Ed Sheeran		morphology	
+включи шейп оф ю	play	track	Ed Sheeran - Shape of You		translit	
+включи дуа липу	play	artist	Dua Lipa		morphology	
+включи бруно марса аптаун фанк	play	track	Bruno Mars - Uptown Funk		morphology	
+включи ариану гранде	play	artist	Ariana Grande		morphology	
+включи пост малона	play	artist	Post Malone		morphology	
+включи трависа скотта	play	artist	Travis Scott		morphology	
+включи рианну амбрелла	play	track	Rihanna - Umbrella		translit	
+включи амбреллу	play	track	Rihanna - Umbrella		morphology	
+включи имейджин драгонс тандер	play	track	Imagine Dragons - Thunder		translit	
+включи белива	play	track	Imagine Dragons - Believer		asr	
+включи басту сансару	play	track	Баста - Сансара		morphology	
+включи медлячок басты	play	track	Баста - Выпускной (Медлячок)		morphology	
+включи орбит без сахара	play	track	Сплин - Орбит без сахара		plain	
+включи ленинград экспонат	play	track	Ленинград - Экспонат		plain	
+включи зверей районы кварталы	play	track	Звери - Районы-кварталы		morphology	
+включи монеточку каждый раз	play	track	Монеточка - Каждый раз		morphology	
+включи девяносто монеточки	play	track	Монеточка - 90		numbers	
+включи земфирку	play	artist	Земфира		morphology	
+включи земфиро	play	artist	Земфира		misspelling	
+включи земфиру искала	play	track	Земфира - Искала		morphology	
+включи скриптошу	play	artist	Скриптонит		morphology	
+включи коржа	play	artist	Макс Корж		morphology	
+включи макса коржа мотылька	play	track	Макс Корж - Мотылёк		morphology	
+включи цепи	play	track	Скриптонит - Цепи		ambiguous	ask
+включи цепи мота	play	track	Мот - Цепи		ambiguous	
+включи незабудку	play	track	Тима Белорусских - Незабудка		morphology	
+включи билли айдола	play	artist	Билли Айдол		ambiguous	
+включи дрейка белла	play	artist	Drake Bell		ambiguous	
+включи моргана валлена	play	artist	Morgan Wallen		morphology	
+включи куинз оф зе стоун эйдж	play	artist	Queens of the Stone Age		translit	
+включи чайф	play	artist	Чайф		plain	
+включи аквариум	play	artist	Аквариум		plain	
+включи ночных снайперов	play	artist	Ночные Снайперы		morphology	
+включи мумий троль	play	artist	Мумий Тролль		misspelling	
+включи касту	play	artist	Каста		morphology	
+хочу послушать моргенштерна	play	artist	Моргенштерн		filler	
+поставь что-нибудь из басты	play	artist	Баста		morphology	
+включи что-нибудь у кино	play	artist	Кино		morphology	
+включи песни земфиры	play	artist	Земфира		morphology	
+включи альбом скриптонита дом с нормальными явлениями	play	album	Скриптонит - Дом с нормальными явлениями		plain	
+включи альбом афтер аурс	play	album	The Weeknd - After Hours		translit	
+включи альбом группа крови	play	album	Кино - Группа крови		command_name	
+включи песню группа крови	play	track	Кино - Группа крови		command_name	
+включи альбом прости меня моя любовь	play	album	Земфира - Прости меня моя любовь		command_name	
+включи тейлор свифт тысяча девятьсот восемьдесят девять	play	album	Taylor Swift - 1989		numbers	
+включи эволв	play	album	Imagine Dragons - Evolve		translit	
+включи вьюс дрейка	play	album	Drake - Views		translit	
+включи акустический альбом короля и шута	play	album	Король и Шут - Акустический альбом		command_name	
+включи альбом дальше мота	play	album	Мот - Дальше		command_name	
+включи плейлист русский рок	play	playlist	Русский рок		plain	
+включи русский рэп	play	playlist	Русский рэп		plain	
+включи музыку для тренировки	play	playlist	Workout		plain	
+включи что-нибудь для спорта	play	playlist	Workout		filler	
+включи для вечеринки	play	playlist	Вечеринка		morphology	
+включи утренний кофе	play	playlist	Утренний кофе		plain	
+включи что-нибудь для сна	play	playlist	Для сна		filler	intent=play_wave
+включи скриптонит микс	play	playlist	Скриптонит Mix		translit	
+включи расслабон	play	playlist	Chill Vibes		slang	
+врубай скриптонита	play	artist	Скриптонит		slang	
+вруби басту	play	artist	Баста		slang	
+закинь моргена	play	artist	Моргенштерн		slang	
+го корж	play	artist	Макс Корж		slang	
+кинь трек притон	play	track	Скриптонит - Притон		slang	
+следующая блин	next				slang	
+скипни	next				slang	
+скипай давай	next				slang	
+дальше давай	next				slang	
+отмотай назад	seek_backward			10	slang	
+прибавь звук	volume_up				slang	
+убавь	volume_down				slang	
+потише сделай пожалуйста	volume_down				filler	
+заглуши	mute				slang	intent=pause
+вырубай музыку	pause				slang	intent=stop
+тормозни	pause				slang	intent=stop
+заткнись	pause				slang	intent=stop;intent=mute
+лайкни	like				slang	
+лайкосик поставь	like				slang	
+убери лайк	unlike				plain	
+перемешай	shuffle_on				plain	
+выключи рандом	shuffle_off				slang	
+поставь на повтор	repeat_one				plain	
+повторяй этот трек	repeat_one				plain	
+повторяй весь плейлист	repeat_all				plain	
+выключи повтор	repeat_off				plain	
+чё играет	now_playing				slang	
+чо за трек	now_playing				slang	
+кто поёт	now_playing				plain	
+как называется эта песня	now_playing				plain	
+включи мою волну	play_wave				plain	
+врубай что-нибудь	play_wave				slang	
+включи похожее	play_similar				plain	
+давай что-то в таком же духе	play_similar				filler	
+включи мои лайки	play_likes				plain	
+включи моё любимое	play_likes				plain	
+отмени	undo				plain	
+верни как было	undo				plain	
+что ты умеешь	help				plain	
+ну это самое включи короче этого как его кадиллак	play	track	Моргенштерн - Cadillac		filler	
+можешь пожалуйста включить земфиру	play	artist	Земфира		filler	
+а ты можешь включить мне кино	play	artist	Кино		filler	
+будь добр поставь сплин	play	artist	Сплин		filler	
+включишь корольишут	play	artist	Король и Шут		filler	
+не могла бы ты включить имэджин драгонс	play	artist	Imagine Dragons		filler	
+поставь поставь притон	play	track	Скриптонит - Притон		stretched	
+ээээ включи мммм басту	play	artist	Баста		stretched	
+привет включи пожалуйста билли айлиш	play	artist	Billie Eilish		filler	
+перемешай и включи мои лайки	shuffle_on+play_likes				two_part	
+включи песню стоп	play	track	Стоп Игра - Стоп		command_name	
+включи группу стоп	play	artist	Стоп		command_name	
+включи исполнителя пауза	play	artist	Пауза		command_name	
+включи песню пауза	play	track	Тима Белорусских - Пауза		command_name	
+включи паузу тимы белорусских	play	track	Тима Белорусских - Пауза		command_name	
+включи плейлист пауза	play	playlist	Пауза		command_name	
+включи песню дальше басты	play	track	Баста - Дальше		command_name	
+включи басту дальше	play	track	Баста - Дальше		command_name	
+включи громче мота	play	track	Мот - Громче		command_name	
+включи песню громче	play	track	Мот - Громче		command_name	
+поставь плейлист громче	play	playlist	Громче		command_name	
+включи песню тише	play	track	Тише - Тише		command_name	
+включи хочу земфиры	play	track	Земфира - Хочу		command_name	
+включи земфиру хочу	play	track	Земфира - Хочу		command_name	
+включи брата	play	artist	Брат		command_name	
+включи группу лайк	play	artist	Лайк		command_name	
+включи плей	resume				command_name	
+нажми плей	resume				english	
+включи некст левел	play	artist	Next Level		command_name	
+включи группу дальше	play	artist	Дальше		command_name	
+включи сплин романс	play	track	Сплин - Романс		plain	
+громкость двадцать	volume_set			20	numbers	
+громкость на семьдесят процентов	volume_set			70	numbers	
+сделай громкость семьдесят пять	volume_set			75	numbers	
+поставь громкость на максимум	volume_set			100	numbers	
+громкость на ноль	volume_set			0	numbers	intent=mute
+чуть-чуть потише	volume_down				plain	
+громкость тридцать пять процентов	volume_set			35	numbers	
+громкость шестьдесят шесть	volume_set			66	numbers	
+громкость на сто	volume_set			100	numbers	
+громкость девяносто девять	volume_set			99	numbers	
+громкость сорок пять	volume_set			45	numbers	
+перемотай на полминуты вперёд	seek_forward			30	numbers	
+вперёд на пятнадцать секунд	seek_forward			15	numbers	
+перемотай назад на двадцать секунд	seek_backward			20	numbers	
+мотни на минуту назад	seek_backward			60	numbers	
+перейди на две минуты пятнадцать секунд	seek_to			135	numbers	
+перемотай в начало	seek_to			0	plain	
+включи с начала	seek_to			0	plain	intent=previous
+вперёд на сорок пять секунд	seek_forward			45	numbers	
+перемотай чуть-чуть вперёд	seek_forward			10	plain	
+play the weeknd	play	artist	The Weeknd		english	
+play blinding lights	play	track	The Weeknd - Blinding Lights		english	
+play some music	play_wave				english	
+next track please	next				english	
+pause	pause				english	
+stop the music	stop				english	intent=pause
+turn it down	volume_down				english	
+skip	next				english	
+like this song	like				english	
+shuffle	shuffle_on				english	
+play imagine dragons believer	play	track	Imagine Dragons - Believer		english	
+play rap god by eminem	play	track	Eminem - Rap God		english	
+play queen	play	artist	Queen		english	
+what's playing	now_playing				english	
+play my likes	play_likes				english	
+play something similar	play_similar				english	
+volume fifty	volume_set			50	english	
+skip forward thirty seconds	seek_forward			30	english	
+go back	previous				english	
+mute	mute				english	
+включи плиз билли айлиш	play	artist	Billie Eilish		english	
+сделай volume up	volume_up				english	
+включи weeknd	play	artist	The Weeknd		english	
+плей притон	play	track	Скриптонит - Притон		english	
+некст	next				english	
+пауз	pause				english	
+шафл	shuffle_on				english	
+репит	repeat_one				english	
+лайк	like				command_name	
+Включи, пожалуйста, Скриптонита.	play	artist	Скриптонит		alice	
+Поставь трек «Притон».	play	track	Скриптонит - Притон		alice	
+Сделай громкость 30%.	volume_set			30	alice	
+Перемотай на 1:30.	seek_to			90	alice	
+Включи The Weeknd — Blinding Lights	play	track	The Weeknd - Blinding Lights		alice	
+Включи 25/17	play	artist	25/17		alice	
+Включи 5'Nizza	play	artist	5'Nizza		alice	
+Включи Blink-182!	play	artist	Blink-182		alice	
+Следующий трек, пожалуйста.	next				alice	
+Поставь на паузу.	pause				alice	
+верни предыдущую	previous				plain	
+назад	previous				plain	intent=seek_backward
+прошлый трек	previous				plain	
+продолжай	resume				plain	
+играй дальше	resume				plain	intent=next
+пауза	pause				command_name	
+останови	pause				plain	intent=stop
+стоп	stop				command_name	intent=pause
+хватит	stop				plain	intent=pause
+выключи музыку	stop				plain	intent=pause
+включи звук	unmute				plain	
+верни звук	unmute				plain	
+выключи звук	mute				plain	
+без звука	mute				plain	
+добавь в очередь притон	queue_add	track	Скриптонит - Притон		plain	
+после этого включи кукушку кино	queue_add	track	Кино - Кукушка		plain	
+в очередь цепи скриптонита	queue_add	track	Скриптонит - Цепи		plain	
+повтори эту песню	repeat_one				plain	intent=seek_to
+я хочу быть с тобой	none				false_act	
+перемен требуют наши сердца	none				false_act	
+группа крови на рукаве мой порядковый номер на рукаве	none				false_act	
+и ты включаешь свет а там никого	none				false_act	
+дальше дальше дальше будет только хуже	none				false_act	
+стоп стоп стоп не говори ничего	none				false_act	
+мама включи мультики	none				false_act	
+пап включи телевизор	none				false_act	
+включи свет на кухне	none				false_act	
+включи чайник	none				false_act	
+включи кондиционер	none				false_act	
+поставь будильник на семь утра	none				false_act	
+поставь таймер на пять минут	none				false_act	
+поставь чайник	none				false_act	
+алиса какая завтра погода	none				false_act	
+окей гугл позвони маме	none				false_act	
+сири напомни купить молоко	none				false_act	
+алло да я слушаю	none				false_act	
+да мам я перезвоню через пять минут	none				false_act	
+ты слышал новый альбом скриптонита	none				false_act	
+вчера на концерте басты было круто	none				false_act	
+мне кажется моргенштерн уже не тот	none				false_act	
+по телику сказали что монеточка уехала	none				false_act	
+давай дальше рассказывай	none				false_act	
+хочу пиццу	none				false_act	
+я хочу домой	none				false_act	
+следующая остановка проспект мира	none				false_act	
+громче говори я не слышу	none				false_act	
+не забудьте поставить лайк	none				false_act	
+переходим к следующему вопросу	none				false_act	
+сделай погромче телевизор	none				false_act	
+давай поставим палатку здесь	none				false_act	
+запусти стиралку	none				false_act	
+открой ютуб	none				false_act	
+напиши маме что я опаздываю	none				false_act	
+сколько времени	none				false_act	
+спасибо	none				false_act	
+привет как дела	none				false_act	
+а теперь реклама	none				false_act	
+мы с тобой включили свет и не спали до утра	none				false_act	
+кукушка кукушка сколько мне жить	none				false_act	
+выключи свет и закрой дверь	none				false_act	
+стой подожди меня	none				false_act	
+ну давай давай быстрее мы опаздываем	none				false_act	
+пауза в переговорах затянулась	none				false_act	
+я поставлю чайник ты будешь	none				false_act	
+включи камеру	none				false_act	
+дальше по коридору направо	none				false_act	
+следующий пожалуйста проходите	none				false_act	
+тише едешь дальше будешь	none				false_act	
+громче чем вчера	none				false_act	
+назад в ссср	none				false_act	
+слушай включи басту	play	artist	Баста		filler	
+блин ну включи басту	play	artist	Баста		slang	
+короче включи басту	play	artist	Баста		filler	
+так включи басту	play	artist	Баста		filler	
+ну-ка включи басту	play	artist	Баста		filler	
+эй включи басту	play	artist	Баста		filler	
+а включи басту	play	artist	Баста		filler	
+давай-ка басту	play	artist	Баста		slang	
+включите пожалуйста басту	play	artist	Баста		morphology	
+включим басту	play	artist	Баста		morphology	
+включай басту	play	artist	Баста		morphology	
+включил бы ты басту	play	artist	Баста		morphology	
+не мог бы ты поставить басту	play	artist	Баста		filler	
+а можно басту	play	artist	Баста		filler	
+давай басту	play	artist	Баста		slang	
+хочу басту	play	artist	Баста		plain	
+мне бы басту	play	artist	Баста		slang	
+дай басту	play	artist	Баста		slang	
+запусти басту	play	artist	Баста		plain	
+сыграй басту	play	artist	Баста		plain	
+можно что-нибудь от басты	play	artist	Баста		morphology	
+поставь мне что-нибудь из басты пожалуйста	play	artist	Баста		filler	
+включи скрип тонит	play	artist	Скриптонит		asr	
+включи с крипто нит	play	artist	Скриптонит		asr	
+включи макс кораж	play	artist	Макс Корж		asr	
+включи земфира	play	artist	Земфира		asr	
+включи монет очку	play	artist	Монеточка		asr	
+включи морген штерна	play	artist	Моргенштерн		asr	
+включи басто	play	artist	Баста		asr	
+включи зе уикэнд	play	artist	The Weeknd		translit	
+включи викенда	play	artist	The Weeknd		morphology	
+включи уик энд	play	artist	The Weeknd		asr	
+включи имэджн драгонс	play	artist	Imagine Dragons		translit	
+включи билли айлиш оушен айз	play	track	Billie Eilish - Ocean Eyes		translit	
+включи рамштеин	play	artist	Rammstein		misspelling	
+включи монескин бегин	play	track	Måneskin - Beggin'		translit	
+включи ед ширан	play	artist	Ed Sheeran		misspelling	
+включи эд шерон	play	artist	Ed Sheeran		asr	
+включи доджу кэт	play	artist	Doja Cat		morphology	
+включи пост малой	play	artist	Post Malone		asr	
+включи пост мэлоун	play	artist	Post Malone		translit	
+включи кендрик ламар	play	artist	Kendrick Lamar		translit	
+включи канье уэста	play	artist	Kanye West		morphology	
+включи лану дел рей	play	artist	Lana Del Rey		translit	
+включи пять ниццу	play	artist	5'Nizza		numbers	
+включи сто четыре дня	play	artist	Сто Четыре Дня		numbers	
+включи 104	play	artist	104		numbers	
+включи блинк один восемь два	play	artist	Blink-182		numbers	
+включи блинк182	play	artist	Blink-182		numbers	
+включи двадцать пять восемь	play	artist	25/8		numbers	
+включи два пака	play	artist	2Pac		numbers	
+включи коржика	play	artist	Макс Корж		morphology	
+включи нервы	play	artist	Нервы		plain	
+включи мота	play	artist	Мот		morphology	
+включи группу волюм	play	artist	Volume		command_name	
+включи исполнителя тише	play	artist	Тише		command_name	
+включи погромче	volume_up				command_name	
+включи потише	volume_down				command_name	
+включи громче	volume_up				command_name	track:Мот - Громче
+включи следующую	next				plain	
+включи предыдущую	previous				plain	
+включи следующий трек	next				plain	
+громкость на минимум	volume_set			0	numbers	intent=mute
+громкость на половинку	volume_set			50	morphology	
+чуть громче	volume_up				plain	
+ещё громче	volume_up				plain	
+погромче погромче	volume_up				stretched	
+громкость двадцать пять процентов	volume_set			25	numbers	
+громкость в ноль	volume_set			0	numbers	intent=mute
+громкость 0	volume_set			0	numbers	intent=mute
+звук на максимум	volume_set			100	numbers	
+громкость 15	volume_set			15	numbers	
+назад на минутку	seek_backward			60	morphology	
+перемотай на минуту сорок пять	seek_to			105	numbers	intent=seek_forward
+вперёд на две минуты	seek_forward			120	numbers	
+вперёд на 90 секунд	seek_forward			90	numbers	
+перемотай вперед на 1 минуту	seek_forward			60	numbers	
+перемотай на 2:15	seek_to			135	numbers	
+перемотай на десять секунд назад	seek_backward			10	plain	
+промотай немного	seek_forward			10	plain	
+play next song	next				english	
+previous song	previous				english	
+repeat this song	repeat_one				english	
+turn off shuffle	shuffle_off				english	
+volume to 30	volume_set			30	english	
+set volume to seventy	volume_set			70	english	
+play billie eilish bad guy	play	track	Billie Eilish - bad guy		english	
+play the hills by the weeknd	play	track	The Weeknd - The Hills		english	
+who is singing	now_playing				english	
+louder	volume_up				english	
+quieter	volume_down				english	
+включи плейлист workout	play	playlist	Workout		english	
+включи chill vibes	play	playlist	Chill Vibes		english	
+поставь rammstein	play	artist	Rammstein		english	
+включи linkin park in the end	play	track	Linkin Park - In the End		english	
+включи coldplay	play	artist	Coldplay		english	
+переключи	next				slang	
+переключи песню	next				plain	
+другую песню	next				plain	
+сохрани трек	like				plain	
+мне нравится эта песня	like				ambiguous	intent=none
+поставь в очередь лесника	queue_add	track	Король и Шут - Лесник		plain	
+потом включи притон	queue_add	track	Скриптонит - Притон		plain	
+добавь басту в очередь	queue_add	artist	Баста		plain	
+включи какую-нибудь музыку	play_wave				plain	
+музыку давай	play_wave				slang	
+включи музыку	play_wave				plain	intent=resume
+включи рекомендации	play_wave				plain	
+включи что-нибудь похожее на это	play_similar				plain	
+включи мои треки	play_likes				plain	
+включи избранное	play_likes				plain	
+что умеешь	help				plain	
+помоги	help				plain	
+отмена	undo				plain	
+сегодня пятница	none				false_act	
+в пятницу пойдём в кино	none				false_act	
+у меня нервы сдают	none				false_act	
+мне нужен брат	none				false_act	
+отпусти меня брат	none				false_act	
+иду в кино с друзьями	none				false_act	
+мне нравится скриптонит	none				false_act	
+басту я слушал в школе	none				false_act	
+у кино была песня кукушка	none				false_act	
+а помнишь как мы под цоя танцевали	none				false_act	
+кто такой моргенштерн	none				false_act	
+сколько лет земфире	none				false_act	
+салют какая погода	none				false_act	
+маруся расскажи анекдот	none				false_act	
+окей гугл включи свет	none				false_act	
+смотрите после рекламы	none				false_act	
+следующий выпуск в понедельник	none				false_act	
+новый альбом скриптонита выйдет в декабре	none				false_act	
+хочу танцевать	none				false_act	
+я хочу чтобы эта музыка не кончалась	none				false_act	
+останови меня	none				false_act	
+громче музыка	none				false_act	intent=volume_up
+включи фонарик	none				false_act	
+включи вентилятор	none				false_act	
+включи вайфай	none				false_act	
+включи блютуз	none				false_act	
+включи телек	none				false_act	
+включи ночник	none				false_act	
+включи воду	none				false_act	
+включи духовку на двести градусов	none				false_act	
+включи обогреватель	none				false_act	
+включи режим полёта	none				false_act	
+включи навигатор	none				false_act	
+поставь сериал на паузу	none				false_act	
+сделай телевизор потише	none				false_act	
+лайкни мой пост в инсте	none				false_act	
+добавь молоко в список покупок	none				false_act	
+добавь его в друзья	none				false_act	
+следующая станция курская	none				false_act	
+дальше пешком	none				false_act	
+хочу как ты	none				false_act	
+хочу ещё	none				false_act	intent=play_similar
+выключи и включи роутер	none				false_act	
+тише мыши кот на крыше	none				false_act	
+это не музыка это шум	none				false_act	
+кто поёт в этой группе	none				false_act	intent=now_playing
+что за фигня	none				false_act	
+дальше будет интереснее	none				false_act	
+назад пути нет	none				false_act	
+включи пылесос	none				false_act	
+включи посудомойку	none				false_act	
+включи компьютер	none				false_act	
+включи принтер	none				false_act	
+включи сериал	none				false_act	
+включи футбол	none				false_act	
+включи новости	none				false_act	
+поставь напоминание на завтра	none				false_act	
+поставь кастрюлю на плиту	none				false_act	
+включи лампу	none				false_act	
+включи гирлянду	none				false_act	
+включи отопление	none				false_act	
+включи плиту	none				false_act	
+это любовь детка	none				false_act	
+а ты такая красивая с каждым днём	none				false_act	
+мы ждём перемен	none				false_act	
+звезда по имени солнце	play	track	Кино - Звезда по имени Солнце		ambiguous	intent=none
+скриптонит	play	artist	Скриптонит		plain	intent=none
+кукушка	play	track	Кино - Кукушка		ambiguous	intent=none;ask
+блайндинг лайтс	play	track	The Weeknd - Blinding Lights		translit	intent=none
+пауза и громкость на тридцать	pause+volume_set			30	two_part	
+громкость сорок два	volume_set			42	numbers	
+громкость на восемьдесят	volume_set			80	numbers	
+громкость на 85	volume_set			85	numbers	
+громкость на десять процентов	volume_set			10	numbers	
+давай давай включи басту	play	artist	Баста		stretched	
+включи пожалуйста пожалуйста басту	play	artist	Баста		stretched	
+включи типа скриптонита	play	artist	Скриптонит		filler	
+включи как бы басту	play	artist	Баста		filler	
+щас включи басту	play	artist	Баста		filler	
+ммм поставь кино	play	artist	Кино		filler	
+включи ну это басту	play	artist	Баста		filler	
+включи это ну как его басту	play	artist	Баста		filler	
+включи сансару басты	play	track	Баста - Сансара		morphology	
+включи притон скриптонита	play	track	Скриптонит - Притон		morphology	
+включи притона	play	track	Скриптонит - Притон		asr	
+включи цепь скриптонита	play	track	Скриптонит - Цепи		morphology	
+включи небо поможет нам	play	track	Макс Корж - Небо поможет нам		plain	
+включи прыгну со скалы	play	track	Король и Шут - Прыгну со скалы		plain	
+включи две сестры	play	track	Король и Шут - Две сестры		numbers	
+включи ели мясо мужики	play	track	Король и Шут - Ели мясо мужики		command_name	
+включи пачку сигарет	play	track	Кино - Пачка сигарет		morphology	
+включи звезду по имени солнце	play	track	Кино - Звезда по имени Солнце		morphology	
+включи выхода нет	play	track	Сплин - Выхода нет		negative	
+включи где нас нет	play	track	Oxxxymiron - Где нас нет		negative	
+включи для тебя зверей	play	track	Звери - Для тебя		morphology	
+включи моя игра	play	track	Баста - Моя игра		command_name	
+включи моя игра басты	play	track	Баста - Моя игра		command_name	
+включи это любовь	play	track	Скриптонит - Это любовь		command_name	
+включи это любовь скриптонита	play	track	Скриптонит - Это любовь		command_name	
+включи покинула чат	play	track	Клава Кока - Покинула чат		plain	
+включи берегу	play	track	Макс Барских - Берегу		plain	
+включи розовое вино	play	track	Элджей - Розовое вино		plain	
+включи новый мерин	play	track	Моргенштерн - Новый Мерин		plain	
+включи дуло	play	track	Моргенштерн - Дуло		plain	
+включи нимфоманку	play	track	Монеточка - Нимфоманка		morphology	
+включи бесконечность	play	track	Земфира - Бесконечность		plain	
+включи вэ вэ вэ ленинграда	play	track	Ленинград - WWW		translit	
+включи кабриолет	play	track	Ленинград - Кабриолет		plain	
+включи солдата	play	track	5'Nizza - Солдат		morphology	
+включи минор	play	track	Miyagi & Эндшпиль - Minor		translit	
+включи хочу	play	track	Земфира - Хочу		command_name	ask
+включи малый повзрослел корж	play	track	Макс Корж - Малый повзрослел		plain	
+включи мотылек	play	track	Макс Корж - Мотылёк		misspelling	
+включи радиоактив	play	track	Imagine Dragons - Radioactive		translit	
+включи демонс	play	track	Imagine Dragons - Demons		translit	
+включи левитейтин	play	track	Dua Lipa - Levitating		asr	
+включи донт старт нау	play	track	Dua Lipa - Don't Start Now		translit	
+включи серклс	play	track	Post Malone - Circles		translit	
+включи севен рингс	play	track	Ariana Grande - 7 rings		translit	
+включи саммертайм сэднес	play	track	Lana Del Rey - Summertime Sadness		translit	
+включи перфект	play	track	Ed Sheeran - Perfect		translit	
+включи бёрдс оф э фезер	play	track	Billie Eilish - Birds of a Feather		translit	
+включи бердс оф фезер	play	track	Billie Eilish - Birds of a Feather		asr	
+включи лавли	play	track	Billie Eilish - Lovely		translit	
+включи бэд гай	play	track	Billie Eilish - bad guy		translit	
+включи старбой	play	track	The Weeknd - Starboy		translit	
+включи хэппиер зэн эвер	play	album	Billie Eilish - Happier Than Ever		translit	
+включи дом с нормальными явлениями	play	album	Скриптонит - Дом с нормальными явлениями		plain	
+включи вива ла вида	play	track	Coldplay - Viva la Vida		translit	
+включи смелз лайк тин спирит	play	track	Nirvana - Smells Like Teen Spirit		translit	
+включи ин зе энд	play	track	Linkin Park - In the End		translit	
+Поставь Imagine Dragons, пожалуйста	play	artist	Imagine Dragons		alice	
+Громкость на 50	volume_set			50	alice	
+Перемотай вперёд на 30 секунд	seek_forward			30	alice	
+Включи что-нибудь похожее	play_similar				alice	
+Включи песню «Пауза»	play	track	Тима Белорусских - Пауза		alice	
+Добавь в очередь «Цепи» Скриптонита	queue_add	track	Скриптонит - Цепи		alice	
+вруби-ка басту	play	artist	Баста		slang	
+поставь-ка кино	play	artist	Кино		slang	
+запили басту	play	artist	Баста		slang	
+заведи басту	play	artist	Баста		slang	
+заведи музыку	play_wave				slang	intent=resume
+некстани	next				slang	
+некст трек	next				english	
+включи шо-нибудь	play_wave				slang	
+включи чё-нибудь	play_wave				slang	
+включи чё-то	play_wave				slang	
+включишь басту	play	artist	Баста		morphology	
+поставишь кино	play	artist	Кино		morphology	
+ты включишь мне сплин	play	artist	Сплин		morphology	
+включить басту	play	artist	Баста		morphology	
+басту включить	play	artist	Баста		morphology	
+надо бы басту поставить	play	artist	Баста		filler	
+хотелось бы послушать сплин	play	artist	Сплин		filler	
+не переключай	none				negative	
+не выключай	none				negative	
+включи кина	play	artist	Кино		asr	
+включи моргенштейна	play	artist	Моргенштерн		asr	
+включи тэйлор свифт	play	artist	Taylor Swift		translit	
+включи тейлор свит	play	artist	Taylor Swift		asr	
+включи уикнд	play	artist	The Weeknd		asr	
+включи дрэйк	play	artist	Drake		translit	
+включи эминэма	play	artist	Eminem		translit	
+включи колплей	play	artist	Coldplay		asr	
+включи линкин парка	play	artist	Linkin Park		morphology	
+включи рамштаин	play	artist	Rammstein		asr	
+включи нирванну	play	artist	Nirvana		misspelling	
+включи куинов	play	artist	Queen		morphology	
+включи квин	play	artist	Queen		translit	
+включи бруно марс	play	artist	Bruno Mars		translit	
+включи арьяну гранде	play	artist	Ariana Grande		asr	
+включи пост малоуна	play	artist	Post Malone		asr	
+включи трэвис скот	play	artist	Travis Scott		translit	
+включи кендрика	play	artist	Kendrick Lamar		morphology	
+включи канье веста	play	artist	Kanye West		morphology	
+включи дуалипу	play	artist	Dua Lipa		asr	
+включи эдширана	play	artist	Ed Sheeran		asr	
+включи имаджиндрагонс	play	artist	Imagine Dragons		asr	
+включи линкинпарк	play	artist	Linkin Park		asr	
+включи билиайлиш	play	artist	Billie Eilish		asr	
+включи скриптонитапритон	play	track	Скриптонит - Притон		asr	
+включи бастусансару	play	track	Баста - Сансара		asr	
+включи маскин	play	artist	Måneskin		asr	
+включи окси	play	artist	Oxxxymiron		slang	
+включи оксимирон где нас нет	play	track	Oxxxymiron - Где нас нет		plain	
+включи мияги кэптен	play	track	Miyagi & Эндшпиль - Captain		translit	
+включи хаски	play	artist	Хаски		plain	
+включи кровосток	play	artist	Кровосток		plain	
+включи ночные снайперы	play	artist	Ночные Снайперы		plain	
+включи би 2	play	artist	Би-2		numbers	
+включи ддт	play	artist	ДДТ		plain	
+включи де де тэ	play	artist	ДДТ		asr	
+включи лэ сэ пэ	play	artist	ЛСП		asr	
+включи нойз мс	play	artist	Noize MC		translit	
+включи федука	play	artist	Feduk		morphology	
+включи фэйса	play	artist	Face		translit	
+включи джа халиба	play	artist	Jah Khalib		morphology	
+включи элджей	play	artist	Элджей		plain	
+включи зиверт	play	artist	Zivert		translit	
+включи живерт	play	artist	Zivert		asr	
+включи клаву коку	play	artist	Клава Кока		morphology	
+включи тиму белорусских	play	artist	Тима Белорусских		morphology	
+включи макса барских	play	artist	Макс Барских		morphology	
+включи руки вверх	play	artist	Руки Вверх		command_name	
+включи песни руки вверх	play	artist	Руки Вверх		command_name	
+включи литл биг	play	artist	Little Big		translit	
+включи мумий тролль	play	artist	Мумий Тролль		plain	
+включи чайфа	play	artist	Чайф		morphology	
+включи полину гагарину	play	artist	Полина Гагарина		morphology	
+включи диму билана	play	artist	Дима Билан		morphology	
+включи алу пугачёву	play	artist	Алла Пугачёва		misspelling	
+включи пугачеву	play	artist	Алла Пугачёва		misspelling	
+включи наутилус помпилиус	play	artist	Наутилус Помпилиус		plain	
+включи ленинграда	play	artist	Ленинград		morphology	
+включи сплина	play	artist	Сплин		morphology	
+включи зверей	play	artist	Звери		morphology	

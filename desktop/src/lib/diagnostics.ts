@@ -130,8 +130,25 @@ function truncate(value: string, max = 500) {
 // а реальная причина (timeout / dns / connection refused / tcp connect)
 // спрятана в source()-цепочке, которую плагин частично прокидывает в .cause.
 // String(error) её теряет — поэтому разворачиваем имя + всю cause-цепочку.
+function plainText(value: unknown): string {
+  if (typeof value !== 'object' || value === null) return String(value);
+  const message = (value as { message?: unknown }).message;
+  if (typeof message === 'string' && message) return message;
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
+}
+
+function refusalCode(error: unknown): string | null {
+  if (error instanceof Error) return null;
+  const code = (error as { code?: unknown } | null)?.code;
+  return typeof code === 'string' && code ? code : null;
+}
+
 export function describeError(error: unknown): string {
-  if (!(error instanceof Error)) return truncate(String(error));
+  if (!(error instanceof Error)) return truncate(plainText(error));
 
   const parts: string[] = [];
   let cur: unknown = error;
@@ -184,8 +201,10 @@ export async function trackAsync<T>(
   try {
     return await promise;
   } catch (error) {
-    const elapsed = performance.now() - startedAt;
-    logError(`[Perf] Task failed: ${label} (after ${roundMs(elapsed)}ms): ${describeError(error)}`);
+    const after = `${label} (after ${roundMs(performance.now() - startedAt)}ms)`;
+    const code = refusalCode(error);
+    if (code) logInfo(`[Perf] Task refused: ${after}: ${code}`);
+    else logError(`[Perf] Task failed: ${after}: ${describeError(error)}`);
     throw error;
   } finally {
     window.clearTimeout(slowTimer);

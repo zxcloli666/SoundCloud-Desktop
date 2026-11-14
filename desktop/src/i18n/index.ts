@@ -11,6 +11,14 @@ const localeLoaders = {
   pt: () => import('./locales/pt.json'),
 } as const;
 
+const voiceLoaders = {
+  en: () => import('./locales/voice/en.json'),
+  ru: () => import('./locales/voice/ru.json'),
+  tr: () => import('./locales/voice/tr.json'),
+  ko: () => import('./locales/voice/ko.json'),
+  pt: () => import('./locales/voice/pt.json'),
+} as const;
+
 type AppLanguage = keyof typeof localeLoaders;
 
 const chatLocaleLoaders = import.meta.glob<Record<string, unknown>>('./locales/chat/*.json', {
@@ -46,10 +54,19 @@ const initPromise = i18n.use(initReactI18next).init({
 
 async function loadLanguage(language: AppLanguage) {
   if (loadedLanguages.has(language)) return;
-  const [module, chat] = await Promise.all([localeLoaders[language](), loadChatLocale(language)]);
+  const [module, chat, voice] = await Promise.all([
+    localeLoaders[language](),
+    loadChatLocale(language),
+    voiceLoaders[language](),
+  ]);
   i18n.addResourceBundle(language, 'translation', module.default, true, true);
   i18n.addResourceBundle(language, 'translation', { chat }, true, true);
+  i18n.addResourceBundle(language, 'translation', voice.default, true, true);
   loadedLanguages.add(language);
+}
+
+export function loadVoiceLocales() {
+  return Promise.all(Object.values(voiceLoaders).map(async (load) => (await load()).default));
 }
 
 export async function ensureLocaleLoaded(language: string) {

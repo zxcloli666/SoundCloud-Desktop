@@ -6,6 +6,7 @@ all=false
 frontend=false
 rust=false
 real=false
+voice=false
 
 if [ "$EVENT_NAME" = pull_request ]; then
   files=$(git diff --name-only HEAD^1 HEAD) || all=true
@@ -22,6 +23,10 @@ while IFS= read -r file; do
   case $file in
     .github/workflows/ci.yml | .github/scripts/changes.sh | .github/actions/target-cache/* | .github/actions/apt-packages/* | scripts/ci-mtime.sh | scripts/ci-toolchain.sh | rust-toolchain.toml | .cargo/* | desktop/src-tauri/.cargo/*)
       all=true ;;
+    utils/voice/*)
+      rust=true
+      real=true
+      voice=true ;;
     desktop/src-tauri/Cargo.* | utils/*)
       rust=true
       real=true ;;
@@ -37,10 +42,12 @@ if [ "$all" = true ]; then
   frontend=true
   rust=true
   real=true
+  voice=true
 fi
 
 {
   echo "frontend=$frontend"
   echo "rust=$rust"
   echo "real=$real"
+  echo "voice=$voice"
 } | tee -a "${GITHUB_OUTPUT:-/dev/null}"

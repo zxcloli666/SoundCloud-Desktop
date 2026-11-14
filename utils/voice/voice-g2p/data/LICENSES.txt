@@ -1,0 +1,13 @@
+ru-stress.fst, ru-yo.fst, ru-suffix.fst
+  Derived from the English Wiktionary Russian entries (forms with stress marks and yo spellings) as extracted by kaikki.org
+  (wiktextract, dump enwiktionary 2026-10-01, extracted 2026-10-30), https://kaikki.org/dictionary/Russian/
+  Wiktionary text: CC BY-SA 4.0 and GFDL, https://en.wiktionary.org/wiki/Wiktionary:Copyrights
+  These files stay CC BY-SA 4.0. Attribution: English Wiktionary contributors.
+  A few hundred entries come from build/overrides.txt and build/overrides-lines.txt (our own data).
+  The default stress of about 1700 words with several readings is ordered by build/overrides-homographs.txt (our own data).
+  Its candidates were ranked with the FrequencyWords Russian 50k list (hermitdave, OpenSubtitles 2018),
+  https://github.com/hermitdave/FrequencyWords, CC BY-SA 4.0. The list is not shipped, only used to rank.
+
+en-us.fst, en-us.ph
+  misaki US lexicon (us_gold.json, us_silver.json), https://github.com/hexgrad/misaki, Apache-2.0.
+  The repository states no origin for the word lists themselves.

@@ -5,9 +5,12 @@ import { createKeyIndex, loadLocale, textOf } from './settings-index-locale.mjs'
 import { parseFile, readImports } from './settings-index-parse.mjs';
 import { walkFile } from './settings-index-walk.mjs';
 
-const HIDDEN = new Set(['chat.settings.loadFailed', 'chat.settings.title']);
+const HIDDEN = new Set(['chat.settings.loadFailed', 'chat.settings.title', 'voice.locked.voices']);
 
-const CUSTOM_CARDS = new Map([['src/components/settings/CallProxySection.tsx', 'call.title']]);
+const CUSTOM_CARDS = new Map([
+  ['src/components/settings/CallProxySection.tsx', 'call.title'],
+  ['src/components/voice/VoiceSettings.tsx', 'voice.assistant'],
+]);
 
 export function buildSettingsIndex(root) {
   const source = parseFile(join(root, 'src/components/settings/registry.tsx'));

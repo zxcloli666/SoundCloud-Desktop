@@ -4,10 +4,11 @@ use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
 use rodio::mixer::Mixer;
-use rodio::stream::MixerDeviceSink;
 
 use crate::app::diagnostics;
 use crate::audio::device::open_device_sink;
+use crate::audio::master::Master;
+use crate::audio::sink::DeviceSink;
 use crate::audio::types::AudioThreadCmd;
 use crate::rt::AppHandle;
 
@@ -24,6 +25,7 @@ pub struct OutputHandles {
     pub reconnected: Arc<AtomicBool>,
     pub follow_default_output: Arc<AtomicBool>,
     pub active_output: Arc<Mutex<Option<String>>>,
+    pub master: Arc<Master>,
 }
 
 pub fn spawn_output_thread(
@@ -43,13 +45,18 @@ pub fn spawn_output_thread(
 }
 
 enum Output {
-    Device(MixerDeviceSink),
-    Silent { mixer: Mixer, _stop: Sender<()> },
+    Device(DeviceSink),
+    Silent {
+        mixer: Mixer,
+        voice: Mixer,
+        _stop: Sender<()>,
+    },
 }
 
 impl Output {
     fn silent() -> Self {
         let (mixer, mut source) = rodio::mixer::mixer(rodio::nz!(2), rodio::nz!(44_100));
+        let (voice, mut speech) = rodio::mixer::mixer(rodio::nz!(2), rodio::nz!(44_100));
         let (stop_tx, stop_rx) = std::sync::mpsc::channel::<()>();
         std::thread::Builder::new()
             .name("audio-silent-output".into())
@@ -57,12 +64,14 @@ impl Output {
                 while stop_rx.recv_timeout(SILENT_TICK) == Err(RecvTimeoutError::Timeout) {
                     for _ in 0..SILENT_SAMPLES_PER_TICK {
                         source.next();
+                        speech.next();
                     }
                 }
             })
             .ok();
         Output::Silent {
             mixer,
+            voice,
             _stop: stop_tx,
         }
     }
@@ -71,6 +80,13 @@ impl Output {
         match self {
             Output::Device(sink) => sink.mixer(),
             Output::Silent { mixer, .. } => mixer,
+        }
+    }
+
+    fn voice(&self) -> &Mixer {
+        match self {
+            Output::Device(sink) => sink.voice(),
+            Output::Silent { voice, .. } => voice,
         }
     }
 
@@ -92,6 +108,7 @@ impl OutputThread {
     fn start(handles: OutputHandles) -> Self {
         let output = open_default(&handles);
         let shared_mixer = Arc::new(Mutex::new(output.mixer().clone()));
+        handles.master.set_voice(output.voice().clone());
         let reconnect_at = output.is_silent().then(|| Instant::now() + RECONNECT_DELAY);
         Self {
             handles,
@@ -130,6 +147,7 @@ impl OutputThread {
             name.as_deref(),
             &self.handles.cmd_tx,
             &self.handles.error_flag,
+            &self.handles.master,
         ) {
             Ok(sink) => {
                 self.output = device_output(&self.handles, name.as_deref(), sink);
@@ -143,6 +161,7 @@ impl OutputThread {
             }
         };
         *self.shared_mixer.lock().unwrap() = self.output.mixer().clone();
+        self.handles.master.set_voice(self.output.voice().clone());
         self.reconnect_at = self
             .output
             .is_silent()
@@ -196,14 +215,20 @@ impl OutputThread {
 
         if !(was_silent && self.output.is_silent()) {
             *self.shared_mixer.lock().unwrap() = self.output.mixer().clone();
+            self.handles.master.set_voice(self.output.voice().clone());
             self.handles.reconnected.store(true, Ordering::Release);
         }
     }
 
-    fn reopen(&self) -> Result<(Option<String>, MixerDeviceSink), String> {
+    fn reopen(&self) -> Result<(Option<String>, DeviceSink), String> {
         let selected = self.handles.active_output.lock().unwrap().clone();
         if let Some(id) = selected {
-            match open_device_sink(Some(&id), &self.handles.cmd_tx, &self.handles.error_flag) {
+            match open_device_sink(
+                Some(&id),
+                &self.handles.cmd_tx,
+                &self.handles.error_flag,
+                &self.handles.master,
+            ) {
                 Ok(sink) => return Ok((Some(id), sink)),
                 Err(error) => {
                     diagnostics::log_native(
@@ -215,8 +240,13 @@ impl OutputThread {
                 }
             }
         }
-        open_device_sink(None, &self.handles.cmd_tx, &self.handles.error_flag)
-            .map(|sink| (None, sink))
+        open_device_sink(
+            None,
+            &self.handles.cmd_tx,
+            &self.handles.error_flag,
+            &self.handles.master,
+        )
+        .map(|sink| (None, sink))
     }
 
     fn forget_selected_output(&self) {
@@ -228,7 +258,7 @@ impl OutputThread {
 }
 
 fn open_default(handles: &OutputHandles) -> Output {
-    match open_device_sink(None, &handles.cmd_tx, &handles.error_flag) {
+    match open_device_sink(None, &handles.cmd_tx, &handles.error_flag, &handles.master) {
         Ok(sink) => device_output(handles, None, sink),
         Err(error) => {
             log_no_output(handles, &error);
@@ -237,7 +267,7 @@ fn open_default(handles: &OutputHandles) -> Output {
     }
 }
 
-fn device_output(handles: &OutputHandles, name: Option<&str>, sink: MixerDeviceSink) -> Output {
+fn device_output(handles: &OutputHandles, name: Option<&str>, sink: DeviceSink) -> Output {
     let config = sink.config();
     diagnostics::log_native(
         &handles.app,
@@ -245,10 +275,10 @@ fn device_output(handles: &OutputHandles, name: Option<&str>, sink: MixerDeviceS
         format!(
             "[Audio] Output opened on {}: {} ch, {} Hz, {:?}, buffer {:?}",
             name.unwrap_or("default"),
-            config.channel_count(),
-            config.sample_rate(),
-            config.sample_format(),
-            config.buffer_size(),
+            config.channels,
+            config.sample_rate,
+            config.sample_format,
+            config.buffer_size,
         ),
     );
     Output::Device(sink)

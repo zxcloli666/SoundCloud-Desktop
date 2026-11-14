@@ -1,0 +1,450 @@
+use crate::correct;
+use crate::intent;
+use crate::lexicon::{
+    self, ADD_WORDS, KIND_ARTIST, LONE_VERBS, ON_VERB_FORMS, ORDER_ENDINGS, PLAY_STRONG, PLAY_WEAK,
+};
+use crate::names::Names;
+use crate::normalize::{Tok, normalize};
+use crate::objection;
+use crate::parse_toks;
+use crate::recall;
+use crate::types::{Intent, Kind, Parsed};
+
+const MAX_STEPS: usize = 3;
+const HARD: &[&str] = &["и", "and"];
+const SOFT: &[&str] = &["потом", "затем", "следом", "then", "только"];
+const AFTER: &[&str] = &["него", "этого", "нее", "нее"];
+const BEHIND: &[&str] = &["ним", "ней", "этим"];
+const AFTER_THAT: &[&str] = &["that", "this", "it", "him", "her", "them"];
+const NEXT: &str = "next";
+const FIRST: &str = "сначала";
+const ALSO: &str = "еще";
+const THEN: &[&str] = &["потом", "затем", "следом", "then"];
+
+pub(crate) enum Side {
+    Cmd(Parsed),
+    Foreign,
+    Other,
+}
+
+struct Link {
+    len: usize,
+    soft: bool,
+    also: bool,
+}
+
+pub fn parse(text: &str, names: &Names) -> Vec<Parsed> {
+    let spoken = objection::command_after(text);
+    let text_in = spoken.as_deref().unwrap_or(text);
+    let fixed = correct::resolve(text_in).filter(|_| !intent::retold(&normalize(text_in).toks));
+    let corrected = fixed.is_some();
+    let toks = recall::named(names.drop(fixed.unwrap_or_else(|| normalize(text_in).toks)));
+    let ordered = toks.first().is_some_and(|t| t.w == FIRST);
+    let toks = &without_order_word(toks);
+    let mut whole = parse_toks(text, toks.to_vec()).0;
+    if intent::lyric(toks) || intent::threat(toks) {
+        return vec![whole];
+    }
+    let raw = crate::normalize::words(text_in);
+    let sung = crate::normalize::sung(&raw);
+    if sung && !whole.alt.is_empty() {
+        whole.intent = Intent::None;
+        whole.alt.clear();
+    }
+    if let Some(steps) = linked(toks, text, false) {
+        if steps.len() <= MAX_STEPS {
+            return collapse(steps);
+        }
+    }
+    if whole.intent.is_control() {
+        return vec![whole];
+    }
+    if whole.intent == Intent::QueueAdd {
+        match played_then_queued(toks, text) {
+            Some(steps) if steps.len() <= MAX_STEPS => return collapse(steps),
+            _ => {}
+        }
+    }
+    let babbled = |w: &str| w.chars().count() < 4 || lexicon::is_known(w);
+    let stuttered = raw.windows(2).any(|p| p[0] == p[1] && babbled(&p[0]));
+    let repeated = stuttered || sung;
+    if whole.intent == Intent::None {
+        let denied = correct::denies(text_in);
+        if repeated || denied {
+            whole.bare = false;
+            whole.queries.clear();
+        }
+        whole.talk |= denied;
+        match juxtaposed(toks, text) {
+            Some(steps) if steps.len() <= MAX_STEPS => return collapse(steps),
+            _ => {}
+        }
+    }
+    if corrected && whole.alt.is_empty() && !correct::by_a_filler(text_in) {
+        whole.alt = crate::whole_name(&names.drop(normalize(text_in).toks)).queries;
+    }
+    whole.split = entity_splits(toks, text);
+    if whole.intent.needs_entity() {
+        if let Some(said) = correct::renamed(text_in) {
+            let taken_back = parse_toks(text, recall::named(names.drop(said))).0;
+            whole.split.insert(0, vec![taken_back]);
+        }
+    }
+    if ordered && whole.intent == Intent::None {
+        whole.split.extend(named_in_order(toks, text));
+    }
+    if whole.intent == Intent::Play {
+        whole
+            .split
+            .extend(juxtaposed(toks, text).filter(|s| s.len() <= MAX_STEPS));
+    }
+    vec![whole]
+}
+
+fn without_order_word(mut toks: Vec<Tok>) -> Vec<Tok> {
+    let Some(at) = toks.iter().position(|t| t.w == FIRST) else {
+        return toks;
+    };
+    let leads = at == 0 && toks.len() > 2;
+    let then = |t: &Tok| THEN.contains(&t.w.as_str());
+    if leads || toks.iter().skip(at + 2).any(then) {
+        toks.remove(at);
+    }
+    toks
+}
+
+fn link(toks: &[Tok], i: usize) -> Option<Link> {
+    let w = toks[i].w.as_str();
+    let next = toks.get(i + 1).map(|t| t.w.as_str()).unwrap_or("");
+    let names_the_next = w == "and" && next == NEXT && i + 2 < toks.len();
+    let (len, soft, also) = if names_the_next {
+        (2, true, false)
+    } else if HARD.contains(&w) {
+        (1, false, false)
+    } else if SOFT.contains(&w) {
+        (1, true, false)
+    } else if (w == "после" && AFTER.contains(&next))
+        || (w == "за" && BEHIND.contains(&next))
+        || (w == "followed" && next == "by")
+        || (w == "after" && AFTER_THAT.contains(&next))
+    {
+        (2, true, false)
+    } else if w == ALSO {
+        (1, false, true)
+    } else {
+        return None;
+    };
+    Some(Link { len, soft, also })
+}
+
+pub(crate) fn side(toks: &[Tok], text: &str) -> Side {
+    let (p, blocked) = parse_toks(text, toks.to_vec());
+    if p.intent != Intent::None && (!p.intent.needs_entity() || !p.queries.is_empty()) {
+        Side::Cmd(p)
+    } else if blocked {
+        Side::Foreign
+    } else {
+        Side::Other
+    }
+}
+
+pub(crate) fn plan(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
+    linked(toks, text, inherit).or_else(|| juxtaposed(toks, text))
+}
+
+fn linked(toks: &[Tok], text: &str, inherit: bool) -> Option<Vec<Parsed>> {
+    for i in 1..toks.len().saturating_sub(1) {
+        let Some(l) = link(toks, i) else { continue };
+        let mut start = i + l.len;
+        let mut soft = l.soft;
+        let joins = |at: usize| link(toks, at).filter(|l| !l.also);
+        while start < toks.len() && (joins(start).is_some() || toks[start].w == FIRST) {
+            soft |= joins(start).is_some_and(|l| l.soft);
+            start += joins(start).map_or(1, |l| l.len);
+        }
+        if start >= toks.len() {
+            continue;
+        }
+        if toks[..i].len() == 1 && PLAY_WEAK.contains(&toks[0].w.as_str()) {
+            continue;
+        }
+        let mut left: Vec<Parsed> = match side(&toks[..i], text) {
+            Side::Cmd(p) => {
+                let inner = match p.intent {
+                    Intent::Play => juxtaposed(&toks[..i], text),
+                    Intent::QueueAdd => played_then_queued(&toks[..i], text),
+                    _ => None,
+                };
+                inner.unwrap_or_else(|| vec![p])
+            }
+            Side::Foreign => Vec::new(),
+            Side::Other if inherit && (soft || controls_follow(&toks[start..], text)) => {
+                match shared_verb(&toks[..i], text, true) {
+                    Some(p) => vec![p],
+                    None => continue,
+                }
+            }
+            Side::Other => continue,
+        };
+        let right = &toks[start..];
+        let seek = matches!(
+            left.last().map(|p| p.intent),
+            Some(Intent::SeekForward | Intent::SeekBackward | Intent::SeekTo)
+        );
+        if seek && crate::numbers::is_number(&right[0].w) {
+            continue;
+        }
+        let plays = left
+            .last()
+            .is_some_and(|p| matches!(p.intent, Intent::Play | Intent::QueueAdd));
+        let mut rest = match plan(right, text, soft && plays) {
+            Some(steps) => steps,
+            None => match side(right, text) {
+                Side::Cmd(p) => vec![p],
+                Side::Foreign => Vec::new(),
+                Side::Other if controls(&left) && order_to_someone(right) => Vec::new(),
+                Side::Other => match left.last() {
+                    Some(lp) if soft && matches!(lp.intent, Intent::Play | Intent::QueueAdd) => {
+                        match shared_verb(right, text, true) {
+                            Some(p) => vec![p],
+                            None => continue,
+                        }
+                    }
+                    _ => continue,
+                },
+            },
+        };
+        if l.also && !(plays && rest.iter().all(|p| p.intent.is_control())) {
+            continue;
+        }
+        if soft && plays {
+            queued_after(&mut rest);
+        }
+        left.append(&mut rest);
+        if !left.is_empty() {
+            return Some(left);
+        }
+    }
+    None
+}
+
+fn controls_follow(toks: &[Tok], text: &str) -> bool {
+    matches!(side(toks, text), Side::Cmd(p) if p.intent.is_control())
+}
+
+fn controls(steps: &[Parsed]) -> bool {
+    let verdict = |i: Intent| matches!(i, Intent::Like | Intent::Unlike);
+    steps
+        .last()
+        .is_some_and(|p| p.intent.is_control() && !verdict(p.intent))
+}
+
+fn order_to_someone(toks: &[Tok]) -> bool {
+    let w = toks[0].w.as_str();
+    let ordered = ORDER_ENDINGS.iter().any(|e| w.ends_with(e)) && !w.ends_with("ть");
+    ordered && toks.len() > 1 && !lexicon::is_known(w)
+}
+
+fn queued_after(rest: &mut [Parsed]) {
+    let Some(next) = rest.first_mut() else {
+        return;
+    };
+    let named = next.intent.is_control() && next.kind_hint == Some(Kind::Artist);
+    if named && !next.alt.is_empty() {
+        next.queries = std::mem::take(&mut next.alt);
+        next.intent = Intent::QueueAdd;
+    }
+    if next.intent == Intent::Play {
+        next.intent = Intent::QueueAdd;
+    }
+}
+
+fn after_play(i: Intent) -> bool {
+    matches!(
+        i,
+        Intent::VolumeUp
+            | Intent::VolumeDown
+            | Intent::VolumeSet
+            | Intent::ShuffleOn
+            | Intent::ShuffleOff
+            | Intent::RepeatOne
+            | Intent::RepeatAll
+            | Intent::RepeatOff
+            | Intent::Mute
+            | Intent::Unmute
+    )
+}
+
+fn lone_verb(toks: &[Tok]) -> bool {
+    toks.len() == 1 && LONE_VERBS.contains(&toks[0].w.as_str())
+}
+
+fn juxtaposed(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+    if toks.len() < 2 || toks.len() > 10 {
+        return None;
+    }
+    match side(toks, text) {
+        Side::Cmd(p) if p.intent.is_control() || p.intent == Intent::PlaySimilar => return None,
+        Side::Foreign => return None,
+        _ => {}
+    }
+    for i in 1..toks.len() {
+        if lone_verb(&toks[..i]) || lone_verb(&toks[i..]) || names_next(&toks[i - 1]) {
+            continue;
+        }
+        let Side::Cmd(left) = side(&toks[..i], text) else {
+            continue;
+        };
+        if !left.alt.is_empty() {
+            continue;
+        }
+        let tail = &toks[i..];
+        let rest = match plan(tail, text, false) {
+            Some(steps) => steps,
+            None => match side(tail, text) {
+                Side::Cmd(p) => vec![p],
+                _ => continue,
+            },
+        };
+        if rest.iter().any(|p| !p.alt.is_empty()) {
+            continue;
+        }
+        let control = |p: &Parsed| !p.intent.needs_entity();
+        if rest
+            .first()
+            .is_some_and(|r| r.intent == left.intent && control(r))
+        {
+            continue;
+        }
+        let adds = ADD_WORDS.contains(&tail[0].w.as_str());
+        let queued = adds && rest.first().is_some_and(|r| r.intent == Intent::QueueAdd);
+        let follows = |(at, r): (usize, &Parsed)| after_play(r.intent) || (at == 0 && queued);
+        if left.intent == Intent::Play && !rest.iter().enumerate().all(follows) {
+            continue;
+        }
+        if !control(&left) && !rest.iter().any(control) && !queued {
+            continue;
+        }
+        let strong_start = PLAY_STRONG.contains(&toks[0].w.as_str());
+        if left.intent == Intent::Play && !strong_start {
+            continue;
+        }
+        if left.intent == Intent::Resume || rest.iter().any(|p| p.intent == Intent::Resume) {
+            continue;
+        }
+        let mut steps = vec![left];
+        steps.extend(rest);
+        return Some(steps);
+    }
+    None
+}
+
+fn names_next(t: &Tok) -> bool {
+    KIND_ARTIST.contains(&t.w.as_str())
+}
+
+fn played_then_queued(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+    juxtaposed(toks, text).filter(|steps| steps[0].intent == Intent::Play)
+}
+
+fn shared_verb(toks: &[Tok], text: &str, queue: bool) -> Option<Parsed> {
+    let (mut p, _) = parse_toks(text, toks.to_vec());
+    if !p.bare || p.queries.is_empty() {
+        return None;
+    }
+    p.bare = false;
+    p.intent = if queue {
+        Intent::QueueAdd
+    } else {
+        Intent::Play
+    };
+    Some(p)
+}
+
+fn named_in_order(toks: &[Tok], text: &str) -> Option<Vec<Parsed>> {
+    let then = toks.iter().position(|t| THEN.contains(&t.w.as_str()))?;
+    let first = shared_verb(&toks[..then], text, false)?;
+    let next = shared_verb(&toks[then + 1..], text, true)?;
+    Some(vec![first, next])
+}
+
+fn entity_splits(toks: &[Tok], text: &str) -> Vec<Vec<Parsed>> {
+    let mut out = Vec::new();
+    for i in 1..toks.len().saturating_sub(1) {
+        if !HARD.contains(&toks[i].w.as_str()) {
+            continue;
+        }
+        let Side::Cmd(left) = side(&toks[..i], text) else {
+            continue;
+        };
+        if left.intent != Intent::Play {
+            continue;
+        }
+        if let Some(right) = shared_verb(&toks[i + 1..], text, true) {
+            out.push(vec![left, right]);
+        }
+    }
+    out
+}
+
+fn off_form(i: Intent) -> Option<Intent> {
+    match i {
+        Intent::ShuffleOn => Some(Intent::ShuffleOff),
+        Intent::RepeatOne | Intent::RepeatAll => Some(Intent::RepeatOff),
+        _ => None,
+    }
+}
+
+fn own_verb(p: &Parsed) -> bool {
+    p.normalized
+        .split(' ')
+        .any(|w| LONE_VERBS.contains(&w) || ON_VERB_FORMS.contains(&w))
+}
+
+fn collapse(steps: Vec<Parsed>) -> Vec<Parsed> {
+    let mut out: Vec<Parsed> = Vec::new();
+    for mut p in steps {
+        let replaced = |i: Intent| matches!(i, Intent::Stop | Intent::Pause | Intent::Next);
+        if p.intent == Intent::Play && out.last().is_some_and(|l| replaced(l.intent)) {
+            out.pop();
+        }
+        if p.intent == Intent::Undo && out.last().is_some_and(|l| l.intent == Intent::Next) {
+            out.pop();
+        }
+        if let Some(last) = out.last() {
+            if matches!(last.intent, Intent::ShuffleOff | Intent::RepeatOff) && !own_verb(&p) {
+                if let Some(off) = off_form(p.intent) {
+                    p.intent = off;
+                }
+            }
+            if last.intent == Intent::Mute && p.intent == Intent::Resume {
+                p.intent = Intent::Unmute;
+            }
+        }
+        if out.last().is_some_and(|l| l.intent == p.intent) && asked_once(p.intent) {
+            continue;
+        }
+        out.push(p);
+    }
+    out
+}
+
+fn asked_once(i: Intent) -> bool {
+    matches!(
+        i,
+        Intent::NowPlaying
+            | Intent::Help
+            | Intent::Pause
+            | Intent::Stop
+            | Intent::Resume
+            | Intent::Mute
+            | Intent::Unmute
+            | Intent::Like
+            | Intent::Unlike
+            | Intent::ShuffleOn
+            | Intent::ShuffleOff
+            | Intent::RepeatOne
+            | Intent::RepeatAll
+            | Intent::RepeatOff
+    )
+}

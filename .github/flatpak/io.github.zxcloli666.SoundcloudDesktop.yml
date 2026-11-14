@@ -59,6 +59,7 @@ modules:
         XDG_CACHE_HOME: /run/build/soundcloud-desktop/flatpak-node/cache
         npm_config_cache: /run/build/soundcloud-desktop/flatpak-node/npm-cache
         npm_config_offline: "true"
+        SHERPA_ONNX_ARCHIVE_DIR: /run/build/soundcloud-desktop/sherpa-onnx
         NODE_OPTIONS: --max_old_space_size=4096
     build-commands:
       # Install node deps offline (npm, not pnpm — flatpak-node-generator doesn't support pnpm)
@@ -82,5 +83,15 @@ modules:
     sources:
       - type: dir
         path: ../../
+      - type: file
+        url: https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.1/sherpa-onnx-v2.0.1-linux-x64-static-lib.tar.bz2
+        sha256: 55cfadf65ba50d0afc1a802b7a337942819e51c94a5b5a384def1978f7c70871
+        dest: sherpa-onnx
+        only-arches: [x86_64]
+      - type: file
+        url: https://github.com/k2-fsa/sherpa-onnx/releases/download/v2.0.1/sherpa-onnx-v2.0.1-linux-aarch64-static-lib.tar.bz2
+        sha256: b6c6090e40fd18d6812f04fe21260602cd1223d7b5e83ad39dab87ad7c1c031d
+        dest: sherpa-onnx
+        only-arches: [aarch64]
       - cargo-sources.json
       - node-sources.json

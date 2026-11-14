@@ -1,0 +1,231 @@
+phrase	intent	kind	entity	number	category	alt
+включи виктора цоя кукушку	play	track	Кино - Кукушка		morphology	
+включи кукушку цоя	play	track	Кино - Кукушка		ambiguous	
+включи гагарину кукушку	play	track	Полина Гагарина - Кукушка		ambiguous	
+включи кукушку гагариной	play	track	Полина Гагарина - Кукушка		morphology	
+включи двадцать пять дробь семнадцать	play	artist	25/17		numbers	
+включи двадцать пять семнадцатый	play	artist	25/17		asr	
+включи блинк	play	artist	Blink-182		numbers	
+включи аллу борисовну	play	artist	Алла Пугачёва		morphology	
+включи шнура	play	artist	Ленинград		ambiguous	
+включи канье	play	artist	Kanye West		translit	
+включи билана	play	artist	Дима Билан		morphology	
+зарядь кино	play	artist	Кино		slang	
+давай кукушку цоя	play	track	Кино - Кукушка		slang	
+ёпта включи басту	play	artist	Баста		slang	
+бля включи уже скриптонита	play	artist	Скриптонит		slang	
+нахер эту песню	next				slang	
+убери нафиг эту песню	next				slang	
+мотни вперёд	seek_forward			10	slang	
+сердечко поставь	like				slang	
+добавь в любимые	like				plain	
+рандом включи	shuffle_on				slang	
+шазамни	now_playing				slang	
+поставь музычку	play_wave				slang	
+включи что хочешь	play_wave				plain	
+удиви меня	play_wave				plain	
+надо бы поставить что-то бодрое	play_wave				filler	
+ещё что-нибудь такое же	play_similar				plain	
+э ну включи там это м скриптонита	play	artist	Скриптонит		filler	
+слушай а давай-ка включим что ли басту	play	artist	Баста		filler	
+включи включи скриптонита	play	artist	Скриптонит		stretched	
+включи скриптонита скриптонита	play	artist	Скриптонит		stretched	
+так короче включи э монеточку пожалуйста спасибо	play	artist	Монеточка		stretched	
+слушай я тут подумал короче а включи-ка мне дрейка	play	artist	Drake		stretched	
+выключи и включи скриптонита	play	artist	Скриптонит		two_part	
+сделай погромче и следующий	volume_up+next				two_part	
+стоп и включи басту	play	artist	Баста		two_part	
+следующий трек и погромче	next+volume_up				two_part	
+лайкни и дальше	like+next				two_part	
+включи басту а потом скриптонита	play+queue_add	artist+artist	Баста+Скриптонит		two_part	
+включи притон а после него цепи	play+queue_add	track+track	Скриптонит - Притон+Скриптонит - Цепи		two_part	
+поставь на паузу я отойду	pause				two_part	
+сначала включи кино потом сплин	play+queue_add	artist+artist	Кино+Сплин		two_part	
+включи хочу мота	play	track	Мот - Хочу		command_name	
+громкость на четверть	volume_set			25	numbers	
+громкость на треть	volume_set			33	numbers	
+громкость до упора	volume_set			100	numbers	
+выкрути на полную	volume_set			100	slang	
+в два раза громче	volume_up				numbers	
+убавь до двадцати	volume_set			20	numbers	
+сделай потише до тридцати процентов	volume_set			30	numbers	
+прибавь до восьмидесяти	volume_set			80	numbers	
+громкость на троечку	volume_set			30	slang	
+громкость на пятёрочку	volume_set			50	slang	
+перемотай на полторы минуты вперёд	seek_forward			90	numbers	
+поставь на минуту тридцать	seek_to			90	numbers	
+отмотай секунд на пять	seek_backward			5	numbers	
+перемотай вперёд на минуту двадцать	seek_forward			80	numbers	
+назад на десяточку	seek_backward			10	slang	
+промотай на тридцатую секунду	seek_to			30	numbers	
+turn it up a bit	volume_up				english	
+давай обратно ту песню	previous				filler	
+сними с паузы	resume				plain	
+следующим поставь басту	queue_add	artist	Баста		plain	
+закинь в очередь морген кадиллак	queue_add	track	Моргенштерн - Cadillac		slang	
+я включу тебе музыку и ты уснёшь	none				false_act	
+включи мозги	none				false_act	
+не включай дурака	none				false_act	
+поставь лайк и подпишись на канал	none				false_act	
+ставьте лайки пишите комментарии	none				false_act	
+повтори пожалуйста что ты сказал	none				false_act	
+поставь стакан на стол	none				false_act	
+хочу хочу хочу тебя	none				false_act	
+перемотай кассету карандашом	none				false_act	
+включай мозги и думай	none				false_act	
+поставь машину во двор	none				false_act	
+блять включи басту	play	artist	Баста		slang	
+включаем басту	play	artist	Баста		morphology	
+врубай басту на всю	play	artist	Баста		slang	
+включи айлиш	play	artist	Billie Eilish		translit	
+включи бибера	play	artist	Justin Bieber		morphology	
+включи тупак шакур	play	artist	2Pac		translit	
+включи земфирочку	play	artist	Земфира		morphology	
+включи витю цоя	play	artist	Кино		morphology	
+включи группу мьют	play	artist	Mute		command_name	
+громкость наполовину	volume_set			50	asr	
+убавь вдвое	volume_down				numbers	
+сделай в два раза тише	volume_down				numbers	
+громкость плюс десять	volume_up			10	numbers	
+звук на тридцатку	volume_set			30	slang	
+звук на полтос	volume_set			50	slang	
+громкость на сотку	volume_set			100	slang	
+перемотай на секунд тридцать вперёд	seek_forward			30	numbers	
+вперёд на полминутки	seek_forward			30	morphology	
+поставь на тридцатую секунду	seek_to			30	numbers	
+с первой минуты	seek_to			60	numbers	
+отмотай в самое начало	seek_to			0	plain	
+назад на полторы минуты	seek_backward			90	numbers	
+выключи музыку и включи свет	stop				two_part	
+включи свет и выключи музыку	stop				two_part	
+сделай потише я разговариваю по телефону	volume_down				two_part	
+поставь на паузу мне звонят	pause				two_part	
+погромче это моя любимая	volume_up				two_part	
+лайкни эту песню она классная	like				two_part	
+следующую эта надоела	next				two_part	
+включи скриптонита и погромче	play+volume_up	artist	Скриптонит		two_part	
+включи басту и перемешай	play+shuffle_on	artist	Баста		two_part	
+пауза я сейчас вернусь	pause				two_part	
+нахрен эту песню	next				slang	
+задолбала эта песня	next				slang	
+выруби эту херню	stop				slang	intent=pause
+не то давай другое	next				slang	
+в избранное	like				plain	
+следующей поставь кукушку	queue_add	track	Кино - Кукушка		plain	ask
+включи что-нибудь весёлое	play_wave				plain	
+поставь что-нибудь на твой вкус	play_wave				filler	
+ещё такого же	play_similar				slang	
+включи моё	play_likes				slang	
+верни обратно	undo				plain	intent=previous
+я передумал	undo				plain	
+ставьте лайк если согласны	none				false_act	
+давай дальше без меня	none				false_act	
+я просто хочу жить в кайф	none				false_act	
+поставь оценку пять	none				false_act	
+поставь подпись здесь	none				false_act	
+поставь точку	none				false_act	
+включи утюг	none				false_act	
+включи субтитры	none				false_act	
+поставь пароль на телефон	none				false_act	
+поставь на зарядку	none				false_act	
+поставь мне укол	none				false_act	
+перемотай фильм на начало	none				false_act	
+поставь лайк на мою фотку	none				false_act	
+стоп игра	none				false_act	intent=stop;intent=play;artist:Стоп Игра
+включи голову наконец	none				false_act	
+включи логику	none				false_act	
+повтори за мной	none				false_act	
+повторите пожалуйста вопрос	none				false_act	
+перемешай салат	none				false_act	
+перемешай тесто ложкой	none				false_act	
+поставь чайник и включи музыку	play_wave				two_part	
+включи микроволновку	none				false_act	
+включи сигнализацию	none				false_act	
+включи поворотник	none				false_act	
+включи дворники	none				false_act	
+включи презентацию	none				false_act	
+включи мультик про машинки	none				false_act	
+включи первый канал	none				false_act	
+включи аудиокнигу	none				false_act	
+поставь ставку на спартак	none				false_act	
+поставь цветы в вазу	none				false_act	
+поставь мультик	none				false_act	
+поставь диагноз	none				false_act	
+поставь его на место	none				false_act	
+поставь себя на моё место	none				false_act	
+включи мозг	none				false_act	
+включи совесть	none				false_act	
+включи заднюю	none				false_act	
+включи дурочку	none				false_act	
+включи ёлку	none				false_act	
+включи бойлер	none				false_act	
+включи кофемашину	none				false_act	
+включи зарядку	none				false_act	
+перемотай плёнку	none				false_act	
+перемешай карты	none				false_act	
+повтори домашку	none				false_act	
+включи басту и сделай погромче	play+volume_up	artist	Баста		two_part	
+следующую и лайкни	next+like				two_part	
+лайкни и следующую	like+next				two_part	
+выключи повтор и перемешай	repeat_off+shuffle_on				two_part	
+включи земфиру потом кино	play+queue_add	artist+artist	Земфира+Кино		two_part	
+сделай тише и включи похожее	volume_down+play_similar				two_part	
+громкость на три четверти	volume_set			75	numbers	
+громкость три четверти	volume_set			75	numbers	
+вперёд секунд на двадцать	seek_forward			20	numbers	
+назад секунд на десять	seek_backward			10	numbers	
+вперёд минуты на две	seek_forward			120	numbers	
+перемотай на пару минут вперёд	seek_forward			120	numbers	
+назад на две с половиной минуты	seek_backward			150	numbers	
+вперёд на минуту с половиной	seek_forward			90	numbers	
+перемотай вперёд на полторы минуты	seek_forward			90	numbers	
+вперёд на полторы минуты	seek_forward			90	numbers	
+включи включи басту	play	artist	Баста		stretched	
+басту басту включи	play	artist	Баста		stretched	
+кароче включи басту	play	artist	Баста		misspelling	
+сука включи басту	play	artist	Баста		slang	
+нахер включи басту	play	artist	Баста		slang	
+чёрт включи басту	play	artist	Баста		slang	
+пипец включи басту	play	artist	Баста		slang	
+хрен с ним включи басту	play	artist	Баста		slang	
+включи жить в кайф	play	track	Макс Корж - Жить в кайф		ambiguous	album:Макс Корж - Жить в кайф
+включи тепло коржа	play	track	Макс Корж - Тепло		plain	
+включи для тебя	play	track	Звери - Для тебя		command_name	ask
+включи прости меня моя любовь	play	track	Земфира - Прости меня моя любовь		ambiguous	album:Земфира - Прости меня моя любовь
+включи девяностые монеточки	play	track	Монеточка - 90		numbers	
+включи семь колец	play	track	Ariana Grande - 7 rings		numbers	
+Включи «Кукушку» Цоя	play	track	Кино - Кукушка		alice	
+включи группу альбом	play	artist	Альбом		command_name	
+включи исполнителя плейлист	play	artist	Плейлист		command_name	
+включи песни группы альбом	play	artist	Альбом		command_name	
+включи группу трек	play	artist	Трек		command_name	
+врубани басту	play	artist	Баста		slang	
+вкинь басту	play	artist	Баста		slang	
+зафигачь басту	play	artist	Баста		slang	
+сбацай басту	play	artist	Баста		slang	
+крутани басту	play	artist	Баста		slang	
+поставь вайбовое что-нибудь	play_wave				slang	
+го чил	play	playlist	Chill Vibes		slang	intent=play_wave;playlist:Chill
+кринж выключи	stop				slang	intent=pause;intent=next
+постаф басту	play	artist	Баста		misspelling	
+поставить кукушку цоя	play	track	Кино - Кукушка		morphology	
+не хочешь включить кино	play	artist	Кино		filler	
+не включай басту	none				negative	
+не надо басту	none				negative	
+не ставь кино	none				negative	
+не надо громче	none				negative	intent=volume_down
+не надо паузу	none				negative	intent=resume
+басту не надо включи кино	play	artist	Кино		negative	
+не скриптонита а басту	play	artist	Баста		negative	
+включи тейлор	play	artist	Taylor Swift		translit	
+включи свифт	play	artist	Taylor Swift		translit	
+включи имаджин	play	artist	Imagine Dragons		translit	
+включи линкин	play	artist	Linkin Park		translit	
+включи бибер	play	artist	Justin Bieber		translit	
+включи агату	play	artist	Агата Кристи		morphology	
+включи бидва	play	artist	Би-2		asr	
+включи нойза	play	artist	Noize MC		morphology	
+включи тиму	play	artist	Тима Белорусских		morphology	
+включи крида	play	artist	Егор Крид		morphology	
+включи барских	play	artist	Макс Барских		morphology	
+включи гагарину	play	artist	Полина Гагарина		morphology	

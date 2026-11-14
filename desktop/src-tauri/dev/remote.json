@@ -28,6 +28,17 @@
     "core:window:allow-scale-factor",
     "core:webview:allow-set-webview-zoom",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "x-apple.systempreferences:*"
+        },
+        {
+          "url": "ms-settings:*"
+        }
+      ]
+    },
     "dialog:default",
     "fs:allow-exists",
     "notification:allow-notify",
@@ -103,6 +114,9 @@
         },
         {
           "path": "$APPDATA/sc-track-sound.json"
+        },
+        {
+          "path": "$APPDATA/sc-voice.json"
         },
         {
           "path": "$APPDATA/star-moments.json"

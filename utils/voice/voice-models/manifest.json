@@ -1,0 +1,466 @@
+{
+  "models": [
+    {
+      "id": "silero-vad",
+      "version": "1",
+      "kind": "vad",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 643854,
+      "requires": [],
+      "files": [
+        {
+          "path": "silero_vad.onnx",
+          "size": 643854,
+          "sha256": "9e2449e1087496d8d4caba907f23e0bd3f78d91fa552479bb9c23ac09cbb1fd6"
+        }
+      ]
+    },
+    {
+      "id": "sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16",
+      "version": "1",
+      "kind": "asr",
+      "language": "ru",
+      "license": "Apache-2.0",
+      "unpacked_size": 28833045,
+      "requires": [
+        "silero-vad"
+      ],
+      "files": [
+        {
+          "path": "encoder.int8.onnx",
+          "size": 26214060,
+          "sha256": "e0db705e94ec35d803b1df4f40cda23d064e1142977c80ab288430b109777a9d"
+        },
+        {
+          "path": "decoder.onnx",
+          "size": 2093080,
+          "sha256": "89b3088a9e20e1ef7f2e85ce1a3478afe6a9c4ac57369cabcc4beb8e95328ea0"
+        },
+        {
+          "path": "joiner.int8.onnx",
+          "size": 259417,
+          "sha256": "b55784b071ab7512eab4c7c44e4f5478284ef33c83562cc6a249b972515a31e5"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 6388,
+          "sha256": "93bbbc0bae6b78c0bbb743d4aa9fded3bb5ff3aac5f0200e3a769a5a05e0fdf6"
+        },
+        {
+          "path": "bpe.model",
+          "size": 246184,
+          "sha256": "c7a756aeb3550417d6b2ed3efde9a7aa3eea54787d4eac011e9cce6090c9c64a"
+        },
+        {
+          "path": "bpe.vocab",
+          "size": 13916,
+          "sha256": "52649881bb41fafe4257c74d77a85320524494a9d8c48e93d4aaa216cc45113d"
+        }
+      ]
+    },
+    {
+      "id": "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16",
+      "version": "1",
+      "kind": "asr",
+      "language": "ru",
+      "license": "MIT",
+      "unpacked_size": 229343109,
+      "requires": [
+        "silero-vad"
+      ],
+      "files": [
+        {
+          "path": "encoder.int8.onnx",
+          "size": 224570814,
+          "sha256": "0ec54e5f130a91c0f228d21795ede10b31c992a1f73e45dcd827e843a71a9b50"
+        },
+        {
+          "path": "decoder.onnx",
+          "size": 3331651,
+          "sha256": "5d1cfef155d8e07f213bd2f3229b5f6c5c29355c7fa5c1b9eb62cb1925725254"
+        },
+        {
+          "path": "joiner.onnx",
+          "size": 1440448,
+          "sha256": "fd1d02f45c2ad3d6b67cc149811ad794ab4b020ed49a0a9e2790a8619d1cddd8"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 196,
+          "sha256": "17cc514451bcceac9c280068c71502f8448f99e9fb1456b8d0761651fd0392f2"
+        }
+      ]
+    },
+    {
+      "id": "sherpa-onnx-zipformer-gigaspeech-2023-12-12",
+      "version": "1",
+      "kind": "asr",
+      "language": "en",
+      "license": "Apache-2.0",
+      "unpacked_size": 75220808,
+      "requires": [
+        "silero-vad"
+      ],
+      "files": [
+        {
+          "path": "encoder.int8.onnx",
+          "size": 72850738,
+          "sha256": "d3eff4b1bd747bd781a47966795988539227d05638524b0313f26d3a166962d7"
+        },
+        {
+          "path": "decoder.onnx",
+          "size": 2093081,
+          "sha256": "852b65653e65ec5436b61ab8cea819847666c1dd4c5821a94989788f85adbe76"
+        },
+        {
+          "path": "joiner.int8.onnx",
+          "size": 259417,
+          "sha256": "80160e45cca71dd52f6b0a6d3d12be18126f5308b2d4ba03f001300fea377c64"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 5020,
+          "sha256": "0ef7d736bf4de3ef947292e4b119ef13f6808cd5f3aec225a843a7135ac1c2ce"
+        },
+        {
+          "path": "bpe.vocab",
+          "size": 12552,
+          "sha256": "803718d32d9858e47a5f764ae58c538ea370ecb5db3d58e98a8cda0b31bf4111"
+        }
+      ]
+    },
+    {
+      "id": "kokoro-multi-lang-v1_0",
+      "version": "1",
+      "kind": "tts",
+      "language": "en",
+      "license": "Apache-2.0",
+      "unpacked_size": 353762203,
+      "requires": [],
+      "files": [
+        {
+          "path": "model.onnx",
+          "size": 325560556,
+          "sha256": "b40f62b166ac8164b0627ef48a0b358eda0985e272fb03ef5252e7206305da11"
+        },
+        {
+          "path": "voices.bin",
+          "size": 28200960,
+          "sha256": "1c5a5b983d3d50d8586d437a51f3faa2da7919ce76a013c081e65671a3447c29"
+        },
+        {
+          "path": "tokens.txt",
+          "size": 687,
+          "sha256": "6ebb6bb288f20f3ae8d004d3c2ca27697da27c037d75e81a60e2a6a663f95425"
+        }
+      ]
+    },
+    {
+      "id": "qwen-codec",
+      "version": "1",
+      "kind": "tts",
+      "language": "any",
+      "license": "Apache-2.0",
+      "unpacked_size": 291150624,
+      "requires": [],
+      "files": [
+        {
+          "path": "qwen-tokenizer-12hz-Q8_0.gguf",
+          "size": 291150624,
+          "sha256": "1883beeed99348fc35e23dd225e9082f93f6f8c109330a33d935baa8acdbfd94"
+        }
+      ]
+    },
+    {
+      "id": "qwen-loli",
+      "version": "1",
+      "kind": "tts",
+      "language": "ru",
+      "license": "own",
+      "unpacked_size": 1182631008,
+      "requires": [
+        "qwen-codec"
+      ],
+      "files": [
+        {
+          "path": "qwen-talker-1.7b-loli-Q4_K_M.gguf",
+          "size": 1182631008,
+          "sha256": "dadc36ad7c33ffe2334a06f52cc8f7f498320e7b3834556703e2c0f8b33bc944"
+        }
+      ]
+    },
+    {
+      "id": "qwen-moriarty",
+      "version": "1",
+      "kind": "tts",
+      "language": "ru",
+      "license": "own",
+      "unpacked_size": 1182631008,
+      "requires": [
+        "qwen-codec"
+      ],
+      "files": [
+        {
+          "path": "qwen-talker-1.7b-moriarty-Q4_K_M.gguf",
+          "size": 1182631008,
+          "sha256": "f2edb2cfb74dc4b5952a249a057814f99bd7498cea04879befbe109cf623ecb2"
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-macos-aarch64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 7503816,
+      "platform": "macos-aarch64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 7503816,
+          "sha256": "e69044e3da43918e210fdc08247bb16416c170a652f951a63a257ca1dba9825c",
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-macos-x86_64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 2527048,
+      "platform": "macos-x86_64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 2527048,
+          "sha256": "6786308bb2e2d245ebe78d33d655df44e50d516105de613b605f5dafe6cf6cdd",
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-linux-x86_64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 53013872,
+      "platform": "linux-x86_64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 407936,
+          "sha256": "fa4fdae5344685bfa0eabcc2f29819240209481ed015dea68659dbbbcc60adb7",
+          "executable": true
+        },
+        {
+          "path": "libggml-base.so.0",
+          "size": 937296,
+          "sha256": "d9ea1fc950ff08de6c927ca46e22a8ed081c6edc42bee4aea55a498569881a2c"
+        },
+        {
+          "path": "libggml-cpu-alderlake.so",
+          "size": 1294424,
+          "sha256": "495d5ea066ae1945e6980b361e387581cc6f1dd9ad73e4646e47b01c0eb1ded5"
+        },
+        {
+          "path": "libggml-cpu-cannonlake.so",
+          "size": 1376456,
+          "sha256": "b398d061293c9138286bc2896e687ca107280acce28ee595660425f39b90a9d6"
+        },
+        {
+          "path": "libggml-cpu-cascadelake.so",
+          "size": 1392544,
+          "sha256": "fd496fd6582c025bf819ec13130dcb7796bfea2ac5c1c4407762471168af9102"
+        },
+        {
+          "path": "libggml-cpu-cooperlake.so",
+          "size": 1392544,
+          "sha256": "abded0c896d877b42812675ee53a9450bfc99826b6039b6af2506d1805e5c18d"
+        },
+        {
+          "path": "libggml-cpu-haswell.so",
+          "size": 1294424,
+          "sha256": "64d47ea00ff4401914f15ce6f2dcc3d77799746379c60881008929d41b66b13c"
+        },
+        {
+          "path": "libggml-cpu-icelake.so",
+          "size": 1392544,
+          "sha256": "8b7b289f3e81b4cbc1e31448d0cdddbb31f451f9742c74444ecbed1022ed8b88"
+        },
+        {
+          "path": "libggml-cpu-ivybridge.so",
+          "size": 1227208,
+          "sha256": "09221b19d06007d87e3a0c6e1a4abdfd18591da119bc43121f81a58602d94365"
+        },
+        {
+          "path": "libggml-cpu-piledriver.so",
+          "size": 1227208,
+          "sha256": "4f0be205cb5607ce1a527f25686217179ed83f9faef0cfde7f206de2ee26c73d"
+        },
+        {
+          "path": "libggml-cpu-sandybridge.so",
+          "size": 1247856,
+          "sha256": "7ed149113743a01871662f94f51531e4f06f20cb8255c04797e04e3b8287c52d"
+        },
+        {
+          "path": "libggml-cpu-sapphirerapids.so",
+          "size": 1688776,
+          "sha256": "724cb4d75cd14fc1ae74282ef28f27cea68040627afb2c0de98dfd400b2fa39e"
+        },
+        {
+          "path": "libggml-cpu-skylakex.so",
+          "size": 1376456,
+          "sha256": "76c611c8e156aace3c30c225231cfa396d644171f6655cca34fc7a08831ce240"
+        },
+        {
+          "path": "libggml-cpu-sse42.so",
+          "size": 980840,
+          "sha256": "e99f5352057fbf823a7826116589c775bd557b8b2fd466c2483479d40f36925e"
+        },
+        {
+          "path": "libggml-cpu-x64.so",
+          "size": 980960,
+          "sha256": "8a7ff79d27fa7168e43c16d552dc578c8dc75029850534eb105ff6ed805406d2"
+        },
+        {
+          "path": "libggml-cpu-zen4.so",
+          "size": 1392544,
+          "sha256": "38aea82ad8d4d2506f28899e16192bbc8f7fef242d0baad13a2cdfb90fab4715"
+        },
+        {
+          "path": "libggml-vulkan.so",
+          "size": 33352816,
+          "sha256": "487a41eb8f31f23ea369884ee476d9d75daad685859958b6ac490c466a28a756"
+        },
+        {
+          "path": "libggml.so.0",
+          "size": 51040,
+          "sha256": "de890b08e24547b45326b4283ffe8ab8eed542fe49158f5a8c6bd2dee6e67e82"
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-linux-aarch64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 1987056,
+      "platform": "linux-aarch64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen",
+          "size": 1987056,
+          "sha256": "166486213ea92c3c5f0f830ad0d4b7c73310088d89d9630ea890a5a85665419c",
+          "executable": true
+        }
+      ]
+    },
+    {
+      "id": "qwen-engine-windows-x86_64",
+      "version": "1",
+      "kind": "engine",
+      "language": "any",
+      "license": "MIT",
+      "unpacked_size": 51457840,
+      "platform": "windows-x86_64",
+      "requires": [],
+      "files": [
+        {
+          "path": "scd-qwen.exe",
+          "size": 315904,
+          "sha256": "d01610a1a87070fb2f684d7d1e14a710424d8412c929da866ba053819210bb09",
+          "executable": true
+        },
+        {
+          "path": "ggml-base.dll",
+          "size": 714752,
+          "sha256": "5d40aca215bd882cb4d7b43fb311457f692ddba4849afa55e17569590aba8408"
+        },
+        {
+          "path": "ggml-cpu-alderlake.dll",
+          "size": 999424,
+          "sha256": "6454e446723a5f24a62ba1abb90faf00d8a41a9354dfbee3ae45739abb933759"
+        },
+        {
+          "path": "ggml-cpu-cannonlake.dll",
+          "size": 1041408,
+          "sha256": "1a9d8642507df796ef8c42bd8c9e7f359dbf9b8d8b3b996d9780ed900090c73a"
+        },
+        {
+          "path": "ggml-cpu-cascadelake.dll",
+          "size": 1055232,
+          "sha256": "f6adee60bec05675a8a30ebf28dee8daf356ac15e970cdefd20608cac8d97e55"
+        },
+        {
+          "path": "ggml-cpu-haswell.dll",
+          "size": 1000960,
+          "sha256": "e644dc5ba4330922a31161aff68d5267388f90672da375a96fe2b78626cbe3b2"
+        },
+        {
+          "path": "ggml-cpu-icelake.dll",
+          "size": 1055232,
+          "sha256": "85673f9fc1abc41f9f40e87fa623ae2b61eb23f5d0be3f9587c5b629e2032e57"
+        },
+        {
+          "path": "ggml-cpu-sandybridge.dll",
+          "size": 1048064,
+          "sha256": "6efbffdf6d350eb4be08494657a994cce6428c0897430ff13d70293337557ad5"
+        },
+        {
+          "path": "ggml-cpu-skylakex.dll",
+          "size": 1041408,
+          "sha256": "bbe3747e28fcf4ab65446b107d78dec2fb9e49defb65698e112f30f57dc05dab"
+        },
+        {
+          "path": "ggml-cpu-sse42.dll",
+          "size": 883712,
+          "sha256": "75032feb9177d6d92c2cc0faf776e969b9653ffb1e6bdce61ba744e67c288fee"
+        },
+        {
+          "path": "ggml-cpu-x64.dll",
+          "size": 887296,
+          "sha256": "7513b2e55e9602deb0eb61351cb0885818b1bb4f7093b653b7ab3ff3361938cf"
+        },
+        {
+          "path": "ggml-vulkan.dll",
+          "size": 40480256,
+          "sha256": "6d39650648a71deb11512ec0b73d78190e212bc40379ed25535f0ef61471b2e6"
+        },
+        {
+          "path": "ggml.dll",
+          "size": 61952,
+          "sha256": "3ad575f0af5be07a082a7dcf7c3706e2f324123d51c73f0ac9098af59a7b506c"
+        },
+        {
+          "path": "msvcp140.dll",
+          "size": 643512,
+          "sha256": "7c26614e1d733892c2deac7e245ce115504b1d80592dd0a01b08e3e5a55f89ca"
+        },
+        {
+          "path": "vcruntime140.dll",
+          "size": 178616,
+          "sha256": "d1f4225df2cd877dbf130d5668a021dce3f94118455ff5ec952061c30afc9ce7"
+        },
+        {
+          "path": "vcruntime140_1.dll",
+          "size": 50112,
+          "sha256": "a7146c08f89fe5b04541ab507cdb59ff7b44534d4ba3c668a426c6450a03434e"
+        }
+      ]
+    }
+  ],
+  "retired": [
+    "kokoro-int8-multi-lang-v1_0",
+    "sherpa-onnx-moonshine-base-en-quantized-2026-02-27"
+  ]
+}

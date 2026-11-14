@@ -1063,6 +1063,218 @@
     "sync",
     "actions not going through"
   ],
+  "voice.assistant": [
+    "voice assistant",
+    "loli",
+    "lolya",
+    "assistant",
+    "type a command",
+    "voice helper",
+    "ai assistant",
+    "like siri"
+  ],
+  "voice.hero.language": [
+    "speech recognition language",
+    "recognition language",
+    "which language to speak",
+    "she does not understand english",
+    "voice commands in english",
+    "dictation language"
+  ],
+  "voice.hero.toggle": [
+    "voice commands",
+    "turn off voice",
+    "enable voice control",
+    "control music by voice",
+    "disable the assistant",
+    "speech control"
+  ],
+  "voice.activation.title": [
+    "how to call loli",
+    "start talking",
+    "activate the assistant",
+    "ways to call",
+    "call lolya",
+    "trigger voice"
+  ],
+  "voice.activation.hotkey": [
+    "walkie talkie",
+    "ptt",
+    "talk key",
+    "hold to talk",
+    "voice hotkey",
+    "key to speak",
+    "press and talk"
+  ],
+  "voice.activation.headset": [
+    "earbuds double press",
+    "airpods button",
+    "call from the headset",
+    "triple press",
+    "earphone button for voice",
+    "media button calls the assistant"
+  ],
+  "voice.activation.wake": [
+    "wake word",
+    "hey loli",
+    "hotword",
+    "always listening",
+    "call by name",
+    "false triggers",
+    "wake sensitivity",
+    "activates by itself",
+    "hands free",
+    "hey sound",
+    "mori",
+    "moriarty",
+    "call moriarty",
+    "sound play"
+  ],
+  "voice.mics.title": [
+    "microphone",
+    "mic",
+    "choose microphone",
+    "which mic listens",
+    "she cannot hear me",
+    "input device",
+    "mic not working",
+    "microphone access"
+  ],
+  "voice.mics.echo": [
+    "echo cancelling",
+    "aec",
+    "she hears the music",
+    "hears herself",
+    "music triggers the assistant",
+    "sound leaks into the mic"
+  ],
+  "voice.voice.title": [
+    "change voice",
+    "different voice",
+    "choose a voice",
+    "male voice",
+    "female voice",
+    "moriarty",
+    "tts voice",
+    "who speaks",
+    "character",
+    "preview the voice"
+  ],
+  "voice.voice.sound": [
+    "speech speed",
+    "talks too fast",
+    "voice pitch",
+    "speak slower",
+    "speech rate",
+    "higher voice"
+  ],
+  "voice.voice.speakOn": [
+    "voice output device",
+    "where the voice plays",
+    "replies in headphones",
+    "separate device for the voice",
+    "voice on another device",
+    "reply output"
+  ],
+  "voice.voice.duck": [
+    "lower music when she talks",
+    "ducking",
+    "music volume while she speaks",
+    "music drowns the reply",
+    "quieter music under the voice",
+    "duck music"
+  ],
+  "voice.voice.replies": [
+    "spoken replies",
+    "stop talking",
+    "silent assistant",
+    "no voice answers",
+    "mute the assistant",
+    "text only replies",
+    "do not speak"
+  ],
+  "voice.speak.server": [
+    "cloud voice",
+    "speech synthesis on the server",
+    "do not download the voice model",
+    "voice without a download",
+    "online tts",
+    "remote voice generation"
+  ],
+  "voice.chat.title": [
+    "talk with loli",
+    "talk to lolya",
+    "ai chat",
+    "ask anything",
+    "chatbot",
+    "llm",
+    "neural network",
+    "small talk"
+  ],
+  "voice.chat.toggle": [
+    "turn off small talk",
+    "disable ai",
+    "what is sent to the server",
+    "voice privacy",
+    "is my voice recorded",
+    "commands only",
+    "ai replies"
+  ],
+  "voice.chat.memory": [
+    "what she remembers",
+    "remember this",
+    "forget everything",
+    "assistant memory",
+    "facts about me",
+    "delete memories",
+    "clear her memory",
+    "saved notes"
+  ],
+  "voice.speakers.title": [
+    "smart speaker",
+    "alice",
+    "yandex station",
+    "salut",
+    "sber",
+    "link a smart speaker",
+    "control from a smart speaker",
+    "pairing code",
+    "unlink the smart speaker"
+  ],
+  "voice.models.title": [
+    "voice models",
+    "download the voice",
+    "speech models",
+    "how big are the models",
+    "delete voice models",
+    "offline recognition",
+    "disk space for voice",
+    "model download stuck",
+    "repair models"
+  ],
+  "voice.credits.title": [
+    "licenses",
+    "model licenses",
+    "credits",
+    "attribution",
+    "acknowledgements",
+    "third party",
+    "open source",
+    "who made the models",
+    "where the data comes from",
+    "wiktionary",
+    "cc by-sa"
+  ],
+  "voice.history.title": [
+    "voice history",
+    "command history",
+    "what she heard",
+    "what did i say",
+    "misheard",
+    "recognized wrong",
+    "undo a voice command",
+    "clear voice history"
+  ],
   "elsewhere.equalizer": [
     "equalizer",
     "eq",
@@ -1109,5 +1321,14 @@
     "key cheat sheet",
     "what to press to pause",
     "all app keys"
+  ],
+  "elsewhere.voice": [
+    "mic button",
+    "microphone in the player",
+    "where is the voice button",
+    "microphone icon",
+    "press and speak",
+    "talk button",
+    "start listening"
   ]
 }

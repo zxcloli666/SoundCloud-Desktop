@@ -1,0 +1,324 @@
+{
+  "voice": {
+    "category": "Ses",
+    "assistant": "Loli",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "Konuş",
+      "button": "Ses düğmesi"
+    },
+    "hero": {
+      "state": {
+        "missing": "Motor yok",
+        "off": "Kapalı",
+        "models": "Model gerekli",
+        "downloading": "İndiriliyor",
+        "broken": "Model bozuk",
+        "ready": "Hazır",
+        "listening": "Dinliyorum",
+        "thinking": "Düşünüyorum",
+        "asking": "Soruyorum",
+        "speaking": "Konuşuyorum",
+        "error": "Hata"
+      },
+      "toggle": "Sesli kontrol",
+      "language": "Konuşma dili",
+      "example": "Billie Eilish çal",
+      "sayIt": "Konuşun",
+      "typeLabel": "Komut yazın",
+      "send": "Gönder",
+      "orHold": "veya basılı tutun",
+      "orPress": "veya basın",
+      "turnOn": "Aç",
+      "turnOnSize": "Aç · {{size}}",
+      "modelsReady": "Modeller hazır",
+      "download": "Modelleri indir · {{size}}",
+      "repair": "Onar · {{size}}",
+      "engineMissing": "Motor yanıt vermiyor"
+    },
+    "hud": {
+      "listening": "Dinliyorum",
+      "thinking": "Düşünüyorum",
+      "stop": "Dur",
+      "cancel": "İptal",
+      "undo": "Geri al",
+      "ask": "Hangisi?",
+      "answerByVoice": "Sesle cevaplayabilirsiniz",
+      "notFound": "Bulunamadı",
+      "find": "Ara",
+      "hush": "Sus",
+      "downloading": "Ses: modeller iniyor",
+      "openModels": "Modelleri aç",
+      "askOne": "Bu mu?"
+    },
+    "error": {
+      "mic_denied": "Mikrofon izni yok",
+      "mic_busy": "Mikrofon meşgul",
+      "mic_lost": "Mikrofon ayrıldı",
+      "no_models": "Modelleri indirmek gerekiyor",
+      "model_corrupt": "Bir model bozuk",
+      "not_star": "Ses STAR ile çalışır",
+      "network": "Kataloğa ulaşılamıyor",
+      "asr_failed": "Anlayamadım",
+      "tts_failed": "Sesli yanıt verilemedi",
+      "engine_missing": "Ses motoru kullanılamıyor"
+    },
+    "fix": {
+      "privacy": "İzin ver",
+      "download": "İndir",
+      "retry": "Tekrar dene",
+      "pickMic": "Mikrofon seç",
+      "pickVoice": "Ses seç",
+      "settings": "Ayarlar"
+    },
+    "activation": {
+      "title": "Nasıl çağrılır",
+      "hotkey": "Bas konuş",
+      "hold": "Basılı tut",
+      "tap": "Bas",
+      "headset": "Kulaklıktan çağır",
+      "gesture": {
+        "off": "Kapalı",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Düğmeye {{count}} kez basın",
+      "headsetHow_other": "Düğmeye art arda {{count}} kez basın",
+      "test": "Dene",
+      "pressNow_one": "{{count}} kez basın",
+      "pressNow_other": "Şimdi {{count}} kez basın",
+      "stopTest": "Dur",
+      "headsetWorks": "Çalışıyor",
+      "again": "Tekrar",
+      "wake": "İsimle",
+      "names": "Şu isimlere yanıt verir",
+      "needsEcho": "Yankı giderme olmadan müzik tetikler",
+      "echoOn": "Aç",
+      "rarer": "Daha az",
+      "oftener": "Daha kolay",
+      "falseCount_one": "{{count}} yanlış uyanma",
+      "falseCount_other": "{{count}} yanlış uyanma",
+      "lastDay": "son 24 saat"
+    },
+    "mics": {
+      "title": "Mikrofonlar",
+      "mode": {
+        "chosen": "Seçilenler",
+        "where_i_speak": "Konuştuğum yer",
+        "everywhere": "Tümü"
+      },
+      "default": "Varsayılan",
+      "bluetooth": "Bluetooth",
+      "btWarning": "Kulaklık görüşme kalitesine geçer",
+      "none": "Mikrofon bulunamadı",
+      "refresh": "Yeniden ara",
+      "echo": "Yankı giderme",
+      "echoMode": {
+        "auto": "Otomatik",
+        "on": "Açık",
+        "off": "Kapalı"
+      }
+    },
+    "voice": {
+      "title": "Yanıt sesi",
+      "preview": "Dinle: {{name}}",
+      "stopPreview": "Durdur",
+      "sound": "Konuşma tarzı",
+      "speed": "Hız",
+      "pitch": "Ton",
+      "speakOn": "Nerede konuşsun",
+      "speakMode": {
+        "with_music": "Müzikle",
+        "device": "Cihaz",
+        "where_i_listen": "Dinlediğim yer"
+      },
+      "duck": "Ses altında müzik",
+      "duckLabel": "Müzik seviyesi",
+      "replies": "Sesle yanıtla"
+    },
+    "speak": {
+      "server": "Sunucularımızdan ses",
+      "serverDesc": "Zayıf bir bilgisayar için: ses modeli indirilmez, yanıt sırada bekleyebilir"
+    },
+    "chat": {
+      "title": "Muhabbet",
+      "toggle": "Karakterle muhabbet",
+      "toggleDesc": "Sunucumuza ve model sağlayıcısına cümlenizin metni, çalan ve sıradaki parçalar ile hatırlanan bilgiler gider. Ses bu bilgisayardan çıkmaz.",
+      "memory": "Hafıza",
+      "memoryEmpty": "“Şunu hatırla…” deyin, burada görünsün",
+      "memoryAdd": "Bilgi ekle",
+      "memoryClear": "Hepsini unut",
+      "memoryClearYes": "Evet, hepsini unut",
+      "memoryForget": "Unut",
+      "memoryFull": "Hafıza dolu",
+      "busy": "Art arda çok soru geldi, bir dakika",
+      "down": "Şu an cevap veremiyorum",
+      "lost": "Yanıt ulaşmadı",
+      "tools": {
+        "pause": "Duraklat",
+        "resume": "Devam et",
+        "next": "Sonraki parça",
+        "previous": "Önceki parça",
+        "seek": "İleri geri sarma",
+        "volume": "Ses düzeyi",
+        "like": "Beğeni",
+        "shuffle": "Karıştırma",
+        "repeat": "Tekrar",
+        "speed": "Çalma hızı",
+        "play_likes": "Beğendiklerim",
+        "play_wave": "Dalgam",
+        "play_similar": "Benzerleri",
+        "undo": "Geri al",
+        "play": "Çal",
+        "queue_add": "Sıraya ekle",
+        "search": "Arama",
+        "play_found": "Çal",
+        "open_page": "Sayfayı aç",
+        "get_settings": "Ayarlar",
+        "set_setting": "Ayarı değiştir",
+        "lyrics": "Şarkı sözleri",
+        "queue_list": "Sıra",
+        "queue_clear": "Sırayı temizle",
+        "add_to_playlist": "Çalma listesine ekle",
+        "remember": "Hatırla",
+        "forget": "Unut"
+      }
+    },
+    "voices": {
+      "loli": {
+        "name": "Loli"
+      },
+      "moriarty": {
+        "name": "Moriarty"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "tatlı",
+      "bright": "parlak",
+      "deep": "derin",
+      "warm": "sıcak",
+      "clear": "net"
+    },
+    "speakers": {
+      "title": "Alice ve Salut",
+      "alice": "Alice",
+      "salut": "Salut",
+      "connect": "Bağla",
+      "addMore": "Bir tane daha",
+      "notLinked": "Bağlı değil",
+      "linked_one": "{{count}} bağlı",
+      "linked_other": "{{count}} bağlı",
+      "justLinked": "Bağlandı",
+      "how": {
+        "alice": "“Алиса, запусти навык Саунд Клауд” deyin ve kodu girin",
+        "salut": "“Салют, запусти Саунд” deyin ve kodu söyleyin"
+      },
+      "copy": "Kopyala",
+      "copied": "Kopyalandı",
+      "cancel": "İptal",
+      "codeFailed": "Kod gelmedi, tekrar deneyin",
+      "lastUsed": "Son komut {{when}}",
+      "neverUsed": "Henüz komut yok",
+      "revoke": "Bağlantıyı kes",
+      "revokeYes": "Kes",
+      "remote": {
+        "live": "Çevrimiçi",
+        "retrying": "Yeniden bağlanıyor"
+      },
+      "confirm": {
+        "alice": "Alice bağlansın mı?",
+        "salut": "Salut bağlansın mı?"
+      },
+      "confirmSub": "Kod bir hoparlörde girildi",
+      "confirmHint": "Numarayı kontrol et",
+      "yes": "Evet",
+      "no": "Hayır"
+    },
+    "models": {
+      "title": "Modeller",
+      "onDisk": "Diskte {{size}}",
+      "getAll": "İndir · {{size}}",
+      "get": "İndir: {{name}}",
+      "delete": "Sil: {{name}}",
+      "resume": "Devam et",
+      "repair": "Yeniden indir",
+      "optional": "isteğe bağlı",
+      "own": "bizim",
+      "none": "Model listesi yok",
+      "kind": {
+        "vad": "Konuşma algılama",
+        "asr": "Tanıma",
+        "tts": "Ses sentezi",
+        "wake": "Uyandırma sözcüğü",
+        "g2p": "Telaffuz",
+        "llm": "Akıllı ayrıştırma",
+        "engine": "Konuşma motoru"
+      },
+      "voice": "Ses: {{name}}",
+      "name": {
+        "qwen-codec": "Ses çözücü"
+      }
+    },
+    "credits": {
+      "title": "Lisanslar",
+      "open": "Kaynağı aç: {{name}}",
+      "group": {
+        "data": "Uygulamadaki veriler",
+        "models": "Modeller",
+        "code": "Kütüphaneler"
+      },
+      "use": {
+        "stress": "Rusça vurgu ve ё, veriler yeniden işlendi",
+        "lexicon": "İngilizce telaffuz",
+        "vad": "Konuşma algılama",
+        "asrRu": "Rusça tanıma",
+        "asrEn": "İngilizce tanıma",
+        "voiceEn": "İngilizce sesler",
+        "voiceData": "Kokoro seslerinin kayıtları",
+        "voiceBase": "Seslerimizin temeli",
+        "engine": "Konuşma motoru",
+        "tensor": "Konuşma motorundaki hesaplar",
+        "runtime": "Tanıma ve sesleri çalıştırır",
+        "inference": "Modelleri çalıştırır",
+        "echo": "Yankı giderme",
+        "resample": "Örnekleme hızı dönüşümü",
+        "stretch": "Konuşma hızı"
+      }
+    },
+    "history": {
+      "title": "Geçmiş",
+      "empty": "Komutlarınız burada görünecek",
+      "try": "Deneyin",
+      "clear": "Temizle",
+      "wrong": "Yanlış anlaşıldı",
+      "markedWrong": "Yanlış",
+      "more_one": "{{count}} daha",
+      "more_other": "{{count}} daha",
+      "less": "Daralt"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "Sesi dinleyen müzik",
+      "sub": "Loli tek cümleyle çalar, geçer ve beğenir",
+      "example": {
+        "play": "Billie Eilish çal",
+        "volume": "Ses 50",
+        "like": "Beğen"
+      },
+      "listen": "Loli'yi dinle",
+      "voices": "Sesler"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

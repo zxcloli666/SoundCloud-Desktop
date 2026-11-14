@@ -1,0 +1,324 @@
+{
+  "voice": {
+    "category": "Voice",
+    "assistant": "Loli",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "Talk",
+      "button": "Voice button"
+    },
+    "hero": {
+      "state": {
+        "missing": "No engine",
+        "off": "Off",
+        "models": "Needs models",
+        "downloading": "Downloading",
+        "broken": "Model damaged",
+        "ready": "Ready",
+        "listening": "Listening",
+        "thinking": "Thinking",
+        "asking": "Asking",
+        "speaking": "Speaking",
+        "error": "Error"
+      },
+      "toggle": "Voice control",
+      "language": "Voice language",
+      "example": "play Billie Eilish",
+      "sayIt": "Speak now",
+      "typeLabel": "Type a command",
+      "send": "Send",
+      "orHold": "or hold",
+      "orPress": "or press",
+      "turnOn": "Turn on",
+      "turnOnSize": "Turn on · {{size}}",
+      "modelsReady": "Models ready",
+      "download": "Get models · {{size}}",
+      "repair": "Repair · {{size}}",
+      "engineMissing": "Engine not responding"
+    },
+    "hud": {
+      "listening": "Listening",
+      "thinking": "Thinking",
+      "stop": "Stop",
+      "cancel": "Cancel",
+      "undo": "Undo",
+      "ask": "Which one?",
+      "answerByVoice": "You can answer by voice",
+      "notFound": "Not found",
+      "find": "Search",
+      "hush": "Hush",
+      "downloading": "Voice: downloading models",
+      "openModels": "Open models",
+      "askOne": "Is this it?"
+    },
+    "error": {
+      "mic_denied": "No microphone access",
+      "mic_busy": "Microphone is busy",
+      "mic_lost": "Microphone disconnected",
+      "no_models": "Models need downloading",
+      "model_corrupt": "A model is damaged",
+      "not_star": "Voice comes with STAR",
+      "network": "Catalog unreachable",
+      "asr_failed": "Didn't catch that",
+      "tts_failed": "Couldn't speak the reply",
+      "engine_missing": "Voice engine unavailable"
+    },
+    "fix": {
+      "privacy": "Allow",
+      "download": "Download",
+      "retry": "Retry",
+      "pickMic": "Pick a mic",
+      "pickVoice": "Pick a voice",
+      "settings": "Settings"
+    },
+    "activation": {
+      "title": "How to call",
+      "hotkey": "Push to talk",
+      "hold": "Hold",
+      "tap": "Tap",
+      "headset": "Headset button",
+      "gesture": {
+        "off": "Off",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Press the button {{count}} time",
+      "headsetHow_other": "Press the button {{count}} times in a row",
+      "test": "Test",
+      "pressNow_one": "Press {{count}} time",
+      "pressNow_other": "Press {{count}} times now",
+      "stopTest": "Stop",
+      "headsetWorks": "Works",
+      "again": "Again",
+      "wake": "By name",
+      "names": "Responds to",
+      "needsEcho": "Without echo cancellation music sets it off",
+      "echoOn": "Turn on",
+      "rarer": "Rarer",
+      "oftener": "Easier",
+      "falseCount_one": "{{count}} false wake",
+      "falseCount_other": "{{count}} false wakes",
+      "lastDay": "last 24 h"
+    },
+    "mics": {
+      "title": "Microphones",
+      "mode": {
+        "chosen": "Chosen",
+        "where_i_speak": "Where I speak",
+        "everywhere": "All"
+      },
+      "default": "Default",
+      "bluetooth": "Bluetooth",
+      "btWarning": "Headphones switch to call quality",
+      "none": "No microphone found",
+      "refresh": "Rescan",
+      "echo": "Echo cancellation",
+      "echoMode": {
+        "auto": "Auto",
+        "on": "On",
+        "off": "Off"
+      }
+    },
+    "voice": {
+      "title": "Reply voice",
+      "preview": "Listen: {{name}}",
+      "stopPreview": "Stop",
+      "sound": "Tone and pace",
+      "speed": "Speed",
+      "pitch": "Pitch",
+      "speakOn": "Speak on",
+      "speakMode": {
+        "with_music": "With music",
+        "device": "Device",
+        "where_i_listen": "Where I listen"
+      },
+      "duck": "Music under voice",
+      "duckLabel": "Music level",
+      "replies": "Reply by voice"
+    },
+    "speak": {
+      "server": "Voice from our servers",
+      "serverDesc": "For a weak computer: the voice model is not downloaded, a reply may wait in a queue"
+    },
+    "chat": {
+      "title": "Conversation",
+      "toggle": "Talk with the character",
+      "toggleDesc": "Goes to our server and the model provider: the text of your phrase, what is playing and queued, and the facts she remembers. Audio never leaves this computer.",
+      "memory": "Memory",
+      "memoryEmpty": "Say “remember that…” and it shows up here",
+      "memoryAdd": "Add a fact",
+      "memoryClear": "Forget all",
+      "memoryClearYes": "Yes, forget all",
+      "memoryForget": "Forget",
+      "memoryFull": "Memory is full",
+      "busy": "Too many questions in a row, give me a minute",
+      "down": "Can't answer right now",
+      "lost": "The reply didn't come through",
+      "tools": {
+        "pause": "Pause",
+        "resume": "Resume",
+        "next": "Next track",
+        "previous": "Previous track",
+        "seek": "Seek",
+        "volume": "Volume",
+        "like": "Like",
+        "shuffle": "Shuffle",
+        "repeat": "Repeat",
+        "speed": "Playback speed",
+        "play_likes": "My likes",
+        "play_wave": "My wave",
+        "play_similar": "Similar",
+        "undo": "Undo",
+        "play": "Play",
+        "queue_add": "Add to queue",
+        "search": "Search",
+        "play_found": "Play",
+        "open_page": "Open page",
+        "get_settings": "Settings",
+        "set_setting": "Change setting",
+        "lyrics": "Lyrics",
+        "queue_list": "Queue",
+        "queue_clear": "Clear queue",
+        "add_to_playlist": "Add to playlist",
+        "remember": "Remember",
+        "forget": "Forget"
+      }
+    },
+    "voices": {
+      "loli": {
+        "name": "Loli"
+      },
+      "moriarty": {
+        "name": "Moriarty"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "cute",
+      "bright": "bright",
+      "deep": "deep",
+      "warm": "warm",
+      "clear": "clear"
+    },
+    "speakers": {
+      "title": "Alice and Salut",
+      "alice": "Alice",
+      "salut": "Salut",
+      "connect": "Connect",
+      "addMore": "Add another",
+      "notLinked": "Not connected",
+      "linked_one": "{{count}} connected",
+      "linked_other": "{{count}} connected",
+      "justLinked": "Connected",
+      "how": {
+        "alice": "Say “Алиса, запусти навык Саунд Клауд” and enter the code",
+        "salut": "Say “Салют, запусти Саунд” and read the code"
+      },
+      "copy": "Copy",
+      "copied": "Copied",
+      "cancel": "Cancel",
+      "codeFailed": "No code came back, try again",
+      "lastUsed": "Last command {{when}}",
+      "neverUsed": "No commands yet",
+      "revoke": "Unlink",
+      "revokeYes": "Unlink",
+      "remote": {
+        "live": "Online",
+        "retrying": "Reconnecting"
+      },
+      "confirm": {
+        "alice": "Connect Alice?",
+        "salut": "Connect Salut?"
+      },
+      "confirmSub": "The code was entered on a speaker",
+      "confirmHint": "Check the number",
+      "yes": "Yes",
+      "no": "No"
+    },
+    "models": {
+      "title": "Models",
+      "onDisk": "{{size}} on disk",
+      "getAll": "Download · {{size}}",
+      "get": "Download {{name}}",
+      "delete": "Delete {{name}}",
+      "resume": "Resume",
+      "repair": "Download again",
+      "optional": "optional",
+      "own": "ours",
+      "none": "Model list unavailable",
+      "kind": {
+        "vad": "Speech detector",
+        "asr": "Recognition",
+        "tts": "Speech synthesis",
+        "wake": "Wake word",
+        "g2p": "Pronunciation",
+        "llm": "Smart parsing",
+        "engine": "Speech engine"
+      },
+      "voice": "Voice: {{name}}",
+      "name": {
+        "qwen-codec": "Voice decoder"
+      }
+    },
+    "credits": {
+      "title": "Licenses",
+      "open": "Open the source of {{name}}",
+      "group": {
+        "data": "Data inside the app",
+        "models": "Models",
+        "code": "Libraries"
+      },
+      "use": {
+        "stress": "Russian stress and ё, reworked data",
+        "lexicon": "English pronunciation",
+        "vad": "Speech detector",
+        "asrRu": "Russian recognition",
+        "asrEn": "English recognition",
+        "voiceEn": "English voices",
+        "voiceData": "Recordings behind Kokoro voices",
+        "voiceBase": "Base of our voices",
+        "engine": "Speech engine",
+        "tensor": "Math inside the speech engine",
+        "runtime": "Runs recognition and voices",
+        "inference": "Runs the models",
+        "echo": "Echo cancellation",
+        "resample": "Sample rate conversion",
+        "stretch": "Speech speed"
+      }
+    },
+    "history": {
+      "title": "History",
+      "empty": "Your commands will show up here",
+      "try": "Try it",
+      "clear": "Clear",
+      "wrong": "Understood wrong",
+      "markedWrong": "Wrong",
+      "more_one": "{{count}} more",
+      "more_other": "{{count}} more",
+      "less": "Show less"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "Music that listens",
+      "sub": "Loli plays, skips and likes from one phrase",
+      "example": {
+        "play": "Play Billie Eilish",
+        "volume": "Volume 50",
+        "like": "Like it"
+      },
+      "listen": "Hear Loli",
+      "voices": "Voices"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

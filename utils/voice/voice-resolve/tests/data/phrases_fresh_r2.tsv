@@ -1,0 +1,150 @@
+phrase	intent	kind	entity	number	category	alt
+включи сплин нет лучше звери	play	artist	Звери		correction	
+сделай потише ой нет громче	volume_up				correction	
+следующий нет подожди предыдущий	previous				correction	
+громкость на двадцать нет на семьдесят	volume_set			70	correction	
+включи монеточку вернее моргенштерна	play	artist	Моргенштерн		correction	
+поставь на паузу ой в смысле стоп	stop				correction	pause
+включи лесника нет кукушку	play	track	Кино - Кукушка		correction	
+перемотай на десять секунд то есть на двадцать	seek_forward			20	correction	
+включи земфиру а не сплин	play	artist	Земфира		correction	
+лайкни нет не надо	none				correction	
+включи дрейка ой нет эминема	play	artist	Eminem		correction	
+громче нет ещё громче	volume_up				correction	
+включи кино нет подожди звери	play	artist	Звери		correction	
+добавь в очередь басту нет скриптонита	queue_add	artist	Скриптонит		correction	
+не ставь на паузу	none				negation	
+не выключай музыку	none				negation	
+не надо лайкать	none				negation	
+не переключай	none				negation	
+не перематывай	none				negation	
+не включай басту	none				negation	
+не повторяй этот трек	none				negation	
+не убавляй громкость	none				negation	
+лайкни но не скипай	like				negation	
+включи скриптонита только не цепи	play	artist	Скриптонит		negation	
+в комнате слишком тихо	volume_up				indirect	
+я ничего не слышу	volume_up				indirect	
+оглушительно громко	volume_down				indirect	
+слишком громко играет	volume_down				indirect	
+мне надоел этот трек	next				indirect	
+что это сейчас играет	now_playing				indirect	
+кто это поёт	now_playing				indirect	
+давай сначала	seek_to			0	indirect	repeat_one
+поставь заново	seek_to			0	indirect	repeat_one
+верни прошлую песню	previous				indirect	
+это не то	next				indirect	
+надоело	next				indirect	
+не нравится эта песня	next				indirect	
+кто исполняет	now_playing				indirect	
+тише пожалуйста я говорю по телефону	volume_down				indirect	
+слишком тихо играет	volume_up				indirect	
+плейни скриптонита	play	artist	Скриптонит		slang	
+скипни	next				slang	
+скипай дальше	next				slang	
+мьютни	mute				slang	
+размьють	unmute				slang	
+шафл	shuffle_on				slang	
+репитни	repeat_one				slang	
+лайкни	like				slang	
+некстани	next				slang	
+перетасуй треки	shuffle_on				slang	
+мотани на минуту вперёд	seek_forward			60	slang	
+волюм даун	volume_down				slang	
+пауза	pause				slang	
+плей	resume				slang	
+анмьют	unmute				slang	
+стопни	stop				slang	pause
+увімкни земфіру	play	artist	Земфира		regional	
+вимкни музику	stop				regional	pause
+наступна	next				regional	
+попередній трек	previous				regional	
+зроби гучніше	volume_up				regional	
+зроби тихіше	volume_down				regional	
+паўза	pause				regional	
+уключы кино	play	artist	Кино		regional	
+далі	next				regional	
+пауза будь ласка	pause				regional	
+громкость на девять из десяти	volume_set			90	numbers	
+громкость три	volume_set			30	numbers	
+плюс пятнадцать секунд	seek_forward			15	numbers	
+минус двадцать секунд	seek_backward			20	numbers	
+перемотай на сорок секунд	seek_forward			40	numbers	
+перемотай на середину	seek_to				numbers	
+громкость полста	volume_set			50	numbers	
+убавь на двадцать процентов	volume_down			20	numbers	
+сделай на максимум	volume_set			100	numbers	
+громкость на минимум	volume_set			0	numbers	
+перемотай на полторы минуты	seek_forward			90	numbers	
+вернись на тридцать секунд	seek_backward			30	numbers	
+громкость на сорок пять процентов	volume_set			45	numbers	
+прибавь на десять	volume_up			10	numbers	
+включи кино а потом сплин	play+queue_add	artist+artist	Кино+Сплин		two_part	
+включи басту потом коржа потом монеточку	play+queue_add+queue_add	artist+artist+artist	Баста+Макс Корж+Монеточка		two_part	
+выключи перемешивание и повтор	shuffle_off+repeat_off				two_part	
+отключи повтор и шафл	repeat_off+shuffle_off				two_part	
+лайкни и следующий	like+next				two_part	
+сделай погромче и перемешай	volume_up+shuffle_on				two_part	
+включи звери и погромче	play+volume_up	artist	Звери		two_part	
+следующий трек и лайк	next+like				two_part	
+пауза и тише	pause+volume_down				two_part	
+включи зверей и скриптонита	play+queue_add	artist+artist	Звери+Скриптонит		two_part	
+выключи звук а потом включи	mute+unmute				two_part	
+что играет и лайкни	now_playing+like				two_part	
+перемешай мои лайки	play_likes+shuffle_on				two_part	shuffle_on+play_likes
+включи цепи и поставь на повтор	play+repeat_one	track	Скриптонит - Цепи		two_part	
+сделай потише у меня болит голова	volume_down				remark	
+следующий мне не нравится этот	next				remark	
+стоп мне пора идти	stop				remark	pause
+включи кино мне нравится эта группа	play	artist	Кино		remark	
+погромче бабушка плохо слышит	volume_up				remark	
+лайкни мне очень нравится	like				remark	
+включи земфиру я устала	play	artist	Земфира		remark	
+пауза телефон звонит	pause				remark	
+включи басту потому что настроение	play	artist	Баста		remark	
+тише пожалуйста собака лает	volume_down				remark	
+в следующем году поеду в отпуск	none				false_act	
+повтори пожалуйста номер телефона	none				false_act	
+пауза между актами длилась долго	none				false_act	
+поставь чайник	none				false_act	
+выключи свет в коридоре	none				false_act	
+лайкни пост вконтакте	none				false_act	
+мне нравится этот фильм	none				false_act	
+перемешай карты	none				false_act	
+сделай кофе	none				false_act	
+включи телевизор	none				false_act	
+дальше по коридору направо	none				false_act	
+громче всех пел хор	none				false_act	
+кто следующий в очереди	none				false_act	
+убери звук у телевизора	none				false_act	
+я вчера поставил лайк	none				false_act	
+он сказал включи басту	none				false_act	
+мама просила сделать потише	none				false_act	
+включи бейсбол по телеку	none				false_act	
+следующая станция площадь революции	none				false_act	
+останови машину	none				false_act	
+сколько времени	none				false_act	
+вперёд к победе	none				false_act	
+погода сегодня хорошая	none				false_act	
+включи дип перпл	none				notfound	
+включи би джиз	none				notfound	
+включи ддт чёрный пёс	play	artist	ДДТ		notfound	
+включи кино спокойная ночь	play	artist	Кино		notfound	
+включи ленинград новая песня	play	artist	Ленинград		notfound	
+поставь рамонс	none				notfound	
+включи цоя	play	artist	Кино		notfound	
+включи шнура	play	artist	Ленинград		notfound	
+включи корж	play	artist	Макс Корж		notfound	
+включи группу кино	play	artist	Кино		notfound	
+включи басту пожалуйста пожалуйста	play	artist	Баста		asr	
+включи сплин сплин	play	artist	Сплин		asr	
+сделай по тише	volume_down				asr	
+пере мешай	shuffle_on				asr	
+включи мой лайки	play_likes				asr	
+сле дующий трек	next				asr	
+ну эээ короче включи как бы звери	play	artist	Звери		filler	
+блин слушай поставь паузу	pause				filler	
+слышь давай потише	volume_down				filler	
+значит так следующий	next				filler	
+окей гугл громче	volume_up				filler	
+дорогая алиса включи скриптонит	play	artist	Скриптонит		filler	

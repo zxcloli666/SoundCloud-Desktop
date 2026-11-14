@@ -51,6 +51,7 @@ jobs:
       frontend: ${{ steps.changes.outputs.frontend }}
       rust: ${{ steps.changes.outputs.rust }}
       real: ${{ steps.changes.outputs.real }}
+      voice: ${{ steps.changes.outputs.voice }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -225,6 +226,61 @@ jobs:
         with:
           mode: save
           name: ci-${{ matrix.os }}
+
+  voice:
+    name: Voice crates
+    needs: changes
+    if: needs.changes.outputs.voice == 'true'
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: System packages
+        uses: ./.github/actions/apt-packages
+        with:
+          packages: libasound2-dev clang libclang-dev pkg-config
+          save: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - name: Restore targets
+        uses: ./.github/actions/target-cache
+        with:
+          mode: restore
+          name: voice
+          target: utils/voice/target
+          lock: utils/voice/Cargo.lock
+
+      - name: Build tests
+        id: build
+        run: cargo test --workspace --release --no-run
+
+      - name: Stamp
+        if: always()
+        working-directory: .
+        env:
+          BUILD: ${{ steps.build.outcome }}
+        run: bash scripts/ci-mtime.sh stamp "$BUILD"
+
+      - name: Tests
+        run: cargo test --workspace --release --no-fail-fast
+
+      - name: Save targets
+        if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        uses: ./.github/actions/target-cache
+        with:
+          mode: save
+          name: voice
+          target: utils/voice/target
+          lock: utils/voice/Cargo.lock
 
   real-crates:
     name: Real call and decrypt-client crates

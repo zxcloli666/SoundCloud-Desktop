@@ -70,6 +70,7 @@ import {ArtistNameLinks} from '../music/ArtistNameLinks';
 import {PlayerBlockButton} from '../music/blocklist/PlayerBlockButton';
 import {EqualizerPanel} from '../music/EqualizerPanel';
 import {EffectsBtn} from '../music/effects/EffectsBtn';
+import {VoiceMicButton} from '../voice/VoiceMicButton';
 import {HoldHeart} from '../music/superlike/HoldHeart';
 import {heartTitle} from '../music/superlike/heart-title';
 import {useSuperlikeGesture} from '../music/superlike/useSuperlikeGesture';
@@ -1162,6 +1163,7 @@ export const NowPlayingBar = React.memo(
               <div className="npb-sep" />
 
               <div className="flex items-center gap-0.5">
+                <VoiceMicButton className={(active) => btnClass(active, 'sm')} />
                 <TogetherButton />
                 <span className="npb-extra">
                   <TuningBtn />
