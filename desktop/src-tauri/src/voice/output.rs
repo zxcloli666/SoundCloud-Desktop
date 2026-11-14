@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use rodio::Source;
 use voice_audio::RefTap;
-use voice_engine::Stream;
+use voice_engine::{Resampled, Stream};
 
 use crate::audio::master::Master;
 
@@ -15,7 +15,7 @@ const PUMP_IDLE: Duration = Duration::from_millis(5);
 const HUSH_POLL: Duration = Duration::from_millis(20);
 
 struct Spoken {
-    stream: Stream,
+    samples: Resampled,
     rate: NonZero<u32>,
 }
 
@@ -23,7 +23,7 @@ impl Iterator for Spoken {
     type Item = f32;
 
     fn next(&mut self) -> Option<f32> {
-        self.stream.next()
+        self.samples.next()
     }
 }
 
@@ -113,8 +113,10 @@ impl voice_engine::Output for MasterOutput {
 
     fn speak(&self, stream: Stream) -> Result<Receiver<()>, String> {
         self.hush();
-        let rate = NonZero::new(stream.rate()).ok_or("speech has no sample rate")?;
-        let speech = self.master.speak(Spoken { stream, rate });
+        let rate = self.master.rate().unwrap_or(stream.rate());
+        let rate = NonZero::new(rate).ok_or("speech has no sample rate")?;
+        let samples = stream.at_rate(rate.get());
+        let speech = self.master.speak(Spoken { samples, rate });
         let flag = Arc::new(AtomicBool::new(false));
         *self.hush.lock().unwrap() = flag.clone();
         let (done, ended) = channel();

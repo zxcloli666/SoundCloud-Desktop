@@ -57,6 +57,10 @@ impl Master {
     fn is_speaking(&self) -> bool {
         self.speaking.load(Ordering::Relaxed) > 0
     }
+
+    pub fn rate(&self) -> Option<u32> {
+        Some(self.reference_rate.load(Ordering::Relaxed)).filter(|rate| *rate > 0)
+    }
 }
 
 impl Master {
