@@ -342,3 +342,35 @@ test('a failed tool result still goes back when a later round happens', async ()
     [false, true],
   );
 });
+
+test('a name with a reading is shown as written and kept for the history with its reading', async () => {
+  const { seen, done } = turn(
+    [
+      [
+        { kind: 'action', name: 'search', args: {} },
+        { kind: 'say', text: 'Ищу ' },
+        { kind: 'say', text: '6ix9ine', spoken: 'Сикс Найн' },
+        { kind: 'done' },
+      ],
+      [
+        { kind: 'say', text: 'Psychosis', spoken: 'Психосис' },
+        { kind: 'say', text: ' нашёлся.' },
+        { kind: 'done' },
+      ],
+    ],
+    { search: ranOf('search', true) },
+  );
+  assert.deepEqual(await done, {
+    status: 'ok',
+    say: 'Ищу 6ix9ine Psychosis нашёлся.',
+    kept: 'Ищу [[6ix9ine|Сикс Найн]] [[Psychosis|Психосис]] нашёлся.',
+    marks: [{ tool: 'search', ok: true }],
+  });
+  assert.deepEqual(seen.log, [
+    'act:search',
+    'say:Ищу ',
+    'say:6ix9ine',
+    'say: Psychosis',
+    'say: нашёлся.',
+  ]);
+});

@@ -118,6 +118,6 @@ export interface ChatRequest {
 }
 
 export type TurnEnd =
-  | { status: 'ok'; say: string; marks: ToolMark[] }
+  | { status: 'ok'; say: string; kept?: string; marks: ToolMark[] }
   | { status: 'cancelled'; say: string; marks: ToolMark[] }
   | { status: 'failed'; code: string; say: string; marks: ToolMark[] };

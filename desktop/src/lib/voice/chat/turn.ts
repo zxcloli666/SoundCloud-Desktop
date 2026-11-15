@@ -48,7 +48,7 @@ function pause(ms: number): Promise<void> {
 async function playRound(
   t: TurnInput,
   results: CallResult[],
-  hear: (delta: string) => void,
+  hear: (text: string, spoken?: string) => void,
 ): Promise<Round> {
   const round: Round = { end: null, ran: [], refused: [], acting: Promise.resolve() };
   let asked = 0;
@@ -71,7 +71,7 @@ async function playRound(
   };
   const onEvent = (event: ChatEvent) => {
     if (round.end || event.kind === 'quiet') return;
-    if (event.kind === 'say') hear(event.text);
+    if (event.kind === 'say') hear(event.text, event.spoken);
     else if (event.kind !== 'action') finish(event);
     else if (++asked > MAX_ACTIONS) round.refused.push(tooMany(event.name));
     else round.acting = round.acting.then(() => act(event.name, event.args));
@@ -91,13 +91,17 @@ export async function runTurn(t: TurnInput): Promise<TurnEnd> {
   const marks: ToolMark[] = [];
   const results: CallResult[] = [];
   let say = '';
+  let kept = '';
   let gap = false;
-  const hear = (delta: string) => {
-    const piece = gap && say && !/\s$/.test(say) ? ` ${delta}` : delta;
+  const hear = (text: string, spoken?: string) => {
+    const joint = gap && say && !/\s$/.test(say) ? ' ' : '';
     gap = false;
-    say += piece;
-    t.onSay(piece);
+    say += joint + text;
+    kept += joint + (spoken ? `[[${text}|${spoken}]]` : text);
+    t.onSay(joint + text);
   };
+  const ok = (): TurnEnd =>
+    kept === say ? { status: 'ok', say, marks } : { status: 'ok', say, kept, marks };
 
   for (let n = 1; ; n++) {
     const round = await playRound(t, results, hear);
@@ -108,7 +112,7 @@ export async function runTurn(t: TurnInput): Promise<TurnEnd> {
       ...round.ran.map(({ name, args, result }) => ({ name, args, result })),
       ...round.refused,
     );
-    if (n >= t.rounds || !round.ran.some((r) => r.returns)) return { status: 'ok', say, marks };
+    if (n >= t.rounds || !round.ran.some((r) => r.returns)) return ok();
     gap = true;
   }
 }

@@ -155,7 +155,7 @@ export async function chatStep(
     if (active?.abort === abort) active = null;
   });
   if (end.status === 'ok') {
-    const said = { at: Date.now(), user: cmd.heard, assistant: end.say };
+    const said = { at: Date.now(), user: cmd.heard, assistant: end.kept ?? end.say };
     useVoiceRuntime.setState((s) => ({ dialog: withExchange(s.dialog, said) }));
   }
   return { end, stack: env.stack, undo: env.undo };
