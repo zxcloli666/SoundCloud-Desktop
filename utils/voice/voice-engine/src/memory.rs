@@ -4,7 +4,7 @@ use std::time::{Duration, Instant};
 use voice_nlu::{Kind, Variant};
 use voice_resolve::Entity;
 
-use crate::catalog::Catalog;
+use crate::catalog::{Candidates, Catalog};
 
 const KEPT_FOR: Duration = Duration::from_secs(60);
 const KEPT_MOST: usize = 32;
@@ -61,9 +61,14 @@ impl Memory {
             kinds: &wanted,
             found: None,
         };
-        let found = catalog.candidates(variants, kinds);
-        question.found = found.as_ref().ok().cloned();
-        found
+        let answer = catalog.candidates(variants, kinds);
+        let whole = |answer: &&Candidates| !answer.partial;
+        question.found = answer
+            .as_ref()
+            .ok()
+            .filter(whole)
+            .map(|answer| answer.entities.clone());
+        answer.map(|answer| answer.entities)
     }
 
     fn awaited(&self, variants: &[Variant], kinds: &[Kind]) -> Option<Vec<Entity>> {
@@ -167,12 +172,17 @@ mod tests {
     }
 
     impl Catalog for Counted {
-        fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Found {
+        fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Candidates, String> {
             self.asked.fetch_add(1, Ordering::SeqCst);
             std::thread::sleep(self.wait);
+            let entities = |name: &str| kinds.iter().map(|kind| entity(*kind, name)).collect();
             match variants[0].text.as_str() {
                 "broken" => Err("no route".into()),
-                name => Ok(kinds.iter().map(|kind| entity(*kind, name)).collect()),
+                name if name.starts_with("cut") => Ok(Candidates {
+                    entities: entities(name),
+                    partial: true,
+                }),
+                name => Ok(Candidates::whole(entities(name))),
             }
         }
     }
@@ -256,6 +266,30 @@ mod tests {
     }
 
     #[test]
+    fn a_partial_answer_is_given_but_not_remembered() {
+        let (memory, catalog) = (Memory::default(), Counted::default());
+        let cut = [variant("cut")];
+        for _ in 0..2 {
+            assert_eq!(kinds(memory.asked(&catalog, &cut, &Kind::ALL)), Kind::ALL);
+            assert_eq!(memory.recalled(&cut, &Kind::ALL), None);
+        }
+        assert_eq!(asked(&catalog), 2);
+    }
+
+    #[test]
+    fn a_whole_answer_after_a_partial_one_is_remembered() {
+        let (memory, catalog) = (Memory::default(), Counted::default());
+        memory
+            .asked(&catalog, &[variant("cut")], &Kind::ALL)
+            .unwrap();
+        memory
+            .asked(&catalog, &[variant("кино")], &Kind::ALL)
+            .unwrap();
+        assert_eq!(memory.recalled(&[variant("cut")], &Kind::ALL), None);
+        assert!(memory.recalled(&[variant("кино")], &Kind::ALL).is_some());
+    }
+
+    #[test]
     fn the_same_question_asked_at_once_reaches_the_catalog_once() {
         let memory = Arc::new(Memory::default());
         let catalog = Arc::new(Counted {
@@ -295,7 +329,7 @@ mod tests {
     struct Panicking;
 
     impl Catalog for Panicking {
-        fn candidates(&self, _: &[Variant], _: &[Kind]) -> Found {
+        fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Candidates, String> {
             panic!("the catalog broke");
         }
     }

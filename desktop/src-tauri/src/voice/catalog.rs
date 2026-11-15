@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 use tokio::runtime::Handle;
-use voice_engine::{Engine, EntityEvent};
+use voice_engine::{Candidates, Engine, EntityEvent};
 use voice_nlu::{Kind, Variant};
 use voice_resolve::{Boosts, Entity};
 use wreq::Method;
@@ -23,10 +23,10 @@ pub struct ResolveCatalog {
 }
 
 impl voice_engine::Catalog for ResolveCatalog {
-    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Vec<Entity>, String> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Candidates, String> {
         let body = resolve::request(variants, kinds);
         if body.variants.is_empty() {
-            return Ok(Vec::new());
+            return Ok(Candidates::default());
         }
         self.rt.block_on(post(&self.app, &body))
     }
@@ -68,7 +68,7 @@ async fn looked_up(
     found
 }
 
-async fn post(app: &AppHandle, body: &resolve::Request) -> Result<Vec<Entity>, String> {
+async fn post(app: &AppHandle, body: &resolve::Request) -> Result<Candidates, String> {
     let token = crate::auth::session_token(Some(app))
         .await
         .ok_or("no session")?;
@@ -106,7 +106,10 @@ async fn post(app: &AppHandle, body: &resolve::Request) -> Result<Vec<Entity>, S
                 break;
             }
             let value: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
-            return Ok(resolve::entities(&value));
+            return Ok(Candidates {
+                entities: resolve::entities(&value),
+                partial: resolve::partial(&value),
+            });
         }
     }
     Err(last)

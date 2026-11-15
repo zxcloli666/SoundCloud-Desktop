@@ -197,15 +197,14 @@ mod tests {
     use std::sync::Arc;
 
     use voice_nlu::{Kind, Variant};
-    use voice_resolve::Entity;
 
     use super::*;
-    use crate::catalog::Catalog;
+    use crate::catalog::{Candidates, Catalog};
 
     struct Panicking;
 
     impl Catalog for Panicking {
-        fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+        fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Candidates, String> {
             panic!("the catalog broke");
         }
     }

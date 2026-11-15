@@ -5,11 +5,11 @@ use std::time::{Duration, Instant};
 
 use common::{Rig, rig_speaking_on, timing};
 use voice_engine::{
-    Ahead, Catalog, Chat, Command, CommandEvent, Config, Event, HeardEvent, Sink, Source, State,
-    Timed, Voice,
+    Ahead, Candidates, Catalog, Chat, Command, CommandEvent, Config, Event, HeardEvent, Sink,
+    Source, State, Timed, Voice,
 };
 use voice_nlu::{Kind, Variant};
-use voice_resolve::{Entity, FixtureCatalog};
+use voice_resolve::FixtureCatalog;
 
 const ROWS: &str = "kind\tname\tartist\tpopularity\taliases
 artist\tСкриптонит\t\t6500000\tscriptonite
@@ -28,11 +28,10 @@ struct Waiting {
 }
 
 impl Catalog for Waiting {
-    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Vec<Entity>, String> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Candidates, String> {
         std::thread::sleep(self.wait);
-        Ok(voice_resolve::Catalog::candidates(
-            &self.rows, variants, kinds,
-        ))
+        let entities = voice_resolve::Catalog::candidates(&self.rows, variants, kinds);
+        Ok(Candidates::whole(entities))
     }
 }
 
@@ -42,7 +41,7 @@ struct Broken {
 }
 
 impl Catalog for Broken {
-    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Candidates, String> {
         std::thread::sleep(self.wait);
         if self.panics {
             panic!("the catalog broke");

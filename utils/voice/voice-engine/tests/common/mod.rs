@@ -10,12 +10,12 @@ use std::time::{Duration, Instant};
 use voice_audio::source::{Msg, OpenFn, SourceCtx};
 use voice_audio::{Capture, CaptureError, Device, DeviceList, RefTap, Transport};
 use voice_engine::{
-    Ask, Catalog, Chat, Clip, Command, Config, Deps, Engine, Event, Output, Said, Server, Source,
-    Spoke, State, Stream, Timing, Voice,
+    Ask, Candidates, Catalog, Chat, Clip, Command, Config, Deps, Engine, Event, Output, Said,
+    Server, Source, Spoke, State, Stream, Timing, Voice,
 };
 use voice_models::{Fetch, FetchError, Response, Store};
 use voice_nlu::{Kind, Variant};
-use voice_resolve::{Entity, FixtureCatalog};
+use voice_resolve::FixtureCatalog;
 
 pub const CATALOG: &str = "kind\tname\tartist\tpopularity\taliases
 artist\tСкриптонит\t\t6500000\tscriptonite
@@ -193,7 +193,7 @@ fn tone() -> Clip {
 pub struct Offline;
 
 impl Catalog for Offline {
-    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Candidates, String> {
         Err("offline".into())
     }
 }

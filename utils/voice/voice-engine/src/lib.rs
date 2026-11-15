@@ -46,7 +46,7 @@ use voice_models::Store;
 use voice_nlu::{Kind, Variant};
 use voice_resolve::Entity;
 
-pub use catalog::Catalog;
+pub use catalog::{Candidates, Catalog};
 pub use clip::Clip;
 pub use config::{
     Activation, Boosts, Config, Echo, Headset, Language, Listen, ListenMode, Speak, SpeakMode, Wake,

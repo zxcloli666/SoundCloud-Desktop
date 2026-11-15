@@ -148,6 +148,7 @@ mod tests {
     use voice_resolve::Catalog as _;
 
     use super::*;
+    use crate::catalog::Candidates;
     use crate::fixtures::{entity, variant};
 
     const WAIT: Duration = Duration::from_millis(400);
@@ -158,7 +159,7 @@ mod tests {
     }
 
     impl Catalog for Named {
-        fn candidates(&self, variants: &[Variant], _: &[Kind]) -> Found {
+        fn candidates(&self, variants: &[Variant], _: &[Kind]) -> Result<Candidates, String> {
             let name = variants[0].text.clone();
             if name == "slow" {
                 std::thread::sleep(self.wait);
@@ -166,7 +167,11 @@ mod tests {
             if name == "broken" {
                 return Err("no route".into());
             }
-            Ok(vec![entity(Kind::Artist, &name)])
+            let entities = vec![entity(Kind::Artist, &name)];
+            Ok(Candidates {
+                entities,
+                partial: name == "cut",
+            })
         }
     }
 
@@ -201,6 +206,16 @@ mod tests {
         assert_eq!(found(&lookups, "кино"), ["кино"]);
         assert!(!lookups.late());
         assert_eq!(lookups.failure(), None);
+    }
+
+    #[test]
+    fn a_partial_lookup_still_answers_its_phrase() {
+        let memory = Arc::default();
+        let lookups = started_with(&memory, &["cut"], None);
+        assert_eq!(found(&lookups, "cut"), ["cut"]);
+        assert_eq!(lookups.failure(), None);
+        let cut = lookup("cut");
+        assert_eq!(memory.recalled(&cut.variants, &cut.kinds), None);
     }
 
     #[test]

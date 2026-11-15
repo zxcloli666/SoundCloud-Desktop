@@ -55,6 +55,10 @@ pub fn entities(body: &Value) -> Vec<Entity> {
         .collect()
 }
 
+pub fn partial(body: &Value) -> bool {
+    body.get("partial").and_then(Value::as_bool).unwrap_or(false)
+}
+
 fn entity(hit: Hit) -> Option<Entity> {
     let kind = Kind::from_name(&hit.kind)?;
     let artist = Some(hit.artist).filter(|a| !a.trim().is_empty());
@@ -102,6 +106,17 @@ mod tests {
         let track = found.iter().find(|e| e.kind == Kind::Track).unwrap();
         assert_eq!(track.artist.as_deref(), Some("Скриптонит"));
         assert_eq!(track.artist_aliases, vec!["scriptonite".to_string()]);
+    }
+
+    #[test]
+    fn a_cut_reply_says_so_and_any_other_reply_is_whole() {
+        let results = serde_json::json!({"artist": []});
+        let reply = |said: Value| serde_json::json!({"results": results, "partial": said});
+        assert!(partial(&reply(true.into())));
+        assert!(!partial(&reply(false.into())));
+        assert!(!partial(&reply("true".into())));
+        assert!(!partial(&reply(Value::Null)));
+        assert!(!partial(&serde_json::json!({"results": results})));
     }
 
     #[test]

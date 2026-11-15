@@ -5,9 +5,11 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::{Duration, Instant};
 
 use common::{Rig, rig_with, silent, timing};
-use voice_engine::{Catalog, Command, CommandEvent, Config, Event, Looked, State, Timed};
+use voice_engine::{
+    Candidates, Catalog, Command, CommandEvent, Config, Event, Looked, State, Timed,
+};
 use voice_nlu::{Kind, Names, Variant};
-use voice_resolve::{Entity, FixtureCatalog, Phrase};
+use voice_resolve::{FixtureCatalog, Phrase};
 
 const ROWS: &str = "kind\tname\tartist\tpopularity\taliases
 artist\tСкриптонит\t\t6500000\tscriptonite
@@ -33,22 +35,21 @@ struct Slow {
 }
 
 impl Catalog for Slow {
-    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Vec<Entity>, String> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Result<Candidates, String> {
         let running = self.seen.running.fetch_add(1, Ordering::SeqCst) + 1;
         self.seen.most.fetch_max(running, Ordering::SeqCst);
         std::thread::sleep(self.wait);
         self.seen.running.fetch_sub(1, Ordering::SeqCst);
         self.seen.finished.fetch_add(1, Ordering::SeqCst);
-        Ok(voice_resolve::Catalog::candidates(
-            &self.rows, variants, kinds,
-        ))
+        let entities = voice_resolve::Catalog::candidates(&self.rows, variants, kinds);
+        Ok(Candidates::whole(entities))
     }
 }
 
 struct Panicking;
 
 impl Catalog for Panicking {
-    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Vec<Entity>, String> {
+    fn candidates(&self, _: &[Variant], _: &[Kind]) -> Result<Candidates, String> {
         panic!("the catalog broke");
     }
 }
