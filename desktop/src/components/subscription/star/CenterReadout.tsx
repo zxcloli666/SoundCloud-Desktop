@@ -1,7 +1,8 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Loader2, RefreshCw } from '../../../lib/icons';
-import type { Currency, Plan } from '../../../lib/pay-client';
+import { monthsOf } from '../../../lib/offer-format';
+import type { Currency, PayOffer, Plan } from '../../../lib/pay-client';
 import { daysUntil, passDate, passSerial, usd } from '../../../lib/star-format';
 import type { StarStatus } from '../../../lib/star-status';
 import type { PayPhase } from '../PayStatus';
@@ -113,6 +114,15 @@ function StatusCaption({ status }: { status: StarStatus }) {
   );
 }
 
+function OfferCaption({ offer, currency }: { offer: PayOffer; currency: Currency }) {
+  const { t } = useTranslation();
+  const renews = offer.renews_at_price;
+  const price = renews ? (currency === 'USD' ? usd(renews.USD) : `${renews.RUB} ₽`) : '';
+  const months = monthsOf(offer);
+  const key = renews ? months : months === 'one' ? 'plainOne' : 'plainTwo';
+  return <>{t(`starOffer.readout.${key}`, { price })}</>;
+}
+
 /** The content that lives inside the living core's dark "well", per flow state. */
 export const CenterReadout = memo(function CenterReadout({
   step,
@@ -127,6 +137,7 @@ export const CenterReadout = memo(function CenterReadout({
   inviteDays,
   seats,
   trial,
+  offer,
 }: {
   step: Step;
   phase: PayPhase;
@@ -140,6 +151,7 @@ export const CenterReadout = memo(function CenterReadout({
   inviteDays: number | null;
   seats: { tier: string; used: number; total: number } | null;
   trial: { days: number; amount: string } | null;
+  offer?: PayOffer | null;
 }) {
   const { t } = useTranslation();
   const price = priceOf(plan, currency);
@@ -260,7 +272,9 @@ export const CenterReadout = memo(function CenterReadout({
         {price.amount}
       </Hero>
       <Caption>
-        {plan ? (
+        {plan && offer ? (
+          <OfferCaption offer={offer} currency={currency} />
+        ) : plan ? (
           <>
             {t(`starpass.plan.${monthsKey(plan.months)}`)} · {price.perMonth}/
             {t('starpass.perMonthShort')}

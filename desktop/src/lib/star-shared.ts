@@ -80,6 +80,10 @@ const KNOWN_ERRORS = [
   'relink',
   'charge_in_progress',
   'method_unavailable',
+  'offer_needs_bind',
+  'offer_used',
+  'offer_device_used',
+  'offer_card_used',
 ] as const;
 
 /** i18n key of a shared-plan failure; unknown ones fall back to a generic text. */

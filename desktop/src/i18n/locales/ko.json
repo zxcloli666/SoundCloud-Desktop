@@ -1998,6 +1998,10 @@
         "bind_needed": "이 수단은 아직 연결되지 않았습니다. 먼저 연결하세요.",
         "relink": "이 수단은 다시 연결해야 합니다.",
         "charge_in_progress": "이미 결제가 진행 중입니다. 잠시 기다리세요.",
+        "offer_needs_bind": "이 혜택은 자동 갱신에서만 사용할 수 있습니다. 결제 수단을 먼저 연결하세요.",
+        "offer_used": "이미 이 혜택을 사용했습니다.",
+        "offer_device_used": "이 기기에서 이미 사용된 혜택입니다.",
+        "offer_card_used": "이 카드로 이미 사용된 혜택입니다.",
         "method_unavailable": "이 요금제에는 이 수단을 쓸 수 없습니다."
       },
       "centerSeats": "{{seats}}석 중 {{used}}석 사용"
@@ -2644,6 +2648,27 @@
       "2": "불꽃",
       "3": "별자리"
     }
+  },
+  "starOffer": {
+    "proof_other": "한 달에 {{count}}곡",
+    "first": {
+      "one": "첫 달 STAR: {{price}}",
+      "two": "첫 두 달 STAR: {{price}}"
+    },
+    "short": {
+      "one": "첫 달 {{price}}",
+      "two": "두 달 {{price}}"
+    },
+    "readout": {
+      "one": "첫 달, 이후 월 {{price}}",
+      "two": "첫 2개월, 이후 월 {{price}}",
+      "plainOne": "첫 달",
+      "plainTwo": "첫 2개월"
+    },
+    "renews": "이후 월 {{price}}, {{date}}부터",
+    "until": "{{date}}까지",
+    "left": "{{time}} 남음",
+    "take": "{{price}}에 시작"
   },
   "starMoments": {
     "tryFree_other": "{{count}}일 무료",

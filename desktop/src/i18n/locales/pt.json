@@ -2082,6 +2082,10 @@
         "bind_needed": "Nada vinculado para este método ainda. Vincule primeiro.",
         "relink": "Este método precisa ser vinculado de novo.",
         "charge_in_progress": "Um pagamento já está em andamento. Aguarde um minuto.",
+        "offer_needs_bind": "Esta oferta funciona só com renovação automática. Vincule um método de pagamento.",
+        "offer_used": "Você já usou esta oferta.",
+        "offer_device_used": "Esta oferta já foi usada neste dispositivo.",
+        "offer_card_used": "Esta oferta já foi usada com este cartão.",
         "method_unavailable": "Este método não está disponível para este plano."
       },
       "centerSeats": "{{used}} de {{seats}} vagas ocupadas"
@@ -2790,6 +2794,30 @@
     "next_other": "Faltam {{count}} meses para {{tier}}",
     "next_one": "Falta {{count}} mês para {{tier}}",
     "months_one": "{{count}} mês seguido"
+  },
+  "starOffer": {
+    "proof_one": "{{count}} faixa em um mês",
+    "proof_other": "{{count}} faixas em um mês",
+    "proof_many": "{{count}} faixas em um mês",
+    "proof_zero": "{{count}} faixas em um mês",
+    "first": {
+      "one": "Seu primeiro mês de STAR — {{price}}",
+      "two": "Seus dois primeiros meses de STAR — {{price}}"
+    },
+    "short": {
+      "one": "Primeiro mês {{price}}",
+      "two": "Dois meses {{price}}"
+    },
+    "readout": {
+      "one": "primeiro mês, depois {{price}}/mês",
+      "two": "primeiros 2 meses, depois {{price}}/mês",
+      "plainOne": "primeiro mês",
+      "plainTwo": "primeiros 2 meses"
+    },
+    "renews": "Depois {{price}} por mês, a partir de {{date}}",
+    "until": "Válido até {{date}}",
+    "left": "Faltam {{time}}",
+    "take": "Levar por {{price}}"
   },
   "starMoments": {
     "tryFree_one": "{{count}} dia grátis",

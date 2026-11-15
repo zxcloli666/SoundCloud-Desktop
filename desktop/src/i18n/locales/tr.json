@@ -2083,6 +2083,10 @@
         "bind_needed": "Bu yöntem için henüz bağlı bir şey yok. Önce bağla.",
         "relink": "Bu yöntemin yeniden bağlanması gerekiyor.",
         "charge_in_progress": "Bir ödeme zaten sürüyor. Bir dakika bekle.",
+        "offer_needs_bind": "Bu teklif yalnızca otomatik yenilemeyle çalışır. Önce bir ödeme yöntemi bağla.",
+        "offer_used": "Bu teklifi zaten kullandın.",
+        "offer_device_used": "Bu teklif bu cihazda zaten kullanıldı.",
+        "offer_card_used": "Bu teklif bu kartla zaten kullanıldı.",
         "method_unavailable": "Bu yöntem bu plan için kullanılamıyor."
       },
       "centerSeats": "{{seats}} yerden {{used}} dolu"
@@ -2726,6 +2730,28 @@
       "3": "Takımyıldız"
     },
     "months_one": "{{count}} ay üst üste"
+  },
+  "starOffer": {
+    "proof_one": "Bir ayda {{count}} parça",
+    "proof_other": "Bir ayda {{count}} parça",
+    "first": {
+      "one": "STAR'ın ilk ayı – {{price}}",
+      "two": "STAR'ın ilk iki ayı – {{price}}"
+    },
+    "short": {
+      "one": "İlk ay {{price}}",
+      "two": "İki ay {{price}}"
+    },
+    "readout": {
+      "one": "ilk ay, sonra ayda {{price}}",
+      "two": "ilk 2 ay, sonra ayda {{price}}",
+      "plainOne": "ilk ay",
+      "plainTwo": "ilk 2 ay"
+    },
+    "renews": "Sonra ayda {{price}}, {{date}} tarihinden itibaren",
+    "until": "{{date}} tarihine kadar",
+    "left": "{{time}} kaldı",
+    "take": "{{price}} karşılığında al"
   },
   "starMoments": {
     "tryFree_one": "{{count}} gün ücretsiz",
