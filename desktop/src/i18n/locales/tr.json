@@ -1791,7 +1791,7 @@
     },
     "method": {
       "sbp": {
-        "title": "SBP",
+        "title": "SBP (RU)",
         "body": "Banka uygulamasından QR"
       },
       "cardRu": {
@@ -1799,7 +1799,7 @@
         "body": "MIR, Rus bankalarının Visa/MC'si"
       },
       "cardIntl": {
-        "title": "Yabancı kart",
+        "title": "Worldwide kart",
         "body": "Yabancı banka"
       },
       "cryptoPlatega": {
@@ -2113,20 +2113,23 @@
       "chargeFailed": "Ödeme geçmedi: bakiye yetersiz ya da abonelik bankada iptal edildi.",
       "payOnce": "Otomatik yenileme olmadan öde",
       "card": {
+        "link": "Kartı bağla",
         "linked": "Kart bağlandı",
         "removeYes": "Kartı kaldır",
         "removed": "Kart kaldırıldı",
         "charging": "Bağlı karttan çekiliyor…"
       },
       "card_usd": {
-        "linked": "USD kartı bağlandı",
+        "link": "Worldwide kartı bağla",
+        "linked": "Worldwide kart bağlandı",
         "removeYes": "Kartı kaldır"
       },
       "sbp": {
-        "title": "SBP otomatik yenileme",
-        "linked": "SBP bağlandı",
-        "removeYes": "SBP bağını kaldır",
-        "removed": "SBP bağı kaldırıldı",
+        "title": "SBP (RU) otomatik yenileme",
+        "link": "SBP (RU) bağla",
+        "linked": "SBP (RU) bağlandı",
+        "removeYes": "SBP (RU) bağını kaldır",
+        "removed": "SBP (RU) bağı kaldırıldı",
         "cancelInBank": "Aboneliği banka uygulamasında da iptal edin: burada kaldırmak orada durdurmaz.",
         "charging": "Bağlı SBP üzerinden tahsil ediliyor…",
         "step": {

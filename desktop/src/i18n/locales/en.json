@@ -1868,7 +1868,7 @@
     },
     "method": {
       "sbp": {
-        "title": "SBP",
+        "title": "SBP (RU)",
         "body": "QR from your bank app"
       },
       "cardRu": {
@@ -1876,7 +1876,7 @@
         "body": "MIR, Visa/MC of Russian banks"
       },
       "cardIntl": {
-        "title": "Foreign card",
+        "title": "Worldwide card",
         "body": "International issuer"
       },
       "cryptoPlatega": {
@@ -2190,20 +2190,23 @@
       "chargeFailed": "The payment didn't go through: not enough money, or the subscription was cancelled in the bank.",
       "payOnce": "Pay without auto-renew",
       "card": {
+        "link": "Link card",
         "linked": "Card linked",
         "removeYes": "Remove card",
         "removed": "Card removed",
         "charging": "Charging the linked card…"
       },
       "card_usd": {
-        "linked": "USD card linked",
+        "link": "Link Worldwide card",
+        "linked": "Worldwide card linked",
         "removeYes": "Remove card"
       },
       "sbp": {
-        "title": "SBP auto-renew",
-        "linked": "SBP linked",
-        "removeYes": "Unlink SBP",
-        "removed": "SBP unlinked",
+        "title": "SBP (RU) auto-renew",
+        "link": "Link SBP (RU)",
+        "linked": "SBP (RU) linked",
+        "removeYes": "Unlink SBP (RU)",
+        "removed": "SBP (RU) unlinked",
         "cancelInBank": "Also cancel the subscription in your bank app: unlinking here doesn't stop it there.",
         "charging": "Charging through linked SBP…",
         "step": {
