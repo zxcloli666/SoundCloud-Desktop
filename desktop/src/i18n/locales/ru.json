@@ -1827,31 +1827,12 @@
   },
   "starpass": {
     "guestHandle": "@ты",
-    "member": "Участник",
-    "allAccess": "CLASS · ALL-ACCESS",
-    "activatedStamp": "Активирован",
-    "bestValue": "Выгоднее всего",
+    "forWhom": "Для кого",
+    "term": "Срок",
     "perMonth": " / мес",
-    "starsLabel": "В Telegram Stars",
-    "classLabel": "Class {{cls}}",
-    "afterPurchase": "после покупки",
     "daysLeft_one": "{{count}} день",
     "daysLeft_few": "{{count}} дня",
     "daysLeft_many": "{{count}} дней",
-    "tierPreview": "Tier · превью",
-    "tierActive": "Активный пропуск",
-    "fieldSerial": "Серийный №",
-    "fieldIssued": "Выпущен",
-    "fieldActivated": "Активирован",
-    "fieldValidUntil": "Действует до",
-    "fieldMethod": "Метод",
-    "fieldOrder": "Заказ №",
-    "fieldRemaining": "Осталось",
-    "eyebrow": "Членский пропуск",
-    "heroTitle1": "Не подписка.",
-    "heroTitle2": "Пропуск в звук.",
-    "heroLead": "Именной пропуск: выделенный сервер, UQ и весь каталог — без компромиссов.",
-    "choosePass": "Выбрать пропуск",
     "haveCode": "У меня есть код",
     "plan": {
       "month": "Месячный",
@@ -1859,9 +1840,7 @@
       "year": "Годовой"
     },
     "perksTitle": "Что внутри",
-    "ignite": "Зажечь звезду",
     "back": "Назад",
-    "perMonthShort": "мес",
     "legal": "Оплачивая, ты принимаешь <offer>оферту</offer> и <refund>условия возврата</refund>.",
     "perk": {
       "goPlus": {
@@ -1936,23 +1915,12 @@
         "body": "оплата звёздами TG"
       }
     },
-    "caption": {
-      "member": "Member pass · SoundCloud client",
-      "boarding": "Boarding · ожидает оплаты",
-      "active": "Member pass · активен"
-    },
-    "planTitle": "Класс пропуска",
-    "planSub": "Длиннее срок — дешевле месяц.",
-    "toActivation": "К активации",
     "providerTitle": "Способ оплаты",
     "howToPay": "Как оплатить",
     "creating": "Создаём заказ…",
-    "continueWith": "Продолжить с {{method}}",
     "continue": "Продолжить",
     "toPay": "К оплате",
     "checkoutError": "Не удалось создать заказ. Попробуй другой способ.",
-    "payTitle": "Оплата",
-    "paySub": "Заверши платёж — пропуск активируется сам.",
     "retry": "Попробовать снова",
     "sbpStep": {
       "1": "Открой приложение банка и отсканируй QR.",
@@ -1963,32 +1931,20 @@
     "externalHint": "Оплата открыта в браузере. Заверши там — экран обновится сам.",
     "openCheckout": "Открыть оплату",
     "openInBrowser": "Открыть в браузере",
-    "qrExpired": "Время заказа вышло — начни заново",
     "successTitle": "Пропуск активирован",
     "successSub": "Всё включено. Возвращайся к музыке.",
-    "welcome": "Добро пожаловать в STAR, {{handle}}.",
-    "welcomeBody": "Действует до {{date}}. Сервер, UQ и SoundWave уже включены.",
     "until": "до",
     "backToMusic": "К музыке",
     "managePass": "Управление",
     "redeemTitle": "Активация по коду",
-    "redeemSub": "Код с чека от реселлера.",
     "status": {
       "waiting": "Ждём оплату…",
-      "polling": "проверяем каждые 2.5 с",
       "paid": "Оплата получена",
-      "activated": "пропуск активирован",
       "failed": "Оплата не прошла",
       "failedHint": "заказ не оплачен — попробуй снова"
     },
     "redeem": {
-      "heading": "Один код — целый пропуск.",
-      "lead": "Четыре блока после префикса STAR. Регистр и дефисы — не важны.",
-      "center": "введи код активации",
-      "format": "формат",
-      "oneTime": "одноразовый",
       "label": "Код активации",
-      "progress": "Введено {{count}} из 16 символов",
       "activate": "Активировать STAR",
       "activating": "Активируем…",
       "paste": "Вставить из буфера",
@@ -1999,14 +1955,10 @@
       "errGeneric": "Не удалось активировать код. Попробуй снова."
     },
     "manage": {
-      "title": "Твой пропуск",
-      "sub": "Срок, автопродление и источник.",
       "autoRenew": "Автопродление",
       "refund": "Условия возврата",
       "autoRenewOff": "Выключено. Доступ — до конца оплаченного срока.",
       "source": "Источник",
-      "sourceSub": "Откуда подписка",
-      "afterExpiry": "Потом — бесплатный режим",
       "extend": "Продлить",
       "redeem": "Ввести код",
       "canceled": "Автопродление выключено",
@@ -2025,21 +1977,18 @@
     },
     "discord": {
       "label": "Discord",
-      "linkedAs": "Привязан",
       "unlinked": "Discord не привязан",
       "linkHint": "Открой наш Discord-сервер и набери /sc-link",
       "booster": "Бустер",
       "starRole": "Роль STAR",
       "member": "Участник"
     },
-    "openVia": "Где открыть оплату",
     "openIn": {
       "app": "Открыть в Telegram",
       "web": "Открыть в браузере",
       "mini": "Telegram Mini App"
     },
     "loadError": "Не удалось загрузить тарифы",
-    "loading": "Загрузка тарифов…",
     "recipient": {
       "self": "Себе",
       "gift": "В подарок"
@@ -2054,7 +2003,6 @@
       "copied": "Скопировано",
       "redeemed": "Активирован",
       "ready": "Подарок готов",
-      "center": "код для друга",
       "howTo": "Отправь код другу. Он откроет STAR и нажмёт «У меня есть код».",
       "shareText": "Дарю тебе STAR в SoundCloud Desktop 🎁\nКод: {{code}}\nОткрой STAR → «У меня есть код». Скачать: https://getsoundcloud.app"
     },
@@ -2093,8 +2041,7 @@
       "earned_one": "+{{count}} день",
       "earned_few": "+{{count}} дня",
       "earned_many": "+{{count}} дней",
-      "daysUnit": "дн.",
-      "center": "тебе и другу"
+      "daysUnit": "дн."
     },
     "ref": {
       "have": "Есть код друга?",
@@ -2146,7 +2093,7 @@
       "people_few": "{{count}} человека",
       "people_many": "{{count}} человек",
       "people_other": "{{count}} человека",
-      "each": "{{price}} ₽ с человека",
+      "each": "{{price}} с человека",
       "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
@@ -2156,15 +2103,12 @@
       "carryDays_few": "+{{count}} дня",
       "carryDays_many": "+{{count}} дней",
       "carryDays_other": "+{{count}} дня",
-      "carryEnd": "Новый срок до {{date}}",
       "memberBuy": "Вы участник чужого тарифа. Выйдите из него, чтобы купить свой.",
-      "manageCta": "Участники",
       "seatsOf": "{{used}} из {{seats}} мест",
       "until": "До {{date}}",
       "invite": {
         "title": "Код приглашения",
         "copy": "Скопировать приглашение",
-        "copied": "Скопировано",
         "regenerate": "Новый код",
         "regenerated": "Новый код готов, старый больше не работает",
         "shareText": "Присоединяйся к моему STAR {{tier}} в SoundCloud Desktop: открой STAR, нажми «У меня есть код» и введи {{code}}. https://getsoundcloud.app"
@@ -2186,8 +2130,7 @@
         "leaveAsk": "Выйти из тарифа? Ваш собственный STAR останется.",
         "leaveYes": "Выйти",
         "leaveNo": "Остаться",
-        "left": "Вы вышли из тарифа",
-        "joined": "Вы в тарифе"
+        "left": "Вы вышли из тарифа"
       },
       "empty": {
         "title": "Общего тарифа пока нет",
@@ -2217,8 +2160,7 @@
         "offer_device_used": "На этом устройстве предложение уже использовано.",
         "offer_card_used": "С этой картой предложение уже использовано.",
         "method_unavailable": "Этот способ недоступен для этого тарифа."
-      },
-      "centerSeats": "занято {{used}} из {{seats}} мест"
+      }
     },
     "renew": {
       "title": "Автопродление",
@@ -2228,9 +2170,6 @@
       "next": "Следующее списание {{date}} · {{charge}}",
       "refund": "Забыл отключить - напиши на почту за 7 дней, вернём всё. Так можно раз в 6 месяцев",
       "unavailable": "Недоступно для этого способа или срока",
-      "everyOther_one": "Списывается каждый {{count}} день через привязку: её нужно сделать отдельно",
-      "everyOther_few": "Списывается каждые {{count}} дня через привязку: её нужно сделать отдельно",
-      "everyOther_many": "Списывается каждые {{count}} дней через привязку: её нужно сделать отдельно",
       "onceNote": "Без автопродления: разовая оплата, без привязки"
     },
     "bind": {
@@ -2296,7 +2235,8 @@
     "confirm": {
       "opening": "Открываем подтверждение банка…",
       "open": "Подтверди оплату в окне банка",
-      "closed": "Проверяем оплату… Закрыл окно банка раньше времени? Открой его снова.",
+      "closed": "Проверяем оплату…",
+      "closedHint": "Закрыл окно банка раньше времени? Открой его снова.",
       "failed": "Не удалось открыть подтверждение банка.",
       "reopen": "Открыть окно банка",
       "renewal": "Банк просит подтвердить продление",

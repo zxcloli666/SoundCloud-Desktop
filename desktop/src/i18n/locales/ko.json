@@ -1629,29 +1629,10 @@
   },
   "starpass": {
     "guestHandle": "@you",
-    "member": "멤버",
-    "allAccess": "클래스 · 올 액세스",
-    "activatedStamp": "활성화됨",
-    "bestValue": "최고 혜택",
+    "forWhom": "대상",
+    "term": "기간",
     "perMonth": " / 월",
-    "starsLabel": "Telegram Stars로",
-    "classLabel": "{{cls}} 클래스",
-    "afterPurchase": "구매 후",
     "daysLeft_other": "{{count}}일",
-    "tierPreview": "등급 · 미리보기",
-    "tierActive": "활성 패스",
-    "fieldSerial": "일련번호",
-    "fieldIssued": "발급일",
-    "fieldActivated": "활성화일",
-    "fieldValidUntil": "유효 기간",
-    "fieldMethod": "결제 수단",
-    "fieldOrder": "주문 번호",
-    "fieldRemaining": "남은 기간",
-    "eyebrow": "멤버 패스",
-    "heroTitle1": "구독이 아니라,",
-    "heroTitle2": "사운드로 들어가는 패스.",
-    "heroLead": "전용 서버, UQ, 전체 카탈로그까지. 타협 없는 개인 패스예요.",
-    "choosePass": "패스 선택",
     "haveCode": "코드가 있어요",
     "plan": {
       "month": "월간",
@@ -1659,9 +1640,7 @@
       "year": "연간"
     },
     "perksTitle": "포함된 혜택",
-    "ignite": "나의 별 밝히기",
     "back": "뒤로",
-    "perMonthShort": "월",
     "legal": "결제하면 <offer>판매 약관</offer>과 <refund>환불 정책</refund>에 동의하게 돼요.",
     "perk": {
       "goPlus": {
@@ -1736,23 +1715,12 @@
         "body": "TG Stars로 결제"
       }
     },
-    "caption": {
-      "member": "멤버 패스 · SoundCloud 클라이언트",
-      "boarding": "탑승 수속 · 결제 대기 중",
-      "active": "멤버 패스 · 활성"
-    },
-    "planTitle": "패스 클래스",
-    "planSub": "기간이 길수록 한 달 요금이 저렴해요.",
-    "toActivation": "활성화 단계로",
     "providerTitle": "결제 수단",
     "howToPay": "결제 방법",
     "creating": "주문 생성 중…",
-    "continueWith": "{{method}}(으)로 계속",
     "continue": "계속",
     "toPay": "결제 금액",
     "checkoutError": "주문을 생성하지 못했어요. 다른 결제 수단을 시도해 보세요.",
-    "payTitle": "결제",
-    "paySub": "결제를 완료하면 패스가 자동으로 활성화돼요.",
     "retry": "다시 시도",
     "sbpStep": {
       "1": "은행 앱을 열고 QR을 스캔하세요.",
@@ -1763,32 +1731,20 @@
     "externalHint": "브라우저에서 결제 페이지가 열렸어요. 거기서 결제를 마치면 이 화면이 자동으로 업데이트돼요.",
     "openCheckout": "결제 페이지 열기",
     "openInBrowser": "브라우저에서 열기",
-    "qrExpired": "주문이 만료됐어요. 처음부터 다시 시작하세요",
     "successTitle": "패스가 활성화됐어요",
     "successSub": "모든 혜택이 켜졌어요. 이제 음악으로 돌아가요.",
-    "welcome": "STAR에 오신 걸 환영해요, {{handle}} 님.",
-    "welcomeBody": "{{date}}까지 유효해요. 서버, UQ, SoundWave가 이미 켜져 있어요.",
     "until": "만료일",
     "backToMusic": "음악으로",
     "managePass": "관리",
     "redeemTitle": "코드로 활성화",
-    "redeemSub": "판매처 영수증에 있는 코드를 입력하세요.",
     "status": {
       "waiting": "결제 대기 중…",
-      "polling": "2.5초마다 확인 중",
       "paid": "결제 완료",
-      "activated": "패스 활성화됨",
       "failed": "결제 실패",
       "failedHint": "주문이 처리되지 않았어요. 다시 시도해 주세요"
     },
     "redeem": {
-      "heading": "코드 하나로 패스 전체를.",
-      "lead": "STAR 접두사 뒤의 4개 블록이에요. 대소문자와 하이픈은 상관없어요.",
-      "center": "코드를 입력하세요",
-      "format": "형식",
-      "oneTime": "1회용",
       "label": "활성화 코드",
-      "progress": "16자 중 {{count}}자 입력됨",
       "activate": "STAR 활성화",
       "activating": "활성화 중…",
       "paste": "클립보드에서 붙여넣기",
@@ -1799,14 +1755,10 @@
       "errGeneric": "코드를 활성화하지 못했어요. 다시 시도해 주세요."
     },
     "manage": {
-      "title": "내 패스",
-      "sub": "기간, 자동 갱신, 출처.",
       "autoRenew": "자동 갱신",
       "refund": "환불 정책",
       "autoRenewOff": "꺼짐. 결제한 기간이 끝날 때까지 이용할 수 있어요.",
       "source": "출처",
-      "sourceSub": "패스를 받은 경로",
-      "afterExpiry": "이후 무료로 전환",
       "extend": "연장",
       "redeem": "코드 사용",
       "canceled": "자동 갱신을 껐어요",
@@ -1825,21 +1777,18 @@
     },
     "discord": {
       "label": "Discord",
-      "linkedAs": "연결됨",
       "unlinked": "Discord 연결 안 됨",
       "linkHint": "Discord 서버를 열고 /sc-link를 실행하세요",
       "booster": "부스터",
       "starRole": "STAR 역할",
       "member": "멤버"
     },
-    "openVia": "결제 열기:",
     "openIn": {
       "app": "Telegram에서 열기",
       "web": "브라우저에서 열기",
       "mini": "Telegram 미니 앱"
     },
     "loadError": "요금제를 불러오지 못했어요",
-    "loading": "요금제 불러오는 중…",
     "recipient": {
       "self": "나에게",
       "gift": "선물용"
@@ -1854,7 +1803,6 @@
       "copied": "복사됨",
       "redeemed": "사용됨",
       "ready": "선물 준비됨",
-      "center": "친구를 위한 코드",
       "howTo": "코드를 친구에게 보내세요. 친구가 STAR을 열고 \"코드가 있어요\"를 누르면 됩니다.",
       "shareText": "SoundCloud Desktop용 STAR 패스, 제가 드려요 🎁\n코드: {{code}}\nSTAR 열기 → \"코드가 있어요\". 앱 받기: https://getsoundcloud.app"
     },
@@ -1885,8 +1833,7 @@
       "shareText": "저는 SoundCloud Desktop에서 SoundCloud를 듣습니다. 제 코드 {{code}}로 STAR을 받으면 우리 둘 다 +{{days}}일을 받습니다. https://getsoundcloud.app",
       "friends_other": "{{count}} / {{cap}}명의 친구",
       "earned_other": "+{{count}}일",
-      "daysUnit": "일",
-      "center": "당신과 친구를 위해"
+      "daysUnit": "일"
     },
     "ref": {
       "have": "친구 코드가 있으신가요?",
@@ -1935,22 +1882,19 @@
       "duo": "Duo",
       "family": "Family",
       "people_other": "{{count}}명",
-      "each": "1인당 {{price}} ₽",
+      "each": "1인당 {{price}}",
       "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
     "shared": {
       "carryTitle": "현재 STAR가 그대로 이어집니다",
       "carryDays_other": "+{{count}}일",
-      "carryEnd": "새 종료일 {{date}}",
       "memberBuy": "다른 사람의 플랜에 참여 중입니다. 직접 구매하려면 먼저 나가세요.",
-      "manageCta": "멤버",
       "seatsOf": "{{seats}}석 중 {{used}}석",
       "until": "{{date}}까지",
       "invite": {
         "title": "초대 코드",
         "copy": "초대 복사",
-        "copied": "복사됨",
         "regenerate": "새 코드",
         "regenerated": "새 코드가 준비되었습니다. 이전 코드는 더 이상 쓸 수 없습니다",
         "shareText": "SoundCloud Desktop에서 내 STAR {{tier}}에 참여하세요: STAR를 열고 \"코드가 있어요\"를 눌러 {{code}}를 입력하세요. https://getsoundcloud.app"
@@ -1972,8 +1916,7 @@
         "leaveAsk": "이 플랜에서 나갈까요? 본인의 STAR는 유지됩니다.",
         "leaveYes": "나가기",
         "leaveNo": "머무르기",
-        "left": "플랜에서 나갔습니다",
-        "joined": "플랜에 참여했습니다"
+        "left": "플랜에서 나갔습니다"
       },
       "empty": {
         "title": "아직 공유 플랜이 없습니다",
@@ -2003,8 +1946,7 @@
         "offer_device_used": "이 기기에서 이미 사용된 혜택입니다.",
         "offer_card_used": "이 카드로 이미 사용된 혜택입니다.",
         "method_unavailable": "이 요금제에는 이 수단을 쓸 수 없습니다."
-      },
-      "centerSeats": "{{seats}}석 중 {{used}}석 사용"
+      }
     },
     "renew": {
       "title": "자동 갱신",
@@ -2012,9 +1954,7 @@
       "next": "다음 결제 {{date}} · {{charge}}",
       "refund": "끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요. 6개월에 한 번 가능해요",
       "unavailable": "이 결제 수단이나 기간에는 사용할 수 없습니다",
-      "everyOther_other": "{{count}}일마다 연결된 수단으로 결제됩니다. 별도 연결이 필요합니다",
-      "onceNote": "자동 갱신 없이: 1회 결제, 연결 없음",
-      "everyOther_one": "{{count}}일마다 연결된 수단으로 결제됩니다. 별도 연결이 필요합니다"
+      "onceNote": "자동 갱신 없이: 1회 결제, 연결 없음"
     },
     "bind": {
       "linkPay": "연결하고 결제",
@@ -2079,7 +2019,8 @@
     "confirm": {
       "opening": "은행 확인 창을 여는 중…",
       "open": "은행 창에서 결제를 확인하세요",
-      "closed": "결제를 확인하는 중… 은행 창을 너무 일찍 닫았다면 다시 여세요.",
+      "closed": "결제를 확인하는 중…",
+      "closedHint": "은행 창을 너무 일찍 닫았다면 다시 여세요.",
       "failed": "은행 확인 창을 열지 못했습니다.",
       "reopen": "은행 창 열기",
       "renewal": "은행이 갱신 확인을 요청합니다",

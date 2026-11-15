@@ -189,6 +189,35 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 
 Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colors come from the scheme tokens (see "White and dark"): `--ink` for text and lines, `--paper` and `--surface` for surfaces, `--shade` for wells and scrims. A theme that sets them restyles chats too. Your messages, the open chat and the chosen filter are tinted with `--color-chat-tint`.
 
+### STAR page
+
+| Selector | Element |
+|---|---|
+| `[data-ui="star-header"]` | Title row with the back button |
+| `[data-ui="star-who"]` | Who it is for: Solo, Duo, Family and the gift switch |
+| `[data-ui="star-term"]` | Term tiles (month, quarter, year) |
+| `[data-ui="star-method"]` | Payment methods |
+| `[data-ui="star-renew"]` | Auto-renew switch under the methods |
+| `[data-ui="star-perks"]` | Perk chips |
+| `[data-ui="star-receipt"]` | Receipt on the right: lines `[data-ui="star-receipt-lines"]`, total `[data-ui="star-total"]`, pay button `[data-star-act="pay"]`, progress `[data-ui="star-progress"]`, links `[data-ui="star-extras"]` |
+| `[data-ui="star-offer"]` | Personal offer in the receipt |
+| `[data-ui="star-pay"]` | Payment in progress; the state inside is `star-pay-qr`, `star-pay-open`, `star-pay-wait`, `star-pay-confirm` or `star-pay-failed` |
+| `[data-ui="star-timer"]` | Countdown ring of a QR or payment page |
+| `[data-ui="star-step-card"]` | Card link; the form is `[data-ui="star-card-link"]` with `data-stage`, the card picture `[data-ui="star-card-face"]` |
+| `[data-ui="star-step-sbp"]` | SBP link by QR, `[data-ui="star-sbp-link"]` with `data-stage` |
+| `[data-ui="star-trial"]` | Free trial |
+| `[data-ui="star-redeem"]` | Code entry |
+| `[data-ui="star-invite"]` | Invite a friend |
+| `[data-ui="star-gifts"]` | Gift codes; one code is `[data-ui="star-gift-ticket"]` |
+| `[data-ui="star-shared"]` | Duo or Family seats; a seat is `[data-ui="star-seat"]` |
+| `[data-ui="star-success"]` | Paid |
+| `[data-ui="star-manage"]` | Manage list: `star-autorenew`, `star-trial-row`, `star-bind`, `star-seats` rows |
+| `[data-ui="star-confirm-renewal"]`, `[data-ui="star-expiring"]` | Warnings above the manage list, `data-tone` is `warn` or `bad` |
+| `[data-ui="star-member"]` | Your place in someone else's Duo or Family |
+| `[data-ui="star-tenure"]` | STAR streak |
+| `[data-ui="star-discord"]` | Discord link |
+| `[data-ui="star-pass-summary"]` | Pass card on the right: days left, next charge, actions |
+
 ## Variables
 
 | Variable | Meaning |

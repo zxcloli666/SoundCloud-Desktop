@@ -10,11 +10,11 @@ import {
   invalidFields,
 } from '../../../../lib/card-link/validate';
 import { Lock } from '../../../../lib/icons';
-import { LinkBtn, PrimaryBtn } from '../StarConsole';
+import { Btn } from '../ui/Btn';
 import { CardFace } from './CardFace';
 
 const INPUT =
-  'w-full rounded-[11px] border bg-ink/[0.04] px-3.5 py-3 font-mono text-[14px] tracking-[0.08em] text-ink outline-none transition-colors placeholder:text-ink-25 focus:bg-ink/[0.06]';
+  'h-11 w-full rounded-[12px] border bg-ink/[0.04] px-3.5 font-mono text-[14px] tracking-[0.06em] text-ink outline-none transition-colors placeholder:text-ink-25 focus:bg-ink/[0.06]';
 
 function Field({
   name,
@@ -29,7 +29,7 @@ function Field({
   return (
     <label className="block">
       <span
-        className={`mb-1.5 block font-mono text-[10px] uppercase tracking-[0.18em] ${bad ? 'text-bad' : 'text-ink-40'}`}
+        className={`mb-1.5 block text-[12px] font-semibold ${bad ? 'text-bad' : 'text-ink-45'}`}
       >
         {t(`starpass.card.field.${name}`)}
       </span>
@@ -70,7 +70,7 @@ export const CardForm = memo(function CardForm({
 
   return (
     <form
-      className="flex flex-col gap-5 sm:flex-row sm:items-start"
+      className="flex flex-col gap-6 sm:flex-row sm:items-start"
       onSubmit={(event) => {
         event.preventDefault();
         send();
@@ -116,16 +116,18 @@ export const CardForm = memo(function CardForm({
             onChange={(e) => set('cvv', formatCvv(e.target.value, fields.number))}
           />
         </Field>
-        <div className="col-span-2 mt-1 flex flex-wrap items-center gap-3">
-          <PrimaryBtn onClick={send}>
+        <div className="col-span-2 mt-1 flex flex-wrap items-center gap-2">
+          <Btn tone="primary" size="lg" submit act="card-submit">
             {amount ? `${t('starpass.bind.linkPay')} · ${amount}` : t('starpass.bind.link')}
-          </PrimaryBtn>
-          <LinkBtn onClick={onCancel}>{t('starpass.card.cancel')}</LinkBtn>
-          <span className="flex items-center gap-1.5 font-mono text-[10.5px] tracking-[0.06em] text-ink-40">
-            <Lock size={12} />
-            {t('starpass.card.secure')}
-          </span>
+          </Btn>
+          <Btn tone="quiet" onClick={onCancel}>
+            {t('starpass.card.cancel')}
+          </Btn>
         </div>
+        <span className="col-span-2 flex items-center gap-1.5 text-[11.5px] text-ink-45">
+          <Lock size={12} className="shrink-0" />
+          {t('starpass.card.secure')}
+        </span>
       </div>
     </form>
   );

@@ -189,6 +189,35 @@
 
 Остальные окна чатов (новый чат, жалоба, удаление) это `[data-ui="modal"]`. Цвета чатов берутся из токенов схемы (раздел «Белая и тёмная»): `--ink` для текста и линий, `--paper` и `--surface` для подложек, `--shade` для колодцев и затемнений. Тема, которая их задаёт, меняет и чаты. Ваши сообщения, открытый чат и выбранный фильтр подкрашены `--color-chat-tint`.
 
+### Страница STAR
+
+| Селектор | Элемент |
+|---|---|
+| `[data-ui="star-header"]` | Заголовок с кнопкой «назад» |
+| `[data-ui="star-who"]` | Для кого: Личный, Duo, Family и переключатель подарка |
+| `[data-ui="star-term"]` | Плитки срока (месяц, квартал, год) |
+| `[data-ui="star-method"]` | Способы оплаты |
+| `[data-ui="star-renew"]` | Переключатель автопродления под способами |
+| `[data-ui="star-perks"]` | Плашки того, что входит в STAR |
+| `[data-ui="star-receipt"]` | Чек справа: строки `[data-ui="star-receipt-lines"]`, сумма `[data-ui="star-total"]`, кнопка оплаты `[data-star-act="pay"]`, ход оплаты `[data-ui="star-progress"]`, ссылки `[data-ui="star-extras"]` |
+| `[data-ui="star-offer"]` | Личное предложение в чеке |
+| `[data-ui="star-pay"]` | Идёт оплата; состояние внутри: `star-pay-qr`, `star-pay-open`, `star-pay-wait`, `star-pay-confirm` или `star-pay-failed` |
+| `[data-ui="star-timer"]` | Кольцо обратного отсчёта у QR и страницы оплаты |
+| `[data-ui="star-step-card"]` | Привязка карты; форма `[data-ui="star-card-link"]` с `data-stage`, картинка карты `[data-ui="star-card-face"]` |
+| `[data-ui="star-step-sbp"]` | Привязка СБП по QR, `[data-ui="star-sbp-link"]` с `data-stage` |
+| `[data-ui="star-trial"]` | Пробный период |
+| `[data-ui="star-redeem"]` | Ввод кода |
+| `[data-ui="star-invite"]` | Пригласить друга |
+| `[data-ui="star-gifts"]` | Коды подарков; один код `[data-ui="star-gift-ticket"]` |
+| `[data-ui="star-shared"]` | Места в Duo или Family; одно место `[data-ui="star-seat"]` |
+| `[data-ui="star-success"]` | Оплачено |
+| `[data-ui="star-manage"]` | Список управления: строки `star-autorenew`, `star-trial-row`, `star-bind`, `star-seats` |
+| `[data-ui="star-confirm-renewal"]`, `[data-ui="star-expiring"]` | Предупреждения над списком, `data-tone` это `warn` или `bad` |
+| `[data-ui="star-member"]` | Твоё место в чужом Duo или Family |
+| `[data-ui="star-tenure"]` | Серия STAR |
+| `[data-ui="star-discord"]` | Привязка Discord |
+| `[data-ui="star-pass-summary"]` | Карточка пропуска справа: сколько дней осталось, следующее списание, действия |
+
 ## Переменные
 
 | Переменная | Значение |
