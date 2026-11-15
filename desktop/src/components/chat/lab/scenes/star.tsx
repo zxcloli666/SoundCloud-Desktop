@@ -383,6 +383,46 @@ function sbpLink() {
   });
 }
 
+const TEST_CARD = { number: '4242 4242 4242 4242', expiry: '12/29', cvv: '123' };
+
+function fill(selector: string, value: string) {
+  const input = document.querySelector<HTMLInputElement>(selector);
+  if (!input) return;
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set?.call(input, value);
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+async function typeCard() {
+  await waitUntil(() => document.querySelector('[data-stage="form"] input') !== null);
+  fill('input[placeholder="0000 0000 0000 0000"]', TEST_CARD.number);
+  fill('input[placeholder="MM/YY"]', TEST_CARD.expiry);
+  fill('[data-stage="form"] input[type="password"]', TEST_CARD.cvv);
+  await sleep(200);
+}
+
+function cardEnd(end: 'timeout' | 'declined') {
+  cardNative.submit = async () =>
+    end === 'declined' ? { state: 'failed', reason: 'do_not_honor' } : { state: 'pending' };
+  payApi.bindStep = async (id) => ({
+    api: 2,
+    session_id: id,
+    state: 'expired',
+    reason: null,
+    qr: null,
+    page_url: null,
+    trial: null,
+    trial_refused: null,
+  });
+}
+
+async function cardFailed() {
+  await pick('card_ru');
+  await pay();
+  await typeCard();
+  await press('[data-star-act="card-submit"]');
+  await waitUntil(() => document.querySelector('[data-ui="star-card-failed"]') !== null, 8000);
+}
+
 function confirm(closed: boolean) {
   cardNative.open = async () => 'confirm';
   cardNative.page = () =>
@@ -441,6 +481,62 @@ const STATES: { id: string; title: string; setup: Setup }[] = [
       kit.after(async () => {
         await pick('card_ru');
         await pay();
+      });
+    },
+  },
+  {
+    id: 'card-filled',
+    title: 'card form, typed',
+    setup: (kit) => {
+      kit.star(false);
+      world({ sub: FREE });
+      cardForm();
+      kit.after(async () => {
+        await pick('card_ru');
+        await pay();
+        await typeCard();
+      });
+    },
+  },
+  {
+    id: 'card-timeout',
+    title: 'card bind timed out, retry with the same card',
+    setup: (kit) => {
+      kit.star(false);
+      world({ sub: FREE });
+      cardForm();
+      cardEnd('timeout');
+      kit.after(() => cardFailed());
+    },
+  },
+  {
+    id: 'card-resend',
+    title: 'card bind retried with the same card',
+    setup: (kit) => {
+      kit.star(false);
+      world({ sub: FREE });
+      cardForm();
+      cardEnd('timeout');
+      kit.after(async () => {
+        await cardFailed();
+        payApi.bindStep = () => new Promise(() => {});
+        await press('[data-star-act="card-retry"]');
+        await sleep(400);
+      });
+    },
+  },
+  {
+    id: 'card-declined',
+    title: 'card declined, retry keeps the typed card',
+    setup: (kit) => {
+      kit.star(false);
+      world({ sub: FREE });
+      cardForm();
+      cardEnd('declined');
+      kit.after(async () => {
+        await cardFailed();
+        await press('[data-star-act="card-retry"]');
+        await sleep(400);
       });
     },
   },
