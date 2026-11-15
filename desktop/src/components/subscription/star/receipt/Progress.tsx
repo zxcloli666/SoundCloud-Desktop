@@ -22,7 +22,11 @@ export const Progress = memo(function Progress() {
         color: failed ? 'rgb(var(--bad))' : 'rgb(var(--ink) / 0.85)',
       }}
     >
-      {done ? <Check size={16} className="text-accent" /> : !failed && <AccentSpinner />}
+      {done ? (
+        <Check size={16} className="text-accent" />
+      ) : (
+        step === 'pay' && !failed && <AccentSpinner />
+      )}
       {t(
         done
           ? 'starpass.status.paid'
