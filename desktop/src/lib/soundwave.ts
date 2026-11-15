@@ -50,6 +50,7 @@ async function resultTracks(results: RecommendResult[]): Promise<Track[]> {
 }
 
 export type SmartWaveSeedKind = 'user' | 'track' | 'artist';
+export type SmartWaveMode = 'full' | 'moments';
 
 export interface SmartWaveBatch {
   tracks: Track[];
@@ -83,9 +84,11 @@ export async function fetchSmartWave(opts: {
   limit?: number;
   languages?: string[];
   hideListened?: boolean;
+  mode?: SmartWaveMode;
 }): Promise<SmartWaveBatch> {
   const qs = new URLSearchParams();
   qs.set('limit', String(opts.limit ?? 20));
+  if (opts.mode === 'moments') qs.set('mode', 'moments');
   if (opts.cursor) qs.set('cursor', opts.cursor);
   const languages = normLanguages(opts.languages);
   if (languages) qs.set('languages', languages);

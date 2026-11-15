@@ -6,6 +6,7 @@ use tauri::{Emitter, Manager};
 
 use crate::app::{diagnostics, visibility};
 use crate::audio::engine;
+use crate::audio::preview;
 use crate::audio::silence::SilenceJump;
 use crate::audio::state::AudioState;
 use crate::audio::timing;
@@ -24,28 +25,6 @@ fn push_media_position(state: &AudioState, position: f64) {
     if let Some(tx) = state.media_tx.lock().unwrap().as_ref() {
         tx.send(MediaCmd::SetPosition(position)).ok();
     }
-}
-
-/// Step the hover-preview volume one tick toward its target, dropping the player
-/// once a fade-out reaches zero. Independent of the main player.
-fn process_preview_fade(state: &AudioState) {
-    let mut preview = state.preview.lock().unwrap();
-    if preview.player.is_none() || (preview.volume - preview.target).abs() <= f32::EPSILON {
-        return;
-    }
-    let next = if preview.volume < preview.target {
-        (preview.volume + preview.step).min(preview.target)
-    } else {
-        (preview.volume - preview.step).max(preview.target)
-    };
-    preview.volume = next;
-    if let Some(ref player) = preview.player {
-        player.set_volume(next);
-    }
-    if preview.stop_at_zero && next <= 0.0
-        && let Some(old) = preview.player.take() {
-            old.stop();
-        }
 }
 
 pub fn start_tick_emitter(app: &AppHandle) {
@@ -76,9 +55,7 @@ pub fn start_tick_emitter(app: &AppHandle) {
                     handle.emit("audio:device-reconnected", ()).ok();
                 }
 
-                // Advance the hover-preview volume ramp. Done before the has_track
-                // guard so previews fade in/out even when no main track is loaded.
-                process_preview_fade(&state);
+                preview::tick(&handle, &state);
 
                 if !state.has_track.load(Ordering::Relaxed) {
                     last_pos_ms = 0;

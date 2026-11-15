@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "Home",
+    "moments": "Moments",
     "reload": "Reload interface",
     "search": "Search",
     "discover": "Discover",
@@ -813,7 +814,9 @@
         "deep_cuts": "Deeper",
         "deep_cutsDesc": "Off the beaten path — but in your key.",
         "discover": "Discover",
-        "discoverDesc": "Fresh and popular tracks to start from."
+        "discoverDesc": "Fresh and popular tracks to start from.",
+        "moments": "Moments",
+        "momentsDesc": "The best 30 seconds of tracks from your wave. Swipe through."
       }
     },
     "similar": {
@@ -2898,5 +2901,19 @@
     "w": "{{count}}w",
     "mo": "{{count}}mo",
     "y": "{{count}}y"
+  },
+  "moments": {
+    "title": "Moments",
+    "open": "Swipe",
+    "listenFull": "Play full track",
+    "addToPlaylist": "Add to playlist",
+    "waitingTitle": "Moments are on the way",
+    "waitingDesc": "The best 30 seconds of every track will show up here soon.",
+    "inPlayer": "In player",
+    "next": "Next",
+    "prev": "Back",
+    "failed": "Failed to load",
+    "pause": "Pause",
+    "play": "Play"
   }
 }

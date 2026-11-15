@@ -7,6 +7,7 @@ use crate::audio::device;
 use crate::audio::engine;
 use crate::audio::eq_curve;
 use crate::audio::eq_preset::{self, EqFormat, EqImport};
+use crate::audio::preview::{self, PreviewRequest};
 use crate::audio::effects::Settings;
 use crate::audio::silence;
 use crate::audio::state::AudioState;
@@ -257,15 +258,23 @@ pub fn audio_clear_comments_timeline(state: State<'_, AudioState>) {
 
 #[tauri::command]
 pub async fn audio_preview_play(
-    path: String,
-    volume: f64,
-    r#gen: u64,
+    request: PreviewRequest,
     state: State<'_, AudioState>,
-) -> Result<(), String> {
-    engine::preview_play(path, volume, r#gen, state).await
+) -> Result<u64, String> {
+    preview::play(request, state).await
 }
 
 #[tauri::command]
 pub fn audio_preview_stop(fade_ms: u64, r#gen: u64, state: State<'_, AudioState>) {
-    engine::preview_stop(fade_ms, r#gen, state);
+    preview::stop(fade_ms, r#gen, state);
+}
+
+#[tauri::command]
+pub fn audio_preview_pause(paused: bool, r#gen: u64, state: State<'_, AudioState>) {
+    preview::pause(paused, r#gen, state);
+}
+
+#[tauri::command]
+pub fn audio_preview_volume(volume: f64, state: State<'_, AudioState>) {
+    preview::set_volume(volume, state);
 }

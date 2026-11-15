@@ -1,6 +1,14 @@
 import type React from 'react';
 import { MessagesSquare } from '../../lib/chat/icons';
-import { Compass, Download, Home, Library, Search, Star } from '../../lib/icons';
+import {
+  Compass,
+  Download,
+  GalleryVerticalEnd,
+  Home,
+  Library,
+  Search,
+  Star,
+} from '../../lib/icons';
 import type { LayoutId } from '../../lib/layout';
 
 export type IconCmp = React.ComponentType<{
@@ -14,6 +22,7 @@ export const NAV_ITEMS: Record<
   { to: string; icon: IconCmp; label: string }
 > = {
   home: { to: '/home', icon: Home, label: 'nav.home' },
+  moments: { to: '/moments', icon: GalleryVerticalEnd, label: 'nav.moments' },
   search: { to: '/search', icon: Search, label: 'nav.search' },
   discover: { to: '/discover', icon: Compass, label: 'nav.discover' },
   library: { to: '/library', icon: Library, label: 'nav.library' },

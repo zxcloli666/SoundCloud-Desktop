@@ -53,6 +53,7 @@
   },
   "nav": {
     "home": "Ana Sayfa",
+    "moments": "Anlar",
     "reload": "Arayüzü yeniden yükle",
     "search": "Ara",
     "discover": "Keşfet",
@@ -879,7 +880,9 @@
         "deep_cuts": "Derin kazılar",
         "deep_cutsDesc": "Patika dışı — ama senin tonunda.",
         "discover": "Keşfet",
-        "discoverDesc": "Başlamak için taze ve popüler parçalar."
+        "discoverDesc": "Başlamak için taze ve popüler parçalar.",
+        "moments": "Anlar",
+        "momentsDesc": "Dalgandaki parçaların en iyi 30 saniyesi. Kaydır."
       }
     },
     "river": {
@@ -2930,5 +2933,19 @@
     "w": "{{count}} hf",
     "mo": "{{count}} ay",
     "y": "{{count}} yıl"
+  },
+  "moments": {
+    "title": "Anlar",
+    "open": "Kaydır",
+    "listenFull": "Tamamını dinle",
+    "addToPlaylist": "Çalma listesine ekle",
+    "waitingTitle": "Anlar hazırlanıyor",
+    "waitingDesc": "Her parçanın en iyi 30 saniyesi yakında burada.",
+    "inPlayer": "Oynatıcıda",
+    "next": "Sonraki",
+    "prev": "Geri",
+    "failed": "Yüklenemedi",
+    "pause": "Duraklat",
+    "play": "Oynat"
   }
 }

@@ -13,6 +13,7 @@ mod media_controls;
 mod mpeg;
 mod output;
 mod pitch;
+mod preview;
 mod silence;
 mod state;
 mod tick;

@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "Início",
+    "moments": "Momentos",
     "reload": "Recarregar interface",
     "search": "Buscar",
     "discover": "Descobrir",
@@ -831,7 +832,9 @@
         "deep_cuts": "Mais fundo",
         "deep_cutsDesc": "Fora do caminho óbvio, mas no seu tom.",
         "discover": "Descobrir",
-        "discoverDesc": "Faixas novas e populares para começar."
+        "discoverDesc": "Faixas novas e populares para começar.",
+        "moments": "Momentos",
+        "momentsDesc": "Os melhores 30 segundos das faixas da sua onda. Deslize."
       }
     },
     "similar": {
@@ -3011,5 +3014,19 @@
     "mo_other": "{{count}} meses",
     "y_one": "{{count}} ano",
     "y_other": "{{count}} anos"
+  },
+  "moments": {
+    "title": "Momentos",
+    "open": "Deslizar",
+    "listenFull": "Ouvir completa",
+    "addToPlaylist": "Adicionar à playlist",
+    "waitingTitle": "Momentos a caminho",
+    "waitingDesc": "Em breve, os melhores 30 segundos de cada faixa aparecem aqui.",
+    "inPlayer": "No player",
+    "next": "Próxima",
+    "prev": "Voltar",
+    "failed": "Falha ao carregar",
+    "pause": "Pausar",
+    "play": "Tocar"
   }
 }

@@ -76,6 +76,14 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="like-button"]` | Like button |
 | `[data-ui="greeting"]` | Greeting at the top of Home and Library |
 | `[data-ui="soundwave"]` | "The current" block on Home |
+| `[data-ui="moments-station"]` | "Moments" block on Home |
+| `[data-ui="moments"]` | Moments page |
+| `[data-ui="moments-stage"]` | Swipe area of the Moments page |
+| `[data-ui="moment-card"]` | A moment: cover, title, wave, actions |
+| `[data-ui="moment-wave"]` | Wave of the 30 s moment |
+| `[data-ui="moment-listen-full"]` | "Play full track" button |
+| `[data-ui="moments-rail"]` | Up/down arrows and progress on the right |
+| `[data-ui="moments-empty"]` | Moments are not ready yet |
 | `[data-ui="soundprint"]` | Your soundprint bars |
 | `[data-ui="artist-hero"]` | Top block of an artist page |
 | `[data-ui="album-hero"]` | Top block of an album page |
