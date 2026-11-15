@@ -29,7 +29,7 @@ export const CardFace = memo(function CardFace({
   return (
     <div
       data-scheme="dark"
-      className="relative aspect-[1.586] w-full max-w-[280px] select-none overflow-hidden rounded-[18px] border border-ink/[0.14] p-4 font-mono text-ink"
+      className="relative aspect-[1.586] w-[280px] max-w-full shrink-0 select-none overflow-hidden rounded-[18px] border border-ink/[0.14] p-4 font-mono text-ink"
       style={{
         background:
           'linear-gradient(140deg, color-mix(in srgb, var(--color-accent) 42%, rgb(var(--surface))), rgb(var(--paper)) 78%)',
@@ -42,7 +42,7 @@ export const CardFace = memo(function CardFace({
         {sealed && <Lock size={13} className="text-accent" />}
       </div>
       <div
-        className={`mt-[18%] text-[17px] tracking-[0.1em] ${number ? 'text-ink' : 'text-ink-25'}`}
+        className={`mt-[18%] whitespace-nowrap text-[17px] tracking-[0.1em] ${number ? 'text-ink' : 'text-ink-25'}`}
       >
         {number || MASK}
       </div>
