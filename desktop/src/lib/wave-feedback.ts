@@ -36,12 +36,15 @@ export function noteWaveOutcome(
   }
 }
 
-export async function sendWaveFeedback(cursor: string, tally: WaveTally): Promise<void> {
-  if (!cursor) return;
+export async function sendWaveFeedback(cursor: string, tally: WaveTally): Promise<string | null> {
+  if (!cursor) return null;
   const body = JSON.stringify({ cursor, negatives: tally.negatives, positives: tally.positives });
   tally.negatives = 0;
   tally.positives = 0;
-  await api('/recommendations/wave/feedback', { method: 'POST', body, quiet: true }).catch(
-    () => {},
-  );
+  const reply = await api<{ cursor?: string | null }>('/recommendations/wave/feedback', {
+    method: 'POST',
+    body,
+    quiet: true,
+  }).catch(() => null);
+  return reply?.cursor || null;
 }

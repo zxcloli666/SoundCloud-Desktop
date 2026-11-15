@@ -2,6 +2,7 @@ import {useSyncExternalStore} from 'react';
 import {type Track, usePlayerStore} from '../stores/player';
 import {ensureTrackCached, expectedDurationMs, getCacheInfo, isHoverPreloadEnabled} from './cache';
 import {trackedInvoke as invoke} from './diagnostics';
+import {previewStartMs} from './moment';
 
 /* ── Hover-preview controller ─────────────────────────────────────
  * A single-track sampling channel that rides the Rust preview player
@@ -20,12 +21,15 @@ const HOVER_DEBOUNCE_MS = 400;
 const FADE_OUT_MS = 500;
 export const PREVIEW_WINDOW_MS = 15_000;
 const PREVIEW_VOLUME_FACTOR = 0.85;
+const FADE_IN_MS = 200;
 
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let windowTimer: ReturnType<typeof setTimeout> | null = null;
 let activeUrn: string | null = null;
 let pendingUrn: string | null = null;
 let startGen = 0;
+let wireGen = 0;
+let claimed = false;
 
 const listeners = new Set<() => void>();
 
@@ -33,7 +37,18 @@ function notify() {
     for (const l of listeners) l();
 }
 
+export function nextPreviewGen(): number {
+    wireGen += 1;
+    return wireGen;
+}
+
+export function claimPreviewChannel(on: boolean): void {
+    claimed = on;
+    if (on) hardStopHoverPreview();
+}
+
 function canPreview(urn: string): boolean {
+    if (claimed) return false;
     const s = usePlayerStore.getState();
     if (s.isPlaying) return false;
     if (s.currentTrack?.urn === urn) return false;
@@ -58,21 +73,27 @@ export function startHoverPreview(track: Track): void {
             // Reuse the cache at the user's normal quality — never force a low-quality
             // download that could become the canonical cached copy (coalesces with the
             // hq preloadTrack fired on the same hover).
-            const info = isHoverPreloadEnabled()
-                ? await ensureTrackCached(
-                      urn,
-                      undefined,
-                      expectedDurationMs(track),
-                      track._scd_meta?.storage_quality,
-                      true,
-                  )
-                : await getCacheInfo(urn);
+            const [info, startMs] = await Promise.all([
+                isHoverPreloadEnabled()
+                    ? ensureTrackCached(
+                          urn,
+                          undefined,
+                          expectedDurationMs(track),
+                          track._scd_meta?.storage_quality,
+                          true,
+                      )
+                    : getCacheInfo(urn),
+                previewStartMs(track, PREVIEW_WINDOW_MS),
+            ]);
             // Superseded by a newer hover, or no longer allowed.
             if (gen !== startGen || pendingUrn !== urn || !info?.path || !canPreview(urn)) return;
             const volume = (usePlayerStore.getState().volume / 100) * PREVIEW_VOLUME_FACTOR;
-            await invoke('audio_preview_play', {path: info.path, volume, gen});
+            const wire = nextPreviewGen();
+            await invoke('audio_preview_play', {
+                request: {path: info.path, volume, gen: wire, startMs, fadeInMs: FADE_IN_MS},
+            });
             if (gen !== startGen) {
-                invoke('audio_preview_stop', {fadeMs: 0, gen}).catch(() => {
+                invoke('audio_preview_stop', {fadeMs: 0, gen: wire}).catch(() => {
                 });
                 return;
             }

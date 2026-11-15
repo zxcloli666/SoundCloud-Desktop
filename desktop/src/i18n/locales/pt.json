@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "Início",
+    "moments": "Momentos",
     "reload": "Recarregar interface",
     "search": "Buscar",
     "discover": "Descobrir",
@@ -831,7 +832,9 @@
         "deep_cuts": "Mais fundo",
         "deep_cutsDesc": "Fora do caminho óbvio, mas no seu tom.",
         "discover": "Descobrir",
-        "discoverDesc": "Faixas novas e populares para começar."
+        "discoverDesc": "Faixas novas e populares para começar.",
+        "moments": "Momentos",
+        "momentsDesc": "Os melhores 30 segundos das faixas da sua onda. Deslize."
       }
     },
     "similar": {
@@ -1688,7 +1691,8 @@
     "step4": "Compre uma assinatura no Boosty",
     "step5": "Vincule seu SoundCloud no nosso Discord com o comando /sc-link",
     "goBoosty": "Boosty",
-    "goDiscord": "Discord"
+    "goDiscord": "Discord",
+    "confirmPay": "Confirmar pagamento"
   },
   "starpass": {
     "guestHandle": "@você",
@@ -1782,7 +1786,7 @@
     },
     "method": {
       "sbp": {
-        "title": "SBP",
+        "title": "SBP (RU)",
         "body": "QR no app do seu banco"
       },
       "cardRu": {
@@ -1790,16 +1794,12 @@
         "body": "MIR, Visa/MC de bancos russos"
       },
       "cardIntl": {
-        "title": "Cartão estrangeiro",
+        "title": "Cartão Worldwide",
         "body": "Emissor internacional"
       },
-      "cryptoPlatega": {
+      "crypto": {
         "title": "Cripto",
         "body": "On-chain, direto"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "Carteira CryptoBot"
       },
       "tgStars": {
         "title": "Telegram Stars",
@@ -1882,17 +1882,15 @@
       "canceled": "Renovação automática desativada",
       "cancelError": "Não foi possível desativar a renovação automática",
       "sources": {
-        "platega": "Cartão ou SBP",
-        "cryptobot": "Crypto Bot",
-        "tgstars": "Telegram Stars",
+        "paid": "Pagamento",
         "code": "Código",
-        "boosty": "Boosty",
+        "supporter": "Assinatura de apoio",
         "admin": "Presente da equipe",
         "community": "Recompensa da comunidade",
         "trial": "Teste grátis",
         "referral": "Convite de amigo",
         "shared": "Plano Duo ou Family",
-        "boosty_card": "Cartão ou SBP vinculado"
+        "other": "Outro"
       }
     },
     "discord": {
@@ -1904,15 +1902,11 @@
       "starRole": "Cargo STAR",
       "member": "Membro"
     },
-    "boosty": {
-      "title": "Assinar pelo Boosty",
-      "sub": "O STAR chega pelo seu cargo de boost no Discord após o /sc-link"
-    },
     "openVia": "Abrir pagamento via",
     "openIn": {
-      "tg": "Abrir no Telegram",
-      "webapp": "Abrir no navegador",
-      "miniapp": "Mini App do Telegram"
+      "app": "Abrir no Telegram",
+      "web": "Abrir no navegador",
+      "mini": "Mini App do Telegram"
     },
     "loadError": "Não foi possível carregar os planos",
     "loading": "Carregando planos…",
@@ -2085,8 +2079,14 @@
         "too_many_members": "Remova membros primeiro: o plano menor tem menos vagas.",
         "removal_limit": "Esta vaga já mudou duas vezes neste mês. Tente depois.",
         "not_a_member": "Esta pessoa não está no plano.",
-        "no_card": "Nenhum cartão vinculado. Vincule um primeiro.",
-        "no_sbp": "Nenhum SBP vinculado. Vincule primeiro."
+        "bind_needed": "Nada vinculado para este método ainda. Vincule primeiro.",
+        "relink": "Este método precisa ser vinculado de novo.",
+        "charge_in_progress": "Um pagamento já está em andamento. Aguarde um minuto.",
+        "offer_needs_bind": "Esta oferta funciona só com renovação automática. Vincule um método de pagamento.",
+        "offer_used": "Você já usou esta oferta.",
+        "offer_device_used": "Esta oferta já foi usada neste dispositivo.",
+        "offer_card_used": "Esta oferta já foi usada com este cartão.",
+        "method_unavailable": "Este método não está disponível para este plano."
       },
       "centerSeats": "{{used}} de {{seats}} vagas ocupadas"
     },
@@ -2094,12 +2094,13 @@
       "title": "Renovação automática",
       "every_one": "Cobrança automática a cada {{count}} dia",
       "every_other": "Cobrança automática a cada {{count}} dias",
+      "next": "Próxima cobrança {{date}} · {{charge}}",
       "every_many": "Cobrança automática a cada {{count}} dias",
       "every_zero": "Cobrança automática a cada {{count}} dias",
       "refund": "Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
       "unavailable": "Indisponível para este método ou prazo",
-      "everyOther_one": "Cobrado a cada {{count}} dia por outro provedor: precisa de vínculo próprio",
-      "everyOther_other": "Cobrado a cada {{count}} dias por outro provedor: precisa de vínculo próprio",
+      "everyOther_one": "Cobrado a cada {{count}} dia por um método vinculado: precisa de vínculo próprio",
+      "everyOther_other": "Cobrado a cada {{count}} dias por um método vinculado: precisa de vínculo próprio",
       "onceNote": "Sem renovação automática: pagamento único, sem vínculo"
     },
     "bind": {
@@ -2108,34 +2109,38 @@
       "relink": "Vincular de novo",
       "rebind": "Precisa vincular de novo",
       "linkedSub": "Usado na renovação automática",
+      "linkedIdle": "Vinculado, sem renovação automática",
       "keep": "Manter",
       "remove": "Remover",
       "removeError": "Não foi possível desvincular",
-      "chargeFailed": "O pagamento não passou: saldo insuficiente ou a assinatura foi cancelada no banco.",
       "payOnce": "Pagar sem renovação automática",
-      "card": {
+      "oneOffCard": "Uma cobrança, sem renovação automática. O cartão continua vinculado: desvincule aqui ou em Gerenciar.",
+      "oneOffQr": "Uma cobrança, sem renovação automática. O SBP continua vinculado: desvincule aqui ou em Gerenciar.",
+      "card_ru": {
+        "link": "Vincular cartão",
         "linked": "Cartão vinculado",
-        "removeYes": "Remover cartão",
-        "removed": "Cartão removido",
-        "charging": "Cobrando no cartão vinculado…"
+        "removeYes": "Remover cartão"
       },
-      "card_usd": {
-        "linked": "Cartão em USD vinculado",
+      "removedCard": "Cartão removido",
+      "charging": "Cobrando pelo método vinculado…",
+      "card_intl": {
+        "link": "Vincular cartão Worldwide",
+        "linked": "Cartão Worldwide vinculado",
         "removeYes": "Remover cartão"
       },
       "sbp": {
-        "title": "SBP com renovação automática",
-        "linked": "SBP vinculado",
-        "removeYes": "Desvincular SBP",
-        "removed": "SBP desvinculado",
+        "title": "SBP (RU) com renovação automática",
+        "link": "Vincular SBP (RU)",
+        "linked": "SBP (RU) vinculado",
+        "removeYes": "Desvincular SBP (RU)",
+        "removed": "SBP (RU) desvinculado",
         "cancelInBank": "Cancele a assinatura também no app do banco: desvincular aqui não a cancela lá.",
-        "charging": "Cobrando pelo SBP vinculado…",
         "step": {
           "1": "Escaneie o QR no app do banco e permita a vinculação.",
           "2": "Mantenha esta tela aberta: o pagamento vem logo depois."
         },
         "cameraHelp": "O banco diz que não dá para vincular? Escaneie o QR com a câmera do celular, não com o app do banco: a página do SBP abre no navegador, escolha o banco lá.",
-        "relinkNote": "Se o banco disser que a conta já está vinculada ao Boosty, confirme mesmo assim: a vinculação funciona.",
+        "relinkNote": "Se o banco disser que a conta já está vinculada, confirme mesmo assim: a vinculação funciona.",
         "showAgain": "Mostrar QR de novo",
         "expired": "O QR expirou.",
         "fail": {
@@ -2148,6 +2153,24 @@
           "network": "Problema de conexão. Tente de novo."
         }
       }
+    },
+    "order": {
+      "reason": {
+        "declined": "O banco recusou o pagamento. Nada foi cobrado.",
+        "relink": "Este método precisa ser vinculado de novo antes da cobrança.",
+        "aborted": "O serviço de pagamento não respondeu. Nada foi cobrado, tente de novo.",
+        "expired": "O pedido expirou antes do pagamento.",
+        "confirm_closed": "A confirmação do banco não foi concluída. Nada foi cobrado."
+      }
+    },
+    "confirm": {
+      "opening": "Abrindo a confirmação do banco…",
+      "open": "Confirme o pagamento na janela do banco",
+      "closed": "Confirmando o pagamento… Fechou a janela do banco cedo demais? Abra de novo.",
+      "failed": "Não foi possível abrir a confirmação do banco.",
+      "reopen": "Abrir janela do banco",
+      "renewal": "O banco pede para confirmar a renovação",
+      "cta": "Confirmar"
     }
   },
   "soundwaveLock": {
@@ -2388,14 +2411,14 @@
   "sync": {
     "title": "Sincronização com o SoundCloud",
     "retrySoon": "menos de um minuto",
-    "retryMinutes_one": "~{{count}}\u00a0min",
-    "retryMinutes_other": "~{{count}}\u00a0min",
-    "retryMinutes_many": "~{{count}}\u00a0min",
-    "retryMinutes_zero": "~{{count}}\u00a0min",
-    "retryHours_one": "~{{count}}\u00a0h",
-    "retryHours_other": "~{{count}}\u00a0h",
-    "retryHours_many": "~{{count}}\u00a0h",
-    "retryHours_zero": "~{{count}}\u00a0h",
+    "retryMinutes_one": "~{{count}} min",
+    "retryMinutes_other": "~{{count}} min",
+    "retryMinutes_many": "~{{count}} min",
+    "retryMinutes_zero": "~{{count}} min",
+    "retryHours_one": "~{{count}} h",
+    "retryHours_other": "~{{count}} h",
+    "retryHours_many": "~{{count}} h",
+    "retryHours_zero": "~{{count}} h",
     "signIn": "Entrar",
     "chip": {
       "synced": "Alterações enviadas",
@@ -2404,7 +2427,7 @@
       "syncing_other": "{{count}} sincronizando",
       "syncing_many": "{{count}} sincronizando",
       "syncing_zero": "{{count}} sincronizando",
-      "delayed": "O SoundCloud está limitando · nova\u00a0tentativa\u00a0em\u00a0{{time}}",
+      "delayed": "O SoundCloud está limitando · nova tentativa em {{time}}",
       "failed_one": "{{count}} com erro",
       "failed_other": "{{count}} com erros",
       "failed_many": "{{count}} com erros",
@@ -2772,6 +2795,30 @@
     "next_one": "Falta {{count}} mês para {{tier}}",
     "months_one": "{{count}} mês seguido"
   },
+  "starOffer": {
+    "proof_one": "{{count}} faixa em um mês",
+    "proof_other": "{{count}} faixas em um mês",
+    "proof_many": "{{count}} faixas em um mês",
+    "proof_zero": "{{count}} faixas em um mês",
+    "first": {
+      "one": "Seu primeiro mês de STAR — {{price}}",
+      "two": "Seus dois primeiros meses de STAR — {{price}}"
+    },
+    "short": {
+      "one": "Primeiro mês {{price}}",
+      "two": "Dois meses {{price}}"
+    },
+    "readout": {
+      "one": "primeiro mês, depois {{price}}/mês",
+      "two": "primeiros 2 meses, depois {{price}}/mês",
+      "plainOne": "primeiro mês",
+      "plainTwo": "primeiros 2 meses"
+    },
+    "renews": "Depois {{price}} por mês, a partir de {{date}}",
+    "until": "Válido até {{date}}",
+    "left": "Faltam {{time}}",
+    "take": "Levar por {{price}}"
+  },
   "starMoments": {
     "tryFree_one": "{{count}} dia grátis",
     "tryFree_other": "{{count}} dias grátis",
@@ -3008,5 +3055,19 @@
     "mo_other": "{{count}} meses",
     "y_one": "{{count}} ano",
     "y_other": "{{count}} anos"
+  },
+  "moments": {
+    "title": "Momentos",
+    "open": "Deslizar",
+    "listenFull": "Ouvir completa",
+    "addToPlaylist": "Adicionar à playlist",
+    "waitingTitle": "Momentos a caminho",
+    "waitingDesc": "Em breve, os melhores 30 segundos de cada faixa aparecem aqui.",
+    "inPlayer": "No player",
+    "next": "Próxima",
+    "prev": "Voltar",
+    "failed": "Falha ao carregar",
+    "pause": "Pausar",
+    "play": "Tocar"
   }
 }

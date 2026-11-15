@@ -2,18 +2,20 @@ import { useMutation } from '@tanstack/react-query';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
-import { payApi } from '../../../lib/pay-client';
+import { type MethodId, payApi } from '../../../lib/pay-client';
 import { passDate } from '../../../lib/star-format';
 import { refreshSubscription } from '../../../lib/star-offer';
 import { LinkBtn, PillBtn } from './StarConsole';
 
 export const TrialRow = memo(function TrialRow({
+  method,
   until,
   asking,
   onAsk,
   onKeep,
   onEnded,
 }: {
+  method: MethodId;
   until: number;
   asking: boolean;
   onAsk: () => void;
@@ -22,7 +24,7 @@ export const TrialRow = memo(function TrialRow({
 }) {
   const { t } = useTranslation();
   const cancel = useMutation({
-    mutationFn: payApi.trialCancel,
+    mutationFn: () => payApi.cancel(method),
     onSuccess: () => {
       toast.success(t('starpass.trial.canceled'));
       refreshSubscription();

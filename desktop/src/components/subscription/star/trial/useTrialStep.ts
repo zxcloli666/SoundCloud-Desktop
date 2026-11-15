@@ -1,10 +1,8 @@
 import { useCallback, useState } from 'react';
-import { useCardSupported } from '../../../../lib/boosty-binds';
-import type { BoostyMethod, Plan } from '../../../../lib/pay-client';
+import type { MethodId, PayMethod, Plan } from '../../../../lib/pay-client';
 import { planPrice } from '../../../../lib/star-format';
 import { refreshSubscription, usePaySubscription } from '../../../../lib/star-offer';
 import { type TrialBlock, type TrialOutcome, trialOffer } from '../../../../lib/star-trial';
-import { bindCurrency } from '../../providers';
 import type { Step } from '../meta';
 
 const TRIAL_PLAN = 'm1';
@@ -12,17 +10,18 @@ const TRIAL_PLAN = 'm1';
 export function useTrialStep(
   premium: boolean,
   plans: Plan[],
+  methods: PayMethod[],
   setStep: (step: Step) => void,
   onGranted: () => void,
 ) {
   const sub = usePaySubscription();
-  const cardSupported = useCardSupported();
-  const offer = premium ? null : trialOffer(sub.data, cardSupported);
-  const [picked, setPicked] = useState<BoostyMethod | null>(null);
+  const offer = premium ? null : trialOffer(sub.data);
+  const [picked, setPicked] = useState<MethodId | null>(null);
   const [blocked, setBlocked] = useState<TrialBlock | null>(null);
   const method = picked && offer?.methods.includes(picked) ? picked : (offer?.methods[0] ?? null);
   const plan = plans.find((p) => p.id === TRIAL_PLAN);
-  const amount = plan && method ? planPrice(plan, bindCurrency(method)) : '';
+  const currency = methods.find((m) => m.id === method)?.bind?.currency ?? 'RUB';
+  const amount = plan && method ? planPrice(plan, currency) : '';
 
   const open = useCallback(() => {
     setBlocked(null);

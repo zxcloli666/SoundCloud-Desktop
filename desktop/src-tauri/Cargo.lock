@@ -573,21 +573,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "boosty-card"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "ed25519-dalek",
- "mlua",
- "serde",
- "serde_json",
- "thiserror 2.0.18",
- "tokio",
- "url",
- "zeroize",
-]
-
-[[package]]
 name = "brotli"
 version = "8.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4542,6 +4527,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
+name = "pay-card"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "ed25519-dalek",
+ "mlua",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tokio",
+ "url",
+ "zeroize",
+]
+
+[[package]]
 name = "pbkdf2"
 version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6284,7 +6284,6 @@ dependencies = [
  "backend-contracts",
  "base64 0.22.1",
  "biquad",
- "boosty-card",
  "bytes",
  "call-client",
  "chrono",
@@ -6307,6 +6306,7 @@ dependencies = [
  "objc2-app-kit",
  "objc2-foundation",
  "ogg",
+ "pay-card",
  "raw-window-handle",
  "regex",
  "rodio",

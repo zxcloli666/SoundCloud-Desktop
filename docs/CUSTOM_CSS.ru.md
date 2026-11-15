@@ -95,6 +95,14 @@
 | `[data-ui="like-button"]` | Кнопка лайка |
 | `[data-ui="greeting"]` | Приветствие вверху Главной и Библиотеки |
 | `[data-ui="soundwave"]` | Блок "Течение" на Главной |
+| `[data-ui="moments-station"]` | Блок "Моменты" на Главной |
+| `[data-ui="moments"]` | Страница Моментов |
+| `[data-ui="moments-stage"]` | Область листания Моментов |
+| `[data-ui="moment-card"]` | Момент: обложка, название, волна, действия |
+| `[data-ui="moment-wave"]` | Волна 30-секундного момента |
+| `[data-ui="moment-listen-full"]` | Кнопка "Слушать целиком" |
+| `[data-ui="moments-rail"]` | Стрелки и прогресс справа |
+| `[data-ui="moments-empty"]` | Моменты ещё не готовы |
 | `[data-ui="soundprint"]` | Полосы вашего саундпринта |
 | `[data-ui="artist-hero"]` | Верхний блок страницы артиста |
 | `[data-ui="album-hero"]` | Верхний блок страницы альбома |

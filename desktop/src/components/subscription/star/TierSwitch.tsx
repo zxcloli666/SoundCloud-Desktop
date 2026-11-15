@@ -6,6 +6,7 @@ export interface TierOption {
   id: TierId;
   people: number;
   each: number;
+  was?: number;
   savePct: number;
 }
 
@@ -57,6 +58,7 @@ export const TierSwitch = memo(function TierSwitch({
                   })}
                 </span>
               )}
+              {o.was && <s className="text-ink-40">{o.was} ₽</s>}
               {o.savePct > 0 && (
                 <span className="font-semibold text-accent">
                   {t('starpass.tier.save', { pct: o.savePct })}

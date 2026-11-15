@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from '../../lib/icons';
-import type { OrderStatus } from '../../lib/pay-client';
+import type { OrderStatusId } from '../../lib/pay-client';
 import { usePerfMode } from '../../lib/perf';
 
 export type PayPhase = 'waiting' | 'granted' | 'failed';
 
-export function phaseOf(status: OrderStatus['status'] | undefined): PayPhase {
+export function phaseOf(status: OrderStatusId | undefined): PayPhase {
   if (status === 'granted') return 'granted';
   if (status === 'failed' || status === 'expired' || status === 'refunded') return 'failed';
   return 'waiting';

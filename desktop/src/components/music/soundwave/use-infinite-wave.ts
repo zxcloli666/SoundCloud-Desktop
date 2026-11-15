@@ -119,8 +119,9 @@ export function useInfiniteWave(opts: {
         try {
           const cursor = cursorRef.current || shelfCursorRef.current || '';
           cursorRef.current = cursor;
-          await sendWaveFeedback(cursor, tallyRef.current);
-          if (needsRefill) await refill(cursor);
+          const next = (await sendWaveFeedback(cursor, tallyRef.current)) ?? cursor;
+          cursorRef.current = next;
+          if (needsRefill) await refill(next);
         } catch (e) {
           console.debug('[soundwave] infinite refill failed:', e);
         } finally {

@@ -14,6 +14,7 @@ mod media_controls;
 mod mpeg;
 mod output;
 mod pitch;
+mod preview;
 mod silence;
 mod sink;
 mod state;

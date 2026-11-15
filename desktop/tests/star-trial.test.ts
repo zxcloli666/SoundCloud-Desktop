@@ -1,13 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import type { PaySubscription, TrialOffer } from '../src/lib/pay-client.ts';
-import {
-  isGranted,
-  trialOffer,
-  trialOutcome,
-  trialRefusal,
-  trialRenewal,
-} from '../src/lib/star-trial.ts';
+import type { BindStart, PaySubscription, TrialOffer } from '../src/lib/pay-client.ts';
+import { isGranted, trialOffer, trialOutcome, trialRefusal } from '../src/lib/star-trial.ts';
 
 const GRANT = {
   ends_at: 1_800_259_200,
@@ -30,36 +24,23 @@ function sub(trial?: TrialOffer, extra: Partial<PaySubscription> = {}): PaySubsc
 const OFFER: TrialOffer = {
   available: true,
   days: 3,
-  methods: ['card', 'sbp', 'card_usd'],
+  methods: ['card_ru', 'sbp', 'card_intl'],
   reason: null,
   active: null,
 };
 
 test('an older pay without trial offers no trial', () => {
-  assert.equal(trialOffer(sub(), true), null);
-  assert.equal(trialOffer(undefined, true), null);
-});
-
-test('the offer keeps only methods this client can link', () => {
-  assert.deepEqual(trialOffer(sub(OFFER), true)?.methods, ['card', 'sbp', 'card_usd']);
-  const noKeys = trialOffer(sub(OFFER), false);
-  assert.deepEqual(noKeys?.methods, ['sbp']);
-  assert.equal(noKeys?.available, true);
-  const cardsOnly = trialOffer(sub({ ...OFFER, methods: ['card'] }), false);
-  assert.equal(cardsOnly?.available, false);
-  assert.equal(cardsOnly?.reason, 'no_methods');
+  assert.equal(trialOffer(sub()), null);
+  assert.equal(trialOffer(undefined), null);
 });
 
 test('an unavailable offer names why', () => {
   assert.equal(
-    trialOffer(sub({ ...OFFER, available: false, reason: 'device_used' }), true)?.reason,
+    trialOffer(sub({ ...OFFER, available: false, reason: 'device_used' }))?.reason,
     'device_used',
   );
-  assert.equal(
-    trialOffer(sub({ ...OFFER, available: false, reason: null }), true)?.reason,
-    'no_methods',
-  );
-  assert.equal(trialOffer(sub({ ...OFFER, methods: [] }), true)?.available, false);
+  assert.equal(trialOffer(sub({ ...OFFER, available: false, reason: null }))?.reason, 'no_methods');
+  assert.equal(trialOffer(sub({ ...OFFER, methods: [] }))?.available, false);
 });
 
 test('start and step codes map to one refusal each', () => {
@@ -74,8 +55,8 @@ test('start and step codes map to one refusal each', () => {
 });
 
 test('a start with a usable link is granted without a session', () => {
-  assert.equal(isGranted({ status: 'granted', trial: GRANT }), true);
-  assert.equal(isGranted({ session_id: 7, method: 'sbp', expires_at: 1 }), false);
+  assert.equal(isGranted({ api: 2, state: 'granted', trial: GRANT } as BindStart), true);
+  assert.equal(isGranted({ api: 2, state: 'open', session_id: 7 } as unknown as BindStart), false);
 });
 
 test('a bound step carries the trial or why it was refused', () => {
@@ -86,31 +67,4 @@ test('a bound step carries the trial or why it was refused', () => {
   });
   assert.equal(trialOutcome({}), null);
   assert.equal(trialOutcome({ trial_refused: 'something_new' }), null);
-});
-
-test('during a trial the renewal comes from the trial, not from the trial entitlement', () => {
-  const active = { ...GRANT, method: 'sbp' as const, charge_at: 1_800_300_000 };
-  const fromTrial = {
-    source: 'boosty_card',
-    at: 1_800_300_000,
-    amount: 149,
-    currency: 'RUB',
-    period_days: 30,
-    method: 'sbp',
-  };
-  const trialEntitlement = {
-    source: 'trial',
-    at: 1_800_259_200,
-    amount: 149,
-    currency: 'RUB',
-    period_days: 30,
-  };
-  assert.deepEqual(
-    trialRenewal(sub({ ...OFFER, active }, { renewal: trialEntitlement })),
-    fromTrial,
-  );
-  assert.deepEqual(trialRenewal(sub({ ...OFFER, active })), fromTrial);
-  const renewal = { ...trialEntitlement, source: 'boosty_card' };
-  assert.equal(trialRenewal(sub(OFFER, { renewal })), renewal);
-  assert.equal(trialRenewal(sub()), null);
 });

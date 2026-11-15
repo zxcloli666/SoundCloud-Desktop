@@ -9,6 +9,7 @@ import {api} from '../../../lib/api';
 import {Sparkles} from '../../../lib/icons';
 import type {RiverSectionId} from '../../../lib/layout';
 import {isUrnLiked, likedTracksCount, useLiked} from '../../../lib/likes';
+import {useMomentsTeaser} from '../../../lib/moments/teaser';
 import {useAuthStore} from '../../../stores/auth';
 import type {Track} from '../../../stores/player';
 import {usePlayerStore} from '../../../stores/player';
@@ -25,6 +26,7 @@ import {
 import {useInfiniteWave} from '../../music/soundwave/use-infinite-wave';
 import {ArtistWire} from './ArtistWire';
 import {EstuaryDeck} from './EstuaryDeck';
+import {MomentsStation} from './MomentsStation';
 import {type AnchorKind, type AnchorMap, RiverBraid} from './RiverBraid';
 import {RiverSection} from './RiverSection';
 import {DeepShelf, ReleaseBrook, VibeShelf} from './stations';
@@ -33,6 +35,7 @@ import {WaveSchedule} from './WaveSchedule';
 /** Якорные порядки русла: river течёт сверху вниз через эти точки. */
 const ANCHOR_ORDER: Record<string, number> = {
   wave: 1,
+  moments: 1.5,
   top_artists: 2,
   fresh_drops: 3,
   same_vibe: 4,
@@ -67,6 +70,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const setHideListened = useSettingsStore((s) => s.setSoundwaveHideListened);
   const riverHidden = useSettingsStore((s) => s.riverHidden);
+  const momentsTracks = useMomentsTeaser(isAuthenticated && !riverHidden.includes('moments'));
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -198,9 +202,10 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
       : likesCount > 0
         ? 'building'
         : 'cold';
-  const section = (id: RiverSectionId) =>
+  const section = (id: Exclude<RiverSectionId, 'moments'>) =>
     riverHidden.includes(id) ? undefined : clusterById.get(id);
   const waveSection = section('wave');
+  const showMoments = momentsTracks.length > 0 && !riverHidden.includes('moments');
   const topArtists = section('top_artists');
   const adjacent = section('adjacent');
   const freshDrops = section('fresh_drops');
@@ -213,7 +218,7 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
     else anchorsRef.current.delete(id);
   };
   // Отпечаток состава секций: смена набора кластеров перестраивает путь реки.
-  const layoutKey = [waveSection, topArtists, freshDrops, sameVibe, adjacent, deepCuts, discover]
+  const layoutKey = [waveSection, showMoments, topArtists, freshDrops, sameVibe, adjacent, deepCuts, discover]
     .map((c) => (c ? '1' : '0'))
     .join('');
 
@@ -284,6 +289,14 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
               <div ref={anchorRef('wave', 'node')}>
                 <RiverSection title={sectionTitle('wave')} why={sectionWhy('wave')}>
                   <WaveSchedule tracks={waveSection.tracks} />
+                </RiverSection>
+              </div>
+            )}
+
+            {showMoments && (
+              <div ref={anchorRef('moments', 'node')}>
+                <RiverSection title={sectionTitle('moments')} why={sectionWhy('moments')}>
+                  <MomentsStation tracks={momentsTracks} />
                 </RiverSection>
               </div>
             )}

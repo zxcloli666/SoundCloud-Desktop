@@ -98,7 +98,13 @@ export interface Track {
     track_count?: number;
   };
   enrichment?: TrackEnrichment;
+  highlight?: TrackHighlight;
   _scd_meta?: TrackScdMeta;
+}
+
+export interface TrackHighlight {
+  startMs: number;
+  lengthMs: number;
 }
 
 type RepeatMode = 'off' | 'one' | 'all';

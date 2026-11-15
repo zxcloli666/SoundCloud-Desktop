@@ -33,6 +33,7 @@ export const OverviewPane = memo(function OverviewPane({
   onTier,
   isMember,
   preview,
+  strike,
 }: {
   plans: Plan[];
   loading: boolean;
@@ -55,6 +56,7 @@ export const OverviewPane = memo(function OverviewPane({
   onTier: (next: TierId) => void;
   isMember: boolean;
   preview: SharedPreview | undefined;
+  strike?: number;
 }) {
   const { t } = useTranslation();
   const gift = recipient === 'gift';
@@ -106,7 +108,8 @@ export const OverviewPane = memo(function OverviewPane({
               {/* unified across tabs: every plan shows its price; the accent −%
                   rides alongside only where there's a saving (no mixed slots) */}
               <span className="mt-1 flex items-center justify-center gap-1.5 text-[9.5px]">
-                <span className="text-ink-45">{p.price_rub} ₽</span>
+                <span className="text-ink-45">{p.price.RUB} ₽</span>
+                {strike && <s className="text-ink-35">{strike} ₽</s>}
                 {p.savings_pct > 0 && (
                   <span className="font-semibold text-accent">−{p.savings_pct}%</span>
                 )}

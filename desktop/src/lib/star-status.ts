@@ -1,12 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { BOOSTY_SOURCE, renewalRelink } from './boosty-bind-state';
-import { useBinds } from './boosty-binds';
-import type { BoostyBinds, BoostyMethod, PaySubscription } from './pay-client';
+import type { MethodId, PaySubscription, Renewal, SourceCategory } from './pay-client';
 import { usePremium } from './premium-cache';
 import { chargeAmount, daysUntil, passDate, shortDate } from './star-format';
 import { usePaySubscription } from './star-offer';
 import { useSharedOverview } from './star-shared';
-import { trialRenewal } from './star-trial';
 
 export const SOON_DAYS = 7;
 export const URGENT_DAYS = 3;
@@ -17,7 +14,7 @@ export interface StarRenews {
   at: number;
   days: number;
   charge: string;
-  source: string;
+  method: MethodId;
   soon: boolean;
   trialUntil: number | null;
 }
@@ -34,39 +31,49 @@ export interface StarEnds {
 export interface StarRelink {
   kind: 'relink';
   at: number;
-  source: string;
-  method: BoostyMethod;
+  method: MethodId;
+}
+
+export interface StarConfirm {
+  kind: 'confirm';
+  at: number;
+  charge: string;
+  method: MethodId;
+  renewal: Renewal;
 }
 
 export interface StarOpen {
   kind: 'open';
-  source: string;
+  category: SourceCategory;
 }
 
-export type StarStatus = StarRenews | StarRelink | StarEnds | StarOpen;
+export type StarStatus = StarRenews | StarRelink | StarConfirm | StarEnds | StarOpen;
 
-export function starStatus(sub: PaySubscription, member: boolean, binds?: BoostyBinds): StarStatus {
-  const renewal = trialRenewal(sub);
+export function starStatus(sub: PaySubscription, member: boolean): StarStatus {
+  const renewal = sub.renewal;
   if (renewal) {
-    const method = renewalRelink(renewal, binds);
-    if (method) return { kind: 'relink', at: renewal.at, source: renewal.source, method };
+    const charge = chargeAmount(renewal.amount_minor, renewal.currency);
+    if (renewal.relink) return { kind: 'relink', at: renewal.at, method: renewal.method };
+    if (renewal.needs_confirm) {
+      return { kind: 'confirm', at: renewal.at, charge, method: renewal.method, renewal };
+    }
     const days = daysUntil(renewal.at);
-    const trialUntil = sub.trial?.active?.ends_at ?? null;
+    const trialUntil = renewal.trial ? (sub.trial?.active?.ends_at ?? renewal.at) : null;
     return {
       kind: 'renews',
       at: renewal.at,
       days,
-      charge: chargeAmount(renewal.amount, renewal.currency),
-      source: renewal.source,
+      charge,
+      method: renewal.method,
       soon: days <= (trialUntil ? TRIAL_SOON_DAYS : URGENT_DAYS),
       trialUntil,
     };
   }
 
   const now = Date.now() / 1000;
-  const active = sub.entitlements.filter((e) => e.ends_at > now);
-  const external = active.find((e) => e.recurring && e.auto_renew && !e.canceled);
-  if (external) return { kind: 'open', source: external.source };
+  const active = sub.sources.filter((s) => s.ends_at > now);
+  const external = active.find((s) => s.renews);
+  if (external) return { kind: 'open', category: external.category };
 
   const days = daysUntil(sub.premium_until);
   return {
@@ -74,7 +81,7 @@ export function starStatus(sub: PaySubscription, member: boolean, binds?: Boosty
     at: sub.premium_until,
     days,
     level: days <= URGENT_DAYS ? 'urgent' : days <= SOON_DAYS ? 'soon' : 'calm',
-    trial: active.length > 0 && active.every((e) => e.source === 'trial'),
+    trial: active.length > 0 && active.every((s) => s.category === 'trial'),
     canExtend: !member,
   };
 }
@@ -83,9 +90,8 @@ export function useStarStatus(): StarStatus | null {
   const premium = usePremium();
   const { data } = usePaySubscription(premium);
   const member = useSharedOverview(premium).data?.role === 'member';
-  const binds = useBinds(data?.renewal?.source === BOOSTY_SOURCE || !!data?.trial?.active).data;
   if (!premium || !data?.premium) return null;
-  return starStatus(data, member, binds);
+  return starStatus(data, member);
 }
 
 export function useStarLine(status: StarStatus | null): string | null {
@@ -97,6 +103,7 @@ export function useStarLine(status: StarStatus | null): string | null {
   }
   if (status.kind === 'renews') return `↻ ${shortDate(status.at)} · ${status.charge}`;
   if (status.kind === 'relink') return `↻ ${t('star.relink')}`;
+  if (status.kind === 'confirm') return `↻ ${t('star.confirmPay')}`;
   if (status.level === 'calm') return t('star.until', { date: passDate(status.at) });
   return t('starMoments.expiry.left', { count: status.days });
 }

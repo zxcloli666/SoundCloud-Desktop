@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { getCurrentTime, getDuration, seek, subscribe } from '../../../lib/audio';
 import {type PerfMode, usePerfMode} from '../../../lib/perf';
-import { useTrackWaveform } from '../../../lib/waveform';
+import { downsample, useTrackWaveform } from '../../../lib/waveform';
 import type { Track } from '../../../stores/player';
 
 const BAR_COUNT = 160;
@@ -11,26 +11,6 @@ function barsForMode(mode: PerfMode): number {
     if (mode === 'light') return 64;
     if (mode === 'medium') return 120;
     return BAR_COUNT;
-}
-
-/** Downsample SC waveform samples into BAR_COUNT averaged bars (0..1). */
-function downsample(samples: number[], height: number, count: number): number[] {
-  if (!samples.length) return new Array(count).fill(0.35);
-  const bucketSize = samples.length / count;
-  const out = new Array<number>(count);
-  for (let i = 0; i < count; i++) {
-    const start = Math.floor(i * bucketSize);
-    const end = Math.max(start + 1, Math.floor((i + 1) * bucketSize));
-    let sum = 0;
-    let n = 0;
-    for (let j = start; j < end && j < samples.length; j++) {
-      sum += samples[j];
-      n++;
-    }
-    const avg = n > 0 ? sum / n / height : 0.35;
-    out[i] = 0.18 + Math.min(0.82, avg * 0.95);
-  }
-  return out;
 }
 
 /** Decorative fallback pattern used during load / when SC has no waveform. */

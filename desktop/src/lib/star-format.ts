@@ -1,3 +1,4 @@
+import type { Currency, Price } from './pay-client';
 // Display helpers for the STAR PASS membership artifact. Pure formatting only —
 // no network, no heavy logic (keeps the frontend thin).
 
@@ -42,12 +43,10 @@ export function usd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-export function planPrice(
-  plan: { price_rub: number; price_usd_cents?: number },
-  currency: 'RUB' | 'USD',
-): string {
-  if (currency === 'USD' && plan.price_usd_cents != null) return usd(plan.price_usd_cents);
-  return rub(plan.price_rub);
+export function planPrice(plan: { price: Price }, currency: Currency): string {
+  if (currency === 'USD') return usd(plan.price.USD);
+  if (currency === 'XTR' && plan.price.XTR != null) return chargeAmount(plan.price.XTR, 'XTR');
+  return rub(plan.price.RUB);
 }
 
 const CURRENCY_SIGN: Record<string, string> = { XTR: '★', RUB: '₽' };

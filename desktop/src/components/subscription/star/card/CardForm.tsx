@@ -8,9 +8,9 @@ import {
   formatExpiry,
   formatNumber,
   invalidFields,
-} from '../../../../lib/boosty-card/validate';
+} from '../../../../lib/card-link/validate';
 import { Lock } from '../../../../lib/icons';
-import { PrimaryBtn } from '../StarConsole';
+import { LinkBtn, PrimaryBtn } from '../StarConsole';
 import { CardFace } from './CardFace';
 
 const INPUT =
@@ -42,10 +42,12 @@ export const CardForm = memo(function CardForm({
   amount,
   invalid,
   onSubmit,
+  onCancel,
 }: {
   amount: string | null;
   invalid: FieldName[];
   onSubmit: (card: CardFields) => void;
+  onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const [fields, setFields] = useState<CardFields>(EMPTY_CARD);
@@ -118,6 +120,7 @@ export const CardForm = memo(function CardForm({
           <PrimaryBtn onClick={send}>
             {amount ? `${t('starpass.bind.linkPay')} · ${amount}` : t('starpass.bind.link')}
           </PrimaryBtn>
+          <LinkBtn onClick={onCancel}>{t('starpass.card.cancel')}</LinkBtn>
           <span className="flex items-center gap-1.5 font-mono text-[10.5px] tracking-[0.06em] text-ink-40">
             <Lock size={12} />
             {t('starpass.card.secure')}

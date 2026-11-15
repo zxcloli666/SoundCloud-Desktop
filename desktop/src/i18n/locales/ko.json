@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "홈",
+    "moments": "모먼트",
     "reload": "인터페이스 새로고침",
     "search": "검색",
     "discover": "둘러보기",
@@ -804,7 +805,9 @@
         "deep_cuts": "더 깊이",
         "deep_cutsDesc": "잘 알려지지 않았지만 내 취향에 맞는 곡이에요.",
         "discover": "발견",
-        "discoverDesc": "시작하기 좋은 새롭고 인기 있는 트랙이에요."
+        "discoverDesc": "시작하기 좋은 새롭고 인기 있는 트랙이에요.",
+        "moments": "모먼트",
+        "momentsDesc": "내 웨이브 트랙의 가장 좋은 30초. 넘겨 보세요."
       }
     },
     "similar": {
@@ -1621,7 +1624,8 @@
     "step4": "Boosty에서 구독을 구매하세요",
     "step5": "Discord에서 /sc-link 명령어로 SoundCloud 계정을 연결하세요",
     "goBoosty": "Boosty",
-    "goDiscord": "Discord"
+    "goDiscord": "Discord",
+    "confirmPay": "결제 확인"
   },
   "starpass": {
     "guestHandle": "@you",
@@ -1712,7 +1716,7 @@
     },
     "method": {
       "sbp": {
-        "title": "SBP",
+        "title": "SBP (RU)",
         "body": "은행 앱에서 QR 결제"
       },
       "cardRu": {
@@ -1720,16 +1724,12 @@
         "body": "러시아 은행의 MIR, Visa/MC"
       },
       "cardIntl": {
-        "title": "해외 카드",
+        "title": "월드와이드 카드",
         "body": "해외 발급 카드"
       },
-      "cryptoPlatega": {
+      "crypto": {
         "title": "암호화폐",
         "body": "온체인 직접 결제"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "CryptoBot 지갑"
       },
       "tgStars": {
         "title": "Telegram Stars",
@@ -1812,17 +1812,15 @@
       "canceled": "자동 갱신을 껐어요",
       "cancelError": "자동 갱신을 끄지 못했어요",
       "sources": {
-        "platega": "카드 또는 SBP",
-        "cryptobot": "Crypto Bot",
-        "tgstars": "Telegram Stars",
+        "paid": "결제",
         "code": "코드",
-        "boosty": "Boosty",
+        "supporter": "후원 구독",
         "admin": "팀의 선물",
         "community": "커뮤니티 보상",
         "trial": "무료 체험",
         "referral": "친구 초대",
         "shared": "Duo 또는 Family 요금제",
-        "boosty_card": "연결된 카드 또는 SBP"
+        "other": "기타"
       }
     },
     "discord": {
@@ -1834,15 +1832,11 @@
       "starRole": "STAR 역할",
       "member": "멤버"
     },
-    "boosty": {
-      "title": "Boosty로 구독",
-      "sub": "/sc-link 후 Discord 부스트 역할을 통해 STAR가 지급돼요"
-    },
     "openVia": "결제 열기:",
     "openIn": {
-      "tg": "Telegram에서 열기",
-      "webapp": "브라우저에서 열기",
-      "miniapp": "Telegram 미니 앱"
+      "app": "Telegram에서 열기",
+      "web": "브라우저에서 열기",
+      "mini": "Telegram 미니 앱"
     },
     "loadError": "요금제를 불러오지 못했어요",
     "loading": "요금제 불러오는 중…",
@@ -2001,18 +1995,26 @@
         "too_many_members": "먼저 멤버를 내보내세요. 작은 플랜은 자리가 적습니다.",
         "removal_limit": "이 자리는 이번 달에 두 번 바뀌었습니다. 나중에 다시 시도하세요.",
         "not_a_member": "이 사람은 플랜에 없습니다.",
-        "no_card": "연결된 카드가 없습니다. 먼저 카드를 연결하세요.",
-        "no_sbp": "연결된 SBP가 없습니다. 먼저 연결하세요."
+        "bind_needed": "이 수단은 아직 연결되지 않았습니다. 먼저 연결하세요.",
+        "relink": "이 수단은 다시 연결해야 합니다.",
+        "charge_in_progress": "이미 결제가 진행 중입니다. 잠시 기다리세요.",
+        "offer_needs_bind": "이 혜택은 자동 갱신에서만 사용할 수 있습니다. 결제 수단을 먼저 연결하세요.",
+        "offer_used": "이미 이 혜택을 사용했습니다.",
+        "offer_device_used": "이 기기에서 이미 사용된 혜택입니다.",
+        "offer_card_used": "이 카드로 이미 사용된 혜택입니다.",
+        "method_unavailable": "이 요금제에는 이 수단을 쓸 수 없습니다."
       },
       "centerSeats": "{{seats}}석 중 {{used}}석 사용"
     },
     "renew": {
       "title": "자동 갱신",
       "every_other": "{{count}}일마다 자동 결제돼요",
+      "next": "다음 결제 {{date}} · {{charge}}",
       "refund": "끄는 걸 잊었다면 7일 안에 이메일로 알려 주세요, 전액 환불해 드려요. 6개월에 한 번 가능해요",
       "unavailable": "이 결제 수단이나 기간에는 사용할 수 없습니다",
-      "everyOther_other": "{{count}}일마다 다른 결제 대행사를 통해 결제됩니다. 별도 연결이 필요합니다",
-      "onceNote": "자동 갱신 없이: 1회 결제, 연결 없음"
+      "everyOther_other": "{{count}}일마다 연결된 수단으로 결제됩니다. 별도 연결이 필요합니다",
+      "onceNote": "자동 갱신 없이: 1회 결제, 연결 없음",
+      "everyOther_one": "{{count}}일마다 연결된 수단으로 결제됩니다. 별도 연결이 필요합니다"
     },
     "bind": {
       "linkPay": "연결하고 결제",
@@ -2020,34 +2022,38 @@
       "relink": "다시 연결",
       "rebind": "다시 연결해야 합니다",
       "linkedSub": "자동 갱신에 사용",
+      "linkedIdle": "연결됨, 자동 갱신에는 사용 안 함",
       "keep": "유지",
       "remove": "삭제",
       "removeError": "연결을 해제하지 못했습니다",
-      "chargeFailed": "결제되지 않았습니다: 잔액이 부족하거나 은행에서 구독이 해지되었습니다.",
       "payOnce": "자동 갱신 없이 결제",
-      "card": {
+      "oneOffCard": "한 번만 결제되며 자동 갱신은 없습니다. 카드는 연결된 채로 남습니다. 여기나 관리에서 연결을 해제할 수 있습니다.",
+      "oneOffQr": "한 번만 결제되며 자동 갱신은 없습니다. SBP는 연결된 채로 남습니다. 여기나 관리에서 연결을 해제할 수 있습니다.",
+      "card_ru": {
+        "link": "카드 연결",
         "linked": "카드 연결됨",
-        "removeYes": "카드 삭제",
-        "removed": "카드를 삭제했습니다",
-        "charging": "연결된 카드로 결제 중…"
+        "removeYes": "카드 삭제"
       },
-      "card_usd": {
-        "linked": "USD 카드 연결됨",
+      "removedCard": "카드를 삭제했습니다",
+      "charging": "연결된 결제 수단으로 결제 중…",
+      "card_intl": {
+        "link": "월드와이드 카드 연결",
+        "linked": "월드와이드 카드 연결됨",
         "removeYes": "카드 삭제"
       },
       "sbp": {
-        "title": "SBP 자동 갱신",
-        "linked": "SBP 연결됨",
-        "removeYes": "SBP 연결 해제",
-        "removed": "SBP 연결을 해제했습니다",
+        "title": "SBP (RU) 자동 갱신",
+        "link": "SBP (RU) 연결",
+        "linked": "SBP (RU) 연결됨",
+        "removeYes": "SBP (RU) 연결 해제",
+        "removed": "SBP (RU) 연결을 해제했습니다",
         "cancelInBank": "은행 앱에서도 구독을 해지하세요. 여기서 해제해도 은행에서는 해지되지 않습니다.",
-        "charging": "연결된 SBP로 결제 중…",
         "step": {
           "1": "은행 앱으로 QR을 스캔하고 연결을 허용하세요.",
           "2": "이 화면을 열어 두세요. 바로 이어서 결제됩니다."
         },
         "cameraHelp": "은행에서 연결할 수 없다고 하나요? 은행 앱 대신 휴대폰 카메라로 QR을 스캔하세요. 브라우저에서 SBP 페이지가 열리면 거기서 은행을 선택하세요.",
-        "relinkNote": "은행에서 계정이 이미 Boosty에 연결되어 있다고 해도 확인을 누르세요. 연결은 정상적으로 됩니다.",
+        "relinkNote": "은행에서 계정이 이미 연결되어 있다고 해도 확인을 누르세요. 연결은 정상적으로 됩니다.",
         "showAgain": "QR 다시 보기",
         "expired": "QR이 만료되었습니다.",
         "fail": {
@@ -2060,6 +2066,24 @@
           "network": "연결 문제입니다. 다시 시도하세요."
         }
       }
+    },
+    "order": {
+      "reason": {
+        "declined": "은행이 결제를 거절했습니다. 청구된 금액은 없습니다.",
+        "relink": "이 수단은 결제 전에 다시 연결해야 합니다.",
+        "aborted": "결제 서비스가 응답하지 않았습니다. 청구되지 않았으니 다시 시도하세요.",
+        "expired": "결제 전에 주문이 만료되었습니다.",
+        "confirm_closed": "은행 확인이 완료되지 않았습니다. 청구된 금액은 없습니다."
+      }
+    },
+    "confirm": {
+      "opening": "은행 확인 창을 여는 중…",
+      "open": "은행 창에서 결제를 확인하세요",
+      "closed": "결제를 확인하는 중… 은행 창을 너무 일찍 닫았다면 다시 여세요.",
+      "failed": "은행 확인 창을 열지 못했습니다.",
+      "reopen": "은행 창 열기",
+      "renewal": "은행이 갱신 확인을 요청합니다",
+      "cta": "확인"
     }
   },
   "soundwaveLock": {
@@ -2288,14 +2312,14 @@
   "sync": {
     "title": "SoundCloud 동기화",
     "retrySoon": "1분 이내",
-    "retryMinutes_other": "약\u00a0{{count}}분",
-    "retryHours_other": "약\u00a0{{count}}시간",
+    "retryMinutes_other": "약 {{count}}분",
+    "retryHours_other": "약 {{count}}시간",
     "signIn": "로그인",
     "chip": {
       "synced": "변경 사항 전송됨",
       "relogin": "다시 로그인하세요",
       "syncing_other": "{{count}}개 동기화 중",
-      "delayed": "SoundCloud 제한 중 · {{time}}\u00a0후\u00a0재시도",
+      "delayed": "SoundCloud 제한 중 · {{time}} 후 재시도",
       "failed_other": "{{count}}개 오류",
       "dead_other": "{{count}}개 전송 안 됨"
     },
@@ -2625,6 +2649,27 @@
       "3": "별자리"
     }
   },
+  "starOffer": {
+    "proof_other": "한 달에 {{count}}곡",
+    "first": {
+      "one": "첫 달 STAR: {{price}}",
+      "two": "첫 두 달 STAR: {{price}}"
+    },
+    "short": {
+      "one": "첫 달 {{price}}",
+      "two": "두 달 {{price}}"
+    },
+    "readout": {
+      "one": "첫 달, 이후 월 {{price}}",
+      "two": "첫 2개월, 이후 월 {{price}}",
+      "plainOne": "첫 달",
+      "plainTwo": "첫 2개월"
+    },
+    "renews": "이후 월 {{price}}, {{date}}부터",
+    "until": "{{date}}까지",
+    "left": "{{time}} 남음",
+    "take": "{{price}}에 시작"
+  },
   "starMoments": {
     "tryFree_other": "{{count}}일 무료",
     "getStar": "STAR 받기",
@@ -2835,5 +2880,19 @@
     "w": "{{count}}주",
     "mo": "{{count}}개월",
     "y": "{{count}}년"
+  },
+  "moments": {
+    "title": "모먼트",
+    "open": "넘겨 보기",
+    "listenFull": "전체 듣기",
+    "addToPlaylist": "플레이리스트에 추가",
+    "waitingTitle": "모먼트 준비 중",
+    "waitingDesc": "곧 트랙마다 가장 좋은 30초가 여기에 나타나요.",
+    "inPlayer": "플레이어에서 재생 중",
+    "next": "다음",
+    "prev": "이전",
+    "failed": "불러오지 못했어요",
+    "pause": "일시정지",
+    "play": "재생"
   }
 }

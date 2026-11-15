@@ -5,7 +5,8 @@ import { type StarStatus, URGENT_DAYS, useStarStatus } from '../../lib/star-stat
 import { useStarMoments } from '../../stores/star-moments';
 
 function reminderKey(status: StarStatus | null): string | null {
-  if (!status || status.kind === 'open' || status.kind === 'relink') return null;
+  if (!status || status.kind === 'open' || status.kind === 'relink' || status.kind === 'confirm')
+    return null;
   if (status.days < 1 || status.days > URGENT_DAYS) return null;
   if (status.kind === 'renews' && !status.soon) return null;
   const step = status.days <= 1 ? 1 : URGENT_DAYS;
@@ -24,8 +25,8 @@ export function useStarReminder() {
   );
 
   useEffect(() => {
-    if (!hydrated || !due || !key || !status || status.kind === 'open' || status.kind === 'relink')
-      return;
+    if (!hydrated || !due || !key || !status) return;
+    if (status.kind === 'open' || status.kind === 'relink' || status.kind === 'confirm') return;
     mark(key);
     const body =
       status.kind === 'renews'

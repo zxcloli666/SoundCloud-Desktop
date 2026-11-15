@@ -9,6 +9,7 @@ const LABEL: Record<StarIntent, string> = {
   extend: 'starMoments.extend',
   gift: 'starMoments.gift',
   invite: 'starMoments.invite',
+  confirm: 'star.confirmPay',
 };
 
 /** The one STAR call to action: a free trial when the account still has one, else the pass. */

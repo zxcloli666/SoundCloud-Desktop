@@ -1,14 +1,13 @@
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { BOOSTY_URL } from '../../../../lib/constants';
-import { ExternalLink, Sparkles, Star } from '../../../../lib/icons';
-import {usePerfMode} from '../../../../lib/perf';
+import { ChevronRight, Sparkles, Star } from '../../../../lib/icons';
+import { usePerfMode } from '../../../../lib/perf';
+import { useOpenStar, usePaySubscription } from '../../../../lib/star-offer';
 import { useSubscription } from '../../../../lib/subscription';
 import { useAuthStore } from '../../../../stores/auth';
 import { Countdown, isExpired } from './countdown';
 
 const UNLOCK_AT = new Date('2025-05-25T12:00:00+03:00').getTime();
-const BOOSTY_PURCHASE_URL = `${BOOSTY_URL}/purchase/3886747`;
 
 const PARTICLES = Array.from({ length: 22 }, (_, i) => ({
   i,
@@ -35,9 +34,12 @@ const STAR_GLYPHS = Array.from({ length: 10 }, (_, i) => ({
 
 export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
   const { t } = useTranslation();
-    const perf = usePerfMode();
+  const perf = usePerfMode();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: isPremium } = useSubscription(isAuthenticated);
+  const openStar = useOpenStar();
+  const confirm =
+    usePaySubscription(isAuthenticated && !isPremium).data?.renewal?.needs_confirm === true;
 
   // Single state flip when timer reaches zero — overlay then unmounts.
   const [expired, setExpired] = useState(() => isExpired(UNLOCK_AT));
@@ -46,9 +48,9 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
   if (isPremium) return null;
   if (expired) return null;
 
-    const stars = STAR_GLYPHS.slice(0, perf.particles(STAR_GLYPHS.length));
-    const particles = PARTICLES.slice(0, perf.particles(PARTICLES.length));
-    const glassBlur = perf.blur(36);
+  const stars = STAR_GLYPHS.slice(0, perf.particles(STAR_GLYPHS.length));
+  const particles = PARTICLES.slice(0, perf.particles(PARTICLES.length));
+  const glassBlur = perf.blur(36);
 
   return (
     <div
@@ -59,12 +61,12 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
       <div
         className="absolute inset-0"
         style={{
-            backdropFilter: glassBlur > 0 ? `blur(${glassBlur}px) saturate(180%)` : undefined,
-            WebkitBackdropFilter: glassBlur > 0 ? `blur(${glassBlur}px) saturate(180%)` : undefined,
+          backdropFilter: glassBlur > 0 ? `blur(${glassBlur}px) saturate(180%)` : undefined,
+          WebkitBackdropFilter: glassBlur > 0 ? `blur(${glassBlur}px) saturate(180%)` : undefined,
           background:
-              glassBlur > 0
-                  ? 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.72) 0%, rgba(12,8,22,0.78) 55%, rgb(var(--surface) / 0.82) 100%)'
-                  : 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.94) 0%, rgba(12,8,22,0.96) 55%, rgb(var(--surface) / 0.98) 100%)',
+            glassBlur > 0
+              ? 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.72) 0%, rgba(12,8,22,0.78) 55%, rgb(var(--surface) / 0.82) 100%)'
+              : 'radial-gradient(ellipse 80% 70% at 50% 30%, rgba(139,92,246,0.28) 0%, transparent 65%), linear-gradient(165deg, rgba(20,12,38,0.94) 0%, rgba(12,8,22,0.96) 55%, rgb(var(--surface) / 0.98) 100%)',
           contain: 'strict',
           transform: 'translateZ(0)',
         }}
@@ -87,7 +89,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
         aria-hidden
         style={{ contain: 'strict', transform: 'translateZ(0)' }}
       >
-          {stars.map((s) => (
+        {stars.map((s) => (
           <div
             key={`g-${s.i}`}
             className="absolute"
@@ -97,18 +99,18 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
               color: `hsl(${s.hue}, 85%, 78%)`,
               opacity: s.opacity,
               transform: `rotate(${s.rotate}deg)`,
-                filter: perf.glow
-                    ? `drop-shadow(0 0 ${s.size}px hsl(${s.hue}, 90%, 70%))`
-                    : undefined,
-                animation: perf.idleAnim
-                    ? `star-float ${s.duration}s ease-in-out ${s.delay}s infinite alternate`
-                    : undefined,
+              filter: perf.glow
+                ? `drop-shadow(0 0 ${s.size}px hsl(${s.hue}, 90%, 70%))`
+                : undefined,
+              animation: perf.idleAnim
+                ? `star-float ${s.duration}s ease-in-out ${s.delay}s infinite alternate`
+                : undefined,
             }}
           >
             <Star size={s.size} fill="currentColor" />
           </div>
         ))}
-          {particles.map((p) => (
+        {particles.map((p) => (
           <div
             key={`p-${p.i}`}
             className="absolute rounded-full"
@@ -119,10 +121,10 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
               top: `${p.top}%`,
               background: `hsl(${p.hue}, 80%, 75%)`,
               opacity: p.opacity,
-                boxShadow: perf.glow ? `0 0 ${p.size * 3}px hsl(${p.hue}, 90%, 72%)` : undefined,
-                animation: perf.idleAnim
-                    ? `star-float ${p.duration}s ease-in-out ${p.delay}s infinite alternate`
-                    : undefined,
+              boxShadow: perf.glow ? `0 0 ${p.size * 3}px hsl(${p.hue}, 90%, 72%)` : undefined,
+              animation: perf.idleAnim
+                ? `star-float ${p.duration}s ease-in-out ${p.delay}s infinite alternate`
+                : undefined,
             }}
           />
         ))}
@@ -211,10 +213,9 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
         <Countdown target={UNLOCK_AT} onExpire={handleExpire} />
 
         {/* CTA */}
-        <a
-          href={BOOSTY_PURCHASE_URL}
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={() => openStar(confirm ? 'confirm' : 'buy')}
           className="group inline-flex items-center gap-2 mt-6 pl-5 pr-4 py-2.5 rounded-full text-[13.5px] font-bold tracking-tight text-ink transition-all duration-200 ease-[var(--ease-apple)] hover:scale-[1.04] active:scale-[0.97] cursor-pointer"
           style={{
             background:
@@ -230,12 +231,12 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
             className="text-amber-300"
             style={{ filter: 'drop-shadow(0 0 6px rgba(252,211,77,0.8))' }}
           />
-          {t('soundwaveLock.cta')}
-          <ExternalLink
+          {t(confirm ? 'star.confirmPay' : 'soundwaveLock.cta')}
+          <ChevronRight
             size={12}
             className="text-ink-70 transition-transform duration-200 group-hover:translate-x-0.5"
           />
-        </a>
+        </button>
       </div>
     </div>
   );
