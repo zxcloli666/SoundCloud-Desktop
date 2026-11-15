@@ -1784,30 +1784,11 @@
   },
   "starpass": {
     "guestHandle": "@you",
-    "member": "Member",
-    "allAccess": "CLASS · ALL-ACCESS",
-    "activatedStamp": "Activated",
-    "bestValue": "Best value",
+    "forWhom": "For",
+    "term": "Term",
     "perMonth": " / month",
-    "starsLabel": "In Telegram Stars",
-    "classLabel": "Class {{cls}}",
-    "afterPurchase": "after purchase",
     "daysLeft_one": "{{count}} day",
     "daysLeft_other": "{{count}} days",
-    "tierPreview": "Tier · preview",
-    "tierActive": "Active pass",
-    "fieldSerial": "Serial №",
-    "fieldIssued": "Issued",
-    "fieldActivated": "Activated",
-    "fieldValidUntil": "Valid until",
-    "fieldMethod": "Method",
-    "fieldOrder": "Order №",
-    "fieldRemaining": "Remaining",
-    "eyebrow": "Member pass",
-    "heroTitle1": "Not a subscription.",
-    "heroTitle2": "A pass into sound.",
-    "heroLead": "A personal pass: dedicated server, UQ and the full catalog — no compromises.",
-    "choosePass": "Choose a pass",
     "haveCode": "I have a code",
     "plan": {
       "month": "Monthly",
@@ -1815,9 +1796,7 @@
       "year": "Yearly"
     },
     "perksTitle": "What's inside",
-    "ignite": "Ignite your star",
     "back": "Back",
-    "perMonthShort": "mo",
     "legal": "By paying you accept the <offer>terms of sale</offer> and the <refund>refund policy</refund>.",
     "perk": {
       "goPlus": {
@@ -1892,23 +1871,13 @@
         "body": "pay with TG stars"
       }
     },
-    "caption": {
-      "member": "Member pass · SoundCloud client",
-      "boarding": "Boarding · awaiting payment",
-      "active": "Member pass · active"
-    },
-    "planTitle": "Pass class",
-    "planSub": "Longer term, cheaper month.",
-    "toActivation": "To activation",
     "providerTitle": "Payment method",
     "howToPay": "How to pay",
     "creating": "Creating order…",
-    "continueWith": "Continue with {{method}}",
     "continue": "Continue",
     "toPay": "To pay",
+    "paidTotal": "Paid",
     "checkoutError": "Couldn't create the order. Try another method.",
-    "payTitle": "Payment",
-    "paySub": "Complete the payment — the pass activates itself.",
     "retry": "Try again",
     "sbpStep": {
       "1": "Open your bank app and scan the QR.",
@@ -1919,32 +1888,20 @@
     "externalHint": "Checkout opened in your browser. Finish there — this screen updates itself.",
     "openCheckout": "Open checkout",
     "openInBrowser": "Open in browser",
-    "qrExpired": "This order has expired — start over",
     "successTitle": "Pass activated",
     "successSub": "Everything's on. Back to the music.",
-    "welcome": "Welcome to STAR, {{handle}}.",
-    "welcomeBody": "Valid until {{date}}. Server, UQ and SoundWave are already on.",
     "until": "until",
     "backToMusic": "To music",
     "managePass": "Manage",
     "redeemTitle": "Activate by code",
-    "redeemSub": "The code from a reseller's receipt.",
     "status": {
       "waiting": "Waiting for payment…",
-      "polling": "checking every 2.5s",
       "paid": "Payment received",
-      "activated": "pass activated",
       "failed": "Payment failed",
       "failedHint": "the order didn't go through — try again"
     },
     "redeem": {
-      "heading": "One code — a whole pass.",
-      "lead": "Four blocks after the STAR prefix. Case and dashes don't matter.",
-      "center": "enter your code",
-      "format": "format",
-      "oneTime": "one-time",
       "label": "Activation code",
-      "progress": "{{count}} of 16 characters entered",
       "activate": "Activate STAR",
       "activating": "Activating…",
       "paste": "Paste from clipboard",
@@ -1955,14 +1912,10 @@
       "errGeneric": "Couldn't activate the code. Try again."
     },
     "manage": {
-      "title": "Your pass",
-      "sub": "Term, auto-renew and source.",
       "autoRenew": "Auto-renew",
       "refund": "Refund policy",
       "autoRenewOff": "Off. Access lasts to the end of the paid term.",
       "source": "Source",
-      "sourceSub": "Where it came from",
-      "afterExpiry": "Then switches to free",
       "extend": "Extend",
       "redeem": "Redeem a code",
       "canceled": "Auto-renew turned off",
@@ -1981,21 +1934,18 @@
     },
     "discord": {
       "label": "Discord",
-      "linkedAs": "Linked",
       "unlinked": "Discord not linked",
       "linkHint": "Open our Discord server and run /sc-link",
       "booster": "Booster",
       "starRole": "STAR role",
       "member": "Member"
     },
-    "openVia": "Open payment via",
     "openIn": {
       "app": "Open in Telegram",
       "web": "Open in browser",
       "mini": "Telegram Mini App"
     },
     "loadError": "Couldn't load plans",
-    "loading": "Loading plans…",
     "recipient": {
       "self": "For me",
       "gift": "As a gift"
@@ -2010,7 +1960,6 @@
       "copied": "Copied",
       "redeemed": "Redeemed",
       "ready": "Gift ready",
-      "center": "a code for a friend",
       "howTo": "Send the code to a friend. They open STAR and tap \"I have a code\".",
       "shareText": "A STAR pass for SoundCloud Desktop, from me 🎁\nCode: {{code}}\nOpen STAR → \"I have a code\". Get the app: https://getsoundcloud.app"
     },
@@ -2045,8 +1994,7 @@
       "friends_other": "{{count}} of {{cap}} friends",
       "earned_one": "+{{count}} day",
       "earned_other": "+{{count}} days",
-      "daysUnit": "days",
-      "center": "for you and a friend"
+      "daysUnit": "days"
     },
     "ref": {
       "have": "Have a friend's code?",
@@ -2096,7 +2044,7 @@
       "family": "Family",
       "people_one": "{{count}} person",
       "people_other": "{{count}} people",
-      "each": "{{price}} ₽ each",
+      "each": "{{price}} each",
       "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
@@ -2104,15 +2052,12 @@
       "carryTitle": "Your current STAR moves over",
       "carryDays_one": "+{{count}} day",
       "carryDays_other": "+{{count}} days",
-      "carryEnd": "New end {{date}}",
       "memberBuy": "You are in someone else's plan. Leave it to buy your own.",
-      "manageCta": "Members",
       "seatsOf": "{{used}} of {{seats}} seats",
       "until": "Until {{date}}",
       "invite": {
         "title": "Invite code",
         "copy": "Copy invite",
-        "copied": "Copied",
         "regenerate": "New code",
         "regenerated": "New code is ready, the old one no longer works",
         "shareText": "Join my STAR {{tier}} in SoundCloud Desktop: open STAR, tap \"I have a code\" and enter {{code}}. https://getsoundcloud.app"
@@ -2134,8 +2079,7 @@
         "leaveAsk": "Leave this plan? Your own STAR stays.",
         "leaveYes": "Leave",
         "leaveNo": "Stay",
-        "left": "You left the plan",
-        "joined": "You joined the plan"
+        "left": "You left the plan"
       },
       "empty": {
         "title": "No shared plan yet",
@@ -2165,8 +2109,7 @@
         "offer_device_used": "This offer was already used on this device.",
         "offer_card_used": "This offer was already used with this card.",
         "method_unavailable": "This method is not available for this plan."
-      },
-      "centerSeats": "{{used}} of {{seats}} seats taken"
+      }
     },
     "renew": {
       "title": "Auto-renew",
@@ -2175,8 +2118,6 @@
       "next": "Next charge {{date}} · {{charge}}",
       "refund": "Forgot to turn it off? Email us within 7 days for a full refund, once every 6 months",
       "unavailable": "Not for this method or term",
-      "everyOther_one": "Charged every {{count}} day through a linked method: it needs its own link",
-      "everyOther_other": "Charged every {{count}} days through a linked method: it needs its own link",
       "onceNote": "Without auto-renew: a one-off payment, no link"
     },
     "bind": {
@@ -2242,7 +2183,8 @@
     "confirm": {
       "opening": "Opening the bank confirmation…",
       "open": "Confirm the payment in the bank window",
-      "closed": "Confirming the payment… Closed the bank window too early? Open it again.",
+      "closed": "Confirming the payment…",
+      "closedHint": "Closed the bank window too early? Open it again.",
       "failed": "Couldn't open the bank confirmation.",
       "reopen": "Open bank window",
       "renewal": "The bank asks to confirm the renewal",

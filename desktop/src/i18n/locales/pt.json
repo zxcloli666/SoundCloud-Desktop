@@ -1696,32 +1696,13 @@
   },
   "starpass": {
     "guestHandle": "@você",
-    "member": "Membro",
-    "allAccess": "CLASSE · ACESSO TOTAL",
-    "activatedStamp": "Ativado",
-    "bestValue": "Melhor custo-benefício",
+    "forWhom": "Para quem",
+    "term": "Prazo",
     "perMonth": " / mês",
-    "starsLabel": "Em Telegram Stars",
-    "classLabel": "Classe {{cls}}",
-    "afterPurchase": "após a compra",
     "daysLeft_one": "{{count}} dia",
     "daysLeft_other": "{{count}} dias",
     "daysLeft_many": "{{count}} dias",
     "daysLeft_zero": "{{count}} dias",
-    "tierPreview": "Nível · prévia",
-    "tierActive": "Passe ativo",
-    "fieldSerial": "Nº de série",
-    "fieldIssued": "Emitido",
-    "fieldActivated": "Ativado",
-    "fieldValidUntil": "Válido até",
-    "fieldMethod": "Método",
-    "fieldOrder": "Nº do pedido",
-    "fieldRemaining": "Restante",
-    "eyebrow": "Passe de membro",
-    "heroTitle1": "Não é assinatura.",
-    "heroTitle2": "É um passe para o som.",
-    "heroLead": "Um passe pessoal: servidor dedicado, UQ e o catálogo completo, sem abrir mão de nada.",
-    "choosePass": "Escolha um passe",
     "haveCode": "Tenho um código",
     "plan": {
       "month": "Mensal",
@@ -1729,9 +1710,7 @@
       "year": "Anual"
     },
     "perksTitle": "O que está incluso",
-    "ignite": "Acenda sua estrela",
     "back": "Voltar",
-    "perMonthShort": "mês",
     "legal": "Ao pagar, você aceita os <offer>termos de venda</offer> e a <refund>política de reembolso</refund>.",
     "perk": {
       "goPlus": {
@@ -1806,23 +1785,13 @@
         "body": "pague com estrelas do TG"
       }
     },
-    "caption": {
-      "member": "Passe de membro · cliente SoundCloud",
-      "boarding": "Embarque · aguardando pagamento",
-      "active": "Passe de membro · ativo"
-    },
-    "planTitle": "Classe do passe",
-    "planSub": "Prazo maior, mês mais barato.",
-    "toActivation": "Ir para ativação",
     "providerTitle": "Forma de pagamento",
     "howToPay": "Como pagar",
     "creating": "Criando pedido…",
-    "continueWith": "Continuar com {{method}}",
     "continue": "Continuar",
     "toPay": "A pagar",
+    "paidTotal": "Pago",
     "checkoutError": "Não foi possível criar o pedido. Tente outro método.",
-    "payTitle": "Pagamento",
-    "paySub": "Conclua o pagamento, o passe ativa sozinho.",
     "retry": "Tentar de novo",
     "sbpStep": {
       "1": "Abra o app do seu banco e escaneie o QR.",
@@ -1833,32 +1802,20 @@
     "externalHint": "O pagamento abriu no navegador. Conclua por lá, esta tela atualiza sozinha.",
     "openCheckout": "Abrir pagamento",
     "openInBrowser": "Abrir no navegador",
-    "qrExpired": "Este pedido expirou, comece de novo",
     "successTitle": "Passe ativado",
     "successSub": "Tudo ligado. Hora de voltar à música.",
-    "welcome": "Boas-vindas ao STAR, {{handle}}.",
-    "welcomeBody": "Válido até {{date}}. Servidor, UQ e SoundWave já estão ativos.",
     "until": "até",
     "backToMusic": "Para a música",
     "managePass": "Gerenciar",
     "redeemTitle": "Ativar com código",
-    "redeemSub": "O código do recibo de um revendedor.",
     "status": {
       "waiting": "Aguardando pagamento…",
-      "polling": "verificando a cada 2,5 s",
       "paid": "Pagamento recebido",
-      "activated": "passe ativado",
       "failed": "Falha no pagamento",
       "failedHint": "o pedido não foi concluído, tente de novo"
     },
     "redeem": {
-      "heading": "Um código, um passe completo.",
-      "lead": "Quatro blocos depois do prefixo STAR. Maiúsculas e traços não importam.",
-      "center": "digite seu código",
-      "format": "formato",
-      "oneTime": "uso único",
       "label": "Código de ativação",
-      "progress": "{{count}} de 16 caracteres digitados",
       "activate": "Ativar STAR",
       "activating": "Ativando…",
       "paste": "Colar da área de transferência",
@@ -1869,14 +1826,10 @@
       "errGeneric": "Não foi possível ativar o código. Tente de novo."
     },
     "manage": {
-      "title": "Seu passe",
-      "sub": "Prazo, renovação automática e origem.",
       "autoRenew": "Renovação automática",
       "refund": "Política de reembolso",
       "autoRenewOff": "Desativada. O acesso vale até o fim do prazo pago.",
       "source": "Origem",
-      "sourceSub": "De onde veio",
-      "afterExpiry": "Depois volta para o plano grátis",
       "extend": "Estender",
       "redeem": "Resgatar um código",
       "canceled": "Renovação automática desativada",
@@ -1895,21 +1848,18 @@
     },
     "discord": {
       "label": "Discord",
-      "linkedAs": "Vinculado",
       "unlinked": "Discord não vinculado",
       "linkHint": "Abra nosso servidor do Discord e use /sc-link",
       "booster": "Booster",
       "starRole": "Cargo STAR",
       "member": "Membro"
     },
-    "openVia": "Abrir pagamento via",
     "openIn": {
       "app": "Abrir no Telegram",
       "web": "Abrir no navegador",
       "mini": "Mini App do Telegram"
     },
     "loadError": "Não foi possível carregar os planos",
-    "loading": "Carregando planos…",
     "recipient": {
       "self": "Para mim",
       "gift": "De presente"
@@ -1924,7 +1874,6 @@
       "copied": "Copiado",
       "redeemed": "Resgatado",
       "ready": "Presente pronto",
-      "center": "um código para um amigo",
       "howTo": "Envie o código para um amigo. Ele abre o STAR e toca em \"Tenho um código\".",
       "shareText": "Um passe STAR para o SoundCloud Desktop, de mim para você 🎁\nCódigo: {{code}}\nAbra o STAR → \"Tenho um código\". Baixe o app: https://getsoundcloud.app"
     },
@@ -1967,8 +1916,7 @@
       "earned_other": "+{{count}} dias",
       "earned_many": "+{{count}} dias",
       "earned_zero": "+{{count}} dias",
-      "daysUnit": "dias",
-      "center": "para você e um amigo"
+      "daysUnit": "dias"
     },
     "ref": {
       "have": "Tem o código de um amigo?",
@@ -2018,7 +1966,7 @@
       "family": "Family",
       "people_one": "{{count}} pessoa",
       "people_other": "{{count}} pessoas",
-      "each": "{{price}} ₽ cada",
+      "each": "{{price}} cada",
       "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
@@ -2026,15 +1974,12 @@
       "carryTitle": "Seu STAR atual passa para o novo plano",
       "carryDays_one": "+{{count}} dia",
       "carryDays_other": "+{{count}} dias",
-      "carryEnd": "Novo fim em {{date}}",
       "memberBuy": "Você está no plano de outra pessoa. Saia dele para comprar o seu.",
-      "manageCta": "Membros",
       "seatsOf": "{{used}} de {{seats}} vagas",
       "until": "Até {{date}}",
       "invite": {
         "title": "Código de convite",
         "copy": "Copiar convite",
-        "copied": "Copiado",
         "regenerate": "Novo código",
         "regenerated": "Novo código pronto, o antigo deixou de funcionar",
         "shareText": "Entre no meu STAR {{tier}} no SoundCloud Desktop: abra o STAR, toque em \"Tenho um código\" e digite {{code}}. https://getsoundcloud.app"
@@ -2056,8 +2001,7 @@
         "leaveAsk": "Sair deste plano? Seu próprio STAR continua.",
         "leaveYes": "Sair",
         "leaveNo": "Ficar",
-        "left": "Você saiu do plano",
-        "joined": "Você entrou no plano"
+        "left": "Você saiu do plano"
       },
       "empty": {
         "title": "Ainda sem plano compartilhado",
@@ -2087,8 +2031,7 @@
         "offer_device_used": "Esta oferta já foi usada neste dispositivo.",
         "offer_card_used": "Esta oferta já foi usada com este cartão.",
         "method_unavailable": "Este método não está disponível para este plano."
-      },
-      "centerSeats": "{{used}} de {{seats}} vagas ocupadas"
+      }
     },
     "renew": {
       "title": "Renovação automática",
@@ -2099,8 +2042,6 @@
       "every_zero": "Cobrança automática a cada {{count}} dias",
       "refund": "Esqueceu de desativar? Envie um e-mail em até 7 dias e devolvemos tudo, uma vez a cada 6 meses",
       "unavailable": "Indisponível para este método ou prazo",
-      "everyOther_one": "Cobrado a cada {{count}} dia por um método vinculado: precisa de vínculo próprio",
-      "everyOther_other": "Cobrado a cada {{count}} dias por um método vinculado: precisa de vínculo próprio",
       "onceNote": "Sem renovação automática: pagamento único, sem vínculo"
     },
     "bind": {
@@ -2166,7 +2107,8 @@
     "confirm": {
       "opening": "Abrindo a confirmação do banco…",
       "open": "Confirme o pagamento na janela do banco",
-      "closed": "Confirmando o pagamento… Fechou a janela do banco cedo demais? Abra de novo.",
+      "closed": "Confirmando o pagamento…",
+      "closedHint": "Fechou a janela do banco cedo demais? Abra de novo.",
       "failed": "Não foi possível abrir a confirmação do banco.",
       "reopen": "Abrir janela do banco",
       "renewal": "O banco pede para confirmar a renovação",

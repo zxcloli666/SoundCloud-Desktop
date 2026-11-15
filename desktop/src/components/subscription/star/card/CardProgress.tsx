@@ -21,7 +21,7 @@ export const CardProgress = memo(function CardProgress({ stage }: { stage: Worki
         return (
           <li key={step} className="flex items-center gap-2.5">
             <span
-              className="grid size-[22px] place-items-center rounded-full border"
+              className="grid size-6 place-items-center rounded-full border-2"
               style={{
                 borderColor: done || active ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.16)',
                 background: done ? 'var(--color-accent)' : 'transparent',
@@ -40,7 +40,7 @@ export const CardProgress = memo(function CardProgress({ stage }: { stage: Worki
               ) : null}
             </span>
             <span
-              className={`font-mono text-[11px] uppercase tracking-[0.14em] ${active ? 'text-ink' : done ? 'text-ink-60' : 'text-ink-35'}`}
+              className={`text-[13.5px] font-semibold ${active ? 'text-ink' : done ? 'text-ink-60' : 'text-ink-35'}`}
             >
               {t(`starpass.card.step.${step}`)}
             </span>

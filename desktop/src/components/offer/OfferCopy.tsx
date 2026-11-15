@@ -72,8 +72,8 @@ export const OfferBar = memo(function OfferBar({ offer }: { offer: PayOffer }) {
   return (
     <span className="block h-1 w-full overflow-hidden rounded-full bg-ink/[0.08]">
       <span
-        className="block h-full rounded-full bg-accent transition-[width] duration-1000 ease-linear"
-        style={{ width: `${leftShare(offer, now) * 100}%` }}
+        className="block h-full origin-left rounded-full bg-accent transition-transform duration-1000 ease-linear"
+        style={{ transform: `scaleX(${leftShare(offer, now)})` }}
       />
     </span>
   );

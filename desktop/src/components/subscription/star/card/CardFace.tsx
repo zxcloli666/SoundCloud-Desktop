@@ -6,6 +6,7 @@ import {
   formatNumber,
 } from '../../../../lib/card-link/validate';
 import { Lock } from '../../../../lib/icons';
+import { AccentSpinner } from '../AccentSpinner';
 
 const BRAND_NAME: Record<Brand, string> = {
   mir: 'MIR',
@@ -19,36 +20,47 @@ const MASK = '•••• •••• •••• ••••';
 
 export const CardFace = memo(function CardFace({
   fields,
-  sealed,
+  sealed = false,
+  busy = false,
 }: {
   fields: CardFields;
   sealed?: boolean;
+  busy?: boolean;
 }) {
   const brand = brandOf(fields.number);
   const number = formatNumber(fields.number);
   return (
     <div
       data-scheme="dark"
-      className="relative aspect-[1.586] w-[280px] max-w-full shrink-0 select-none overflow-hidden rounded-[18px] border border-ink/[0.14] p-4 font-mono text-ink"
+      data-ui="star-card-face"
+      className="relative aspect-[1.586] w-[260px] max-w-full shrink-0 select-none overflow-hidden rounded-[18px] p-4 text-ink"
       style={{
         background:
-          'linear-gradient(140deg, color-mix(in srgb, var(--color-accent) 42%, rgb(var(--surface))), rgb(var(--paper)) 78%)',
+          'linear-gradient(140deg, color-mix(in srgb, var(--color-accent) 70%, #1a1a20), #121216 72%)',
         boxShadow:
-          '0 24px 50px -24px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), 0 0 40px -16px var(--color-accent-glow)',
+          '0 24px 50px -24px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 0 0 1px rgb(var(--ink) / 0.12)',
       }}
     >
-      <div className="flex items-center justify-between text-[10px] tracking-[0.2em] text-ink-60">
-        <span>{brand ? BRAND_NAME[brand] : 'CARD'}</span>
-        {sealed && <Lock size={13} className="text-accent" />}
+      <div className="flex items-center justify-between">
+        <span className="h-6 w-8 rounded-[6px] bg-ink/25" />
+        <span className="text-[11px] font-bold tracking-[0.12em] text-ink-80">
+          {brand ? BRAND_NAME[brand] : ''}
+        </span>
       </div>
       <div
-        className={`mt-[18%] whitespace-nowrap text-[17px] tracking-[0.1em] ${number ? 'text-ink' : 'text-ink-25'}`}
+        className={`mt-[17%] whitespace-nowrap font-mono text-[16.5px] tracking-[0.08em] ${number ? 'text-ink' : 'text-ink-40'}`}
       >
         {number || MASK}
       </div>
-      <div className="absolute inset-x-4 bottom-4 flex justify-end text-[11px] tracking-[0.1em] text-ink-80">
-        {fields.expiry || 'MM/YY'}
+      <div className="absolute inset-x-4 bottom-4 flex items-center justify-between font-mono text-[11.5px] text-ink-80">
+        <span>{sealed && <Lock size={14} className="text-ink" />}</span>
+        <span>{fields.expiry || 'MM/YY'}</span>
       </div>
+      {busy && (
+        <div className="absolute inset-0 grid place-items-center bg-shade-30">
+          <AccentSpinner />
+        </div>
+      )}
     </div>
   );
 });
