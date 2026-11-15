@@ -1,4 +1,4 @@
-use crate::numbers;
+use crate::{dollar, numbers};
 
 const DROPPED: &[&str] = &["the", "зе", "зэ", "and", "и", "ze"];
 const LONG_BEFORE: &str = "bcdfgklmnpstvz";
@@ -91,7 +91,7 @@ fn split_words(text: &str) -> Vec<String> {
     let mut words: Vec<String> = Vec::new();
     let mut cur = String::new();
     let mut cur_digit = false;
-    for c in text.to_lowercase().chars() {
+    for c in dollar::spelled(text).to_lowercase().chars() {
         if matches!(c, '\'' | '’' | '`' | 'ʼ') {
             continue;
         }

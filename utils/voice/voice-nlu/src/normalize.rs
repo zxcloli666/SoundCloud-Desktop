@@ -1,3 +1,4 @@
+use crate::dollar;
 use crate::lexicon::{
     self, CHEERS, COMPLAINT, DEMONSTRATIVES, DROP_PHRASES, MERGE_PHRASES, MUSIC_STEMS, MUTE_WORDS,
     NEXT_STRONG, NEXT_WEAK, PLAY_STRONG, PREV_STRONG, PREV_WEAK, STOP_WORDS, SWEARS_AMB,
@@ -61,7 +62,7 @@ pub fn words(input: &str) -> Vec<String> {
 }
 
 fn clean(input: &str) -> String {
-    let chars: Vec<char> = input
+    let chars: Vec<char> = dollar::spelled(input)
         .to_lowercase()
         .chars()
         .map(|c| if c == 'ё' { 'е' } else { c })

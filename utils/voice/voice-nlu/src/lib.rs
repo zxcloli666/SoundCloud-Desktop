@@ -1,5 +1,6 @@
 mod anchor;
 mod correct;
+mod dollar;
 mod fold;
 mod intent;
 mod kin;
@@ -30,6 +31,27 @@ pub fn parse_one(text: &str) -> Parsed {
 }
 
 pub fn parse_name(text: &str) -> Parsed {
+    let mut parsed = read_name(text);
+    if dollar::has_spelled(text) {
+        let old = read_name(&dollar::spaced(text));
+        parsed.queries = merged(parsed.queries, old.queries);
+        if let (Some(alt), Some(old)) = (&mut parsed.kind_alt, old.kind_alt) {
+            alt.queries = merged(std::mem::take(&mut alt.queries), old.queries);
+        }
+    }
+    parsed
+}
+
+fn merged(mut first: Vec<Variant>, then: Vec<Variant>) -> Vec<Variant> {
+    for v in then {
+        if !first.contains(&v) {
+            first.push(v);
+        }
+    }
+    first
+}
+
+fn read_name(text: &str) -> Parsed {
     let cleaned = named(text, normalize(text).toks);
     if cleaned.queries.is_empty() {
         named(text, as_said(text))
