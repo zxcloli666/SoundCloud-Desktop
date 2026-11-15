@@ -50,6 +50,7 @@ import {
   FolderInput as _FolderInput,
   FolderOpen as _FolderOpen,
   FolderPlus as _FolderPlus,
+  GalleryVerticalEnd as _GalleryVerticalEnd,
   Fullscreen as _Fullscreen,
   Gift as _Gift,
   Globe as _Globe,
@@ -171,6 +172,7 @@ export const FileMusic = memo(_FileMusic);
 export const FileText = memo(_FileText);
 export const Flame = memo(_Flame);
 export const Gift = memo(_Gift);
+export const GalleryVerticalEnd = memo(_GalleryVerticalEnd);
 export const FolderInput = memo(_FolderInput);
 export const FolderOpen = memo(_FolderOpen);
 export const FolderPlus = memo(_FolderPlus);

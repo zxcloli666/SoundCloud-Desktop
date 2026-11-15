@@ -359,6 +359,8 @@ pub fn run() {
             audio::audio_clear_comments_timeline,
             audio::audio_preview_play,
             audio::audio_preview_stop,
+            audio::audio_preview_pause,
+            audio::audio_preview_volume,
             audio::save_track_to_path,
             import::import_start,
             import::import_stop,

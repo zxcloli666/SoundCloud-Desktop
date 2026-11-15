@@ -7,6 +7,7 @@ use rodio::Player;
 use crate::audio::analyser::AnalyserBuffer;
 use crate::audio::crossfade::CrossfadeState;
 use crate::audio::effects::EffectsParams;
+use crate::audio::preview::PreviewState;
 use crate::audio::output::{spawn_output_thread, OutputHandles};
 use crate::audio::silence::SilenceState;
 use crate::audio::types::{
@@ -22,25 +23,6 @@ pub struct LyricsTimelineState {
 pub struct CommentsTimelineState {
     pub comments: Vec<FloatingCommentEvent>,
     pub next_index: usize,
-}
-
-/// Lightweight hover-preview channel: a second rodio `Player` on the shared mixer
-/// with its own throwaway analyser (so it never disturbs the main player's spectrum)
-/// and a tick-driven linear volume ramp for fade-in/out. Never writes plays history.
-pub struct PreviewState {
-    pub player: Option<Player>,
-    /// Currently applied volume (rodio scale 0.0..2.0).
-    pub volume: f32,
-    /// Target volume the tick-thread ramp is moving toward.
-    pub target: f32,
-    /// Per-tick volume delta magnitude (>= 0); direction derived from volume vs target.
-    pub step: f32,
-    /// When the ramp reaches 0, stop and drop the player (fade-out).
-    pub stop_at_zero: bool,
-    /// Monotonic generation of the installed preview. A newer hover bumps it; a
-    /// stale stop / out-of-order decode is rejected by comparing against it so
-    /// rapid hover across tiles can't clobber the surviving preview.
-    pub r#gen: u64,
 }
 
 pub struct AudioState {
@@ -132,14 +114,7 @@ pub fn init(app: &AppHandle) -> AudioState {
         ab_loop: Mutex::new(None),
         silence: Mutex::new(SilenceState::default()),
         analyser_buffer: AnalyserBuffer::new(),
-        preview: Mutex::new(PreviewState {
-            player: None,
-            volume: 0.0,
-            target: 0.0,
-            step: 0.0,
-            stop_at_zero: false,
-            r#gen: 0,
-        }),
+        preview: Mutex::new(PreviewState::default()),
         crossfade: Mutex::new(CrossfadeState::default()),
     }
 }

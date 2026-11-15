@@ -22,6 +22,9 @@ import { useImportStore } from './stores/import';
 import { type StartupPage, useSettingsStore } from './stores/settings';
 
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
+const Moments = lazy(() =>
+  import('./pages/Moments').then((module) => ({ default: module.Moments })),
+);
 const Library = lazy(() =>
   import('./pages/Library').then((module) => ({ default: module.Library })),
 );
@@ -266,6 +269,14 @@ export default function App() {
                   element={
                     <RouteLoader>
                       <Home />
+                    </RouteLoader>
+                  }
+                />
+                <Route
+                  path="moments"
+                  element={
+                    <RouteLoader>
+                      <Moments />
                     </RouteLoader>
                   }
                 />

@@ -17,6 +17,7 @@
   },
   "nav": {
     "home": "홈",
+    "moments": "모먼트",
     "reload": "인터페이스 새로고침",
     "search": "검색",
     "discover": "둘러보기",
@@ -804,7 +805,9 @@
         "deep_cuts": "더 깊이",
         "deep_cutsDesc": "잘 알려지지 않았지만 내 취향에 맞는 곡이에요.",
         "discover": "발견",
-        "discoverDesc": "시작하기 좋은 새롭고 인기 있는 트랙이에요."
+        "discoverDesc": "시작하기 좋은 새롭고 인기 있는 트랙이에요.",
+        "moments": "모먼트",
+        "momentsDesc": "내 웨이브 트랙의 가장 좋은 30초. 넘겨 보세요."
       }
     },
     "similar": {
@@ -2838,5 +2841,19 @@
     "w": "{{count}}주",
     "mo": "{{count}}개월",
     "y": "{{count}}년"
+  },
+  "moments": {
+    "title": "모먼트",
+    "open": "넘겨 보기",
+    "listenFull": "전체 듣기",
+    "addToPlaylist": "플레이리스트에 추가",
+    "waitingTitle": "모먼트 준비 중",
+    "waitingDesc": "곧 트랙마다 가장 좋은 30초가 여기에 나타나요.",
+    "inPlayer": "플레이어에서 재생 중",
+    "next": "다음",
+    "prev": "이전",
+    "failed": "불러오지 못했어요",
+    "pause": "일시정지",
+    "play": "재생"
   }
 }

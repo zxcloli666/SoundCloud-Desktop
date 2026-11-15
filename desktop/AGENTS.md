@@ -63,10 +63,12 @@ desktop/
       discover/      DiscoverHero, DiscoverSpotlight, AlbumsCatalog,
                      ArtistsCatalog, *GridCard, FilterRow, InfiniteSentinel,
                      useDebouncedValue, visuals
+      moments/       лента «Моменты»: MomentCard, MomentsStage, жесты, use-moments-feed
+                     (играет через preview-канал, не через плеер; lib/moments/channel)
       auth/          QrCode, QrLinkSheet, useQrLink
       settings/      CallProxySection
       NewsToast.tsx, SessionRecoveryModal.tsx, ThemeProvider.tsx, UpdateChecker.tsx
-    pages/           Home, Library, Search, Discover, Login, Settings, OfflinePage,
+    pages/           Home, Moments, Library, Search, Discover, Login, Settings, OfflinePage,
                      TrackPage, UserPage, PlaylistPage, AlbumPage, ArtistPage
     stores/          player, auth, auth-recovery, settings, app-status,
                      lyrics, news, searchHistory, searchPrefs, ym-import
@@ -94,6 +96,8 @@ desktop/
                          чужих кривых под 10 полос), eq_preset (импорт/экспорт APO, Peace,
                          GraphicEQ), pitch (signalsmith-stretch), analyser (rustfft, отдельный поток),
                          device (cpal + follow-default-output),
+                         preview (второй плеер: hover-превью и Моменты, старт с отметки,
+                         кроссфейд, `audio:preview-tick`/`audio:preview-ended`),
                          media_controls (souvlaki), tick (emit `audio:tick`/`audio:ended`),
                          timing (lyrics / floating-comments timelines), state, types, commands
       network/           proxy (`scproxy://` handler, cache по SHA256(url)),

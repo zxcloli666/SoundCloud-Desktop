@@ -10,7 +10,7 @@ use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain}
 use crate::audio::eq_curve;
 use crate::audio::silence;
 use crate::audio::state::AudioState;
-use crate::audio::types::{AudioLoadResult, MediaCmd, STALL_SUPPRESS_MS, TICK_INTERVAL_MS};
+use crate::audio::types::{AudioLoadResult, MediaCmd, STALL_SUPPRESS_MS};
 use crate::diag::trace;
 use crate::network::edge::Hop;
 use crate::network::netcheck::model::Role;
@@ -678,113 +678,4 @@ pub async fn save_track_to_path(cache_path: String, dest_path: String) -> Result
         .await
         .map_err(|e| format!("Copy failed: {}", e))?;
     Ok(dest_path)
-}
-
-/* ── Hover-preview channel ───────────────────────────────────────
- * A parallel lightweight player on the shared mixer for ~15s on-hover
- * previews. Sources from an already-cached file (reusing track_cache),
- * gets its own throwaway analyser so the main player's spectrum stays
- * intact, and fades via a tick-thread volume ramp (see tick.rs). Never
- * touches the main player or plays history.
- */
-
-fn preview_step(target: f32, fade_ms: u64) -> f32 {
-    let ticks = (fade_ms as f32 / TICK_INTERVAL_MS as f32).max(1.0);
-    (target / ticks).max(0.0005)
-}
-
-/// Start (or replace) the hover preview from a cached file `path` at `volume`
-/// (rodio scale 0.0..2.0). The decode runs off-thread. `gen` is a monotonic token
-/// from the frontend: an out-of-order (older) decode that finishes after a newer
-/// hover installed its preview is dropped. There is no play-side fade-in (the
-/// sample starts at target volume); fade-OUT lives in `preview_stop`.
-pub async fn preview_play(
-    path: String,
-    volume: f64,
-    r#gen: u64,
-    state: State<'_, AudioState>,
-) -> Result<(), String> {
-    // Cheap pre-check: a hover already superseded by a newer one shouldn't pay for
-    // the file read + decode (the authoritative gen check still runs post-decode).
-    if r#gen < state.preview.lock().unwrap().r#gen {
-        return Ok(());
-    }
-    let bytes = task::spawn_blocking({
-        let path = path.clone();
-        move || std::fs::read(&path).map_err(|e| format!("Failed to read {}: {}", path, e))
-    })
-        .await
-        .map_err(|e| format!("preview read task failed: {e}"))??;
-
-    let mixer = state.mixer.lock().unwrap().clone();
-    let eq_params = state.eq_params.clone();
-    let target = (volume as f32).clamp(0.0, 2.0);
-    // Own throwaway analyser buffer — the preview decoder must NOT write into the
-    // main player's spectrum buffer. Normalization is skipped (gain 1.0) to keep
-    // hover latency low. Build directly at the target volume so the sample is
-    // audible the instant it loads (a zero-start + tick fade-in left it silent).
-    let analyser = crate::audio::analyser::AnalyserBuffer::new();
-    let player = task::spawn_blocking(move || {
-        let pitch_ratio = std::sync::Arc::new(AtomicU32::new(1.0f32.to_bits()));
-        create_player_from_bytes(
-            &bytes,
-            &mixer,
-            target,
-            1.0,
-            false,
-            eq_params,
-            analyser,
-            pitch_ratio,
-            std::sync::Arc::new(crate::audio::effects::EffectsParams::new()),
-        )
-        .map(|(player, _)| player)
-    })
-        .await
-        .map_err(|e| format!("preview decode task failed: {e}"))??;
-    player.play();
-
-    let mut preview = state.preview.lock().unwrap();
-    // A newer hover already installed its preview — drop this stale decode.
-    if r#gen < preview.r#gen {
-        player.stop();
-        return Ok(());
-    }
-    if let Some(old) = preview.player.take() {
-        old.stop();
-    }
-    preview.player = Some(player);
-    preview.volume = target;
-    preview.target = target;
-    preview.step = 0.0;
-    preview.stop_at_zero = false;
-    preview.r#gen = r#gen;
-    Ok(())
-}
-
-/// Stop the hover preview. `gen == 0` force-stops whatever is playing (unhover /
-/// click); a non-zero `gen` is a targeted stale-stop that no-ops unless it still
-/// matches the installed preview. With `fade_ms > 0` it fades out (the tick
-/// thread drops the player at zero); with 0 it stops immediately.
-pub fn preview_stop(fade_ms: u64, r#gen: u64, state: State<'_, AudioState>) {
-    let mut preview = state.preview.lock().unwrap();
-    if preview.player.is_none() {
-        return;
-    }
-    // Targeted stop for a preview that's already been superseded — ignore.
-    if r#gen != 0 && r#gen != preview.r#gen {
-        return;
-    }
-    if fade_ms == 0 {
-        if let Some(old) = preview.player.take() {
-            old.stop();
-        }
-        preview.volume = 0.0;
-        preview.target = 0.0;
-        preview.step = 0.0;
-        preview.stop_at_zero = false;
-        return;
-    }
-    preview.step = preview_step(preview.volume.max(0.0005), fade_ms);
-    preview.target = 0.0;
-    preview.stop_at_zero = true;
 }

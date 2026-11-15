@@ -10,7 +10,7 @@ export interface LayoutEntry {
 export type LayoutState = Record<LayoutScope, LayoutEntry[]>;
 
 export const LAYOUT_IDS = {
-  sidebar: ['home', 'search', 'discover', 'library', 'chats', 'star', 'offline'],
+  sidebar: ['home', 'moments', 'search', 'discover', 'library', 'chats', 'star', 'offline'],
   library: [
     'fresh',
     'continue',
@@ -31,6 +31,7 @@ export type LayoutId<S extends LayoutScope> = (typeof LAYOUT_IDS)[S][number];
 
 export const RIVER_SECTIONS = [
   'wave',
+  'moments',
   'top_artists',
   'fresh_drops',
   'same_vibe',
