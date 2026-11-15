@@ -1,5 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
-import { type Plan, payApi } from './pay-client';
+import { usePlans } from './binds';
+import type { Plan } from './pay-client';
 
 export const YEAR_PLAN_ID = 'm12';
 
@@ -9,12 +9,9 @@ export interface YearOffer {
 }
 
 export function useYearOffer(): YearOffer | null {
-  const { data } = useQuery({
-    queryKey: ['pay', 'plans'],
-    queryFn: payApi.plans,
-    staleTime: 300_000,
-  });
+  const { data } = usePlans();
   const plan = data?.plans.find((p) => p.id === YEAR_PLAN_ID);
-  if (!data || !plan || plan.savings_pct <= 0) return null;
-  return { plan, savedRub: Math.max(0, data.monthly_rub * plan.months - plan.price_rub) };
+  const month = data?.plans.find((p) => p.months === 1);
+  if (!plan || !month || plan.savings_pct <= 0) return null;
+  return { plan, savedRub: Math.max(0, month.price.RUB * plan.months - plan.price.RUB) };
 }

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import type { Stage } from '../../../lib/boosty-card/use-card-link';
-import type { SbpStage } from '../../../lib/boosty-sbp';
+import type { Stage } from '../../../lib/card-link/use-card-link';
+import type { SbpStage } from '../../../lib/sbp-link';
 import type { TrialOutcome } from '../../../lib/star-trial';
 
 const LINKED_HOLD_MS = 1200;

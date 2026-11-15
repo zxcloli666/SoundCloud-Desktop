@@ -11,7 +11,7 @@ import {
   Sparkles,
   Waves,
 } from '../../../lib/icons';
-import type { Entitlement } from '../../../lib/pay-client';
+import type { Source } from '../../../lib/pay-client';
 import { SuperHeart } from '../../music/superlike/SuperHeart';
 
 /** Flow steps for the STAR membership page. */
@@ -60,7 +60,7 @@ export function monthsKey(months: number): 'year' | 'quarter' | 'month' {
   return months >= 12 ? 'year' : months >= 3 ? 'quarter' : 'month';
 }
 
-/** The entitlement that defines the active window (latest end). */
-export function primaryEntitlement(ents: Entitlement[]): Entitlement | null {
-  return ents.reduce<Entitlement | null>((b, e) => (!b || e.ends_at > b.ends_at ? e : b), null);
+/** The source that defines the active window (latest end). */
+export function primarySource(sources: Source[]): Source | null {
+  return sources.reduce<Source | null>((b, s) => (!b || s.ends_at > b.ends_at ? s : b), null);
 }

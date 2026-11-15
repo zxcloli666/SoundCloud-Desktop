@@ -1,7 +1,6 @@
 mod app;
 mod audio;
 mod auth;
-mod boosty_card;
 mod chat;
 mod diag;
 mod discord;
@@ -9,6 +8,7 @@ mod import;
 mod local_library;
 mod network;
 mod obs;
+mod pay_card;
 mod rt;
 mod scrobble;
 mod shared;
@@ -221,7 +221,7 @@ pub fn run() {
 
             chat::start(app.handle(), rt_handle.clone(), &data_dir);
 
-            app.manage(Arc::new(boosty_card::BoostyCard::new(
+            app.manage(Arc::new(pay_card::PayCard::new(
                 &data_dir,
                 rt_handle.clone(),
             )));
@@ -234,7 +234,7 @@ pub fn run() {
         })
         .on_window_event(|window, event| match event {
             tauri::WindowEvent::CloseRequested { .. }
-                if window.label() == boosty_card::three_ds::LABEL => {}
+                if window.label() == pay_card::page::LABEL => {}
             tauri::WindowEvent::CloseRequested { api, .. } => {
                 if window.label() == "main" && app::close_action::quits_on_close() {
                     app::tray::run_action(window.app_handle(), "quit");
@@ -272,12 +272,12 @@ pub fn run() {
         })
         .invoke_handler(tauri::generate_handler![
             network::server::get_server_ports,
-            boosty_card::commands::boosty_card_supported,
-            boosty_card::commands::boosty_card_open,
-            boosty_card::commands::boosty_card_submit,
-            boosty_card::commands::boosty_card_page,
-            boosty_card::commands::boosty_card_abort,
-            boosty_card::commands::boosty_card_close,
+            pay_card::commands::card_supported,
+            pay_card::commands::card_open,
+            pay_card::commands::card_submit,
+            pay_card::commands::card_page,
+            pay_card::commands::card_abort,
+            pay_card::commands::card_close,
             app::diagnostics::diagnostics_log,
             app::diagnostics::diagnostics_log_dir,
             app::diagnostics::diagnostics_open_log_dir,

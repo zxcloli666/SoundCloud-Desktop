@@ -1,13 +1,9 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  type FailReason,
-  type Stage,
-  useCardLink,
-} from '../../../../lib/boosty-card/use-card-link';
-import { type CardFields, EMPTY_CARD } from '../../../../lib/boosty-card/validate';
+import { type FailReason, type Stage, useCardLink } from '../../../../lib/card-link/use-card-link';
+import { type CardFields, EMPTY_CARD } from '../../../../lib/card-link/validate';
 import { Check } from '../../../../lib/icons';
-import type { BoostyCardMethod } from '../../../../lib/pay-client';
+import type { MethodId } from '../../../../lib/pay-client';
 import { AccentSpinner } from '../AccentSpinner';
 import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from '../StarConsole';
 import { type OnLinked, useLinkEnd } from '../useLinkEnd';
@@ -23,7 +19,7 @@ export const CardPane = memo(function CardPane({
   onOnce,
   onBack,
 }: {
-  method: BoostyCardMethod;
+  method: MethodId;
   amount: string | null;
   trial?: boolean;
   onLinked: OnLinked;

@@ -55,8 +55,8 @@ export function perPerson(
   seats: number,
 ): PerPerson {
   if (!plan || !solo) return { each: 0, savePct: 0 };
-  const each = Math.round(plan.price_rub / (seats + 1));
-  return { each, savePct: Math.max(0, Math.round((1 - each / solo.price_rub) * 100)) };
+  const each = Math.round(plan.price.RUB / (seats + 1));
+  return { each, savePct: Math.max(0, Math.round((1 - each / solo.price.RUB) * 100)) };
 }
 
 export function tierPlans(tier: TierId, solo: Plan[], shared: SharedTier[] | undefined): Plan[] {
@@ -76,8 +76,10 @@ const KNOWN_ERRORS = [
   'too_many_members',
   'removal_limit',
   'not_a_member',
-  'no_card',
-  'no_sbp',
+  'bind_needed',
+  'relink',
+  'charge_in_progress',
+  'method_unavailable',
 ] as const;
 
 /** i18n key of a shared-plan failure; unknown ones fall back to a generic text. */

@@ -2,20 +2,19 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import { CORE_CENTER_Y, LivingCore } from '../components/subscription/LivingCore';
-import { phaseOf } from '../components/subscription/PayStatus';
 import {
-  type ActivationOption,
-  activationOptions,
-  bindOf,
-  type ChosenRoute,
   chooseRoute,
   currencyOf,
+  hasOnce,
+  payMethods,
   type RouteContext,
-  renewFor,
-  toCheckout,
+  renewable,
+  tileOf,
   usable,
-} from '../components/subscription/providers';
+} from '../components/subscription/methods';
+import { phaseOf } from '../components/subscription/PayStatus';
 import { StarAtmosphere } from '../components/subscription/StarAtmosphere';
 import { CenterReadout } from '../components/subscription/star/CenterReadout';
 import { CardPane } from '../components/subscription/star/card/CardPane';
@@ -24,11 +23,7 @@ import { InvitePane, REFERRAL_KEY } from '../components/subscription/star/Invite
 import { LegalNote } from '../components/subscription/star/LegalNote';
 import { ManagePane } from '../components/subscription/star/ManagePane';
 import { MethodPane } from '../components/subscription/star/MethodPane';
-import {
-  primaryEntitlement,
-  type Recipient,
-  type Step,
-} from '../components/subscription/star/meta';
+import { primarySource, type Recipient, type Step } from '../components/subscription/star/meta';
 import { OverviewPane } from '../components/subscription/star/OverviewPane';
 import { PayPane } from '../components/subscription/star/PayPane';
 import { RedeemPane } from '../components/subscription/star/RedeemPane';
@@ -41,15 +36,16 @@ import type { TierOption } from '../components/subscription/star/TierSwitch';
 import { TrialPane } from '../components/subscription/star/trial/TrialPane';
 import { useTrialStep } from '../components/subscription/star/trial/useTrialStep';
 import { useBindOnly } from '../components/subscription/star/useBindOnly';
-import { bindState } from '../lib/boosty-bind-state';
-import { refreshBinds, useBinds, useCardSupported, useRemoveBind } from '../lib/boosty-binds';
+import { bindOf, refreshBinds, useBinds, usePlans, useRemoveBind } from '../lib/binds';
 import { ChevronLeft } from '../lib/icons';
 import {
-  type CheckoutResp,
+  type BindFlow,
+  type MethodId,
+  type Order,
   type Plan,
   payApi,
   payErrorCode,
-  type SharedTierId,
+  type Renewal,
   type TierId,
 } from '../lib/pay-client';
 import { usePremium } from '../lib/premium-cache';
@@ -68,6 +64,9 @@ import { useStarStatus } from '../lib/star-status';
 import { useOrderPoll } from '../lib/useOrderPoll';
 import { useAuthStore } from '../stores/auth';
 
+const DAY_SECS = 86_400;
+const NEEDS_LINK = new Set(['bind_needed', 'relink']);
+
 /**
  * STAR membership — the "living core" instrument. Energy lives in the canvas
  * core; per-state content rides a floating glass console over it. This file is
@@ -84,9 +83,17 @@ export const StarPage = memo(function StarPage() {
 
 function firstStep(intent: StarIntent | null, premium: boolean): Step {
   if (intent === 'invite') return 'invite';
+  if (intent === 'confirm') return 'manage';
   if (intent === 'trial' && !premium) return 'trial';
   if (intent) return 'overview';
   return premium ? 'manage' : 'overview';
+}
+
+interface Purchase {
+  planId: string;
+  method: MethodId;
+  recurring: boolean;
+  own: boolean;
 }
 
 const StarFlow = memo(function StarFlow({
@@ -108,55 +115,53 @@ const StarFlow = memo(function StarFlow({
   const [refBonus, setRefBonus] = useState<RefBonus>(null);
   const gift = recipient === 'gift' && tier === 'solo';
   const [planId, setPlanId] = useState<string | null>(presetPlan);
-  const [option, setOption] = useState<ActivationOption | null>(null);
-  const [renewOn, setRenewOn] = useState(false);
-  const [checkout, setCheckout] = useState<CheckoutResp | null>(null);
+  const [methodId, setMethodId] = useState<MethodId | null>(null);
+  const [renewPref, setRenewPref] = useState<boolean | null>(null);
+  const [checkout, setCheckout] = useState<Order | null>(null);
   const [igniteKey, setIgniteKey] = useState(0);
 
-  const plansQuery = useQuery({
-    queryKey: ['pay', 'plans'],
-    queryFn: payApi.plans,
-    staleTime: 300_000,
-  });
+  const plansQuery = usePlans();
   const soloPlans = plansQuery.data?.plans ?? [];
   const plans = tierPlans(tier, soloPlans, plansQuery.data?.shared);
-  const cardSupported = useCardSupported();
   const routeCtx = useMemo<RouteContext>(
-    () => ({ planId, gift, shared: tier !== 'solo', cardSupported }),
-    [planId, gift, tier, cardSupported],
+    () => ({ planId, gift, shared: tier !== 'solo' }),
+    [planId, gift, tier],
+  );
+  const allMethods = useMemo(
+    () => (plansQuery.data ? payMethods(plansQuery.data) : []),
+    [plansQuery.data],
   );
   const options = useMemo(
-    () =>
-      plansQuery.data ? activationOptions(plansQuery.data).filter((o) => usable(o, routeCtx)) : [],
-    [plansQuery.data, routeCtx],
+    () => allMethods.filter((m) => usable(m, routeCtx)),
+    [allMethods, routeCtx],
   );
-  const picked = options.find((o) => o.kind === option?.kind) ?? null;
-  const renewRoute = picked ? renewFor(picked, routeCtx) : null;
-  const chosen = useMemo(
-    () => (picked ? chooseRoute(picked, renewOn, routeCtx) : null),
-    [picked, renewOn, routeCtx],
+  const picked = options.find((m) => m.id === methodId) ?? null;
+  const route = useMemo(
+    () => (picked ? chooseRoute(picked, renewPref, routeCtx) : null),
+    [picked, renewPref, routeCtx],
   );
-  const bindMethod = chosen?.recurring ? bindOf(chosen.route) : null;
-  const binds = useBinds(bindMethod !== null);
+  const viaBind = route?.viaBind === true && !!picked?.bind;
+  const binds = useBinds(viaBind);
   const removeBind = useRemoveBind();
-  const bindNow = bindMethod ? bindState(binds.data, bindMethod) : 'none';
-  const bound = bindMethod
+  const bindView = viaBind && picked ? bindOf(binds.data, picked.id) : null;
+  const bindState = viaBind
     ? binds.data
-      ? bindNow === 'linked'
+      ? (bindView?.state ?? 'none')
       : binds.isError
-        ? false
+        ? 'none'
         : null
     : null;
   const selectedPlan = plans.find((p) => p.id === planId) ?? null;
-  const routeCurrency = currencyOf(chosen?.route);
+  const routeCurrency = currencyOf(route);
   const amount = selectedPlan ? planPrice(selectedPlan, routeCurrency) : '';
+  const periodDays = picked?.period_days ?? selectedPlan?.period_days ?? 30;
   const sharedOverview = useSharedOverview().data;
   const preview = useSharedPreview(tier, planId, premium);
   const tierOptions = useMemo<TierOption[]>(() => {
     const soloPlan = soloPlans.find((p) => p.id === planId);
     const shared = plansQuery.data?.shared ?? [];
     return [
-      { id: 'solo', people: 1, each: soloPlan?.price_rub ?? 0, savePct: 0 },
+      { id: 'solo', people: 1, each: soloPlan?.price.RUB ?? 0, savePct: 0 },
       ...shared.map((s) => {
         const pp = perPerson(
           s.plans.find((p) => p.id === planId),
@@ -181,18 +186,21 @@ const StarFlow = memo(function StarFlow({
 
   const order = useOrderPoll(
     step === 'pay' || step === 'success' ? (checkout?.order_id ?? null) : null,
-    checkout?.expires_at ?? null,
+    checkout?.action?.type === 'qr' || checkout?.action?.type === 'open'
+      ? checkout.expires_at
+      : null,
   );
-  const phase = phaseOf(order.data?.status);
+  const current = order.data ?? checkout;
+  const phase = phaseOf(current?.status);
   if (step === 'pay' && phase === 'granted') {
     setIgniteKey((k) => k + 1);
     setStep('success');
     if (tier !== 'solo') refreshShared();
-    if (order.data?.gift) void queryClient.invalidateQueries({ queryKey: GIFTS_KEY });
+    if (current?.gift) void queryClient.invalidateQueries({ queryKey: GIFTS_KEY });
   }
   const giftResult =
-    order.data?.gift && order.data.gift_code
-      ? { code: order.data.gift_code, periodDays: selectedPlan?.period_days ?? 30 }
+    current?.gift && current.gift_code
+      ? { code: current.gift_code, periodDays: selectedPlan?.period_days ?? 30 }
       : null;
 
   // Active-membership end date (manage/success centre readout) — comes from the
@@ -211,32 +219,36 @@ const StarFlow = memo(function StarFlow({
     setIgniteKey((k) => k + 1);
     setStep('success');
   }, []);
-  const trial = useTrialStep(premium, soloPlans, setStep, grantTrial);
+  const trial = useTrialStep(premium, soloPlans, allMethods, setStep, grantTrial);
   const bindOnly = useBindOnly(step, setStep, trial.done);
   const linking = bindOnly.linking;
   const relinking = linking && !linking.trial;
   const subEndsAt = subQuery.data
-    ? (primaryEntitlement(subQuery.data.entitlements)?.ends_at ?? subQuery.data.premium_until ?? 0)
+    ? (primarySource(subQuery.data.sources)?.ends_at ?? subQuery.data.premium_until ?? 0)
     : 0;
-  const centerEndsAt = step === 'manage' ? subEndsAt : (order.data?.premium_until ?? subEndsAt);
+  const centerEndsAt = step === 'manage' ? subEndsAt : (current?.premium_until ?? subEndsAt);
 
   const checkoutMut = useMutation({
-    mutationFn: (route: ChosenRoute) => {
-      if (!planId) throw new Error('no plan');
-      return payApi.checkout({
-        ...toCheckout(route, planId),
-        gift: gift || undefined,
-        tier: tier === 'solo' ? undefined : (tier as SharedTierId),
-        ref: !gift && refBonus ? refBonus.code : undefined,
-      });
-    },
+    mutationFn: (p: Purchase) =>
+      payApi.checkout({
+        plan_id: p.planId,
+        method: p.method,
+        recurring: p.recurring,
+        idempotency_key: crypto.randomUUID(),
+        gift: (p.own && gift) || undefined,
+        tier: p.own && tier !== 'solo' ? tier : undefined,
+        ref: p.own && !gift && refBonus ? refBonus.code : undefined,
+      }),
     onSuccess: (resp) => {
       setCheckout(resp);
       setStep('pay');
     },
-    onError: (_error, route) => {
+    onError: (error, p) => {
       if (step === 'pay') setStep('method');
-      if (bindOf(route.route)) refreshBinds();
+      if (NEEDS_LINK.has(payErrorCode(error) ?? '')) refreshBinds();
+      if (p.own) return;
+      setStep('manage');
+      toast.error(t(payErrorCode(error) ? sharedErrorKey(error) : 'starpass.checkoutError'));
     },
   });
   const checkoutError = checkoutMut.isError
@@ -246,10 +258,10 @@ const StarFlow = memo(function StarFlow({
           : 'starpass.checkoutError',
       )
     : null;
-  const lastRoute = checkoutMut.variables;
+  const lastPurchase = checkoutMut.variables;
   const refreshQr = useCallback(() => {
-    if (lastRoute) checkoutMut.mutate(lastRoute);
-  }, [checkoutMut.mutate, lastRoute]);
+    if (lastPurchase) checkoutMut.mutate(lastPurchase);
+  }, [checkoutMut.mutate, lastPurchase]);
 
   const reset = useCallback(() => {
     setCheckout(null);
@@ -261,33 +273,67 @@ const StarFlow = memo(function StarFlow({
     setStep('method');
   }, [reset]);
 
+  const relinkAndPay = useCallback(() => {
+    refreshBinds();
+    goMethod();
+  }, [goMethod]);
+
+  const purchase = useMemo<Purchase | null>(
+    () =>
+      route && planId
+        ? { planId, method: route.method.id, recurring: route.recurring, own: true }
+        : null,
+    [route, planId],
+  );
+
   const payChosen = useCallback(() => {
     setStep('method');
-    if (chosen) checkoutMut.mutate(chosen);
-  }, [chosen, checkoutMut.mutate]);
+    if (purchase) checkoutMut.mutate(purchase);
+  }, [purchase, checkoutMut.mutate]);
 
-  const onceRoute = picked?.once ?? null;
+  const canOnce = !!picked && hasOnce(picked);
   const payOnce = useMemo(
     () =>
-      onceRoute
+      canOnce && picked && planId
         ? () => {
-            setRenewOn(false);
+            setRenewPref(false);
             setStep('method');
-            checkoutMut.mutate({ route: onceRoute, recurring: false });
+            checkoutMut.mutate({ planId, method: picked.id, recurring: false, own: true });
           }
         : null,
-    [onceRoute, checkoutMut.mutate],
+    [canOnce, picked, planId, checkoutMut.mutate],
   );
 
   const continueToPay = useCallback(() => {
-    if (!chosen) return;
+    if (!purchase || !picked) return;
     bindOnly.clear();
-    if (bindMethod && bound !== true) {
-      setStep(bindMethod === 'sbp' ? 'sbp' : 'card');
+    if (viaBind && bindState !== 'linked') {
+      setStep(picked.bind?.flow === 'qr' ? 'sbp' : 'card');
       return;
     }
-    checkoutMut.mutate(chosen);
-  }, [chosen, bindMethod, bound, checkoutMut.mutate, bindOnly.clear]);
+    checkoutMut.mutate(purchase);
+  }, [purchase, picked, viaBind, bindState, checkoutMut.mutate, bindOnly.clear]);
+
+  const confirmRenewal = useCallback(
+    (renewal: Renewal) => {
+      const plan =
+        soloPlans.find((p) => p.period_days === renewal.period_days) ??
+        soloPlans.find((p) => p.months === 1);
+      if (!plan) return;
+      setTier('solo');
+      setRecipient('self');
+      setPlanId(plan.id);
+      setMethodId(renewal.method);
+      checkoutMut.mutate({ planId: plan.id, method: renewal.method, recurring: true, own: false });
+    },
+    [soloPlans, checkoutMut.mutate],
+  );
+
+  const flowOf = useCallback(
+    (method: MethodId): BindFlow =>
+      allMethods.find((m) => m.id === method)?.bind?.flow ?? 'card_form',
+    [allMethods],
+  );
 
   const lit = step === 'success' || step === 'manage' || !!relinking;
   // Where the header "back" returns to, per step (null = no back button).
@@ -385,9 +431,7 @@ const StarFlow = memo(function StarFlow({
                   plan={selectedPlan}
                   currency={
                     step === 'pay'
-                      ? checkout?.currency === 'USD'
-                        ? 'USD'
-                        : 'RUB'
+                      ? (checkout?.currency ?? 'RUB')
                       : step === 'overview'
                         ? 'RUB'
                         : routeCurrency
@@ -447,37 +491,38 @@ const StarFlow = memo(function StarFlow({
               <MethodPane
                 options={options}
                 selected={picked}
-                onSelect={setOption}
+                onSelect={(m) => setMethodId(m.id)}
                 renew={{
-                  available: renewRoute !== null,
-                  forced: renewRoute !== null && !picked?.once,
-                  on: chosen?.recurring === true,
-                  periodDays: renewRoute?.period_days ?? null,
-                  otherProvider:
-                    !!renewRoute && !!picked?.once && renewRoute.provider !== picked.once.provider,
+                  available: !!picked && renewable(picked, routeCtx),
+                  on: route?.recurring === true,
+                  periodDays,
+                  nextAt: Math.floor(Date.now() / 1000) + periodDays * DAY_SECS,
+                  charge: amount,
+                  ownLink: !!picked?.bind && canOnce,
                 }}
-                onRenew={setRenewOn}
+                onRenew={setRenewPref}
                 bind={
-                  bindMethod
+                  viaBind && picked?.bind
                     ? {
-                        method: bindMethod,
-                        bound,
-                        rebind: bindNow === 'rebind',
+                        method: picked.id,
+                        flow: picked.bind.flow,
+                        state: bindState,
+                        oneOff: route?.recurring === false,
                         removing: removeBind.isPending,
-                        onRemove: () => removeBind.mutate(bindMethod),
+                        onRemove: () => removeBind.mutate(picked.id),
                       }
                     : null
                 }
                 amount={amount}
                 pending={checkoutMut.isPending}
                 error={checkoutError}
-                onOnce={bindMethod && checkoutMut.isError ? payOnce : null}
+                onOnce={viaBind && checkoutMut.isError ? payOnce : null}
                 onContinue={continueToPay}
               />
             )}
             {step === 'card' && (
               <CardPane
-                method={(linking?.method ?? bindMethod) === 'card_usd' ? 'card_usd' : 'card'}
+                method={linking?.method ?? picked?.id ?? 'card_ru'}
                 amount={linking ? null : amount}
                 trial={linking?.trial}
                 onLinked={linking ? bindOnly.end : payChosen}
@@ -487,6 +532,7 @@ const StarFlow = memo(function StarFlow({
             )}
             {step === 'sbp' && (
               <SbpPane
+                method={linking?.method ?? picked?.id ?? 'sbp'}
                 paying={!linking}
                 trial={linking?.trial}
                 onLinked={linking ? bindOnly.end : payChosen}
@@ -502,18 +548,20 @@ const StarFlow = memo(function StarFlow({
                 amount={trial.amount}
                 blocked={trial.blocked}
                 onPick={trial.pick}
-                onLink={(method) => bindOnly.start(method, true)}
+                onLink={(method) => bindOnly.start(method, flowOf(method), true)}
                 onBuy={() => setStep('overview')}
               />
             )}
-            {step === 'pay' && checkout && option && (
+            {step === 'pay' && checkout && current && (
               <PayPane
-                checkout={checkout}
-                option={option}
+                first={checkout}
+                order={current}
+                tile={tileOf(checkout.method)}
                 phase={phase}
                 onChangeMethod={goMethod}
                 onRefresh={refreshQr}
                 onOnce={payOnce}
+                onRelink={relinkAndPay}
               />
             )}
             {(step === 'method' ||
@@ -540,7 +588,9 @@ const StarFlow = memo(function StarFlow({
                 onGift={() => setStep('gifts')}
                 onInvite={() => setStep('invite')}
                 onPlan={() => setStep('plan')}
-                onRelink={(method) => bindOnly.start(method, false)}
+                onLink={(method, flow) => bindOnly.start(method, flow, false)}
+                onConfirm={confirmRenewal}
+                confirming={checkoutMut.isPending}
                 onTrialEnded={() => setStep('overview')}
               />
             )}

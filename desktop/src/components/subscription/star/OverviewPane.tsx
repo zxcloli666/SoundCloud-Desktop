@@ -106,7 +106,7 @@ export const OverviewPane = memo(function OverviewPane({
               {/* unified across tabs: every plan shows its price; the accent −%
                   rides alongside only where there's a saving (no mixed slots) */}
               <span className="mt-1 flex items-center justify-center gap-1.5 text-[9.5px]">
-                <span className="text-ink-45">{p.price_rub} ₽</span>
+                <span className="text-ink-45">{p.price.RUB} ₽</span>
                 {p.savings_pct > 0 && (
                   <span className="font-semibold text-accent">−{p.savings_pct}%</span>
                 )}

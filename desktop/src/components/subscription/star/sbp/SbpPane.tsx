@@ -1,7 +1,8 @@
 import { memo, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type SbpFail, type SbpStage, useSbpLink } from '../../../../lib/boosty-sbp';
 import { Check } from '../../../../lib/icons';
+import type { MethodId } from '../../../../lib/pay-client';
+import { type SbpFail, type SbpStage, useSbpLink } from '../../../../lib/sbp-link';
 import { QrCode } from '../../../auth/QrCode';
 import { AccentSpinner } from '../AccentSpinner';
 import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from '../StarConsole';
@@ -11,19 +12,21 @@ const QR_SIZE = 160;
 const PNG_PREFIX = 'data:image/png;base64,';
 
 export const SbpPane = memo(function SbpPane({
+  method,
   paying = true,
   trial = false,
   onLinked,
   onOnce,
   onBack,
 }: {
+  method: MethodId;
   paying?: boolean;
   trial?: boolean;
   onLinked: OnLinked;
   onOnce: (() => void) | null;
   onBack: () => void;
 }) {
-  const { stage, restart, relink } = useSbpLink(trial);
+  const { stage, restart, relink } = useSbpLink(method, trial);
   const [relinked, setRelinked] = useState(false);
   useLinkEnd(stage, onLinked);
 

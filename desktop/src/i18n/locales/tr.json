@@ -1692,7 +1692,8 @@
     "step4": "Boosty'de abonelik satın alın",
     "step5": "Discord sunucumuzda /sc-link komutuyla SoundCloud'u bağlayın",
     "goBoosty": "Boosty",
-    "goDiscord": "Discord"
+    "goDiscord": "Discord",
+    "confirmPay": "Ödemeyi onayla"
   },
   "starpass": {
     "guestHandle": "@sen",
@@ -1802,13 +1803,9 @@
         "title": "Worldwide kart",
         "body": "Yabancı banka"
       },
-      "cryptoPlatega": {
+      "crypto": {
         "title": "Kripto",
         "body": "On-chain, doğrudan"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "CryptoBot cüzdanı"
       },
       "tgStars": {
         "title": "Telegram Stars",
@@ -1891,17 +1888,15 @@
       "canceled": "Otomatik yenileme kapatıldı",
       "cancelError": "Otomatik yenileme kapatılamadı",
       "sources": {
-        "platega": "Kart veya SBP",
-        "cryptobot": "Crypto Bot",
-        "tgstars": "Telegram Stars",
+        "paid": "Ödeme",
         "code": "Kod",
-        "boosty": "Boosty",
+        "supporter": "Destekçi aboneliği",
         "admin": "Ekipten hediye",
         "community": "Topluluk ödülü",
         "trial": "Ücretsiz deneme",
         "referral": "Arkadaş daveti",
         "shared": "Duo veya Family planı",
-        "boosty_card": "Bağlı kart veya SBP"
+        "other": "Diğer"
       }
     },
     "discord": {
@@ -1913,15 +1908,11 @@
       "starRole": "STAR rolü",
       "member": "Üye"
     },
-    "boosty": {
-      "title": "Boosty ile abone ol",
-      "sub": "Boosty'de abone ol — STAR, /sc-link sonrası Discord boost rolünle açılır"
-    },
     "openVia": "Ödemeyi nerede aç",
     "openIn": {
-      "tg": "Telegram'da aç",
-      "webapp": "Tarayıcıda aç",
-      "miniapp": "Telegram Mini App"
+      "app": "Telegram'da aç",
+      "web": "Tarayıcıda aç",
+      "mini": "Telegram Mini App"
     },
     "loadError": "Tarifeler yüklenemedi",
     "loading": "Tarifeler yükleniyor…",
@@ -2086,8 +2077,10 @@
         "too_many_members": "Önce üyeleri çıkarın: küçük planda daha az yer var.",
         "removal_limit": "Bu yer bu ay iki kez değişti. Sonra deneyin.",
         "not_a_member": "Bu kişi planda değil.",
-        "no_card": "Bağlı kart yok. Önce bir kart bağlayın.",
-        "no_sbp": "Bağlı SBP yok. Önce bağlayın."
+        "bind_needed": "Bu yöntem için henüz bağlı bir şey yok. Önce bağla.",
+        "relink": "Bu yöntemin yeniden bağlanması gerekiyor.",
+        "charge_in_progress": "Bir ödeme zaten sürüyor. Bir dakika bekle.",
+        "method_unavailable": "Bu yöntem bu plan için kullanılamıyor."
       },
       "centerSeats": "{{seats}} yerden {{used}} dolu"
     },
@@ -2095,10 +2088,11 @@
       "title": "Otomatik yenileme",
       "every_one": "Her {{count}} günde bir otomatik tahsil edilir",
       "every_other": "Her {{count}} günde bir otomatik tahsil edilir",
+      "next": "Sonraki çekim {{date}} · {{charge}}",
       "refund": "Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz, 6 ayda bir kez",
       "unavailable": "Bu yöntem veya süre için yok",
-      "everyOther_one": "Her {{count}} günde bir başka bir sağlayıcı üzerinden tahsil edilir: ayrı bir bağlama gerekir",
-      "everyOther_other": "Her {{count}} günde bir başka bir sağlayıcı üzerinden tahsil edilir: ayrı bir bağlama gerekir",
+      "everyOther_one": "Her {{count}} günde bir bağlı yöntemle tahsil edilir: ayrı bir bağlama gerekir",
+      "everyOther_other": "Her {{count}} günde bir bağlı yöntemle tahsil edilir: ayrı bir bağlama gerekir",
       "onceNote": "Otomatik yenileme olmadan: tek seferlik ödeme, bağlama yok"
     },
     "bind": {
@@ -2107,19 +2101,21 @@
       "relink": "Yeniden bağla",
       "rebind": "Yeniden bağlanmalı",
       "linkedSub": "Otomatik yenileme için",
+      "linkedIdle": "Bağlı, otomatik yenilemede kullanılmıyor",
       "keep": "Kalsın",
       "remove": "Kaldır",
       "removeError": "Bağ kaldırılamadı",
-      "chargeFailed": "Ödeme geçmedi: bakiye yetersiz ya da abonelik bankada iptal edildi.",
       "payOnce": "Otomatik yenileme olmadan öde",
-      "card": {
+      "oneOffCard": "Tek seferlik çekim, otomatik yenileme yok. Kart bağlı kalır: buradan veya Yönet bölümünden kaldırabilirsin.",
+      "oneOffQr": "Tek seferlik çekim, otomatik yenileme yok. SBP bağlı kalır: buradan veya Yönet bölümünden kaldırabilirsin.",
+      "card_ru": {
         "link": "Kartı bağla",
         "linked": "Kart bağlandı",
-        "removeYes": "Kartı kaldır",
-        "removed": "Kart kaldırıldı",
-        "charging": "Bağlı karttan çekiliyor…"
+        "removeYes": "Kartı kaldır"
       },
-      "card_usd": {
+      "removedCard": "Kart kaldırıldı",
+      "charging": "Bağlı yöntemden çekiliyor…",
+      "card_intl": {
         "link": "Worldwide kartı bağla",
         "linked": "Worldwide kart bağlandı",
         "removeYes": "Kartı kaldır"
@@ -2131,13 +2127,12 @@
         "removeYes": "SBP (RU) bağını kaldır",
         "removed": "SBP (RU) bağı kaldırıldı",
         "cancelInBank": "Aboneliği banka uygulamasında da iptal edin: burada kaldırmak orada durdurmaz.",
-        "charging": "Bağlı SBP üzerinden tahsil ediliyor…",
         "step": {
           "1": "QR'ı banka uygulamanızla tarayın ve bağlamaya izin verin.",
           "2": "Bu ekranı açık tutun: ödeme hemen ardından yapılır."
         },
         "cameraHelp": "Banka bağlanamıyor mu diyor? QR'ı banka uygulaması yerine telefon kamerasıyla tarayın: SBP sayfası tarayıcıda açılır, bankanızı orada seçin.",
-        "relinkNote": "Banka hesabın Boosty'ye zaten bağlı olduğunu söylerse yine de onaylayın: bağlama gerçekleşir.",
+        "relinkNote": "Banka hesabın zaten bağlı olduğunu söylerse yine de onayla: bağlama gerçekleşir.",
         "showAgain": "QR'ı yeniden göster",
         "expired": "QR'ın süresi doldu.",
         "fail": {
@@ -2150,6 +2145,24 @@
           "network": "Bağlantı sorunu. Tekrar deneyin."
         }
       }
+    },
+    "order": {
+      "reason": {
+        "declined": "Banka ödemeyi reddetti. Hiçbir şey çekilmedi.",
+        "relink": "Bu yöntemin çekimden önce yeniden bağlanması gerekiyor.",
+        "aborted": "Ödeme servisi yanıt vermedi. Hiçbir şey çekilmedi, tekrar dene.",
+        "expired": "Sipariş ödemeden önce sona erdi.",
+        "confirm_closed": "Banka onayı tamamlanmadı. Hiçbir şey çekilmedi."
+      }
+    },
+    "confirm": {
+      "opening": "Banka onayı açılıyor…",
+      "open": "Ödemeyi banka penceresinde onayla",
+      "closed": "Ödeme onaylanıyor… Banka penceresini erken mi kapattın? Yeniden aç.",
+      "failed": "Banka onayı açılamadı.",
+      "reopen": "Banka penceresini aç",
+      "renewal": "Banka yenilemeyi onaylamanı istiyor",
+      "cta": "Onayla"
     }
   },
   "soundwaveLock": {
@@ -2348,14 +2361,14 @@
   "sync": {
     "title": "SoundCloud senkronizasyonu",
     "retrySoon": "bir dakikadan az",
-    "retryMinutes": "~{{count}}\u00a0dk",
-    "retryHours": "~{{count}}\u00a0sa",
+    "retryMinutes": "~{{count}} dk",
+    "retryHours": "~{{count}} sa",
     "signIn": "Giriş yap",
     "chip": {
       "synced": "Değişiklikler gönderildi",
       "relogin": "Yeniden giriş yapın",
       "syncing": "{{count}} sırada",
-      "delayed": "SoundCloud sınırlıyor · {{time}}\u00a0sonra\u00a0tekrar",
+      "delayed": "SoundCloud sınırlıyor · {{time}} sonra tekrar",
       "failed": "{{count}} hatalı",
       "dead": "{{count}} gönderilmedi"
     },

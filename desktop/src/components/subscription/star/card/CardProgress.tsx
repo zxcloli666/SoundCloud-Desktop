@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Stage } from '../../../../lib/boosty-card/use-card-link';
+import type { Stage } from '../../../../lib/card-link/use-card-link';
 import { Check } from '../../../../lib/icons';
 import { usePerfMode } from '../../../../lib/perf';
 

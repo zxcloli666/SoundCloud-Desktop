@@ -192,8 +192,8 @@ jobs:
             cargo test
           fi
 
-      - name: Boosty card
-        working-directory: utils/boosty-card
+      - name: Pay card
+        working-directory: utils/pay-card
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/desktop/src-tauri/target
         run: cargo test

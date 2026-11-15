@@ -21,7 +21,7 @@ static ASKING: AtomicBool = AtomicBool::new(false);
 
 pub fn plugin<R: Runtime>() -> TauriPlugin<R> {
     let builder = Builder::new("navigation").on_navigation(|webview, url| {
-        if webview.label() == crate::boosty_card::three_ds::LABEL
+        if webview.label() == crate::pay_card::page::LABEL
             || allowed(url, dev_server(webview).as_ref())
         {
             return true;
@@ -183,7 +183,7 @@ mod tests {
     #[test]
     fn only_web_and_contact_links_are_offered_to_the_browser() {
         for offered in [
-            "https://boosty.to/x",
+            "https://example.com/x",
             "http://example.com",
             "mailto:a@b.c",
             "tel:+100",

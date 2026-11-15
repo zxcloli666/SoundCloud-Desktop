@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
-import { refreshBinds } from '../../../lib/boosty-binds';
-import type { BoostyMethod } from '../../../lib/pay-client';
+import { refreshBinds } from '../../../lib/binds';
+import type { BindFlow, MethodId } from '../../../lib/pay-client';
 import type { TrialOutcome } from '../../../lib/star-trial';
 import type { Step } from './meta';
 
 export interface BindOnly {
-  method: BoostyMethod;
+  method: MethodId;
+  flow: BindFlow;
   trial: boolean;
 }
 
@@ -18,9 +19,9 @@ export function useBindOnly(
   const linking = step === 'card' || step === 'sbp' ? bindOnly : null;
 
   const start = useCallback(
-    (method: BoostyMethod, trial: boolean) => {
-      setBindOnly({ method, trial });
-      setStep(method === 'sbp' ? 'sbp' : 'card');
+    (method: MethodId, flow: BindFlow, trial: boolean) => {
+      setBindOnly({ method, flow, trial });
+      setStep(flow === 'qr' ? 'sbp' : 'card');
     },
     [setStep],
   );

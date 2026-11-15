@@ -1776,7 +1776,8 @@
     "step4": "Purchase a subscription on Boosty",
     "step5": "Link your SoundCloud in our Discord with the /sc-link command",
     "goBoosty": "Boosty",
-    "goDiscord": "Discord"
+    "goDiscord": "Discord",
+    "confirmPay": "Confirm payment"
   },
   "starpass": {
     "guestHandle": "@you",
@@ -1879,13 +1880,9 @@
         "title": "Worldwide card",
         "body": "International issuer"
       },
-      "cryptoPlatega": {
+      "crypto": {
         "title": "Crypto",
         "body": "On-chain, direct"
-      },
-      "cryptoBot": {
-        "title": "CryptoBot",
-        "body": "CryptoBot wallet"
       },
       "tgStars": {
         "title": "Telegram Stars",
@@ -1968,17 +1965,15 @@
       "canceled": "Auto-renew turned off",
       "cancelError": "Couldn't turn off auto-renew",
       "sources": {
-        "platega": "Card or SBP",
-        "cryptobot": "Crypto Bot",
-        "tgstars": "Telegram Stars",
+        "paid": "Paid",
         "code": "Code",
-        "boosty": "Boosty",
+        "supporter": "Supporter subscription",
         "admin": "Gift from the team",
         "community": "Community reward",
         "trial": "Free trial",
         "referral": "Friend invite",
         "shared": "Duo or Family plan",
-        "boosty_card": "Linked card or SBP"
+        "other": "Other"
       }
     },
     "discord": {
@@ -1990,15 +1985,11 @@
       "starRole": "STAR role",
       "member": "Member"
     },
-    "boosty": {
-      "title": "Subscribe via Boosty",
-      "sub": "STAR arrives via your Discord boost role after /sc-link"
-    },
     "openVia": "Open payment via",
     "openIn": {
-      "tg": "Open in Telegram",
-      "webapp": "Open in browser",
-      "miniapp": "Telegram Mini App"
+      "app": "Open in Telegram",
+      "web": "Open in browser",
+      "mini": "Telegram Mini App"
     },
     "loadError": "Couldn't load plans",
     "loading": "Loading plans…",
@@ -2163,8 +2154,10 @@
         "too_many_members": "Remove members first: the smaller plan has fewer seats.",
         "removal_limit": "This seat was changed twice this month. Try later.",
         "not_a_member": "This person is not in the plan.",
-        "no_card": "No linked card. Link one first.",
-        "no_sbp": "No linked SBP. Link it first."
+        "bind_needed": "Nothing linked for this method yet. Link it first.",
+        "relink": "This method needs linking again.",
+        "charge_in_progress": "A payment is already going through. Wait a minute.",
+        "method_unavailable": "This method is not available for this plan."
       },
       "centerSeats": "{{used}} of {{seats}} seats taken"
     },
@@ -2172,10 +2165,11 @@
       "title": "Auto-renew",
       "every_one": "Charged automatically every {{count}} day",
       "every_other": "Charged automatically every {{count}} days",
+      "next": "Next charge {{date}} · {{charge}}",
       "refund": "Forgot to turn it off? Email us within 7 days for a full refund, once every 6 months",
       "unavailable": "Not for this method or term",
-      "everyOther_one": "Charged every {{count}} day through another provider: it needs its own link",
-      "everyOther_other": "Charged every {{count}} days through another provider: it needs its own link",
+      "everyOther_one": "Charged every {{count}} day through a linked method: it needs its own link",
+      "everyOther_other": "Charged every {{count}} days through a linked method: it needs its own link",
       "onceNote": "Without auto-renew: a one-off payment, no link"
     },
     "bind": {
@@ -2184,19 +2178,21 @@
       "relink": "Link again",
       "rebind": "Needs linking again",
       "linkedSub": "Used for auto-renew",
+      "linkedIdle": "Linked, not used for auto-renew",
       "keep": "Keep",
       "remove": "Remove",
       "removeError": "Couldn't unlink",
-      "chargeFailed": "The payment didn't go through: not enough money, or the subscription was cancelled in the bank.",
       "payOnce": "Pay without auto-renew",
-      "card": {
+      "oneOffCard": "One charge, no auto-renew. The card stays linked: unlink it here or in Manage.",
+      "oneOffQr": "One charge, no auto-renew. SBP stays linked: unlink it here or in Manage.",
+      "card_ru": {
         "link": "Link card",
         "linked": "Card linked",
-        "removeYes": "Remove card",
-        "removed": "Card removed",
-        "charging": "Charging the linked card…"
+        "removeYes": "Remove card"
       },
-      "card_usd": {
+      "removedCard": "Card removed",
+      "charging": "Charging the linked method…",
+      "card_intl": {
         "link": "Link Worldwide card",
         "linked": "Worldwide card linked",
         "removeYes": "Remove card"
@@ -2208,13 +2204,12 @@
         "removeYes": "Unlink SBP (RU)",
         "removed": "SBP (RU) unlinked",
         "cancelInBank": "Also cancel the subscription in your bank app: unlinking here doesn't stop it there.",
-        "charging": "Charging through linked SBP…",
         "step": {
           "1": "Scan the QR in your bank app and allow the link.",
           "2": "Keep this screen open: payment goes right after."
         },
         "cameraHelp": "Bank says it can't link? Scan the QR with the phone camera instead of the bank app: the SBP page opens in the browser, pick your bank there.",
-        "relinkNote": "If the bank says the account is already linked to Boosty, confirm anyway: the link goes through.",
+        "relinkNote": "If the bank says the account is already linked, confirm anyway: the link goes through.",
         "showAgain": "Show QR again",
         "expired": "The QR expired.",
         "fail": {
@@ -2227,6 +2222,24 @@
           "network": "Connection problem. Try again."
         }
       }
+    },
+    "order": {
+      "reason": {
+        "declined": "The bank declined the payment. Nothing was charged.",
+        "relink": "This method needs linking again before it can be charged.",
+        "aborted": "The payment service didn't answer. Nothing was charged, try again.",
+        "expired": "The order expired before payment.",
+        "confirm_closed": "The bank confirmation wasn't finished. Nothing was charged."
+      }
+    },
+    "confirm": {
+      "opening": "Opening the bank confirmation…",
+      "open": "Confirm the payment in the bank window",
+      "closed": "Confirming the payment… Closed the bank window too early? Open it again.",
+      "failed": "Couldn't open the bank confirmation.",
+      "reopen": "Open bank window",
+      "renewal": "The bank asks to confirm the renewal",
+      "cta": "Confirm"
     }
   },
   "soundwaveLock": {
@@ -2459,17 +2472,17 @@
   "sync": {
     "title": "SoundCloud sync",
     "retrySoon": "under a minute",
-    "retryMinutes_one": "~{{count}}\u00a0min",
-    "retryMinutes_other": "~{{count}}\u00a0min",
-    "retryHours_one": "~{{count}}\u00a0h",
-    "retryHours_other": "~{{count}}\u00a0h",
+    "retryMinutes_one": "~{{count}} min",
+    "retryMinutes_other": "~{{count}} min",
+    "retryHours_one": "~{{count}} h",
+    "retryHours_other": "~{{count}} h",
     "signIn": "Sign in",
     "chip": {
       "synced": "Changes sent",
       "relogin": "Sign in again",
       "syncing_one": "{{count}} syncing",
       "syncing_other": "{{count}} syncing",
-      "delayed": "SoundCloud is limiting · retry\u00a0in\u00a0{{time}}",
+      "delayed": "SoundCloud is limiting · retry in {{time}}",
       "failed_one": "{{count}} with errors",
       "failed_other": "{{count}} with errors",
       "dead_one": "{{count}} not sent",
