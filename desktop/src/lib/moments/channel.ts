@@ -12,9 +12,11 @@ export const AUTO_CROSSFADE_MS = 1400;
 export const SWIPE_CROSSFADE_MS = 450;
 const FADE_IN_MS = 300;
 const STOP_FADE_MS = 400;
+const SEEK_FADE_MS = 60;
 
 interface Live {
   urn: string;
+  path: string;
   window: MomentWindow;
   gen: number;
   endFired: boolean;
@@ -86,7 +88,13 @@ export async function playMoment(track: Track, crossfadeMs: number): Promise<boo
       return false;
     }
     const startMs = startedMs > 0 ? startedMs : 0;
-    live = { urn: track.urn, window: { ...moment, startMs }, gen, endFired: false };
+    live = {
+      urn: track.urn,
+      path: info.path,
+      window: { ...moment, startMs },
+      gen,
+      endFired: false,
+    };
     positionMs = startMs;
     notifyProgress();
     setPhase('playing', track.urn);
@@ -111,6 +119,41 @@ export function resumeMoment(): boolean {
   invoke('audio_preview_pause', { paused: false, gen: live.gen }).catch(() => {});
   setPhase('playing', live.urn);
   return true;
+}
+
+export async function seekMoment(urn: string, share: number): Promise<void> {
+  const current = live;
+  if (!current || current.urn !== urn) return;
+  const { startMs, lengthMs } = current.window;
+  const targetMs = Math.round(startMs + Math.min(0.98, Math.max(0, share)) * lengthMs);
+  const mine = ++token;
+  const gen = nextPreviewGen();
+  const player = usePlayerStore.getState();
+  if (player.isPlaying) player.pause();
+  try {
+    await invoke<number>('audio_preview_play', {
+      request: {
+        path: current.path,
+        volume: previewVolume(),
+        gen,
+        startMs: targetMs,
+        fadeInMs: SEEK_FADE_MS,
+        crossfadeMs: SEEK_FADE_MS,
+        report: true,
+      },
+    });
+  } catch (e) {
+    console.debug('[moments] seek failed', e);
+    return;
+  }
+  if (mine !== token || live !== current) {
+    invoke('audio_preview_stop', { fadeMs: 0, gen }).catch(() => {});
+    return;
+  }
+  live = { ...current, gen, endFired: false };
+  positionMs = targetMs;
+  notifyProgress();
+  setPhase('playing', urn);
 }
 
 export function toggleMoment(track: Track): void {
