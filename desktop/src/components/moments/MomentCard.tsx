@@ -30,7 +30,7 @@ export const MomentCard = React.memo(function MomentCard({
   return (
     <article
       data-ui="moment-card"
-      className="flex h-full w-full items-center justify-center px-6 pt-4 pb-14 md:px-16"
+      className="flex h-full w-full items-center justify-center px-6 pt-4 pb-14 [container-type:size] md:px-16"
     >
       <div className="flex w-full max-w-[1080px] flex-col items-center gap-6 lg:flex-row lg:gap-14">
         <MomentCover track={track} phase={phase} onToggle={onToggle} />
@@ -98,7 +98,7 @@ function MomentCover({
       type="button"
       onClick={onToggle}
       aria-label={playing ? t('moments.pause') : t('moments.play')}
-      className="group relative aspect-square w-[min(44vh,80vw,440px)] shrink-0 cursor-pointer overflow-hidden rounded-[28px] ring-1 ring-ink/[0.1] shadow-[0_30px_80px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] lg:w-[min(58vh,38vw,540px)]"
+      className="group relative aspect-square w-[clamp(140px,calc(100cqh-340px),min(80cqw,440px))] shrink-0 cursor-pointer overflow-hidden rounded-[28px] ring-1 ring-ink/[0.1] shadow-[0_30px_80px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] lg:w-[min(calc(100cqh-90px),50cqw,540px)]"
     >
       {cover ? (
         <img

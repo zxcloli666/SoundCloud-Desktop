@@ -17,10 +17,7 @@ export function Moments() {
   const current = feed.tracks[feed.index];
 
   return (
-    <div
-      data-ui="moments"
-      className="relative flex h-full min-h-[520px] w-full flex-col overflow-hidden"
-    >
+    <div data-ui="moments" className="relative flex h-full w-full flex-col overflow-hidden">
       <style>{MOMENTS_KEYFRAMES + RIVER_KEYFRAMES}</style>
       <MomentsBackdrop artworkUrl={current?.artwork_url ?? null} />
       <MomentsTopBar />
