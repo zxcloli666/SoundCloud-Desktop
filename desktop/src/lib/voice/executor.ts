@@ -1,3 +1,4 @@
+import { addressOf } from './address';
 import {
   chatOn,
   chatStep,
@@ -58,6 +59,11 @@ const REMOTE_STATE: Record<StepResult['kind'], RemoteState> = {
 
 function language() {
   return useVoiceStore.getState().config.language;
+}
+
+function address() {
+  const { listener, relation } = useVoiceStore.getState().config;
+  return addressOf(listener, relation);
 }
 
 function notifyUndo() {
@@ -153,6 +159,7 @@ async function handle(cmd: VoiceCommand) {
   const run = groupOf(cmd);
   const res = await execute(cmd, playerPort, {
     lang: language(),
+    address: address(),
     now: Date.now(),
     stack,
     chat: chatOn() ? chatStep : undefined,

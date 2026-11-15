@@ -5,7 +5,7 @@ import { useVoiceStore } from '../../../lib/voice/store';
 import { Card } from '../../settings/primitives';
 import { Drama, Hand, MessageCircleHeart, UserRound, UsersRound } from '../icons';
 import { AddressPicker } from './AddressPicker';
-import { Block, Pill, SmallButton } from './Block';
+import { Block, SmallButton } from './Block';
 import { RolePicker } from './RolePicker';
 
 function SayHi() {
@@ -22,18 +22,19 @@ function SayHi() {
   );
 }
 
-function ChatOff() {
+function ChatOn() {
   const { t } = useTranslation();
+  const patch = useVoiceStore((s) => s.patch);
   return (
-    <Pill tone="muted">
-      <MessageCircleHeart size={11} />
-      {t('voice.you.chatOff')}
-    </Pill>
+    <SmallButton onClick={() => patch({ llm: true })}>
+      <MessageCircleHeart size={13} />
+      {t('voice.you.chatOn')}
+    </SmallButton>
   );
 }
 
 function cardAction(on: boolean, canTalk: boolean) {
-  if (!on) return <ChatOff />;
+  if (!on) return <ChatOn />;
   return canTalk ? <SayHi /> : undefined;
 }
 

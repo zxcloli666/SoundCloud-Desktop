@@ -2,7 +2,7 @@ import { type Failure, failureOf } from './chat/failure.ts';
 import { awayResult, type ChatStep, chatResult } from './chat/step.ts';
 import type { TurnEnd } from './chat/types';
 import { entityReply, entityTitle, type Reply, type ReplyKey, reply } from './replies.ts';
-import type { Entity, Intent, Outcome, VoiceCommand, VoiceLanguage } from './types';
+import type { Address, Entity, Intent, Outcome, VoiceCommand, VoiceLanguage } from './types';
 import {
   type PlayerShot,
   pushStep,
@@ -48,6 +48,7 @@ export interface StepResult {
 
 export interface ExecuteContext {
   lang: VoiceLanguage;
+  address?: Address | null;
   now: number;
   stack: UndoEntry[];
   chat?: (cmd: VoiceCommand, port: PlayerPort, ctx: ExecuteContext) => Promise<ChatStep>;
@@ -216,13 +217,14 @@ export async function revert(
 
 async function talk(cmd: VoiceCommand, port: PlayerPort, ctx: ExecuteContext): Promise<StepResult> {
   const help = cmd.intent === 'help';
+  const you = { address: ctx.address };
   const plain = help
-    ? result('done', reply(ctx.lang, 'help'), cmd, ctx.stack)
+    ? result('done', reply(ctx.lang, 'help', you), cmd, ctx.stack)
     : result('ignored', { speech: '', display: cmd.heard }, cmd, ctx.stack);
   if (!ctx.chat || !cmd.heard.trim() || cmd.source === 'remote') return plain;
   if (cmd.chatless) {
     const line = ctx.refused ? AWAY[failureOf(ctx.refused)] : 'chat_away';
-    return help ? plain : awayResult(cmd, reply(ctx.lang, line), ctx.stack);
+    return help ? plain : awayResult(cmd, reply(ctx.lang, line, you), ctx.stack);
   }
   const res = chatResult(cmd, await ctx.chat(cmd, port, ctx), plain);
   return help && res.kind === 'failed' ? { ...plain, stack: res.stack } : res;

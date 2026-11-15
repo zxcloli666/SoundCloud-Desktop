@@ -183,7 +183,7 @@
     },
     "you": {
       "title": "나와 비서",
-      "chatOff": "대화 꺼짐",
+      "chatOn": "대화 켜기",
       "address": "호칭",
       "gender": {
         "label": "성별",
@@ -193,7 +193,8 @@
       "form": {
         "label": "말투",
         "informal": "반말",
-        "formal": "존댓말"
+        "formal": "존댓말",
+        "implied": "역할에 맞춘 기본값"
       },
       "name": "이름이나 별명",
       "role": "역할",

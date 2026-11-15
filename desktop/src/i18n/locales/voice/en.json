@@ -186,7 +186,7 @@
     },
     "you": {
       "title": "You and the assistant",
-      "chatOff": "Conversation is off",
+      "chatOn": "Turn on conversation",
       "address": "Form of address",
       "gender": {
         "label": "Gender",
@@ -196,7 +196,8 @@
       "form": {
         "label": "Formality",
         "informal": "casual",
-        "formal": "formal"
+        "formal": "formal",
+        "implied": "Comes with the role"
       },
       "name": "Name or nickname",
       "role": "Role",

@@ -186,7 +186,7 @@
     },
     "you": {
       "title": "Sen ve asistan",
-      "chatOff": "Muhabbet kapalı",
+      "chatOn": "Muhabbeti aç",
       "address": "Hitap",
       "gender": {
         "label": "Cinsiyet",
@@ -196,7 +196,8 @@
       "form": {
         "label": "Sen ya da siz",
         "informal": "sen",
-        "formal": "siz"
+        "formal": "siz",
+        "implied": "Rolle birlikte gelir"
       },
       "name": "Ad ya da takma ad",
       "role": "Rol",

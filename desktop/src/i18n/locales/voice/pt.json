@@ -191,7 +191,7 @@
     },
     "you": {
       "title": "Você e a personagem",
-      "chatOff": "Conversa desligada",
+      "chatOn": "Ligar a conversa",
       "address": "Tratamento",
       "gender": {
         "label": "Gênero",
@@ -201,7 +201,8 @@
       "form": {
         "label": "Formalidade",
         "informal": "informal",
-        "formal": "formal"
+        "formal": "formal",
+        "implied": "Vem com o papel"
       },
       "name": "Nome ou apelido",
       "role": "Papel",

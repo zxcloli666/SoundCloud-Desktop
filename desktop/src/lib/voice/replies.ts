@@ -1,4 +1,4 @@
-import type { Entity, VoiceLanguage } from './types';
+import type { Address, Entity, VoiceLanguage } from './types';
 
 export type ReplyKey =
   | 'play_artist'
@@ -54,6 +54,7 @@ export interface ReplyVars {
   first?: string;
   second?: string;
   heard?: string;
+  address?: Address | null;
 }
 
 type Line = (v: ReplyVars) => Reply;
@@ -99,6 +100,13 @@ function same(text: string): Reply {
   return { speech: text, display: text };
 }
 
+function formal(v: ReplyVars): boolean {
+  return v.address === 'formal';
+}
+
+const RU_HELP =
+  'включи Скриптонита, пауза, дальше, громкость пятьдесят, лайк, перемешай, мои лайки, что играет';
+
 const RU: Record<ReplyKey, Line> = {
   play_artist: (v) => ({ speech: `Включаю ${v.name}`, display: v.name ?? '' }),
   play_track: (v) => ({
@@ -141,9 +149,8 @@ const RU: Record<ReplyKey, Line> = {
   nothing_playing: () => same('Сейчас ничего не играет'),
   undo: () => ({ speech: 'Возвращаю как было', display: 'Отменено' }),
   nothing_to_undo: () => same('Нечего отменять'),
-  help: () => ({
-    speech:
-      'Скажите: включи Скриптонита, пауза, дальше, громкость пятьдесят, лайк, перемешай, мои лайки, что играет',
+  help: (v) => ({
+    speech: `${v.address === 'informal' ? 'Скажи' : 'Скажите'}: ${RU_HELP}`,
     display: 'Включи…, пауза, дальше, громкость 50, лайк',
   }),
   ask: (v) => ({
@@ -153,11 +160,24 @@ const RU: Record<ReplyKey, Line> = {
   ask_one: (v) => ({ speech: `Включить ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `Не нашлось «${v.heard}»`, display: v.heard ?? '' }),
   failed: () => same('Не получилось'),
-  chat_away: () => same('Сейчас не могу поболтать, но музыку включу — скажи, что поставить'),
-  chat_busy: () =>
-    same('Слишком много вопросов подряд, дай мне минутку. А музыку включу — скажи, что поставить'),
-  chat_lost: () =>
-    same('Что-то со связью, поболтать не выходит. А музыку включу — скажи, что поставить'),
+  chat_away: (v) =>
+    same(
+      formal(v)
+        ? 'Сейчас не могу поболтать, но музыку включу — скажите, что поставить'
+        : 'Сейчас не могу поболтать, но музыку включу — скажи, что поставить',
+    ),
+  chat_busy: (v) =>
+    same(
+      formal(v)
+        ? 'Слишком много вопросов подряд, дайте мне минутку. А музыку включу — скажите, что поставить'
+        : 'Слишком много вопросов подряд, дай мне минутку. А музыку включу — скажи, что поставить',
+    ),
+  chat_lost: (v) =>
+    same(
+      formal(v)
+        ? 'Что-то со связью, поболтать не выходит. А музыку включу — скажите, что поставить'
+        : 'Что-то со связью, поболтать не выходит. А музыку включу — скажи, что поставить',
+    ),
 };
 
 const EN: Record<ReplyKey, Line> = {
