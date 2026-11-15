@@ -17,7 +17,7 @@ export const Tenure = memo(function Tenure() {
   const maxed = tenure.nextTier === null;
   const stroke = maxed ? GOLD : 'var(--color-accent)';
   return (
-    <Panel ui="star-tenure" className="flex items-center gap-4">
+    <Panel data-ui="star-tenure" className="flex items-center gap-4">
       <div className="relative grid size-[68px] shrink-0 place-items-center">
         <svg viewBox="0 0 68 68" className="absolute inset-0 -rotate-90" aria-hidden>
           <circle

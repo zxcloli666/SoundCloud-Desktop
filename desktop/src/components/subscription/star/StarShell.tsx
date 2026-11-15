@@ -39,7 +39,7 @@ const Main = memo(function Main() {
     <div key={view} className="star-stagger flex min-w-0 flex-col gap-3">
       {view === 'choose' && <ChooseView />}
       {view === 'pay' && (
-        <Panel ui="star-pay" className="py-8 sm:px-8">
+        <Panel data-ui="star-pay" className="py-8 sm:px-8">
           <PayStage />
         </Panel>
       )}

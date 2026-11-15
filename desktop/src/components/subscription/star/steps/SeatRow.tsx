@@ -13,7 +13,7 @@ export const FreeSeat = memo(function FreeSeat() {
   const { t } = useTranslation();
   return (
     <Row
-      ui="star-seat"
+      data-ui="star-seat"
       icon={
         <span className="grid size-9 shrink-0 place-items-center rounded-full border border-dashed border-ink/20 text-ink-35">
           <Plus size={15} />
@@ -39,7 +39,7 @@ export const SeatRow = memo(function SeatRow({
   const lockedUntil = member.removable_at * 1000 > Date.now() ? member.removable_at : 0;
   return (
     <Row
-      ui="star-seat"
+      data-ui="star-seat"
       icon={<Avatar src={user?.avatar_url} alt={user?.username} size={36} />}
       title={user?.username ?? <span className="inline-block h-3.5 w-24 rounded bg-ink/[0.08]" />}
       tone={asking ? 'bad' : 'plain'}

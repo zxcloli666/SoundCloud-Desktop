@@ -67,7 +67,7 @@ const StageBody = memo(function StageBody({
     case 'refreshing':
       return (
         <StageLayout
-          ui="star-pay-wait"
+          data-ui="star-pay-wait"
           visual={
             <Orb tone="wait">
               <RefreshCw size={22} />
@@ -79,7 +79,7 @@ const StageBody = memo(function StageBody({
     case 'failed':
       return (
         <StageLayout
-          ui="star-pay-failed"
+          data-ui="star-pay-failed"
           visual={
             <Orb tone="bad">
               <X size={24} />
@@ -109,7 +109,7 @@ const StageBody = memo(function StageBody({
     case 'wait':
       return (
         <StageLayout
-          ui="star-pay-wait"
+          data-ui="star-pay-wait"
           visual={
             <Orb tone="wait">
               <AccentSpinner />
@@ -122,7 +122,7 @@ const StageBody = memo(function StageBody({
     case 'qr':
       return (
         <StageLayout
-          ui="star-pay-qr"
+          data-ui="star-pay-qr"
           visual={<QrCode payload={view.action.qr} size={184} margin={12} />}
           title={title}
           aside={<TimeRing until={order.expires_at} />}
@@ -151,7 +151,7 @@ const StageBody = memo(function StageBody({
     case 'open':
       return (
         <StageLayout
-          ui="star-pay-open"
+          data-ui="star-pay-open"
           visual={
             <Orb tone="wait">
               <ExternalLink size={22} />

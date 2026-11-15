@@ -55,13 +55,13 @@ export const WhoPanel = memo(function WhoPanel() {
   const member = useSharedOverview().data?.role === 'member';
   if (member) {
     return (
-      <Panel ui="star-who">
+      <Panel data-ui="star-who">
         <p className="text-[13px] text-ink-60">{t('starpass.shared.memberBuy')}</p>
       </Panel>
     );
   }
   return (
-    <Panel ui="star-who">
+    <Panel data-ui="star-who">
       <div className="mb-2.5 flex items-center justify-between gap-3">
         <span className="text-[12px] font-semibold text-ink-45">{t('starpass.forWhom')}</span>
         <RecipientSwitch />

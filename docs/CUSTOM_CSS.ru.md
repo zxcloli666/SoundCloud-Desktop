@@ -203,8 +203,7 @@
 | `[data-ui="star-offer"]` | Личное предложение в чеке |
 | `[data-ui="star-pay"]` | Идёт оплата; состояние внутри: `star-pay-qr`, `star-pay-open`, `star-pay-wait`, `star-pay-confirm` или `star-pay-failed` |
 | `[data-ui="star-timer"]` | Кольцо обратного отсчёта у QR и страницы оплаты |
-| `[data-ui="star-step-card"]` | Привязка карты; форма `[data-ui="star-card-link"]` с `data-stage`, картинка карты `[data-ui="star-card-face"]` |
-| `[data-ui="star-step-sbp"]` | Привязка СБП по QR, `[data-ui="star-sbp-link"]` с `data-stage` |
+| `[data-ui="star-step"]` | Отдельный шаг, `data-step`: `card`, `sbp`, `trial`, `plan`, `redeem`, `invite` или `gifts`; форма привязки карты `[data-ui="star-card-link"]` с `data-stage`, картинка карты `[data-ui="star-card-face"]`, привязка СБП `[data-ui="star-sbp-link"]` с `data-stage` |
 | `[data-ui="star-trial"]` | Пробный период |
 | `[data-ui="star-redeem"]` | Ввод кода |
 | `[data-ui="star-invite"]` | Пригласить друга |

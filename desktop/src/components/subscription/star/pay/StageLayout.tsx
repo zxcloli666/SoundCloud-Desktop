@@ -1,14 +1,14 @@
 import type { ReactNode } from 'react';
 
 export function StageLayout({
-  ui,
+  'data-ui': ui,
   visual,
   title,
   hint,
   aside,
   children,
 }: {
-  ui: string;
+  'data-ui': string;
   visual: ReactNode;
   title: ReactNode;
   hint?: ReactNode;

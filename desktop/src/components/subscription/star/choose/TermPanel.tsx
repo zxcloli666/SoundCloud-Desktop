@@ -17,7 +17,7 @@ export const TermPanel = memo(function TermPanel() {
   const { t } = useTranslation();
   const { plans, loading, error, retry } = usePlanList();
   return (
-    <Panel ui="star-term">
+    <Panel data-ui="star-term">
       <Label>{t('starpass.term')}</Label>
       {error ? (
         <button

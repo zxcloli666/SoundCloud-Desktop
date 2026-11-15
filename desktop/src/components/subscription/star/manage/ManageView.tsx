@@ -14,7 +14,11 @@ export const ManageView = memo(function ManageView() {
     <>
       <Alerts />
       <MemberCard />
-      <Panel ui="star-manage" pad={false} className="divide-y divide-ink/[0.07] overflow-hidden">
+      <Panel
+        data-ui="star-manage"
+        pad={false}
+        className="divide-y divide-ink/[0.07] overflow-hidden"
+      >
         <RenewalRow />
         <TrialRow />
         <BindList />

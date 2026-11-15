@@ -29,7 +29,7 @@ export const TrialRow = memo(function TrialRow() {
   if (!trial) return null;
   return (
     <Row
-      ui="star-trial-row"
+      data-ui="star-trial-row"
       icon={
         <IconTile>
           <Clock size={16} />

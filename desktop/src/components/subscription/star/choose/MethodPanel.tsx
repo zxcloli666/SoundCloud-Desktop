@@ -17,7 +17,7 @@ export const MethodPanel = memo(function MethodPanel() {
   const picked = useSel((s, e) => pickedOf(s, e)?.id ?? null);
   const api = useFlowApi();
   return (
-    <Panel ui="star-method" pad={false} className="overflow-hidden">
+    <Panel data-ui="star-method" pad={false} className="overflow-hidden">
       <div className="px-4 pt-4 sm:px-5 sm:pt-5">
         <Label>{t('starpass.howToPay')}</Label>
       </div>

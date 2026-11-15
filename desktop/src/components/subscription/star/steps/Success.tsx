@@ -18,7 +18,7 @@ export const Success = memo(function Success() {
   const plan = useSelectedPlan();
   const gift = order?.gift && order.gift_code ? order.gift_code : null;
   return (
-    <Panel ui="star-success" className="flex flex-col items-center gap-4 py-8 text-center">
+    <Panel data-ui="star-success" className="flex flex-col items-center gap-4 py-8 text-center">
       <PaidMark />
       <div className="text-[22px] font-extrabold tracking-tight text-ink">
         {t(gift ? 'starpass.gift.ready' : 'starpass.successTitle')}

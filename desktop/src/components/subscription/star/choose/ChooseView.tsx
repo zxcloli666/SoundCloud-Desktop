@@ -13,7 +13,7 @@ export const ChooseView = memo(function ChooseView() {
       <WhoPanel />
       <TermPanel />
       <MethodPanel />
-      <Panel ui="star-perks-panel">
+      <Panel data-ui="star-perks-panel">
         <Label>{t('starpass.perksTitle')}</Label>
         <PerkChips />
       </Panel>

@@ -24,7 +24,7 @@ export const BindItem = memo(function BindItem({
   if (bind.state === 'none') {
     if (!bind.can_link || !onLink) return null;
     return (
-      <Row ui="star-bind" icon={badge} title={t(`starpass.bind.${bind.method}.link`)}>
+      <Row data-ui="star-bind" icon={badge} title={t(`starpass.bind.${bind.method}.link`)}>
         <Btn size="sm" onClick={onLink}>
           {t('starpass.bind.link')}
         </Btn>
@@ -34,7 +34,7 @@ export const BindItem = memo(function BindItem({
   const rebind = bind.state === 'rebind';
   return (
     <Row
-      ui="star-bind"
+      data-ui="star-bind"
       icon={badge}
       title={t(`starpass.bind.${bind.method}.linked`)}
       tone={rebind && !asking ? 'bad' : 'plain'}

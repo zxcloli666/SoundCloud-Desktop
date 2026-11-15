@@ -7,14 +7,14 @@ export const Row = memo(function Row({
   title,
   sub,
   tone = 'plain',
-  ui,
+  'data-ui': ui,
   children,
 }: {
   icon?: ReactNode;
   title: ReactNode;
   sub?: ReactNode;
   tone?: keyof typeof SUB_TONE;
-  ui?: string;
+  'data-ui'?: string;
   children?: ReactNode;
 }) {
   return (

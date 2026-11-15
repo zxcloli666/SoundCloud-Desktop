@@ -32,7 +32,7 @@ export const MemberCard = memo(function MemberCard() {
   });
   if (!plan) return null;
   return (
-    <Panel ui="star-member">
+    <Panel data-ui="star-member">
       <div className="flex items-center gap-3">
         <Avatar src={owner?.avatar_url} alt={owner?.username} size={40} />
         <div className="min-w-0 flex-1">

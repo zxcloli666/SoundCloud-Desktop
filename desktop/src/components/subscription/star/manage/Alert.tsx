@@ -2,14 +2,14 @@ import { memo, type ReactNode } from 'react';
 import { TriangleAlert } from '../../../../lib/icons';
 
 export const Alert = memo(function Alert({
-  ui,
+  'data-ui': ui,
   tone,
   title,
   sub,
   bar,
   children,
 }: {
-  ui: string;
+  'data-ui': string;
   tone: 'warn' | 'bad';
   title: ReactNode;
   sub?: ReactNode;

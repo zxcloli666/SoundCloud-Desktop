@@ -39,7 +39,7 @@ export const RenewalRow = memo(function RenewalRow() {
   };
   return (
     <Row
-      ui="star-autorenew"
+      data-ui="star-autorenew"
       icon={
         <IconTile on={on}>
           <RefreshCw size={16} />

@@ -7,17 +7,20 @@ const SHADOW = {
 export const Panel = memo(function Panel({
   children,
   className = '',
-  ui,
+  'data-ui': ui,
+  step,
   pad = true,
 }: {
   children: ReactNode;
   className?: string;
-  ui?: string;
+  'data-ui'?: string;
+  step?: string;
   pad?: boolean;
 }) {
   return (
     <section
       data-ui={ui}
+      data-step={step}
       className={`rounded-[20px] border border-ink/[0.08] bg-surface/70 ${pad ? 'p-4 sm:p-5' : ''} ${className}`}
       style={SHADOW}
     >

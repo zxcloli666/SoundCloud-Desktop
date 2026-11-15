@@ -21,7 +21,7 @@ export const Confirm = memo(function Confirm({
   const at = BANK_STEPS.indexOf(state as (typeof BANK_STEPS)[number]);
   return (
     <StageLayout
-      ui="star-pay-confirm"
+      data-ui="star-pay-confirm"
       visual={
         <Orb tone={failed ? 'bad' : 'wait'}>{failed ? <X size={24} /> : <Lock size={22} />}</Orb>
       }

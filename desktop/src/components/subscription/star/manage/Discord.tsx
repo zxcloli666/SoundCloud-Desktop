@@ -38,7 +38,7 @@ export const Discord = memo(function Discord() {
     ? discord.global_name || discord.username || t('starpass.discord.member')
     : '';
   return (
-    <Panel ui="star-discord" className="flex items-center gap-3.5">
+    <Panel data-ui="star-discord" className="flex items-center gap-3.5">
       <span
         className="relative grid size-11 shrink-0 place-items-center overflow-hidden rounded-full text-ink-60"
         style={{ background: 'rgb(var(--ink) / 0.07)' }}

@@ -19,7 +19,7 @@ export const DeepStep = memo(function DeepStep({ step }: { step: Step }) {
   const premium = usePremium();
   const legal = !buying && premium && (step === 'card' || step === 'sbp' || step === 'trial');
   return (
-    <Panel ui={`star-step-${step}`}>
+    <Panel data-ui="star-step" step={step}>
       {(step === 'card' || step === 'sbp') && <LinkStep step={step} />}
       {step === 'trial' && <TrialPane />}
       {step === 'plan' && <SharedStep />}

@@ -16,7 +16,7 @@ export const Alerts = memo(function Alerts() {
   if (status?.kind === 'confirm') {
     return (
       <Alert
-        ui="star-confirm-renewal"
+        data-ui="star-confirm-renewal"
         tone="warn"
         title={t('starpass.confirm.renewal')}
         sub={`${t(`starpass.method.${tileOf(status.method).i18n}.title`)} · ${status.charge} · ${passDate(status.at)}`}
@@ -35,7 +35,7 @@ export const Alerts = memo(function Alerts() {
   if (status?.kind === 'ends' && status.level !== 'calm' && status.canExtend) {
     return (
       <Alert
-        ui="star-expiring"
+        data-ui="star-expiring"
         tone={status.level === 'urgent' ? 'bad' : 'warn'}
         title={t('starMoments.expiry.left', { count: status.days })}
         bar={status.days / SOON_DAYS}
