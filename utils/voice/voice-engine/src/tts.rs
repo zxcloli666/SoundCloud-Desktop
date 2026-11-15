@@ -4,12 +4,13 @@ use std::sync::mpsc::{RecvTimeoutError, Sender, channel};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use voice_qwen::{Paths, Qwen, RATE, Sink};
+use voice_qwen::{Paths, Qwen, RATE, Sampling, Sink};
 
 use crate::cache::{self, Cache};
 use crate::clip::Clip;
 use crate::config::Language;
 use crate::kokoro::{Frontends, Line};
+use crate::pauses::Tail;
 use crate::qwen;
 use crate::server::{Ask, Said, Server};
 use crate::shape::Shaper;
@@ -32,6 +33,7 @@ pub enum Source {
     Qwen {
         paths: Paths,
         speaker: &'static str,
+        manner: Sampling,
         cached_as: String,
     },
     Server {
@@ -63,7 +65,7 @@ pub enum Piece {
 pub type Reply = Box<dyn Fn(u64, Piece) + Send>;
 
 enum Job {
-    Warm(Paths, &'static str),
+    Warm(Paths, &'static str, Sampling),
     Say(Say),
 }
 
@@ -89,6 +91,7 @@ struct Live<'a> {
     out: &'a Out<'a>,
     shaper: &'a mut Shaper,
     raw: Vec<f32>,
+    tail: Tail,
 }
 
 struct Plain<'a> {
@@ -112,10 +115,12 @@ impl Tts {
                 };
                 loop {
                     match inbox.recv_timeout(REST) {
-                        Ok(Job::Warm(paths, speaker)) => {
+                        Ok(Job::Warm(paths, speaker, manner)) => {
                             let at = asked.load(Ordering::Relaxed);
                             let busy = || asked.load(Ordering::Relaxed) != at;
-                            voices.qwen.warm(&paths, &qwen::trial(speaker), &busy);
+                            voices
+                                .qwen
+                                .warm(&paths, &qwen::trial(speaker, manner), &busy);
                             voices.tell(&reply);
                         }
                         Ok(Job::Say(say)) => {
@@ -153,8 +158,8 @@ impl Tts {
         let _ = self.jobs.send(Job::Say(say));
     }
 
-    pub fn warm(&self, paths: Paths, speaker: &'static str) {
-        let _ = self.jobs.send(Job::Warm(paths, speaker));
+    pub fn warm(&self, paths: Paths, speaker: &'static str, manner: Sampling) {
+        let _ = self.jobs.send(Job::Warm(paths, speaker, manner));
     }
 
     pub fn forget(&self) {
@@ -180,12 +185,13 @@ impl Out<'_> {
 
 impl Sink for Live<'_> {
     fn audio(&mut self, samples: Vec<f32>) {
+        self.tail.push(&samples);
         self.raw.extend_from_slice(&samples);
         self.out.audio(RATE, self.shaper.push(samples));
     }
 
     fn wanted(&self) -> bool {
-        self.out.wanted()
+        self.out.wanted() && !self.tail.fell_silent()
     }
 
     fn again(&mut self) {
@@ -231,8 +237,9 @@ impl Voices {
             Source::Qwen {
                 paths,
                 speaker,
+                manner,
                 cached_as,
-            } => self.qwen(say, paths, speaker, cached_as, out),
+            } => self.qwen(say, paths, speaker, *manner, cached_as, out),
             Source::Server {
                 voice,
                 server,
@@ -268,6 +275,7 @@ impl Voices {
         say: &Say,
         paths: &Paths,
         speaker: &str,
+        manner: Sampling,
         cached_as: &str,
         out: &Out,
     ) -> Result<(), String> {
@@ -279,8 +287,9 @@ impl Voices {
             out,
             shaper: &mut shaper,
             raw: Vec::new(),
+            tail: Tail::new(RATE),
         };
-        let request = qwen::request(&say.text, speaker);
+        let request = qwen::request(&say.text, speaker, manner);
         self.qwen.say(paths, &request, &mut live)?;
         let raw = live.raw;
         if !out.wanted() {
@@ -419,5 +428,30 @@ mod tests {
         assert_ne!(served, cache::key(&["qwen-loli/1/loli", TEXT]));
         assert_ne!(served, served_as("2", "loli", TEXT));
         assert_ne!(served, served_as("1", "moriarty", TEXT));
+    }
+
+    #[test]
+    fn a_line_that_fell_silent_is_stopped_and_its_reply_goes_on() {
+        let reply: Reply = Box::new(|_, _| {});
+        let floor = AtomicU64::new(0);
+        let out = Out {
+            r#gen: 1,
+            reply: &reply,
+            floor: &floor,
+        };
+        let mut shaper = Shaper::new(RATE, 1.0, 1.0);
+        let mut live = Live {
+            out: &out,
+            shaper: &mut shaper,
+            raw: Vec::new(),
+            tail: Tail::new(RATE),
+        };
+        live.audio(vec![0.5; RATE as usize]);
+        live.audio(vec![0.0; RATE as usize]);
+        assert!(live.wanted());
+        live.audio(vec![0.0; RATE as usize]);
+        assert!(!live.wanted());
+        assert!(out.wanted());
+        assert_eq!(live.raw.len(), 3 * RATE as usize);
     }
 }

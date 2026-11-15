@@ -93,9 +93,12 @@ pub fn source(store: &Store, voice: &Voice) -> Option<Source> {
             file,
             speaker,
         }),
-        voices::Kind::Qwen { speaker, .. } => Some(Source::Qwen {
+        voices::Kind::Qwen {
+            speaker, manner, ..
+        } => Some(Source::Qwen {
             paths: qwen(store, voice)?,
             speaker,
+            manner,
             cached_as: cached_as(store, voice)?,
         }),
     }
@@ -117,7 +120,10 @@ pub fn server(
 }
 
 fn cached_as(store: &Store, voice: &Voice) -> Option<String> {
-    let voices::Kind::Qwen { speaker, .. } = voice.kind else {
+    let voices::Kind::Qwen {
+        speaker, manner, ..
+    } = voice.kind
+    else {
         return None;
     };
     let manifest = store.manifest();
@@ -126,6 +132,6 @@ fn cached_as(store: &Store, voice: &Voice) -> Option<String> {
     Some(format!(
         "{}/{model}/{speaker}/{engine}/{}",
         voice.model,
-        crate::qwen::manner()
+        crate::qwen::named(manner)
     ))
 }

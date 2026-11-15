@@ -227,11 +227,13 @@ impl Core {
             return;
         }
         let voice = voices::find(&self.config.speak.voice);
-        if let voices::Kind::Qwen { speaker, .. } = voice.kind
+        if let voices::Kind::Qwen {
+            speaker, manner, ..
+        } = voice.kind
             && self.server(voice).is_none()
             && let Some(paths) = models::qwen(&self.deps.store, voice)
         {
-            self.tts.warm(paths, speaker);
+            self.tts.warm(paths, speaker, manner);
         }
     }
 
@@ -532,6 +534,7 @@ mod tests {
                 codec: PathBuf::from("codec.gguf"),
             },
             speaker: "loli",
+            manner: crate::qwen::CALM,
             cached_as: "loli".into(),
         }
     }

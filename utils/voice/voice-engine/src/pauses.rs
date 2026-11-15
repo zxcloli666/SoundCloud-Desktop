@@ -10,6 +10,7 @@ const KEPT: f32 = 0.09;
 const SHARE: f32 = 0.4;
 const HELD: f32 = 2.0;
 const SPARE: f32 = 0.4;
+const SILENT: f32 = 1.5;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mark {
@@ -132,6 +133,40 @@ impl Pauses {
 
     fn samples(&self, seconds: f32) -> usize {
         (seconds * self.rate).round() as usize
+    }
+}
+
+pub struct Tail {
+    window: usize,
+    limit: usize,
+    spoke: bool,
+    still: usize,
+}
+
+impl Tail {
+    pub fn new(rate: u32) -> Tail {
+        let rate = rate.max(1) as f32;
+        Tail {
+            window: ((rate * WINDOW).round() as usize).max(1),
+            limit: (rate * SILENT).round() as usize,
+            spoke: false,
+            still: 0,
+        }
+    }
+
+    pub fn push(&mut self, samples: &[f32]) {
+        for window in samples.chunks(self.window) {
+            if quiet(window) {
+                self.still += window.len();
+            } else {
+                self.spoke = true;
+                self.still = 0;
+            }
+        }
+    }
+
+    pub fn fell_silent(&self) -> bool {
+        self.spoke && self.still >= self.limit
     }
 }
 
@@ -298,6 +333,33 @@ mod tests {
             let pieces: Vec<Vec<f32>> = whole.chunks(size).map(<[f32]>::to_vec).collect();
             assert_eq!(said(&mut speaking(), &pieces), at_once, "{size}");
         }
+    }
+
+    #[test]
+    fn a_line_that_keeps_silent_after_its_words_fell_silent() {
+        let mut tail = Tail::new(RATE);
+        tail.push(&loud(0.5));
+        tail.push(&still(1.4));
+        assert!(!tail.fell_silent());
+        tail.push(&still(0.1));
+        assert!(tail.fell_silent());
+    }
+
+    #[test]
+    fn a_pause_before_more_words_is_not_the_end_of_a_line() {
+        let mut tail = Tail::new(RATE);
+        tail.push(&loud(0.5));
+        tail.push(&still(1.4));
+        tail.push(&loud(0.2));
+        tail.push(&still(1.4));
+        assert!(!tail.fell_silent());
+    }
+
+    #[test]
+    fn silence_before_the_first_word_ends_nothing() {
+        let mut tail = Tail::new(RATE);
+        tail.push(&still(5.0));
+        assert!(!tail.fell_silent());
     }
 
     #[test]
