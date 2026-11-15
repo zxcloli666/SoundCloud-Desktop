@@ -132,10 +132,10 @@ mod tests {
             })
         );
         assert_eq!(
-            decoded("say", r#"{"text":"Psychosis","spoken":"Сайкозис"}"#),
+            decoded("say", r#"{"text":"Psychosis","spoken":"Психосис"}"#),
             Some(ChatEvent::Say {
                 text: "Psychosis".into(),
-                spoken: Some("Сайкозис".into()),
+                spoken: Some("Психосис".into()),
             })
         );
         assert_eq!(
@@ -206,9 +206,9 @@ mod tests {
         assert_eq!(
             json(ChatEvent::Say {
                 text: "Psychosis".into(),
-                spoken: Some("Сайкозис".into()),
+                spoken: Some("Психосис".into()),
             }),
-            json!({"kind": "say", "text": "Psychosis", "spoken": "Сайкозис"})
+            json!({"kind": "say", "text": "Psychosis", "spoken": "Психосис"})
         );
         assert_eq!(json(ChatEvent::Quiet), json!({"kind": "quiet"}));
         assert_eq!(json(ChatEvent::Done), json!({"kind": "done"}));

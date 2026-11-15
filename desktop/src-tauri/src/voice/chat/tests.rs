@@ -256,9 +256,9 @@ async fn events_arrive_while_the_reply_is_still_coming() {
 fn a_name_goes_to_the_voice_by_its_reading_and_plain_text_as_written() {
     let name = ChatEvent::Say {
         text: "Psychosis".into(),
-        spoken: Some("Сайкозис".into()),
+        spoken: Some("Психосис".into()),
     };
-    assert!(matches!(spoken(&name), Some(Chat::Text(read)) if read == "Сайкозис"));
+    assert!(matches!(spoken(&name), Some(Chat::Text(read)) if read == "Психосис"));
     assert!(matches!(spoken(&say("Включаю ")), Some(Chat::Text(read)) if read == "Включаю "));
 }
 
