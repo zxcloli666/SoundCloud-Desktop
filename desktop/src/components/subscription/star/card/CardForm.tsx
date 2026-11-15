@@ -2,7 +2,6 @@ import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   type CardFields,
-  EMPTY_CARD,
   type FieldName,
   formatCvv,
   formatExpiry,
@@ -12,6 +11,7 @@ import {
 import { Lock } from '../../../../lib/icons';
 import { Btn } from '../ui/Btn';
 import { CardFace } from './CardFace';
+import { useFieldHops } from './hops';
 
 const INPUT =
   'h-11 w-full rounded-[12px] border bg-ink/[0.04] px-3.5 font-mono text-[14px] tracking-[0.06em] text-ink outline-none transition-colors placeholder:text-ink-25 focus:bg-ink/[0.06]';
@@ -40,17 +40,20 @@ function Field({
 
 export const CardForm = memo(function CardForm({
   amount,
+  initial,
   invalid,
   onSubmit,
   onCancel,
 }: {
   amount: string | null;
+  initial: CardFields;
   invalid: FieldName[];
   onSubmit: (card: CardFields) => void;
   onCancel: () => void;
 }) {
   const { t } = useTranslation();
-  const [fields, setFields] = useState<CardFields>(EMPTY_CARD);
+  const [fields, setFields] = useState<CardFields>(initial);
+  const { slot, hop } = useFieldHops();
   const [flagged, setFlagged] = useState<FieldName[]>(invalid);
   const set = (name: FieldName, value: string) => {
     setFields((now) => ({ ...now, [name]: value }));
@@ -63,7 +66,6 @@ export const CardForm = memo(function CardForm({
     setFlagged(wrong);
     if (wrong.length > 0) return;
     onSubmit(fields);
-    setFields(EMPTY_CARD);
   };
   const typing = { autoComplete: 'off', autoCorrect: 'off', spellCheck: false } as const;
   const hidden = { 'data-lpignore': 'true', 'data-1p-ignore': 'true' } as const;
@@ -85,6 +87,8 @@ export const CardForm = memo(function CardForm({
             <input
               {...typing}
               {...hidden}
+              ref={slot(0)}
+              onKeyDown={hop(0)}
               className={`${INPUT} ${border('number')}`}
               inputMode="numeric"
               placeholder="0000 0000 0000 0000"
@@ -97,6 +101,8 @@ export const CardForm = memo(function CardForm({
           <input
             {...typing}
             {...hidden}
+            ref={slot(1)}
+            onKeyDown={hop(1)}
             className={`${INPUT} ${border('expiry')}`}
             inputMode="numeric"
             placeholder="MM/YY"
@@ -109,6 +115,8 @@ export const CardForm = memo(function CardForm({
             {...typing}
             {...hidden}
             type="password"
+            ref={slot(2)}
+            onKeyDown={hop(2)}
             className={`${INPUT} ${border('cvv')}`}
             inputMode="numeric"
             placeholder="•••"

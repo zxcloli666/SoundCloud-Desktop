@@ -203,7 +203,7 @@ Other chat windows (new chat, report, delete) are `[data-ui="modal"]`. Chat colo
 | `[data-ui="star-offer"]` | Personal offer in the receipt |
 | `[data-ui="star-pay"]` | Payment in progress; the state inside is `star-pay-qr`, `star-pay-open`, `star-pay-wait`, `star-pay-confirm` or `star-pay-failed` |
 | `[data-ui="star-timer"]` | Countdown ring of a QR or payment page |
-| `[data-ui="star-step"]` | Deep step, `data-step` is `card`, `sbp`, `trial`, `plan`, `redeem`, `invite` or `gifts`; card link form `[data-ui="star-card-link"]` with `data-stage`, card picture `[data-ui="star-card-face"]`, SBP link `[data-ui="star-sbp-link"]` with `data-stage` |
+| `[data-ui="star-step"]` | Deep step, `data-step` is `card`, `sbp`, `trial`, `plan`, `redeem`, `invite` or `gifts`; card link form `[data-ui="star-card-link"]` with `data-stage`, failed bind `[data-ui="star-card-failed"]` with `data-retry` (`same`, `edit` or `fresh`), card picture `[data-ui="star-card-face"]`, SBP link `[data-ui="star-sbp-link"]` with `data-stage` |
 | `[data-ui="star-trial"]` | Free trial |
 | `[data-ui="star-redeem"]` | Code entry |
 | `[data-ui="star-invite"]` | Invite a friend |

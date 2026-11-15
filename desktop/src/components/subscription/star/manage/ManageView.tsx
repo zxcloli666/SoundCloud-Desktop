@@ -14,6 +14,7 @@ export const ManageView = memo(function ManageView() {
     <>
       <Alerts />
       <MemberCard />
+      <Tenure />
       <Panel
         data-ui="star-manage"
         pad={false}
@@ -24,7 +25,6 @@ export const ManageView = memo(function ManageView() {
         <BindList />
         <SeatsRow />
       </Panel>
-      <Tenure />
       <Discord />
     </>
   );
