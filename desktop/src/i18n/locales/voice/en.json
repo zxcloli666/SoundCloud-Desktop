@@ -184,6 +184,34 @@
         "forget": "Forget"
       }
     },
+    "you": {
+      "title": "You and the assistant",
+      "chatOff": "Conversation is off",
+      "address": "Form of address",
+      "gender": {
+        "label": "Gender",
+        "male": "he",
+        "female": "she"
+      },
+      "form": {
+        "label": "Formality",
+        "informal": "casual",
+        "formal": "formal"
+      },
+      "name": "Name or nickname",
+      "role": "Role",
+      "roles": {
+        "friend": "Friend",
+        "assistant": "Assistant",
+        "butler": "Butler",
+        "mentor": "Mentor",
+        "own": "Custom"
+      },
+      "own": "Who should I be to you?",
+      "clear": "Clear",
+      "try": "Say hi",
+      "hello": "Hi!"
+    },
     "voices": {
       "loli": {
         "name": "Loli"

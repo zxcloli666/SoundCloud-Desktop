@@ -34,5 +34,7 @@ export function defaultConfig(): VoiceConfig {
     echo: 'auto',
     llm: true,
     boosts: { artists: [] },
+    listener: { gender: null, name: '', address: null },
+    relation: { role: null, own: '' },
   };
 }

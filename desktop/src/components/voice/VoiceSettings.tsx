@@ -15,6 +15,7 @@ import { ModelsCard } from './settings/ModelsCard';
 import { SpeakersCard } from './settings/SpeakersCard';
 import { VoiceLocked } from './settings/VoiceLocked';
 import { VoicePickerCard } from './settings/VoicePickerCard';
+import { YouCard } from './settings/YouCard';
 
 export function VoiceSettings() {
   const premium = usePremium();
@@ -38,6 +39,7 @@ export function VoiceSettings() {
           <MicrophonesCard />
           <VoicePickerCard />
           <ChatCard />
+          <YouCard canTalk={enabled && ready} />
           <SpeakersCard />
           <ModelsCard />
           <HistoryCard canTalk={enabled && ready} />

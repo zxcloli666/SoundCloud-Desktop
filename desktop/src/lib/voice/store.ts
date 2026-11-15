@@ -3,17 +3,18 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStorage } from '../tauri-storage';
 import type { ToolMark } from './chat/types';
 import { defaultConfig } from './defaults';
-import { SAVED_VERSION, upgradeSaved } from './saved';
+import { mergeConfig, SAVED_VERSION, upgradeSaved } from './saved';
 import type {
   ActivationConfig,
   Intent,
   ListenConfig,
+  ListenerConfig,
+  RelationConfig,
   SpeakConfig,
   VoiceConfig,
   VoiceSource,
   WakeConfig,
 } from './types';
-import { knownVoice } from './voice-ids';
 
 const HISTORY_CAP = 60;
 const WAKE_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -55,6 +56,8 @@ interface VoiceStore {
   patchWake: (patch: Partial<WakeConfig>) => void;
   patchListen: (patch: Partial<ListenConfig>) => void;
   patchSpeak: (patch: Partial<SpeakConfig>) => void;
+  patchListener: (patch: Partial<ListenerConfig>) => void;
+  patchRelation: (patch: Partial<RelationConfig>) => void;
   addRow: (row: HistoryRow) => void;
   toggleWrong: (id: string) => void;
   clearHistory: () => void;
@@ -86,6 +89,10 @@ export const useVoiceStore = create<VoiceStore>()(
         set((s) => ({ config: { ...s.config, listen: { ...s.config.listen, ...patch } } })),
       patchSpeak: (patch) =>
         set((s) => ({ config: { ...s.config, speak: { ...s.config.speak, ...patch } } })),
+      patchListener: (patch) =>
+        set((s) => ({ config: { ...s.config, listener: { ...s.config.listener, ...patch } } })),
+      patchRelation: (patch) =>
+        set((s) => ({ config: { ...s.config, relation: { ...s.config.relation, ...patch } } })),
       addRow: (row) =>
         set((s) => ({
           history: [row, ...s.history.filter((r) => r.id !== row.id)].slice(0, HISTORY_CAP),
@@ -115,27 +122,10 @@ export const useVoiceStore = create<VoiceStore>()(
       }),
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<VoiceStore>;
-        const base = defaultConfig();
-        const config = saved.config ?? current.config;
         return {
           ...current,
           ...saved,
-          config: {
-            ...base,
-            ...config,
-            activation: {
-              ...base.activation,
-              ...config.activation,
-              wake: { ...base.activation.wake, ...config.activation?.wake },
-            },
-            listen: { ...base.listen, ...config.listen },
-            speak: {
-              ...base.speak,
-              ...config.speak,
-              voice: knownVoice(config.speak?.voice),
-            },
-            boosts: { ...base.boosts, ...config.boosts },
-          },
+          config: mergeConfig(defaultConfig(), saved.config ?? current.config),
         };
       },
     },

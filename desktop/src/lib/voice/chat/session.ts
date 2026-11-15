@@ -107,6 +107,8 @@ function bodyOf(
       tools,
       results,
       quiet,
+      listener: config.listener,
+      relation: config.relation,
     });
   return { tools, body };
 }

@@ -31,6 +31,22 @@ export interface SpeakConfig {
   server: boolean;
 }
 
+export type ListenerGender = 'male' | 'female';
+export type Address = 'informal' | 'formal';
+export type RelationPreset = 'friend' | 'assistant' | 'butler' | 'mentor';
+export type RelationRole = RelationPreset | 'own';
+
+export interface ListenerConfig {
+  gender: ListenerGender | null;
+  name: string;
+  address: Address | null;
+}
+
+export interface RelationConfig {
+  role: RelationRole | null;
+  own: string;
+}
+
 export interface VoiceConfig {
   enabled: boolean;
   language: VoiceLanguage;
@@ -41,6 +57,8 @@ export interface VoiceConfig {
   echo: EchoMode;
   llm: boolean;
   boosts: { artists: string[] };
+  listener: ListenerConfig;
+  relation: RelationConfig;
 }
 
 export interface EngineConfig extends VoiceConfig {

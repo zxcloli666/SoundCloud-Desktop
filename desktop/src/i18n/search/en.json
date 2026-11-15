@@ -1230,6 +1230,34 @@
     "clear her memory",
     "saved notes"
   ],
+  "voice.you.title": [
+    "personalize the assistant",
+    "how she talks to me",
+    "relationship with the assistant",
+    "talking style",
+    "who we are to each other",
+    "persona settings"
+  ],
+  "voice.you.address": [
+    "what to call me",
+    "my name",
+    "nickname",
+    "pronouns",
+    "he or she",
+    "formal or casual",
+    "call me by name",
+    "polite form"
+  ],
+  "voice.you.role": [
+    "assistant role",
+    "butler",
+    "friend",
+    "mentor",
+    "roleplay",
+    "who the assistant is",
+    "custom role",
+    "act as"
+  ],
   "voice.speakers.title": [
     "smart speaker",
     "alice",

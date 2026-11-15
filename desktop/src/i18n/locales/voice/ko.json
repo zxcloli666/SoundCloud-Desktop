@@ -181,6 +181,34 @@
         "forget": "잊기"
       }
     },
+    "you": {
+      "title": "나와 비서",
+      "chatOff": "대화 꺼짐",
+      "address": "호칭",
+      "gender": {
+        "label": "성별",
+        "male": "남자",
+        "female": "여자"
+      },
+      "form": {
+        "label": "말투",
+        "informal": "반말",
+        "formal": "존댓말"
+      },
+      "name": "이름이나 별명",
+      "role": "역할",
+      "roles": {
+        "friend": "친구",
+        "assistant": "비서",
+        "butler": "집사",
+        "mentor": "멘토",
+        "own": "직접 입력"
+      },
+      "own": "내가 너에게 뭐가 되어 줄까?",
+      "clear": "지우기",
+      "try": "인사하기",
+      "hello": "안녕!"
+    },
     "voices": {
       "loli": {
         "name": "롤리"

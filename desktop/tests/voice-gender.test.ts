@@ -55,3 +55,35 @@ test('languages without gendered forms say the same for every voice', () => {
     for (const id of VOICE_IDS) assert.deepEqual(said(lang, id), said(lang, 'loli'), lang);
   }
 });
+
+function roles(lang: string, voice: string): string[] {
+  const t = i18n.getFixedT(lang);
+  const ids = ['friend', 'assistant', 'butler', 'mentor', 'own'];
+  return ids.map((id) => t(`voice.you.roles.${id}`, { context: voiceGender(voice) }));
+}
+
+test('the roles the assistant can take follow the gender of the voice', () => {
+  assert.deepEqual(roles('ru', 'loli'), [
+    'Подруга',
+    'Помощница',
+    'Дворецкий',
+    'Наставница',
+    'Своё',
+  ]);
+  assert.deepEqual(roles('ru', 'moriarty'), ['Друг', 'Помощник', 'Дворецкий', 'Наставник', 'Своё']);
+  assert.deepEqual(roles('pt', 'loli').slice(0, 4), ['Amiga', 'Assistente', 'Mordomo', 'Mentora']);
+  assert.deepEqual(roles('pt', 'moriarty').slice(0, 4), [
+    'Amigo',
+    'Assistente',
+    'Mordomo',
+    'Mentor',
+  ]);
+  for (const lang of ['en', 'tr', 'ko']) {
+    assert.deepEqual(roles(lang, 'moriarty'), roles(lang, 'loli'), lang);
+  }
+  for (const lang of ['ru', 'tr', 'ko', 'pt']) {
+    roles(lang, 'loli').forEach((role, i) => {
+      assert.notEqual(role, roles('en', 'loli')[i], `${lang} role ${i} is not translated`);
+    });
+  }
+});

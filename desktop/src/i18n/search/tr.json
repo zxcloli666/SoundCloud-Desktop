@@ -1075,6 +1075,29 @@
     "hafızayı temizle",
     "anıları sil"
   ],
+  "voice.you.title": [
+    "asistanı kişiselleştir",
+    "benimle nasıl konuşsun",
+    "asistanla ilişki",
+    "konuşma tarzı",
+    "birbirimiz için kimiz"
+  ],
+  "voice.you.address": [
+    "bana nasıl hitap etsin",
+    "adım",
+    "takma ad",
+    "siz diye hitap",
+    "sen diye konuş",
+    "erkek mi kadın mı"
+  ],
+  "voice.you.role": [
+    "asistanın rolü",
+    "kâhya",
+    "arkadaş",
+    "akıl hocası",
+    "kendi rolüm",
+    "kim gibi davransın"
+  ],
   "voice.speakers.title": [
     "akıllı hoparlör",
     "alisa",

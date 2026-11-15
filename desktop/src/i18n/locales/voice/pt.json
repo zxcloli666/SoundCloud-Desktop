@@ -189,6 +189,36 @@
         "forget": "Esquecer"
       }
     },
+    "you": {
+      "title": "Você e a personagem",
+      "chatOff": "Conversa desligada",
+      "address": "Tratamento",
+      "gender": {
+        "label": "Gênero",
+        "male": "ele",
+        "female": "ela"
+      },
+      "form": {
+        "label": "Formalidade",
+        "informal": "informal",
+        "formal": "formal"
+      },
+      "name": "Nome ou apelido",
+      "role": "Papel",
+      "roles": {
+        "friend": "Amiga",
+        "friend_male": "Amigo",
+        "assistant": "Assistente",
+        "butler": "Mordomo",
+        "mentor": "Mentora",
+        "mentor_male": "Mentor",
+        "own": "Personalizado"
+      },
+      "own": "Quem eu devo ser pra você?",
+      "clear": "Limpar",
+      "try": "Dizer oi",
+      "hello": "Oi!"
+    },
     "voices": {
       "loli": {
         "name": "Loli"

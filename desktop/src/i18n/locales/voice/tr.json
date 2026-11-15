@@ -184,6 +184,34 @@
         "forget": "Unut"
       }
     },
+    "you": {
+      "title": "Sen ve asistan",
+      "chatOff": "Muhabbet kapalı",
+      "address": "Hitap",
+      "gender": {
+        "label": "Cinsiyet",
+        "male": "erkek",
+        "female": "kadın"
+      },
+      "form": {
+        "label": "Sen ya da siz",
+        "informal": "sen",
+        "formal": "siz"
+      },
+      "name": "Ad ya da takma ad",
+      "role": "Rol",
+      "roles": {
+        "friend": "Arkadaş",
+        "assistant": "Asistan",
+        "butler": "Kâhya",
+        "mentor": "Akıl hocası",
+        "own": "Özel"
+      },
+      "own": "Senin için kim olayım?",
+      "clear": "Temizle",
+      "try": "Selam ver",
+      "hello": "Merhaba!"
+    },
     "voices": {
       "loli": {
         "name": "Loli"

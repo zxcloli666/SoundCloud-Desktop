@@ -1,4 +1,12 @@
-import type { EntityKind, Intent, VoiceCommand, VoiceLanguage } from '../types';
+import type {
+  Address,
+  EntityKind,
+  Intent,
+  ListenerGender,
+  RelationPreset,
+  VoiceCommand,
+  VoiceLanguage,
+} from '../types';
 import type { UndoEntry } from '../undo';
 
 export type ChatEvent =
@@ -81,6 +89,14 @@ export interface ChatMessage {
   text: string;
 }
 
+export interface ListenerBody {
+  gender?: ListenerGender;
+  name?: string;
+  address?: Address;
+}
+
+export type RelationBody = { preset: RelationPreset } | { own: string };
+
 export interface ChatBody {
   text: string;
   persona: string;
@@ -91,6 +107,8 @@ export interface ChatBody {
   tools: ToolSpec[];
   results: CallResult[];
   quiet: boolean;
+  listener?: ListenerBody;
+  relation?: RelationBody;
 }
 
 export interface ChatRequest {

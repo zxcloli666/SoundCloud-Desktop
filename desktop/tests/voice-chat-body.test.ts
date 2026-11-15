@@ -2,10 +2,13 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
   BLOCK_BYTES,
+  type BodyInput,
   buildBody,
   bytesOf,
   HISTORY_MAX,
+  NAME_MAX,
   NOTES_MAX,
+  OWN_MAX,
   TEXT_MAX,
   TOOLS_MAX,
 } from '../src/lib/voice/chat/body.ts';
@@ -22,11 +25,13 @@ import { addNote, dropNote, NOTE_MAX, NOTES_CAP } from '../src/lib/voice/chat/no
 import { pageName, pageTarget } from '../src/lib/voice/chat/pages.ts';
 import { chatTools, runTool } from '../src/lib/voice/chat/tools/index.ts';
 import type { CallResult, ChatMessage, ChatTool } from '../src/lib/voice/chat/types';
-import type { Entity } from '../src/lib/voice/types';
+import type { Entity, ListenerConfig, RelationConfig } from '../src/lib/voice/types';
 import { fakeApp, TRACK, toolEnv } from './voice-chat-fakes.ts';
 import { command, fakePort } from './voice-fake-port.ts';
 
 const NOW = 10_000_000;
+const NOBODY: ListenerConfig = { gender: null, name: '', address: null };
+const NO_ROLE: RelationConfig = { role: null, own: '' };
 
 function input(extra: Partial<Parameters<typeof buildBody>[0]> = {}) {
   return {
@@ -39,8 +44,18 @@ function input(extra: Partial<Parameters<typeof buildBody>[0]> = {}) {
     tools: chatTools(fakePort(), fakeApp(), []),
     results: [] as CallResult[],
     quiet: false,
+    listener: NOBODY,
+    relation: NO_ROLE,
     ...extra,
   };
+}
+
+function listenerOf(listener: Partial<ListenerConfig>) {
+  return buildBody(input({ listener: { ...NOBODY, ...listener } })).listener;
+}
+
+function relationOf(relation: Partial<RelationConfig>) {
+  return buildBody(input({ relation: { ...NO_ROLE, ...relation } })).relation;
 }
 
 function idleContext(candidates: Entity[]) {
@@ -91,6 +106,87 @@ test('text is cut by characters, not by code units', () => {
   const body = buildBody(input({ text: `  ${'🎧'.repeat(TEXT_MAX + 20)}  ` }));
   assert.equal(Array.from(body.text).length, TEXT_MAX);
   assert.ok(!body.text.includes('�'));
+});
+
+test('nothing chosen about the listener or the role sends neither key', () => {
+  const today = buildBody(input());
+  const unset: Pick<BodyInput, 'listener' | 'relation'>[] = [
+    { listener: { gender: null, name: '   ', address: null }, relation: NO_ROLE },
+    { listener: { ...NOBODY, name: '\n\t  ' }, relation: { role: 'own', own: '' } },
+    { listener: NOBODY, relation: { role: 'own', own: ' \r\n ' } },
+    { listener: NOBODY, relation: { role: null, own: 'текст, который больше не выбран' } },
+  ];
+  for (const extra of unset) {
+    const body = buildBody(input(extra));
+    assert.deepEqual(body, today);
+    assert.ok(!('listener' in body));
+    assert.ok(!('relation' in body));
+  }
+});
+
+test('each listener field goes alone, the unset ones are left out', () => {
+  assert.deepEqual(listenerOf({ gender: 'female' }), { gender: 'female' });
+  assert.deepEqual(listenerOf({ gender: 'male' }), { gender: 'male' });
+  assert.deepEqual(listenerOf({ name: '  Аня ' }), { name: 'Аня' });
+  assert.deepEqual(listenerOf({ address: 'informal' }), { address: 'informal' });
+  assert.deepEqual(listenerOf({ address: 'formal' }), { address: 'formal' });
+  assert.deepEqual(listenerOf({ gender: 'male', name: 'Шеф', address: 'formal' }), {
+    gender: 'male',
+    name: 'Шеф',
+    address: 'formal',
+  });
+  const body = buildBody(input({ listener: { ...NOBODY, name: 'Аня' } }));
+  assert.ok(!('relation' in body));
+});
+
+test('a ready role goes as a preset, the own role as its text', () => {
+  for (const preset of ['friend', 'assistant', 'butler', 'mentor'] as const) {
+    assert.deepEqual(relationOf({ role: preset }), { preset });
+    assert.deepEqual(relationOf({ role: preset, own: 'старый свой текст' }), { preset });
+  }
+  assert.deepEqual(relationOf({ role: 'own', own: '  Строгий редактор моих плейлистов ' }), {
+    own: 'Строгий редактор моих плейлистов',
+  });
+  assert.equal(relationOf({ role: 'own' }), undefined);
+  assert.equal(relationOf({ role: 'own', own: '   ' }), undefined);
+  const body = buildBody(input({ relation: { role: 'mentor', own: '' } }));
+  assert.ok(!('listener' in body));
+});
+
+test('the name and the own text are cut to 40 and 300 characters, not code units', () => {
+  const name = listenerOf({ name: '🎧'.repeat(NAME_MAX + 5) })?.name ?? '';
+  assert.equal(Array.from(name).length, NAME_MAX);
+  assert.ok(!name.includes('�'));
+  assert.deepEqual(listenerOf({ name: 'ж'.repeat(NAME_MAX) }), { name: 'ж'.repeat(NAME_MAX) });
+  assert.deepEqual(listenerOf({ name: `${'a'.repeat(NAME_MAX - 1)} tail` }), {
+    name: 'a'.repeat(NAME_MAX - 1),
+  });
+  assert.deepEqual(relationOf({ role: 'own', own: 'я'.repeat(OWN_MAX + 50) }), {
+    own: 'я'.repeat(OWN_MAX),
+  });
+});
+
+test('control characters and line breaks become spaces, nothing else is collapsed', () => {
+  assert.deepEqual(listenerOf({ name: 'Аня\nМария' }), { name: 'Аня Мария' });
+  assert.deepEqual(listenerOf({ name: '\r\nЗая\t\t' }), { name: 'Зая' });
+  assert.deepEqual(listenerOf({ name: 'Ли  Сон' }), { name: 'Ли  Сон' });
+  const coder = '\u{1F469}‍\u{1F4BB} Аня';
+  assert.deepEqual(listenerOf({ name: coder }), { name: coder });
+  const own = 'а\u0000б\u0007в\u007fг\u0085д е ж\r\nз';
+  assert.deepEqual(relationOf({ role: 'own', own }), { own: 'а б в г д е ж  з' });
+});
+
+test('the listener and the role reach the wire in the agreed shape', () => {
+  const body = buildBody(
+    input({
+      listener: { gender: 'female', name: 'Аня', address: 'informal' },
+      relation: { role: 'butler', own: '' },
+    }),
+  );
+  assert.equal(
+    JSON.stringify({ listener: body.listener, relation: body.relation }),
+    '{"listener":{"gender":"female","name":"Аня","address":"informal"},"relation":{"preset":"butler"}}',
+  );
 });
 
 test('history keeps the latest messages and starts with the user', () => {

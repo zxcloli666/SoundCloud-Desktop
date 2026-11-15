@@ -1063,6 +1063,29 @@
     "apagar lembranças",
     "limpar a memória dela"
   ],
+  "voice.you.title": [
+    "personalizar a assistente",
+    "como ela fala comigo",
+    "relação com a assistente",
+    "jeito de falar",
+    "quem somos um para o outro"
+  ],
+  "voice.you.address": [
+    "como me chamar",
+    "meu nome",
+    "apelido",
+    "me tratar por senhor",
+    "formal ou informal",
+    "ele ou ela"
+  ],
+  "voice.you.role": [
+    "papel da assistente",
+    "mordomo",
+    "amiga",
+    "mentora",
+    "papel personalizado",
+    "agir como"
+  ],
   "voice.speakers.title": [
     "caixa inteligente",
     "alice",
