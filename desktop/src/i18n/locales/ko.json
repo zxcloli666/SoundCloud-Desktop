@@ -1712,7 +1712,7 @@
     },
     "method": {
       "sbp": {
-        "title": "SBP",
+        "title": "SBP (RU)",
         "body": "은행 앱에서 QR 결제"
       },
       "cardRu": {
@@ -1720,7 +1720,7 @@
         "body": "러시아 은행의 MIR, Visa/MC"
       },
       "cardIntl": {
-        "title": "해외 카드",
+        "title": "월드와이드 카드",
         "body": "해외 발급 카드"
       },
       "cryptoPlatega": {
@@ -2026,20 +2026,23 @@
       "chargeFailed": "결제되지 않았습니다: 잔액이 부족하거나 은행에서 구독이 해지되었습니다.",
       "payOnce": "자동 갱신 없이 결제",
       "card": {
+        "link": "카드 연결",
         "linked": "카드 연결됨",
         "removeYes": "카드 삭제",
         "removed": "카드를 삭제했습니다",
         "charging": "연결된 카드로 결제 중…"
       },
       "card_usd": {
-        "linked": "USD 카드 연결됨",
+        "link": "월드와이드 카드 연결",
+        "linked": "월드와이드 카드 연결됨",
         "removeYes": "카드 삭제"
       },
       "sbp": {
-        "title": "SBP 자동 갱신",
-        "linked": "SBP 연결됨",
-        "removeYes": "SBP 연결 해제",
-        "removed": "SBP 연결을 해제했습니다",
+        "title": "SBP (RU) 자동 갱신",
+        "link": "SBP (RU) 연결",
+        "linked": "SBP (RU) 연결됨",
+        "removeYes": "SBP (RU) 연결 해제",
+        "removed": "SBP (RU) 연결을 해제했습니다",
         "cancelInBank": "은행 앱에서도 구독을 해지하세요. 여기서 해제해도 은행에서는 해지되지 않습니다.",
         "charging": "연결된 SBP로 결제 중…",
         "step": {

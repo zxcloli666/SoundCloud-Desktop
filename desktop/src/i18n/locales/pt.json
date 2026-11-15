@@ -1782,7 +1782,7 @@
     },
     "method": {
       "sbp": {
-        "title": "SBP",
+        "title": "SBP (RU)",
         "body": "QR no app do seu banco"
       },
       "cardRu": {
@@ -1790,7 +1790,7 @@
         "body": "MIR, Visa/MC de bancos russos"
       },
       "cardIntl": {
-        "title": "Cartão estrangeiro",
+        "title": "Cartão Worldwide",
         "body": "Emissor internacional"
       },
       "cryptoPlatega": {
@@ -2114,20 +2114,23 @@
       "chargeFailed": "O pagamento não passou: saldo insuficiente ou a assinatura foi cancelada no banco.",
       "payOnce": "Pagar sem renovação automática",
       "card": {
+        "link": "Vincular cartão",
         "linked": "Cartão vinculado",
         "removeYes": "Remover cartão",
         "removed": "Cartão removido",
         "charging": "Cobrando no cartão vinculado…"
       },
       "card_usd": {
-        "linked": "Cartão em USD vinculado",
+        "link": "Vincular cartão Worldwide",
+        "linked": "Cartão Worldwide vinculado",
         "removeYes": "Remover cartão"
       },
       "sbp": {
-        "title": "SBP com renovação automática",
-        "linked": "SBP vinculado",
-        "removeYes": "Desvincular SBP",
-        "removed": "SBP desvinculado",
+        "title": "SBP (RU) com renovação automática",
+        "link": "Vincular SBP (RU)",
+        "linked": "SBP (RU) vinculado",
+        "removeYes": "Desvincular SBP (RU)",
+        "removed": "SBP (RU) desvinculado",
         "cancelInBank": "Cancele a assinatura também no app do banco: desvincular aqui não a cancela lá.",
         "charging": "Cobrando pelo SBP vinculado…",
         "step": {

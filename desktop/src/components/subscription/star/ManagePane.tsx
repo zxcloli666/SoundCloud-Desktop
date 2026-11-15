@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
@@ -13,9 +13,11 @@ import { PAY_SUB_KEY, usePaySubscription } from '../../../lib/star-offer';
 import { useSharedOverview } from '../../../lib/star-shared';
 import { useStarStatus } from '../../../lib/star-status';
 import { DiscordCard } from '../DiscordCard';
+import { bindOf } from '../providers';
 import { ExpiringRow } from './ExpiringRow';
 import { PageLink } from './LegalNote';
 import { LinkedBind } from './LinkedBind';
+import { LinkRow } from './LinkRow';
 import { MemberCard } from './MemberCard';
 import { primaryEntitlement } from './meta';
 import { GhostBtn } from './StarConsole';
@@ -54,6 +56,13 @@ export const ManagePane = memo(function ManagePane({
   const linked = linkedBinds(useBinds().data);
   const cardSupported = useCardSupported();
   const removeBind = useRemoveBind();
+  const plans = useQuery({ queryKey: ['pay', 'plans'], queryFn: payApi.plans }).data;
+  const bindable = [
+    ...new Set((plans?.routes ?? []).map((r) => (r.renew ? bindOf(r.renew) : null))),
+  ].filter(
+    (m): m is BoostyMethod =>
+      m !== null && !linked.some((l) => l.method === m) && (m === 'sbp' || cardSupported),
+  );
   const trial = data?.trial?.active ?? null;
   const [askTrial, setAskTrial] = useState(false);
 
@@ -122,6 +131,9 @@ export const ManagePane = memo(function ManagePane({
           onRemove={() => removeBind.mutate(method)}
           onRelink={method === 'sbp' || cardSupported ? () => onRelink(method) : undefined}
         />
+      ))}
+      {bindable.map((method) => (
+        <LinkRow key={method} method={method} onLink={() => onRelink(method)} />
       ))}
 
       <div className="flex items-center justify-between gap-3 rounded-[14px] border border-ink/[0.08] bg-ink/[0.03] px-4 py-3">

@@ -71,7 +71,7 @@ export const CardStage = memo(function CardStage({
         </div>
       )}
       {stage.kind === 'form' && (
-        <CardForm amount={amount} invalid={stage.invalid} onSubmit={onSubmit} />
+        <CardForm amount={amount} invalid={stage.invalid} onSubmit={onSubmit} onCancel={onBack} />
       )}
       {stage.kind === 'working' && (
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
