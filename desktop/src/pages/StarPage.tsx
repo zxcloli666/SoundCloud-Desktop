@@ -172,7 +172,13 @@ const StarFlow = memo(function StarFlow({
     const soloPlan = soloPlans.find((p) => p.id === planId);
     const shared = plansQuery.data?.shared ?? [];
     return [
-      { id: 'solo', people: 1, each: soloPlan?.price.RUB ?? 0, savePct: 0 },
+      {
+        id: 'solo',
+        people: 1,
+        each: offerCo.offer?.price.RUB ?? soloPlan?.price.RUB ?? 0,
+        was: offerCo.offer?.list_price?.RUB,
+        savePct: 0,
+      },
       ...shared.map((s) => {
         const pp = perPerson(
           s.plans.find((p) => p.id === planId),
@@ -182,7 +188,7 @@ const StarFlow = memo(function StarFlow({
         return { id: s.tier, people: s.seats + 1, ...pp };
       }),
     ];
-  }, [plansQuery.data, soloPlans, planId]);
+  }, [plansQuery.data, soloPlans, planId, offerCo.offer]);
   const changeTier = useCallback((next: TierId) => {
     setTier(next);
     if (next !== 'solo') setRecipient('self');
@@ -460,6 +466,7 @@ const StarFlow = memo(function StarFlow({
                   status={status}
                   serialSeed={checkout?.order_id ?? handle}
                   gift={gift}
+                  offer={offerCo.offer}
                   inviteDays={inviteDays}
                   trial={
                     trial.offer?.available ? { days: trial.offer.days, amount: trial.amount } : null
@@ -494,6 +501,7 @@ const StarFlow = memo(function StarFlow({
                 selectedId={planId}
                 onSelect={setPlanId}
                 onIgnite={goMethod}
+                strike={offerCo.offer?.list_price?.RUB}
                 onRedeem={() => setStep('redeem')}
                 recipient={recipient}
                 onRecipient={setRecipient}

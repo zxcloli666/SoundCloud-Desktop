@@ -2801,12 +2801,18 @@
     "proof_many": "{{count}} faixas em um mês",
     "proof_zero": "{{count}} faixas em um mês",
     "first": {
-      "one": "Seu primeiro mês de STAR - {{price}}",
-      "two": "Seus dois primeiros meses de STAR - {{price}}"
+      "one": "Seu primeiro mês de STAR — {{price}}",
+      "two": "Seus dois primeiros meses de STAR — {{price}}"
     },
     "short": {
       "one": "Primeiro mês {{price}}",
       "two": "Dois meses {{price}}"
+    },
+    "readout": {
+      "one": "primeiro mês, depois {{price}}/mês",
+      "two": "primeiros 2 meses, depois {{price}}/mês",
+      "plainOne": "primeiro mês",
+      "plainTwo": "primeiros 2 meses"
     },
     "renews": "Depois {{price}} por mês, a partir de {{date}}",
     "until": "Válido até {{date}}",

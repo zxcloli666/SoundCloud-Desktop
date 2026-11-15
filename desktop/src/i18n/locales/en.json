@@ -2836,12 +2836,18 @@
     "proof_one": "{{count}} track in a month",
     "proof_other": "{{count}} tracks in a month",
     "first": {
-      "one": "Your first month of STAR - {{price}}",
-      "two": "Your first two months of STAR - {{price}}"
+      "one": "Your first month of STAR — {{price}}",
+      "two": "Your first two months of STAR — {{price}}"
     },
     "short": {
       "one": "First month {{price}}",
       "two": "Two months {{price}}"
+    },
+    "readout": {
+      "one": "first month, then {{price}}/mo",
+      "two": "first 2 months, then {{price}}/mo",
+      "plainOne": "first month",
+      "plainTwo": "first 2 months"
     },
     "renews": "Then {{price}} a month from {{date}}",
     "until": "Valid until {{date}}",

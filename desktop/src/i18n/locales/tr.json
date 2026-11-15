@@ -2735,12 +2735,18 @@
     "proof_one": "Bir ayda {{count}} parça",
     "proof_other": "Bir ayda {{count}} parça",
     "first": {
-      "one": "STAR'ın ilk ayı - {{price}}",
-      "two": "STAR'ın ilk iki ayı - {{price}}"
+      "one": "STAR'ın ilk ayı – {{price}}",
+      "two": "STAR'ın ilk iki ayı – {{price}}"
     },
     "short": {
       "one": "İlk ay {{price}}",
       "two": "İki ay {{price}}"
+    },
+    "readout": {
+      "one": "ilk ay, sonra ayda {{price}}",
+      "two": "ilk 2 ay, sonra ayda {{price}}",
+      "plainOne": "ilk ay",
+      "plainTwo": "ilk 2 ay"
     },
     "renews": "Sonra ayda {{price}}, {{date}} tarihinden itibaren",
     "until": "{{date}} tarihine kadar",

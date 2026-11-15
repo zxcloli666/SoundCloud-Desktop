@@ -2652,12 +2652,18 @@
   "starOffer": {
     "proof_other": "한 달에 {{count}}곡",
     "first": {
-      "one": "첫 달 STAR - {{price}}",
-      "two": "첫 두 달 STAR - {{price}}"
+      "one": "첫 달 STAR: {{price}}",
+      "two": "첫 두 달 STAR: {{price}}"
     },
     "short": {
       "one": "첫 달 {{price}}",
       "two": "두 달 {{price}}"
+    },
+    "readout": {
+      "one": "첫 달, 이후 월 {{price}}",
+      "two": "첫 2개월, 이후 월 {{price}}",
+      "plainOne": "첫 달",
+      "plainTwo": "첫 2개월"
     },
     "renews": "이후 월 {{price}}, {{date}}부터",
     "until": "{{date}}까지",
