@@ -1,24 +1,27 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from '../../../lib/icons';
-import type { BoostyMethod } from '../../../lib/pay-client';
-import type { ActivationOption } from '../providers';
+import type { BindFlow, BindState, MethodId, PayMethod } from '../../../lib/pay-client';
+import { passDate } from '../../../lib/star-format';
+import { tileOf } from '../methods';
 import { LinkedBind } from './LinkedBind';
 import { MethodTiles } from './MethodTiles';
 import { LinkBtn, PrimaryBtn, Ttl } from './StarConsole';
 
 export interface RenewSwitch {
   available: boolean;
-  forced: boolean;
   on: boolean;
   periodDays: number | null;
-  otherProvider: boolean;
+  nextAt: number | null;
+  charge: string;
+  ownLink: boolean;
 }
 
 export interface BindRow {
-  method: BoostyMethod;
-  bound: boolean | null;
-  rebind: boolean;
+  method: MethodId;
+  flow: BindFlow;
+  state: BindState | null;
+  oneOff: boolean;
   removing: boolean;
   onRemove: () => void;
 }
@@ -36,9 +39,9 @@ export const MethodPane = memo(function MethodPane({
   onOnce,
   onContinue,
 }: {
-  options: ActivationOption[];
-  selected: ActivationOption | null;
-  onSelect: (o: ActivationOption) => void;
+  options: PayMethod[];
+  selected: PayMethod | null;
+  onSelect: (m: PayMethod) => void;
   renew: RenewSwitch;
   onRenew: (on: boolean) => void;
   bind: BindRow | null;
@@ -49,25 +52,34 @@ export const MethodPane = memo(function MethodPane({
   onContinue: () => void;
 }) {
   const { t } = useTranslation();
+  const linked = bind?.state === 'linked' || bind?.state === 'rebind';
+  const needsLink = bind !== null && bind.state !== 'linked';
   return (
     <div>
       <Ttl>{t('starpass.howToPay')}</Ttl>
       <MethodTiles
-        tiles={options}
-        selected={selected?.kind ?? null}
+        tiles={options.map((m) => tileOf(m.id))}
+        selected={selected?.id ?? null}
         onSelect={(kind) => {
-          const opt = options.find((o) => o.kind === kind);
+          const opt = options.find((o) => o.id === kind);
           if (opt) onSelect(opt);
         }}
       />
 
       {selected && <RenewToggle renew={renew} onRenew={onRenew} />}
 
-      {(bind?.bound || bind?.rebind) && (
+      {bind?.oneOff && (
+        <p className="mt-3 text-[11.5px] leading-relaxed text-ink-45">
+          {t(bind.flow === 'qr' ? 'starpass.bind.oneOffQr' : 'starpass.bind.oneOffCard')}
+        </p>
+      )}
+
+      {bind && linked && (
         <div className="mt-3.5">
           <LinkedBind
             method={bind.method}
-            rebind={bind.rebind}
+            flow={bind.flow}
+            rebind={bind.state === 'rebind'}
             removing={bind.removing}
             onRemove={bind.onRemove}
           />
@@ -75,10 +87,10 @@ export const MethodPane = memo(function MethodPane({
       )}
 
       <div className="mt-[18px] flex flex-wrap items-center gap-3">
-        <PrimaryBtn onClick={onContinue} disabled={!selected || pending || bind?.bound === null}>
+        <PrimaryBtn onClick={onContinue} disabled={!selected || pending || bind?.state === null}>
           {pending
             ? t('starpass.creating')
-            : `${t(bind?.bound === false ? 'starpass.bind.linkPay' : 'starpass.continue')} · ${amount}`}
+            : `${t(needsLink ? 'starpass.bind.linkPay' : 'starpass.continue')} · ${amount}`}
         </PrimaryBtn>
         {error && <span className="text-[12.5px] text-red-300/95">{error}</span>}
         {onOnce && <LinkBtn onClick={onOnce}>{t('starpass.bind.payOnce')}</LinkBtn>}
@@ -95,7 +107,7 @@ const RenewToggle = memo(function RenewToggle({
   onRenew: (on: boolean) => void;
 }) {
   const { t } = useTranslation();
-  const locked = !renew.available || renew.forced;
+  const locked = !renew.available;
   return (
     <button
       type="button"
@@ -112,15 +124,20 @@ const RenewToggle = memo(function RenewToggle({
         </span>
         <span className="block text-[11px] text-ink-40">
           {renew.available
-            ? t(renew.otherProvider ? 'starpass.renew.everyOther' : 'starpass.renew.every', {
+            ? t(renew.ownLink ? 'starpass.renew.everyOther' : 'starpass.renew.every', {
                 count: renew.periodDays ?? 30,
               })
             : t('starpass.renew.unavailable')}
         </span>
+        {renew.on && renew.nextAt && (
+          <span className="block text-[11px] tabular-nums text-ink-60">
+            {t('starpass.renew.next', { date: passDate(renew.nextAt), charge: renew.charge })}
+          </span>
+        )}
         {renew.available && (
           <span className="block text-[11px] text-ink-40">{t('starpass.renew.refund')}</span>
         )}
-        {renew.available && renew.otherProvider && (
+        {renew.available && renew.ownLink && !renew.on && (
           <span className="block text-[11px] text-ink-40">{t('starpass.renew.onceNote')}</span>
         )}
       </span>

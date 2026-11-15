@@ -1,7 +1,8 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProviderGlyph } from '../ProviderGlyph';
-import type { ActivationKind, MethodTile } from '../providers';
+import type { MethodId } from '../../../lib/pay-client';
+import { MethodGlyph } from '../MethodGlyph';
+import type { MethodTile } from '../methods';
 
 export const MethodTiles = memo(function MethodTiles({
   tiles,
@@ -9,8 +10,8 @@ export const MethodTiles = memo(function MethodTiles({
   onSelect,
 }: {
   tiles: MethodTile[];
-  selected: ActivationKind | null;
-  onSelect: (kind: ActivationKind) => void;
+  selected: MethodId | null;
+  onSelect: (kind: MethodId) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -34,7 +35,7 @@ export const MethodTiles = memo(function MethodTiles({
             }}
           >
             <span className="mb-2.5 grid size-[30px] place-items-center rounded-[9px] border border-ink/[0.08] bg-ink/[0.04]">
-              <ProviderGlyph kind={tile.kind} />
+              <MethodGlyph kind={tile.kind} />
             </span>
             <div className="text-[12.5px] font-semibold text-ink-90">
               {t(`starpass.method.${tile.i18n}.title`)}

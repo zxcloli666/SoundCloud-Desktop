@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { type OrderStatus, payApi } from './pay-client';
+import { type OrderStatusId, payApi } from './pay-client';
 import { requestPremiumRecheck } from './premium-cache';
 
 const POLL_MS = 2500;
-const TERMINAL = new Set<OrderStatus['status']>(['granted', 'failed', 'expired', 'refunded']);
+const TERMINAL = new Set<OrderStatusId>(['granted', 'failed', 'expired', 'refunded']);
 
 /**
  * Poll a checkout order until it reaches a terminal status. On `granted` it

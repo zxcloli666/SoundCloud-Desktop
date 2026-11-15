@@ -8,7 +8,7 @@ import {
   formatExpiry,
   formatNumber,
   invalidFields,
-} from '../../../../lib/boosty-card/validate';
+} from '../../../../lib/card-link/validate';
 import { Lock } from '../../../../lib/icons';
 import { LinkBtn, PrimaryBtn } from '../StarConsole';
 import { CardFace } from './CardFace';

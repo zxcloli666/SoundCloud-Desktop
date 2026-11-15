@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/auth';
-import { useCardSupported } from './boosty-binds';
 import { trackedInvoke as invoke } from './diagnostics';
 import { payApi, type TrialStart } from './pay-client';
 import { requestPremiumRecheck, usePremium } from './premium-cache';
@@ -11,7 +10,7 @@ import { trialOffer } from './star-trial';
 
 export const PAY_SUB_KEY = ['pay', 'subscription'] as const;
 
-export type StarIntent = 'buy' | 'extend' | 'trial' | 'gift' | 'invite';
+export type StarIntent = 'buy' | 'extend' | 'trial' | 'gift' | 'invite' | 'confirm';
 
 export const TRIAL_DAYS = 3;
 
@@ -30,8 +29,7 @@ export function usePaySubscription(enabled = true) {
 export function useStarOffer() {
   const premium = usePremium();
   const sub = usePaySubscription(!premium).data;
-  const cardSupported = useCardSupported();
-  const offer = premium ? null : trialOffer(sub, cardSupported);
+  const offer = premium ? null : trialOffer(sub);
   return { premium, trial: offer?.available === true, trialDays: offer?.days ?? TRIAL_DAYS };
 }
 
@@ -43,7 +41,7 @@ export function useOpenStar() {
   );
 }
 
-async function deviceId(): Promise<string | null> {
+export async function deviceId(): Promise<string | null> {
   try {
     return await invoke<string>('call_device_id');
   } catch {

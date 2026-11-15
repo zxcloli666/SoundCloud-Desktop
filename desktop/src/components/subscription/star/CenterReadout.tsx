@@ -1,11 +1,10 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check, Loader2, RefreshCw } from '../../../lib/icons';
-import type { Plan } from '../../../lib/pay-client';
+import type { Currency, Plan } from '../../../lib/pay-client';
 import { daysUntil, passDate, passSerial, usd } from '../../../lib/star-format';
 import type { StarStatus } from '../../../lib/star-status';
 import type { PayPhase } from '../PayStatus';
-import type { Currency } from '../providers';
 import { monthsKey, type Step } from './meta';
 
 // Layered shadow: a tight dark halo keeps the display glyphs crisp over the
@@ -52,14 +51,18 @@ function Hero({ children, unit, size }: { children: ReactNode; unit?: ReactNode;
 
 function priceOf(plan: Plan | null, currency: Currency) {
   if (!plan) return { amount: '—', unit: '₽', perMonth: '' };
-  const cents = currency === 'USD' ? plan.price_usd_cents : undefined;
-  if (cents != null) {
+  if (currency === 'USD') {
+    const cents = plan.price.USD;
     return { amount: usd(cents), unit: undefined, perMonth: usd(Math.round(cents / plan.months)) };
   }
+  if (currency === 'XTR' && plan.price.XTR != null) {
+    const stars = plan.price.XTR;
+    return { amount: `${stars}`, unit: '★', perMonth: `${Math.round(stars / plan.months)} ★` };
+  }
   return {
-    amount: `${plan.price_rub}`,
+    amount: `${plan.price.RUB}`,
     unit: '₽',
-    perMonth: `${Math.round(plan.price_rub / plan.months)} ₽`,
+    perMonth: `${Math.round(plan.price.RUB / plan.months)} ₽`,
   };
 }
 
@@ -77,11 +80,11 @@ const LEFT_TONE = { calm: 'text-accent', soon: 'text-amber-400', urgent: 'text-b
 function StatusCaption({ status }: { status: StarStatus }) {
   const { t } = useTranslation();
   if (status.kind === 'open') return t('star.active');
-  if (status.kind === 'relink') {
+  if (status.kind === 'relink' || status.kind === 'confirm') {
     return (
       <span className="inline-flex items-center gap-1.5 text-amber-400">
         <RefreshCw size={13} strokeWidth={2.4} />
-        {t('star.relink')}
+        {t(status.kind === 'relink' ? 'star.relink' : 'star.confirmPay')}
       </span>
     );
   }

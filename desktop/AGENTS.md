@@ -34,7 +34,7 @@
 - **souvlaki** — системные media controls (MPRIS / SMTC / NowPlaying)
 - **discord-rich-presence** — Discord RPC
 - **chrono / tracing / serde / sha2 / base64 / hex** — служебные
-- Внутренние крейты из `../utils/`: `boosty-card`, `call-client`, `decrypt-client`; `sc-fingerprint` берётся из SoundCloud-Backend по тегу, ядро чата `sc-chat` из SoundCloud-Core по тегу `sc-chat-v<версия>`, правки ядра идут в Core с новым тегом
+- Внутренние крейты из `../utils/`: `pay-card`, `call-client`, `decrypt-client`; `sc-fingerprint` берётся из SoundCloud-Backend по тегу, ядро чата `sc-chat` из SoundCloud-Core по тегу `sc-chat-v<версия>`, правки ядра идут в Core с новым тегом
 
 ## Структура
 
@@ -112,7 +112,7 @@ desktop/
                          system_proxy (системный прокси на каждом клиенте),
                          netcheck + health (проверка сети, поиск zapret/WinDivert, вердикт),
                          call (call-client agent, флаг enabled в `call_enabled.json`)
-      boosty_card/       оплата картой через Boosty: окно 3DS и команды; логика в `../utils/boosty-card`
+      pay_card/          раннер подписанного Lua от pay: окно страницы банка и команды `card_*`; логика в `../utils/pay-card`
       track_cache/       commands, state, direct_download, sc_anon/{mod,hls}
       discord/           mod + commands
       import/            ym (Yandex Music likes → SoundCloud)
@@ -217,22 +217,23 @@ desktop/
   `app_log_dir/desktop.log`). Фронту аналог — `trackedInvoke` + watchdog event-loop в `lib/diagnostics.ts`.
 - **Проверка**: `cargo check` после каждого изменения в Rust.
 
-## Оплата через Boosty: карта и СБП
+## Оплата STAR (pay api 2)
 
-Способы оплаты и автопродление приходят из `GET /api/plans` → `routes` (`components/subscription/providers.ts`): переключатель автопродления берёт `renew`, выключенный берёт `once`. Маршруты в клиенте не зашивать, их решает pay.
+Клиент не знает провайдеров: в коде и i18n нет их имён, маршрут выбирает pay. Подписи и значки способов (`sbp`, `card_ru`, `card_intl`, `crypto`, `stars`) лежат в клиенте по id способа (`components/subscription/methods.ts`); новый вид способа требует релиза.
 
-СБП привязывается без Lua: pay отдаёт QR, клиент опрашивает `step` раз в 3 с и при уходе зовёт `cancel` (`lib/boosty-sbp.ts`, `components/subscription/star/sbp/`). Привязки и их снятие: `lib/boosty-binds.ts`. Привязка с `rebind` в `GET /api/boosty/card` ещё есть, но продление по ней не спишется: она считается непривязанной (`lib/boosty-bind-state.ts`), а в Manage её привязывают заново тем же потоком без оплаты. Продление на такой привязке в статусе STAR (`lib/star-status.ts`) идёт как `relink`, без суммы и даты списания: способ берётся из `renewal.method`, у старого pay без поля из валюты и привязок (`renewalRelink`).
+- `lib/pay-client.ts` шлёт на каждый запрос `x-app-version` (версия приложения) и `x-pay-caps` (`runner=2; flows=open,qr,card_form,confirm`, без ключей раннера `runner=0; flows=open,qr`). Ответ api 2 без `"api": 2` это ошибка `PayShapeError`, а не старый формат.
+- `GET /api/plans` → `methods`: переключатель автопродления доступен только для планов из `renew_plans`. Без автопродления на способе с привязкой pay списывает один раз (`recurring: false`), сначала привязка, если её нет. `gift`/`shared` из способа решают, можно ли подарок и общий тариф.
+- Заказ (`/api/checkout`, `/api/orders/{id}`) ведёт `action`: `qr`, `open`, `wait` (списание по привязке), `confirm` (3DS списания: страница открывается в окне раннера по подписанному bundle, `lib/charge-confirm.ts`). Итог решает опрос заказа; `reason` даёт понятный текст (`starpass.order.reason.*`).
+- Привязки: `GET /api/binds` (`state`, `can_link`, `flow`, `trial`), старт, `step`, `token`, `cancel`, `remove` под `/api/binds/*` (`lib/binds.ts`, `lib/card-link/`, `lib/sbp-link.ts`). Строки «Привязать …» в Manage берутся из `can_link`. Отмена в форме карты есть и после отправки: pay сам удалит привязку отменённой сессии.
+- `GET /api/me/subscription`: `sources[].category`, `renewal` с `method`, `relink`, `needs_confirm`, `trial`. `needs_confirm` показывается на странице STAR и в lock-overlay с кнопкой подтверждения (новая оплата продления). Отмена автопродления и пробного: `POST /api/subscription/cancel {method}`.
 
-Пробный STAR берут только через привязку с автопродлением: `trial` из `GET /api/me/subscription` (`lib/star-trial.ts`, без поля пробного нет), шаг `trial` выбирает способ из `trial.methods`, дальше обычный поток привязки без оплаты с `purpose: "trial"` и id устройства (`useBindOnly`, `trial/`). Итог приходит в `step` (`trial` или `trial_refused`) или сразу в ответе `start` (`status: "granted"`). Отмена в Manage (`TrialRow`, `POST /api/trial/cancel`): STAR кончается сразу, переключатель автопродления во время пробного ведёт туда же.
+Раннер (`utils/pay-card`, без tauri; `src-tauri/src/pay_card/`): контракт Lua 2 из `Internal/pay/README.md`. Проверяет подпись Ed25519 (`scd-pay-bundle-v2`), `contract`, серийник выше 10^10 и не ниже сохранённого для entry (`boosty_bundle_serial.txt` для `bind`, `boosty_bundle_serial_token.txt` для `token`, остальные `pay_bundle_serial_<entry>.txt`). `params` передаются в Lua как есть, плюс `env` (`language`, `tz_offset`). Из Lua читается только нормализованный итог (`invalid`, `failed`, `page`, `token`, `succeeded`, `pending`); окно страницы открывается только на `page_hosts` и закрывается на `result_url` из bundle, тогда Lua получает `action=result`.
 
-Карта вводится в форме STAR (`components/subscription/star/card/`) без имени держателя (оба Lua шлют `CARD HOLDER`) и уходит только из Lua, который pay отдаёт в подписанном bundle: рублёвая (`card`, entry `bind`) в Smart Glocal, долларовая (`card_usd`, entry `token`) в Yuno. Крейт `utils/boosty-card` без tauri: подпись Ed25519, серийник на диске для каждого entry (`boosty_bundle_serial.txt` и `boosty_bundle_serial_token.txt`), песочница Lua, список хостов, поток bind -> 3DS -> status и поток token.
-
-- Долларовая карта: Lua отдаёт одноразовый токен, фронт шлёт его в `POST /api/boosty/token` и опрашивает `step` (`lib/boosty-card/token-link.ts`). Страницу 3DS из ответа pay открывает `boosty_card_page` один раз и только на хостах рядом с хостами bundle; окно закрывается, когда `step` не pending. Цены этого способа в долларах (`price_usd_cents`, `currencyOf`).
-- Публичные ключи `kid:base64,...` берутся при сборке из секрета `BOOSTY_BUNDLE_KEYS` (как `LASTFM_API_KEY`). Без них автопродление картой недоступно (`boosty_card_supported`), СБП от ключей не зависит.
-- Этот Lua работает только у клиента, который начал платёж, никогда на релеях. HTTP идёт напрямую (не через `net_fetch`, не через relay), без редиректов.
-- Карту не логировать, не хранить, не слать в наш бэкенд, телеметрию и отчёты. В `Card` нет `Debug`/`Clone`, поля чистятся при `Drop`; Lua `log` ничего не пишет; из ответа Lua наружу идут только `state`, `url`, `status`, `reason`, у token ещё сам `token`.
-- Окно 3DS (`boosty-3ds`) без IPC, приватный профиль; `app/navigation.rs` и `lib.rs` его не перехватывают, навигацию решает `boosty_card/three_ds.rs`.
-- Тесты крейта: `cargo test` в `utils/boosty-card/` (в CI отдельный шаг "Boosty card").
+- Публичные ключи `kid:base64,...` берутся при сборке из секрета `BOOSTY_BUNDLE_KEYS`. Без них раннера нет, caps без `card_form`/`confirm`.
+- Lua работает только у клиента, который платит, никогда на релеях. HTTP напрямую, без редиректов, только на `allowed_hosts`.
+- Карту не логировать, не хранить, не слать в наш бэкенд, телеметрию и отчёты. В `Card` нет `Debug`/`Clone`, поля чистятся при `Drop`; Lua `log` ничего не пишет.
+- Окно страницы (`pay-page`) без IPC, приватный профиль; `app/navigation.rs` и `lib.rs` его не перехватывают.
+- Тесты: `cargo test` в `utils/pay-card/` (шаг CI "Pay card"), в том числе на настоящих bundle из `Internal/pay/lua`, подписанных тестовым ключом (`tests/fixtures/*.json`).
 
 ## Акцентный цвет и CSS-переменные
 

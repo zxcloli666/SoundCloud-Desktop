@@ -4,7 +4,7 @@ import {
   brandOf,
   type CardFields,
   formatNumber,
-} from '../../../../lib/boosty-card/validate';
+} from '../../../../lib/card-link/validate';
 import { Lock } from '../../../../lib/icons';
 
 const BRAND_NAME: Record<Brand, string> = {
