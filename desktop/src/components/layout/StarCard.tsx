@@ -2,9 +2,12 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Star } from '../../lib/icons';
+import { money, monthsOf } from '../../lib/offer-format';
 import { usePerfMode } from '../../lib/perf';
+import { usePersonalOffer } from '../../lib/personal-offer';
 import { useOpenStar } from '../../lib/star-offer';
 import { SOON_DAYS, type StarStatus, useStarLine, useStarStatus } from '../../lib/star-status';
+import { OfferBar, OfferTimer } from '../offer/OfferCopy';
 
 type Tone = 'calm' | 'warn' | 'bad';
 
@@ -45,7 +48,13 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
   const ending = status?.kind === 'ends' && status.level !== 'calm' ? status : null;
   const charging = status?.kind === 'renews' && status.soon ? status : null;
   const offer = ending?.canExtend ? (ending.trial ? 'buy' : 'extend') : null;
-  const open = () => (offer ? openStar(offer) : navigate('/star'));
+  const personal = usePersonalOffer();
+  const deal = personal?.ends_at != null && !ending && !charging ? personal : null;
+  const open = () => {
+    if (deal) openStar('buy', undefined, deal.id);
+    else if (offer) openStar(offer);
+    else navigate('/star');
+  };
 
   if (collapsed) {
     return (
@@ -54,7 +63,13 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
         data-ui="star-card"
         data-tone={tone}
         onClick={open}
-        title={line ? `${t('star.title')} · ${line}` : t('star.title')}
+        title={
+          deal
+            ? `${t('star.title')} · ${t(`starOffer.short.${monthsOf(deal)}`, { price: money(deal, deal.price) })}`
+            : line
+              ? `${t('star.title')} · ${line}`
+              : t('star.title')
+        }
         className="relative flex items-center justify-center w-full py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 group"
         style={{
           background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(168,85,247,0.12))',
@@ -68,6 +83,7 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
           <Star size={16} fill="currentColor" />
         </span>
         <StarParticles />
+        {deal && <span className="absolute right-1 top-1 size-2 rounded-full bg-accent" />}
         {(ending || charging) && (
           <span
             className={`absolute right-0.5 top-0.5 grid h-4 min-w-4 place-items-center rounded-full px-1 text-[9px] font-black tabular-nums text-paper ${FILL[tone]}`}
@@ -109,8 +125,15 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
               {t('star.title')}
             </span>
             <span className={`whitespace-nowrap tabular-nums ${LINE[tone]}`}>
-              {line ?? t('star.getIt')}
+              {deal
+                ? t(`starOffer.short.${monthsOf(deal)}`, { price: money(deal, deal.price) })
+                : (line ?? t('star.getIt'))}
             </span>
+            {deal && (
+              <span className="whitespace-nowrap text-[9.5px] font-medium text-ink-50">
+                <OfferTimer endsAt={deal.ends_at} />
+              </span>
+            )}
             {charging && (
               <span className="whitespace-nowrap text-[9.5px] font-medium tabular-nums text-ink-50">
                 {charging.trialUntil
@@ -120,6 +143,7 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
             )}
           </div>
         </div>
+        {deal && <OfferBar offer={deal} />}
         {ending && (
           <span className="h-1 w-full overflow-hidden rounded-full bg-ink/[0.08]">
             <span

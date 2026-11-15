@@ -24,6 +24,7 @@ import { LegalNote } from '../components/subscription/star/LegalNote';
 import { ManagePane } from '../components/subscription/star/ManagePane';
 import { MethodPane } from '../components/subscription/star/MethodPane';
 import { primarySource, type Recipient, type Step } from '../components/subscription/star/meta';
+import { OfferBanner } from '../components/subscription/star/OfferBanner';
 import { OverviewPane } from '../components/subscription/star/OverviewPane';
 import { PayPane } from '../components/subscription/star/PayPane';
 import { RedeemPane } from '../components/subscription/star/RedeemPane';
@@ -36,6 +37,7 @@ import type { TierOption } from '../components/subscription/star/TierSwitch';
 import { TrialPane } from '../components/subscription/star/trial/TrialPane';
 import { useTrialStep } from '../components/subscription/star/trial/useTrialStep';
 import { useBindOnly } from '../components/subscription/star/useBindOnly';
+import { useOfferCheckout } from '../components/subscription/star/useOfferCheckout';
 import { bindOf, refreshBinds, useBinds, usePlans, useRemoveBind } from '../lib/binds';
 import { ChevronLeft } from '../lib/icons';
 import {
@@ -75,9 +77,14 @@ const NEEDS_LINK = new Set(['bind_needed', 'relink']);
  */
 export const StarPage = memo(function StarPage() {
   const location = useLocation();
-  const state = location.state as { intent?: StarIntent; plan?: string } | null;
+  const state = location.state as { intent?: StarIntent; plan?: string; offer?: string } | null;
   return (
-    <StarFlow key={location.key} intent={state?.intent ?? null} presetPlan={state?.plan ?? null} />
+    <StarFlow
+      key={location.key}
+      intent={state?.intent ?? null}
+      presetPlan={state?.plan ?? null}
+      offerId={state?.offer ?? null}
+    />
   );
 });
 
@@ -99,9 +106,11 @@ interface Purchase {
 const StarFlow = memo(function StarFlow({
   intent,
   presetPlan,
+  offerId,
 }: {
   intent: StarIntent | null;
   presetPlan: string | null;
+  offerId: string | null;
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -114,7 +123,9 @@ const StarFlow = memo(function StarFlow({
   const [recipient, setRecipient] = useState<Recipient>(intent === 'gift' ? 'gift' : 'self');
   const [refBonus, setRefBonus] = useState<RefBonus>(null);
   const gift = recipient === 'gift' && tier === 'solo';
-  const [planId, setPlanId] = useState<string | null>(presetPlan);
+  const [pickedPlan, setPlanId] = useState<string | null>(presetPlan);
+  const offerCo = useOfferCheckout(offerId, !gift && tier === 'solo');
+  const planId = offerCo.offer?.plan_id ?? pickedPlan;
   const [methodId, setMethodId] = useState<MethodId | null>(null);
   const [renewPref, setRenewPref] = useState<boolean | null>(null);
   const [checkout, setCheckout] = useState<Order | null>(null);
@@ -122,7 +133,7 @@ const StarFlow = memo(function StarFlow({
 
   const plansQuery = usePlans();
   const soloPlans = plansQuery.data?.plans ?? [];
-  const plans = tierPlans(tier, soloPlans, plansQuery.data?.shared);
+  const plans = offerCo.plans(tierPlans(tier, soloPlans, plansQuery.data?.shared));
   const routeCtx = useMemo<RouteContext>(
     () => ({ planId, gift, shared: tier !== 'solo' }),
     [planId, gift, tier],
@@ -132,13 +143,13 @@ const StarFlow = memo(function StarFlow({
     [plansQuery.data],
   );
   const options = useMemo(
-    () => allMethods.filter((m) => usable(m, routeCtx)),
-    [allMethods, routeCtx],
+    () => offerCo.methods(allMethods.filter((m) => usable(m, routeCtx))),
+    [allMethods, routeCtx, offerCo.methods],
   );
   const picked = options.find((m) => m.id === methodId) ?? null;
   const route = useMemo(
-    () => (picked ? chooseRoute(picked, renewPref, routeCtx) : null),
-    [picked, renewPref, routeCtx],
+    () => (picked ? chooseRoute(picked, offerCo.bind ? true : renewPref, routeCtx) : null),
+    [picked, renewPref, routeCtx, offerCo.bind],
   );
   const viaBind = route?.viaBind === true && !!picked?.bind;
   const binds = useBinds(viaBind);
@@ -237,7 +248,8 @@ const StarFlow = memo(function StarFlow({
         idempotency_key: crypto.randomUUID(),
         gift: (p.own && gift) || undefined,
         tier: p.own && tier !== 'solo' ? tier : undefined,
-        ref: p.own && !gift && refBonus ? refBonus.code : undefined,
+        ref: p.own && !gift && !offerCo.offer && refBonus ? refBonus.code : undefined,
+        offer_id: p.own ? offerCo.offer?.id : undefined,
       }),
     onSuccess: (resp) => {
       setCheckout(resp);
@@ -291,7 +303,7 @@ const StarFlow = memo(function StarFlow({
     if (purchase) checkoutMut.mutate(purchase);
   }, [purchase, checkoutMut.mutate]);
 
-  const canOnce = !!picked && hasOnce(picked);
+  const canOnce = !!picked && hasOnce(picked) && !offerCo.bind;
   const payOnce = useMemo(
     () =>
       canOnce && picked && planId
@@ -470,6 +482,9 @@ const StarFlow = memo(function StarFlow({
         {/* console — in normal flow beneath the core, can never overlap it */}
         <div className="relative z-20 mx-auto w-full max-w-[700px] pb-6 pt-3">
           <Console>
+            {offerCo.offer && (step === 'overview' || step === 'method') && (
+              <OfferBanner offer={offerCo.offer} />
+            )}
             {step === 'overview' && (
               <OverviewPane
                 plans={plans}
@@ -501,7 +516,7 @@ const StarFlow = memo(function StarFlow({
                 selected={picked}
                 onSelect={(m) => setMethodId(m.id)}
                 renew={{
-                  available: !!picked && renewable(picked, routeCtx),
+                  available: !!picked && renewable(picked, routeCtx) && !offerCo.bind,
                   on: route?.recurring === true,
                   periodDays,
                   nextAt: Math.floor(Date.now() / 1000) + periodDays * DAY_SECS,

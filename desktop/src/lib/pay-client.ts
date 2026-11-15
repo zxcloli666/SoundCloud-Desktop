@@ -131,6 +131,7 @@ export interface CheckoutReq {
   gift?: boolean;
   tier?: SharedTierId;
   ref?: string;
+  offer_id?: string;
 }
 
 export interface RunnerBundle {
@@ -365,6 +366,25 @@ export interface BindStep {
   trial_refused: string | null;
 }
 
+export interface PayOffer {
+  id: string;
+  plan_id: string;
+  price: Price;
+  list_price: Price | null;
+  currency: 'RUB' | 'USD';
+  requires_bind: boolean;
+  grant_days: number;
+  renews_at_price: Price | null;
+  /** Unix seconds; null until the offer was shown once. */
+  ends_at: number | null;
+  proof: { plays: number; days: number };
+}
+
+export interface OfferResponse {
+  api: 2;
+  offer: PayOffer | null;
+}
+
 export interface TrialStart {
   purpose: 'trial';
   device_id: string | null;
@@ -409,6 +429,11 @@ export const payApi = {
     post<BindStep>('/api/binds/token', { session_id: sessionId, token }),
   bindCancel: (sessionId: number) => post<Binds>('/api/binds/cancel', { session_id: sessionId }),
   bindRemove: (method: MethodId) => post<Binds>('/api/binds/remove', { method }),
+  offer: (deviceId: string | null) => shaped<OfferResponse>(withDevice('/api/me/offer', deviceId)),
+  offerShown: (id: string, deviceId: string | null) =>
+    post<OfferResponse>(withDevice(`/api/me/offer/${encodeURIComponent(id)}/shown`, deviceId)),
+  offerDismiss: (id: string) =>
+    post<OfferResponse>(`/api/me/offer/${encodeURIComponent(id)}/dismiss`),
   gifts: () => payRequest<{ gifts: Gift[] }>('/api/me/gifts'),
   referral: () => payRequest<Referral>('/api/me/referral'),
   checkRef: (code: string) =>

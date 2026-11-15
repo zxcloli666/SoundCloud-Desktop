@@ -2160,6 +2160,10 @@
         "bind_needed": "Nothing linked for this method yet. Link it first.",
         "relink": "This method needs linking again.",
         "charge_in_progress": "A payment is already going through. Wait a minute.",
+        "offer_needs_bind": "This offer works only with auto-renew. Link a payment method first.",
+        "offer_used": "You have already used this offer.",
+        "offer_device_used": "This offer was already used on this device.",
+        "offer_card_used": "This offer was already used with this card.",
         "method_unavailable": "This method is not available for this plan."
       },
       "centerSeats": "{{used}} of {{seats}} seats taken"
@@ -2827,6 +2831,22 @@
       "2": "Flame",
       "3": "Constellation"
     }
+  },
+  "starOffer": {
+    "proof_one": "{{count}} track in a month",
+    "proof_other": "{{count}} tracks in a month",
+    "first": {
+      "one": "Your first month of STAR - {{price}}",
+      "two": "Your first two months of STAR - {{price}}"
+    },
+    "short": {
+      "one": "First month {{price}}",
+      "two": "Two months {{price}}"
+    },
+    "renews": "Then {{price}} a month from {{date}}",
+    "until": "Valid until {{date}}",
+    "left": "{{time}} left",
+    "take": "Get it for {{price}}"
   },
   "starMoments": {
     "tryFree_one": "{{count}} day free",
