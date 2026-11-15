@@ -3,6 +3,8 @@ use std::time::Duration;
 
 use serde::{Deserialize, Serialize};
 
+use crate::catalog::Candidates;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Source {
@@ -125,6 +127,7 @@ pub struct HeardEvent {
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Looked {
     In(Duration),
+    Cut(Duration),
     Remembered,
     Late,
     Unused,
@@ -191,10 +194,20 @@ impl Event {
     }
 }
 
+impl Looked {
+    pub fn of(answer: &Result<Candidates, String>, took: Duration) -> Looked {
+        match answer {
+            Ok(answer) if answer.partial => Looked::Cut(took),
+            _ => Looked::In(took),
+        }
+    }
+}
+
 impl fmt::Display for Looked {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Looked::In(took) => write!(f, "{} ms", took.as_millis()),
+            Looked::Cut(took) => write!(f, "{} ms cut", took.as_millis()),
             Looked::Remembered => f.write_str("remembered"),
             Looked::Late => f.write_str("late"),
             Looked::Unused => f.write_str("unused"),
@@ -327,6 +340,10 @@ mod tests {
         assert_eq!(
             line(vec![Looked::In(ms(700))], None, true),
             "phrase: parse 1 ms, lookups 1 [700 ms], total 1503 ms, no chat ahead"
+        );
+        assert_eq!(
+            line(vec![Looked::Cut(ms(1800)), Looked::In(ms(90))], None, true),
+            "phrase: parse 1 ms, lookups 2 [1800 ms cut, 90 ms], total 1503 ms, no chat ahead"
         );
     }
 }

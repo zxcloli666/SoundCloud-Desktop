@@ -186,7 +186,8 @@ impl Engine {
             return (Ok(found), Looked::Remembered);
         }
         let asked = Instant::now();
-        let found = self.memory.asked(&*self.catalog, variants, kinds);
-        (found, Looked::In(asked.elapsed()))
+        let answer = self.memory.asked(&*self.catalog, variants, kinds);
+        let looked = Looked::of(&answer, asked.elapsed());
+        (answer.map(|answer| answer.entities), looked)
     }
 }

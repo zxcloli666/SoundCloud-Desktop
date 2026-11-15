@@ -9,7 +9,7 @@ use crate::catalog::{Candidates, Catalog};
 const KEPT_FOR: Duration = Duration::from_secs(60);
 const KEPT_MOST: usize = 32;
 
-type Found = Result<Vec<Entity>, String>;
+type Answer = Result<Candidates, String>;
 
 pub struct Memory {
     kept_for: Duration,
@@ -50,10 +50,10 @@ impl Memory {
         known(&self.fresh(), variants, &set(kinds))
     }
 
-    pub fn asked(&self, catalog: &dyn Catalog, variants: &[Variant], kinds: &[Kind]) -> Found {
+    pub fn asked(&self, catalog: &dyn Catalog, variants: &[Variant], kinds: &[Kind]) -> Answer {
         let wanted = set(kinds);
         if let Some(found) = self.awaited(variants, &wanted) {
-            return Ok(found);
+            return Ok(Candidates::whole(found));
         }
         let mut question = Question {
             memory: self,
@@ -68,7 +68,7 @@ impl Memory {
             .ok()
             .filter(whole)
             .map(|answer| answer.entities.clone());
-        answer.map(|answer| answer.entities)
+        answer
     }
 
     fn awaited(&self, variants: &[Variant], kinds: &[Kind]) -> Option<Vec<Entity>> {
@@ -187,8 +187,8 @@ mod tests {
         }
     }
 
-    fn kinds(found: Found) -> Vec<Kind> {
-        let found = found.expect("an answer");
+    fn kinds(found: Answer) -> Vec<Kind> {
+        let found = found.expect("an answer").entities;
         found.into_iter().map(|entity| entity.kind).collect()
     }
 
@@ -204,10 +204,8 @@ mod tests {
         assert_eq!(memory.recalled(&kino, &Kind::ALL), None);
         assert_eq!(kinds(memory.asked(&catalog, &kino, &Kind::ALL)), Kind::ALL);
         assert_eq!(kinds(memory.asked(&catalog, &kino, &turned)), Kind::ALL);
-        assert_eq!(
-            kinds(Ok(memory.recalled(&kino, &turned).unwrap())),
-            Kind::ALL
-        );
+        let recalled = memory.recalled(&kino, &turned).unwrap();
+        assert_eq!(kinds(Ok(Candidates::whole(recalled))), Kind::ALL);
         assert_eq!(asked(&catalog), 1);
     }
 
@@ -270,7 +268,9 @@ mod tests {
         let (memory, catalog) = (Memory::default(), Counted::default());
         let cut = [variant("cut")];
         for _ in 0..2 {
-            assert_eq!(kinds(memory.asked(&catalog, &cut, &Kind::ALL)), Kind::ALL);
+            let found = memory.asked(&catalog, &cut, &Kind::ALL);
+            assert!(found.as_ref().is_ok_and(|found| found.partial));
+            assert_eq!(kinds(found), Kind::ALL);
             assert_eq!(memory.recalled(&cut, &Kind::ALL), None);
         }
         assert_eq!(asked(&catalog), 2);

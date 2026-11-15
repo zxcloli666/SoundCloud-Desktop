@@ -44,8 +44,9 @@ impl Lookups {
             let spawned = std::thread::Builder::new()
                 .name("voice-lookup".into())
                 .spawn(move || {
-                    let found = memory.asked(&*catalog, &lookup.variants, &lookup.kinds);
-                    let _ = arrived.send((at, found, Looked::In(started.elapsed())));
+                    let answer = memory.asked(&*catalog, &lookup.variants, &lookup.kinds);
+                    let looked = Looked::of(&answer, started.elapsed());
+                    let _ = arrived.send((at, answer.map(|answer| answer.entities), looked));
                 });
             if let Err(error) = spawned {
                 found[at] = Some((Err(error.to_string()), Looked::In(started.elapsed())));
@@ -131,7 +132,8 @@ impl voice_resolve::Catalog for Lookups {
         }
         let same = |lookup: &Lookup| lookup.variants == variants && lookup.kinds == kinds;
         let Some(at) = self.asked.iter().position(same) else {
-            return self.told(self.memory.asked(&*self.catalog, variants, kinds));
+            let answer = self.memory.asked(&*self.catalog, variants, kinds);
+            return self.told(answer.map(|answer| answer.entities));
         };
         match self.arrived(at) {
             Some(found) => self.told(found),
@@ -216,6 +218,8 @@ mod tests {
         assert_eq!(lookups.failure(), None);
         let cut = lookup("cut");
         assert_eq!(memory.recalled(&cut.variants, &cut.kinds), None);
+        let timed = lookups.timed(Duration::ZERO, Duration::ZERO);
+        assert!(matches!(timed.lookups[..], [Looked::Cut(_)]));
     }
 
     #[test]
