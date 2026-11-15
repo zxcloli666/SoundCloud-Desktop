@@ -4,6 +4,7 @@ import { type Track, usePlayerStore } from '../../stores/player';
 import { claimPreviewChannel, nextPreviewGen } from '../audioPreview';
 import { ensureTrackCached, expectedDurationMs } from '../cache';
 import { trackedInvoke as invoke } from '../diagnostics';
+import { recordSeek } from '../events';
 import { type MomentWindow, trackMoment } from '../moment';
 
 export type MomentPhase = 'idle' | 'loading' | 'playing' | 'paused' | 'handed' | 'failed';
@@ -151,6 +152,7 @@ export async function seekMoment(urn: string, share: number): Promise<void> {
     return;
   }
   live = { ...current, gen, endFired: false };
+  recordSeek(urn, targetMs, positionMs, 'moment');
   positionMs = targetMs;
   notifyProgress();
   setPhase('playing', urn);

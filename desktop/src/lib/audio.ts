@@ -43,7 +43,7 @@ import {trackedInvoke as invoke, reportError} from './diagnostics';
 import {isBelow} from './playback-quality';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
-import {recordEvent} from './events';
+import {recordEvent, recordSeek} from './events';
 import {art} from './formatters';
 import {playbackServersDown} from './host-status';
 import {trackUrn} from './ids';
@@ -170,8 +170,16 @@ export function subscribeSeek(listener: (seconds: number) => void): () => void {
 }
 
 export function seek(seconds: number) {
-  if (!playbackAllowed('seek')) return;
+  const track = usePlayerStore.getState().currentTrack;
+  const fromMs = getCurrentTime() * 1000;
+  if (!seekQuiet(seconds) || !track) return;
+  recordSeek(track.urn, seconds * 1000, fromMs, 'player');
+}
+
+function seekQuiet(seconds: number): boolean {
+  if (!playbackAllowed('seek') || !hasTrack) return false;
   alignTo(seconds);
+  return true;
 }
 
 export function alignTo(seconds: number) {
@@ -209,7 +217,7 @@ function takePendingStart(urn: string): number {
 
 export function handlePrev() {
   if (getCurrentTime() > 3) {
-    seek(0);
+    seekQuiet(0);
   } else {
     usePlayerStore.getState().prev();
   }
@@ -856,7 +864,7 @@ function handleTrackEnd() {
     const gen = loadGen;
     void loadPromise.then(() => {
       if (gen === loadGen && usePlayerStore.getState().currentTrack?.urn === track.urn) {
-        seek(a);
+        seekQuiet(a);
       }
     });
     return;
