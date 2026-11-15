@@ -25,8 +25,9 @@ function useTierOptions(): TierOption[] {
   const currency = useSel(currencyIn);
   const offer = useOffer();
   return useMemo(() => {
-    const solo = data?.plans.find((p) => p.id === planId);
-    const own = offer?.price ?? solo?.price;
+    const list = data?.plans.find((p) => p.id === planId);
+    const solo = list && offer ? { ...list, price: offer.price } : list;
+    const own = solo?.price;
     const was = offer?.list_price;
     const price = (p: typeof own) => {
       if (!p) return '';

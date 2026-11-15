@@ -1799,6 +1799,7 @@
     "creating": "Sipariş oluşturuluyor…",
     "continue": "Devam et",
     "toPay": "Ödenecek",
+    "paidTotal": "Ödendi",
     "checkoutError": "Sipariş oluşturulamadı. Başka bir yöntem dene.",
     "retry": "Tekrar dene",
     "sbpStep": {

@@ -1720,6 +1720,7 @@
     "creating": "주문 생성 중…",
     "continue": "계속",
     "toPay": "결제 금액",
+    "paidTotal": "결제 완료",
     "checkoutError": "주문을 생성하지 못했어요. 다른 결제 수단을 시도해 보세요.",
     "retry": "다시 시도",
     "sbpStep": {

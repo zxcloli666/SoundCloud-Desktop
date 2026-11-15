@@ -1876,6 +1876,7 @@
     "creating": "Creating order…",
     "continue": "Continue",
     "toPay": "To pay",
+    "paidTotal": "Paid",
     "checkoutError": "Couldn't create the order. Try another method.",
     "retry": "Try again",
     "sbpStep": {

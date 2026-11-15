@@ -5,7 +5,7 @@ import { payErrorText } from '../flow/actions';
 import { purchaseNow, useBindState, useChoosing, useEnv, useFlowApi, useSel } from '../flow/derive';
 import { canOnceOf, pickedOf, planIdOf } from '../flow/select';
 import { isGift, useFlow, useFlowStore } from '../flow/store';
-import { useTrialDays } from '../trial/useTrialStep';
+import { useTrialDays, useTrialStep } from '../trial/useTrialStep';
 import { Btn } from '../ui/Btn';
 import { Progress } from './Progress';
 
@@ -13,7 +13,7 @@ const PROGRESS = new Set(['pay', 'card', 'sbp', 'trial', 'success']);
 
 export const Actions = memo(function Actions() {
   const choosing = useChoosing();
-  const progress = useFlow((s) => PROGRESS.has(s.step));
+  const step = useFlow((s) => (PROGRESS.has(s.step) ? s.step : null));
   if (choosing) {
     return (
       <>
@@ -23,7 +23,13 @@ export const Actions = memo(function Actions() {
       </>
     );
   }
-  return progress ? <Progress /> : <GetStar />;
+  if (step === 'trial') return <TrialAction />;
+  return step ? <Progress /> : <GetStar />;
+});
+
+const TrialAction = memo(function TrialAction() {
+  const { offer, method, blocked } = useTrialStep();
+  return blocked || !offer?.available || !method ? <GetStar /> : <Progress />;
 });
 
 function usePayNext() {

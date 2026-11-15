@@ -1790,6 +1790,7 @@
     "creating": "Criando pedido…",
     "continue": "Continuar",
     "toPay": "A pagar",
+    "paidTotal": "Pago",
     "checkoutError": "Não foi possível criar o pedido. Tente outro método.",
     "retry": "Tentar de novo",
     "sbpStep": {
