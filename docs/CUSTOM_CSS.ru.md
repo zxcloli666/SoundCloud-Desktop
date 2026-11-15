@@ -74,6 +74,7 @@
 | `[data-ui="voice-hero"]` | Верхний блок в Настройки > Голос |
 | `[data-ui="voice-locked"]` | Блок голоса без STAR |
 | `[data-ui="voice-device"]` | Плитка микрофона, выбор в `data-on` |
+| `[data-ui="voice-role"]` | Плитка роли в «Ты и ассистент», выбор в `data-on` |
 | `[data-ui="voice-speaker"]` | Плитка Алисы или Салюта |
 | `[data-ui="voice-link-code"]` | Панель с кодом привязки |
 | `[data-ui="voice-credits"]` | Список лицензий в Настройки > Голос |
