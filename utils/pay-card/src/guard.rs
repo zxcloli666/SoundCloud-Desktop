@@ -154,16 +154,6 @@ pub fn page_on(raw: &str, page_hosts: &[String]) -> bool {
             }))
 }
 
-pub fn reaches(raw: &str, result_url: &str) -> bool {
-    let (Ok(url), Ok(target)) = (Url::parse(raw), Url::parse(result_url)) else {
-        return false;
-    };
-    url.scheme() == target.scheme()
-        && url.host_str() == target.host_str()
-        && url.port_or_known_default() == target.port_or_known_default()
-        && url.path().trim_end_matches('/') == target.path().trim_end_matches('/')
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -352,26 +342,5 @@ mod tests {
         assert!(page_on("https://acs.payeko.ru/3ds", &[]));
         assert!(!page_on("http://acs.payeko.ru/3ds", &[]));
         assert!(!page_on("https://10.0.0.1/", &[]));
-    }
-
-    #[test]
-    fn the_result_url_matches_by_scheme_host_and_path() {
-        let result = "https://pay.example/app/payment/result";
-        for good in [
-            "https://pay.example/app/payment/result?result=success",
-            "https://pay.example/app/payment/result/",
-            "https://pay.example/app/payment/result#x",
-        ] {
-            assert!(reaches(good, result), "{good}");
-        }
-        for bad in [
-            "https://pay.example/app/payment/other?result=success",
-            "https://pay.example.evil.example/app/payment/result",
-            "http://pay.example/app/payment/result",
-            "https://pay.example:8443/app/payment/result",
-            "https://acs.example/?next=https://pay.example/app/payment/result",
-        ] {
-            assert!(!reaches(bad, result), "{bad}");
-        }
     }
 }

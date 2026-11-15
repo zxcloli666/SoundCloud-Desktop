@@ -143,7 +143,6 @@ export interface RunnerBundle {
   flow: 'card_form' | 'confirm';
   allowed_hosts: string[];
   page_hosts: string[];
-  result_url: string;
   script: string;
   sig: string;
 }
