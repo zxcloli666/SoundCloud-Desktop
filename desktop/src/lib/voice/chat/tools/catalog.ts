@@ -38,17 +38,32 @@ async function start(
   return { ...run, result: ok({ [queue ? 'queued' : 'started']: brief(entity) }) };
 }
 
-function byName(player: PlayerPort, app: AppPort, queue: boolean): ChatTool {
+function repeats(done: EntityKind | undefined, args: Args): boolean {
+  return done !== undefined && (args.kind === undefined || args.kind === done);
+}
+
+function byName(
+  player: PlayerPort,
+  app: AppPort,
+  queue: boolean,
+  done: Map<string, EntityKind>,
+): ChatTool {
+  const name = queue ? 'queue_add' : 'play';
   return {
-    name: queue ? 'queue_add' : 'play',
+    name,
     description: queue
       ? 'Find music by name and add the best match to the queue. Returns what was added.'
       : 'Find music by name (track, artist, album or playlist) and play the best match. Returns what started.',
     args: BY_NAME,
     returns: true,
     run: async (args, env) => {
+      const asked = keyOf(name, String(args.query).trim().toLowerCase());
+      if (repeats(done.get(asked), args)) return null;
       const [best] = await lookup(app, args);
-      return best ? start(env, player, best, queue) : fail('not_found');
+      if (!best) return fail('not_found');
+      const run = await start(env, player, best, queue);
+      if (run.result.ok) done.set(asked, best.kind);
+      return run;
     },
   };
 }
@@ -92,9 +107,10 @@ function playFound(player: PlayerPort, found: Map<string, Entity>): ChatTool {
 
 export function catalogTools(player: PlayerPort, app: AppPort, offered: Entity[]): ChatTool[] {
   const found = new Map(offered.map((entity) => [keyOf(entity.kind, entity.id), entity]));
+  const done = new Map<string, EntityKind>();
   return [
-    byName(player, app, false),
-    byName(player, app, true),
+    byName(player, app, false, done),
+    byName(player, app, true, done),
     search(app, found),
     playFound(player, found),
   ];

@@ -16,7 +16,11 @@ interface Seen {
   abort: AbortController;
 }
 
-function turn(rounds: Step[][], tools: Record<string, Ran> = {}, extra: Partial<TurnInput> = {}) {
+function turn(
+  rounds: Step[][],
+  tools: Record<string, Ran | null> = {},
+  extra: Partial<TurnInput> = {},
+) {
   const seen: Seen = { log: [], marks: [], abort: new AbortController() };
   const link = wire(rounds);
   const input: TurnInput = {
@@ -28,7 +32,7 @@ function turn(rounds: Step[][], tools: Record<string, Ran> = {}, extra: Partial<
     send: link.send,
     act: async (name) => {
       seen.log.push(`act:${name}`);
-      return tools[name] ?? ranOf(name, false);
+      return name in tools ? tools[name] : ranOf(name, false);
     },
     onSay: (delta) => seen.log.push(`say:${delta}`),
     onMark: (mark) => seen.marks.push(mark),
@@ -91,6 +95,24 @@ test('a tool that returns starts another round with the results of the turn', as
     end.marks.map((m) => m.tool),
     ['search', 'play_found'],
   );
+});
+
+test('an action the app did not run again leaves no result, no mark and no further round', async () => {
+  const { seen, link, done } = turn(
+    [
+      [
+        { kind: 'action', name: 'queue_add', args: { query: 'x', kind: 'track' } },
+        { kind: 'say', text: 'Добавила.' },
+        { kind: 'done' },
+      ],
+    ],
+    { queue_add: null },
+  );
+  const end = await done;
+  assert.deepEqual(end, { status: 'ok', say: 'Добавила.', marks: [] });
+  assert.deepEqual(seen.log, ['act:queue_add', 'say:Добавила.']);
+  assert.deepEqual(seen.marks, []);
+  assert.equal(link.requests.length, 1);
 });
 
 test('rounds stop at the limit even when tools keep returning', async () => {

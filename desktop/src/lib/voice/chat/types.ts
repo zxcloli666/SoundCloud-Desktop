@@ -47,7 +47,7 @@ export interface ChatTool {
   description: string;
   args: ArgsSchema;
   returns: boolean;
-  run(args: Args, env: ToolEnv): Promise<ToolRun>;
+  run(args: Args, env: ToolEnv): Promise<ToolRun | null>;
 }
 
 export interface ToolMark {

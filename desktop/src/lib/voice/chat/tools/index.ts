@@ -27,7 +27,7 @@ function missed(name: string, reason: string, returns: boolean): Ran {
   return { name, args: {}, result, returns, mark: { tool: name, ok: false } };
 }
 
-async function attempt(tool: ChatTool, args: Ran['args'], env: ToolEnv): Promise<ToolRun> {
+async function attempt(tool: ChatTool, args: Ran['args'], env: ToolEnv): Promise<ToolRun | null> {
   try {
     return await tool.run(args, env);
   } catch {
@@ -40,12 +40,14 @@ export async function runTool(
   name: string,
   raw: unknown,
   env: ToolEnv,
-): Promise<Ran> {
+): Promise<Ran | null> {
   const tool = tools.find((t) => t.name === name);
   if (!tool) return missed(name, 'unknown_tool', false);
   const read = readArgs(tool.args, raw);
   if (!read.ok) return missed(name, read.reason, true);
-  const { result, intent, kind, text } = await attempt(tool, read.args, env);
+  const run = await attempt(tool, read.args, env);
+  if (!run) return null;
+  const { result, intent, kind, text } = run;
   return {
     name,
     args: read.args,

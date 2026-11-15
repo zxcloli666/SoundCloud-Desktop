@@ -17,8 +17,13 @@ function setup(player = fakePort(), offered: Entity[] = []) {
   const app = fakeApp();
   const tools = chatTools(player, app, offered);
   const env = toolEnv();
-  const run = (name: string, args: unknown = {}) => runTool(tools, name, args, env);
-  return { player, app, tools, env, run };
+  const ask = (name: string, args: unknown = {}) => runTool(tools, name, args, env);
+  const run = async (name: string, args: unknown = {}) => {
+    const ran = await ask(name, args);
+    assert.ok(ran, name);
+    return ran;
+  };
+  return { player, app, tools, env, run, ask };
 }
 
 test('every tool has a valid unique name, a flat primitive schema and a short description', () => {
@@ -191,6 +196,41 @@ test('play by name resolves, starts the best match and returns what started', as
     queued: { kind: 'track', name: 'Положение', artist: 'Скриптонит' },
   });
   assert.deepEqual(player.calls, ['play:artist:a1', 'queue:t7']);
+});
+
+test('a name already started or queued in this turn is not started or queued again', async () => {
+  const { player, app, run, ask } = setup();
+  app.found = [ARTIST, TRACK];
+  await run('queue_add', { query: 'Положение', kind: 'track' });
+  assert.equal(await ask('queue_add', { query: ' положение ' }), null);
+  assert.equal(await ask('queue_add', { query: 'положение', kind: 'track' }), null);
+  await run('play', { query: 'скриптонит' });
+  assert.equal(await ask('play', { query: 'Скриптонит', kind: 'artist' }), null);
+  assert.deepEqual(player.calls, ['queue:t7', 'play:artist:a1']);
+  assert.equal(app.calls.length, 2);
+});
+
+test('the same name asked again as another kind or by the other tool is run', async () => {
+  const { player, app, run } = setup();
+  app.found = [ARTIST, TRACK];
+  await run('play', { query: 'скриптонит' });
+  const track = await run('play', { query: 'скриптонит', kind: 'track' });
+  assert.deepEqual(track.result, {
+    ok: true,
+    started: { kind: 'track', name: 'Положение', artist: 'Скриптонит' },
+  });
+  await run('queue_add', { query: 'скриптонит' });
+  assert.deepEqual(player.calls, ['play:artist:a1', 'play:track:t7', 'queue:a1']);
+});
+
+test('a name that was not found can be asked again', async () => {
+  const { player, app, run } = setup();
+  const missed = await run('play', { query: 'найткол' });
+  assert.deepEqual(missed.result, { ok: false, reason: 'not_found' });
+  app.found = [TRACK];
+  const found = await run('play', { query: 'найткол' });
+  assert.equal(found.result.ok, true);
+  assert.deepEqual(player.calls, ['play:track:t7']);
 });
 
 test('play by name reports nothing found without touching the player', async () => {

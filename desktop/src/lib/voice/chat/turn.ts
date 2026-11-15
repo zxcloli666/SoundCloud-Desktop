@@ -11,7 +11,7 @@ export interface TurnInput {
   signal: AbortSignal;
   body(results: CallResult[]): ChatBody;
   send(request: ChatRequest, onEvent: (event: ChatEvent) => void): Promise<void>;
-  act(name: string, args: unknown): Promise<Ran>;
+  act(name: string, args: unknown): Promise<Ran | null>;
   onSay(delta: string): void;
   onMark(mark: ToolMark): void;
 }
@@ -65,7 +65,7 @@ async function playRound(
   const act = async (name: string, args: unknown) => {
     if (cancelled()) return;
     const ran = await t.act(name, args);
-    if (cancelled()) return;
+    if (!ran || cancelled()) return;
     round.ran.push(ran);
     t.onMark(ran.mark);
   };
