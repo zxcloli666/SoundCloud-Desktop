@@ -315,18 +315,26 @@ const StarFlow = memo(function StarFlow({
   }, [purchase, picked, viaBind, bindState, checkoutMut.mutate, bindOnly.clear]);
 
   const confirmRenewal = useCallback(
-    (renewal: Renewal) => {
+    async (renewal: Renewal) => {
+      const loaded =
+        plansQuery.data ??
+        (await queryClient
+          .fetchQuery({ queryKey: ['pay', 'plans'], queryFn: payApi.plans })
+          .catch(() => null));
+      const solo = loaded?.plans ?? [];
       const plan =
-        soloPlans.find((p) => p.period_days === renewal.period_days) ??
-        soloPlans.find((p) => p.months === 1);
-      if (!plan) return;
+        solo.find((p) => p.period_days === renewal.period_days) ?? solo.find((p) => p.months === 1);
+      if (!plan) {
+        toast.error(t('starpass.checkoutError'));
+        return;
+      }
       setTier('solo');
       setRecipient('self');
       setPlanId(plan.id);
       setMethodId(renewal.method);
       checkoutMut.mutate({ planId: plan.id, method: renewal.method, recurring: true, own: false });
     },
-    [soloPlans, checkoutMut.mutate],
+    [plansQuery.data, checkoutMut.mutate, t],
   );
 
   const flowOf = useCallback(

@@ -42,7 +42,7 @@ export const ManagePane = memo(function ManagePane({
   onInvite: () => void;
   onPlan: () => void;
   onLink: (method: MethodId, flow: BindFlow) => void;
-  onConfirm: (renewal: Renewal) => void;
+  onConfirm: (renewal: Renewal) => void | Promise<void>;
   confirming: boolean;
   onTrialEnded: () => void;
 }) {
@@ -112,7 +112,7 @@ export const ManagePane = memo(function ManagePane({
         <ConfirmRenewalRow
           status={status}
           pending={confirming}
-          onConfirm={() => onConfirm(status.renewal)}
+          onConfirm={() => void onConfirm(status.renewal)}
         />
       )}
 

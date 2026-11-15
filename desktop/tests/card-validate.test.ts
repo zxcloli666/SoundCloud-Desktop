@@ -8,7 +8,7 @@ import {
   formatNumber,
   invalidFields,
   luhn,
-} from '../src/lib/boosty-card/validate.ts';
+} from '../src/lib/card-link/validate.ts';
 
 const NOW = new Date('2026-11-14T12:00:00Z');
 const GOOD = {
