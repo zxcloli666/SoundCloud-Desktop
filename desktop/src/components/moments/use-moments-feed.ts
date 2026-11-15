@@ -29,7 +29,7 @@ type Move = 'swipe' | 'end' | 'quiet';
 
 const BATCH = 8;
 const REFILL_AT = 3;
-const PREFETCH = 2;
+const PREFETCH = 1;
 const FAILED_SKIP_MS = 1200;
 
 export function useMomentsFeed(startUrn?: string) {
