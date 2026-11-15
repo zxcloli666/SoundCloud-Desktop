@@ -59,6 +59,10 @@ pub fn partial(body: &Value) -> bool {
     body.get("partial").and_then(Value::as_bool).unwrap_or(false)
 }
 
+pub fn timed_out(refusal: &Value) -> bool {
+    refusal.get("code").and_then(Value::as_str) == Some("search_timeout")
+}
+
 fn entity(hit: Hit) -> Option<Entity> {
     let kind = Kind::from_name(&hit.kind)?;
     let artist = Some(hit.artist).filter(|a| !a.trim().is_empty());
@@ -117,6 +121,16 @@ mod tests {
         assert!(!partial(&reply("true".into())));
         assert!(!partial(&reply(Value::Null)));
         assert!(!partial(&serde_json::json!({"results": results})));
+    }
+
+    #[test]
+    fn only_a_search_that_took_too_long_is_a_timeout() {
+        let refusal =
+            |code: &str| serde_json::json!({"statusCode": 503, "code": code, "message": "why"});
+        assert!(timed_out(&refusal("search_timeout")));
+        assert!(!timed_out(&refusal("search_busy")));
+        assert!(!timed_out(&serde_json::json!({"statusCode": 503})));
+        assert!(!timed_out(&Value::Null));
     }
 
     #[test]

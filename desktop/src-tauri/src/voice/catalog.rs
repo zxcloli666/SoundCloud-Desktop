@@ -103,6 +103,10 @@ async fn post(app: &AppHandle, body: &resolve::Request) -> Result<Candidates, St
             hop.note(true);
             if !status.is_success() {
                 last = format!("{base}: HTTP {status}");
+                let refusal = response.json().await.unwrap_or_default();
+                if resolve::timed_out(&refusal) {
+                    return Err(last);
+                }
                 break;
             }
             let value: serde_json::Value = response.json().await.map_err(|e| e.to_string())?;
