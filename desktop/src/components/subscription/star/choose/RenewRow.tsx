@@ -58,9 +58,11 @@ export const RenewRow = memo(function RenewRow() {
                 ? t('starpass.renew.unavailable')
                 : on
                   ? t('starpass.renew.next', { date: passDate(nextAt), charge })
-                  : ownLink
-                    ? t('starpass.renew.onceNote')
-                    : t('starpass.renew.every', { count: periodDays })}
+                  : oneOff
+                    ? t('starpass.renew.offOnce')
+                    : ownLink
+                      ? t('starpass.renew.onceNote')
+                      : t('starpass.renew.every', { count: periodDays })}
           </div>
         </div>
         <Switch
@@ -70,12 +72,12 @@ export const RenewRow = memo(function RenewRow() {
           label={t('starpass.renew.title')}
         />
       </div>
-      <BindNote oneOff={oneOff} />
+      <BindNote oneOff={oneOff} charge={charge} />
     </div>
   );
 });
 
-const BindNote = memo(function BindNote({ oneOff }: { oneOff: boolean }) {
+const BindNote = memo(function BindNote({ oneOff, charge }: { oneOff: boolean; charge: string }) {
   const { t } = useTranslation();
   const { viaBind, state } = useBindState();
   const picked = useSel(pickedOf);
@@ -88,14 +90,14 @@ const BindNote = memo(function BindNote({ oneOff }: { oneOff: boolean }) {
     <>
       {oneOff && (
         <p className="px-4 pb-3 text-[11.5px] leading-relaxed text-ink-45 sm:px-5">
-          {t(picked.bind.flow === 'qr' ? 'starpass.bind.oneOffQr' : 'starpass.bind.oneOffCard')}
+          {t(oneOffKey(picked.bind.flow === 'qr', linked), { charge })}
         </p>
       )}
       {linked && view && (
         <div className="border-t border-ink/[0.07]">
           <BindItem
             bind={{ ...view, can_link: false }}
-            used
+            used={!oneOff}
             removing={removeBind.isPending}
             onRemove={() => removeBind.mutate(picked.id)}
           />
@@ -104,3 +106,8 @@ const BindNote = memo(function BindNote({ oneOff }: { oneOff: boolean }) {
     </>
   );
 });
+
+function oneOffKey(qr: boolean, linked: boolean): string {
+  if (linked) return qr ? 'starpass.bind.oneOffLinkedQr' : 'starpass.bind.oneOffLinkedCard';
+  return qr ? 'starpass.bind.oneOffQr' : 'starpass.bind.oneOffCard';
+}
