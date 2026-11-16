@@ -15,7 +15,7 @@ export const SearchModeTabs = memo(function SearchModeTabs({
   views,
   compact,
 }: {
-  views?: boolean;
+  views?: string;
   compact?: boolean;
 }) {
   const { t } = useTranslation();
@@ -35,7 +35,7 @@ export const SearchModeTabs = memo(function SearchModeTabs({
       <div role="tablist" data-ui="search-tabs" className={PILL_ROW}>
         <PillTabs tabs={tabs} active={active} onSelect={setMode} />
       </div>
-      {views && <SearchViewSwitch />}
+      {views && <SearchViewSwitch q={views} />}
     </div>
   );
 });

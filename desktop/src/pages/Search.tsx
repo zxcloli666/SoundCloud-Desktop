@@ -58,7 +58,7 @@ export function Search() {
           <LinkOpen key={link.kind === 'urn' ? link.urn : link.url} link={link} />
         ) : (
           <>
-            <SearchModeTabs views={searching} compact={moments} />
+            <SearchModeTabs views={searching ? query : undefined} compact={moments} />
             {!searching ? (
               <SearchLanding />
             ) : moments ? (
