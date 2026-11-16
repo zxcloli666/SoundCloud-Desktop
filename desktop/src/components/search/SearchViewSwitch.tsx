@@ -1,27 +1,57 @@
 import { GalleryVerticalEnd, LayoutGrid } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type SearchView, useSearchPrefsStore } from '../../stores/searchPrefs';
-import { PILL_ROW, PillTabs } from './PillTabs';
+import { art } from '../../lib/formatters';
+import { useSearchTracks } from '../../lib/search';
+import { useSearchPrefsStore } from '../../stores/searchPrefs';
 
-const VIEWS = [
-  { view: 'covers', icon: <LayoutGrid size={13} /> },
-  { view: 'moments', icon: <GalleryVerticalEnd size={13} /> },
-] as const;
+const STACK = 3;
 
-export const SearchViewSwitch = memo(function SearchViewSwitch() {
+export const SearchViewSwitch = memo(function SearchViewSwitch({ q }: { q: string }) {
   const { t } = useTranslation();
-  const active = useSearchPrefsStore((s) => s.view);
-  const setView = useSearchPrefsStore((s) => s.setView);
-  const tabs = VIEWS.map(({ view, icon }) => ({
-    id: view as SearchView,
-    icon,
-    label: t(`search.view.${view}`),
-    title: `${t(`search.view.${view}`)} (M)`,
-  }));
+  const mode = useSearchPrefsStore((s) => s.mode);
+  const view = useSearchPrefsStore((s) => s.view);
+  const toggleView = useSearchPrefsStore((s) => s.toggleView);
+  const { items } = useSearchTracks(mode, q);
+  const covers = view === 'covers';
+  const label = covers ? t('search.view.moments') : t('search.view.covers');
+
   return (
-    <div role="tablist" data-ui="search-view" className={PILL_ROW}>
-      <PillTabs tabs={tabs} active={active} onSelect={setView} />
-    </div>
+    <button
+      type="button"
+      data-ui="search-view"
+      onClick={toggleView}
+      title={`${label} (M)`}
+      className="inline-flex h-9 cursor-pointer items-center gap-2.5 rounded-full border border-ink/10 bg-ink/[0.04] pl-2 pr-4 text-[12px] font-medium text-ink-80 transition-colors hover:bg-ink/[0.08] hover:text-ink"
+    >
+      {covers && items.length > 0 ? (
+        <span className="flex items-center pl-2">
+          {items.slice(0, STACK).map((track, i) => (
+            <CoverChip key={track.urn} url={track.artwork_url} tilt={(i - 1) * 8} />
+          ))}
+        </span>
+      ) : covers ? (
+        <GalleryVerticalEnd size={14} className="ml-1.5" />
+      ) : (
+        <LayoutGrid size={14} className="ml-1.5" />
+      )}
+      {label}
+    </button>
   );
 });
+
+function CoverChip({ url, tilt }: { url: string | null | undefined; tilt: number }) {
+  const cover = art(url, 't67x67');
+  return (
+    <span
+      className="-ml-2 size-6 shrink-0 overflow-hidden rounded-[7px] ring-1 ring-ink/20 shadow-[0_3px_8px_rgb(var(--shade)/calc(0.5*var(--shade-alpha)))]"
+      style={{ transform: `rotate(${tilt}deg)` }}
+    >
+      {cover ? (
+        <img src={cover} alt="" draggable={false} className="size-full object-cover" />
+      ) : (
+        <span className="block size-full bg-ink/[0.08]" />
+      )}
+    </span>
+  );
+}
