@@ -5,7 +5,7 @@ import { claimPreviewChannel, nextPreviewGen } from '../audioPreview';
 import { ensureTrackCached, expectedDurationMs } from '../cache';
 import { trackedInvoke as invoke } from '../diagnostics';
 import { recordSeek } from '../events';
-import { type MomentWindow, trackMoment } from '../moment';
+import { type MomentWindow, momentWindow, trackMoment } from '../moment';
 
 export type MomentPhase = 'idle' | 'loading' | 'playing' | 'paused' | 'handed' | 'failed';
 
@@ -58,17 +58,18 @@ export function openMoments(onEnd: (urn: string) => void): () => void {
 }
 
 export async function playMoment(track: Track, crossfadeMs: number): Promise<boolean> {
-  const moment = trackMoment(track);
-  if (!moment) return false;
   const mine = ++token;
   setPhase('loading', track.urn);
   try {
-    const info = await ensureTrackCached(
-      track.urn,
-      undefined,
-      expectedDurationMs(track),
-      track._scd_meta?.storage_quality,
-    );
+    const [info, moment] = await Promise.all([
+      ensureTrackCached(
+        track.urn,
+        undefined,
+        expectedDurationMs(track),
+        track._scd_meta?.storage_quality,
+      ),
+      momentWindow(track),
+    ]);
     if (mine !== token) return false;
     const player = usePlayerStore.getState();
     if (player.isPlaying) player.pause();
@@ -184,7 +185,6 @@ export function stopMoments(fadeMs: number): void {
 }
 
 export function prefetchMoment(track: Track): void {
-  if (!trackMoment(track)) return;
   ensureTrackCached(
     track.urn,
     undefined,
@@ -192,6 +192,12 @@ export function prefetchMoment(track: Track): void {
     track._scd_meta?.storage_quality,
     true,
   ).catch(() => {});
+}
+
+export function momentStartMs(track: Track): number {
+  const moment = trackMoment(track);
+  if (moment) return moment.startMs;
+  return live?.urn === track.urn ? live.window.startMs : 0;
 }
 
 export function momentShare(urn: string): number {

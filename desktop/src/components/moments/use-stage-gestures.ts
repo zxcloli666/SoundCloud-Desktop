@@ -136,7 +136,7 @@ export function useStageGestures(
   }, [stageRef, cardRef, go, toggle]);
 }
 
-function isTyping(target: EventTarget | null): boolean {
+export function isTyping(target: EventTarget | null): boolean {
   const el = target as HTMLElement | null;
   if (!el?.closest) return false;
   return !!el.closest(

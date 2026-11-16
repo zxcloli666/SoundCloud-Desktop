@@ -188,6 +188,13 @@
       "vibeHint": "Descreva um clima ou sentimento e receba faixas com esse som.",
       "soundcloudHint": "Resultados ao vivo do próprio SoundCloud, na ordem do SoundCloud."
     },
+    "view": {
+      "covers": "Capas",
+      "moments": "Momentos",
+      "fromHere": "Momentos daqui",
+      "continueWave": "Continuar como onda",
+      "empty": "Nenhum momento para “{{query}}”"
+    },
     "catalog": {
       "inLyrics": "Encontrado na letra",
       "showMore": "Mostrar mais",

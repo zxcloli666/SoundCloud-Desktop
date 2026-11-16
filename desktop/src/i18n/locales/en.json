@@ -188,6 +188,13 @@
       "vibeHint": "Describe a mood or a feeling and get tracks that sound like it.",
       "soundcloudHint": "Live results from SoundCloud itself, in SoundCloud order."
     },
+    "view": {
+      "covers": "Covers",
+      "moments": "Moments",
+      "fromHere": "Moments from here",
+      "continueWave": "Continue as a wave",
+      "empty": "No moments for “{{query}}”"
+    },
     "catalog": {
       "inLyrics": "Found in lyrics",
       "showMore": "Show more",
