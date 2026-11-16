@@ -13,6 +13,7 @@ export type SoundWaveEvent =
 
 const LANDING_WAIT_MS = 2000;
 const SEEK_DEBOUNCE_MS = 700;
+const SEEK_MAX_MS = 24 * 60 * 60 * 1000;
 const SEEK_REJECTED = [400, 404, 415, 422];
 const inFlight = new Set<Promise<void>>();
 
@@ -61,7 +62,7 @@ export function recordSeek(
 ): void {
   if (!trackUrn || isLocalUrn(trackUrn)) return;
   if (!Number.isFinite(positionMs) || !Number.isFinite(fromMs)) return;
-  const position = Math.max(0, Math.round(positionMs));
+  const position = clampSeekMs(positionMs);
   if (pendingSeek && (pendingSeek.trackUrn !== trackUrn || pendingSeek.source !== source)) {
     flushSeek();
   }
@@ -69,12 +70,16 @@ export function recordSeek(
   else
     pendingSeek = {
       trackUrn,
-      fromMs: Math.max(0, Math.round(fromMs)),
+      fromMs: clampSeekMs(fromMs),
       positionMs: position,
       source,
     };
   if (seekTimer) clearTimeout(seekTimer);
   seekTimer = setTimeout(flushSeek, SEEK_DEBOUNCE_MS);
+}
+
+function clampSeekMs(ms: number): number {
+  return Math.min(SEEK_MAX_MS, Math.max(0, Math.round(ms)));
 }
 
 function flushSeek(): void {
@@ -87,7 +92,13 @@ function flushSeek(): void {
   trackTasteWrite(
     api('/events', {
       method: 'POST',
-      body: JSON.stringify({ type: 'seek', ...seek }),
+      body: JSON.stringify({
+        eventType: 'seek',
+        scTrackId: seek.trackUrn,
+        positionMs: seek.positionMs,
+        fromMs: seek.fromMs,
+        source: seek.source,
+      }),
       quiet: true,
       silentStatuses: SEEK_REJECTED,
     }),
