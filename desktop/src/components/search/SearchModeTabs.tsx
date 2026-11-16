@@ -2,7 +2,7 @@ import { Cloud, Database, Sparkles } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchMode, useSearchPrefsStore } from '../../stores/searchPrefs';
-import { PillTabs } from './PillTabs';
+import { PILL_ROW, PillTabs } from './PillTabs';
 import { SearchViewSwitch } from './SearchViewSwitch';
 
 const MODES = [
@@ -32,7 +32,9 @@ export const SearchModeTabs = memo(function SearchModeTabs({
       data-ui="search-strip"
       className={`relative z-10 flex flex-wrap items-center justify-center gap-2 px-4 ${compact ? 'mb-1' : 'mb-3'}`}
     >
-      <PillTabs ui="search-tabs" tabs={tabs} active={active} onSelect={setMode} />
+      <div role="tablist" data-ui="search-tabs" className={PILL_ROW}>
+        <PillTabs tabs={tabs} active={active} onSelect={setMode} />
+      </div>
       {views && <SearchViewSwitch />}
     </div>
   );

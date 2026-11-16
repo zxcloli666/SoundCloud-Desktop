@@ -2,7 +2,7 @@ import { GalleryVerticalEnd, LayoutGrid } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchView, useSearchPrefsStore } from '../../stores/searchPrefs';
-import { PillTabs } from './PillTabs';
+import { PILL_ROW, PillTabs } from './PillTabs';
 
 const VIEWS = [
   { view: 'covers', icon: <LayoutGrid size={13} /> },
@@ -19,5 +19,9 @@ export const SearchViewSwitch = memo(function SearchViewSwitch() {
     label: t(`search.view.${view}`),
     title: `${t(`search.view.${view}`)} (M)`,
   }));
-  return <PillTabs ui="search-view" tabs={tabs} active={active} onSelect={setView} />;
+  return (
+    <div role="tablist" data-ui="search-view" className={PILL_ROW}>
+      <PillTabs tabs={tabs} active={active} onSelect={setView} />
+    </div>
+  );
 });
