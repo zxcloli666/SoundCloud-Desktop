@@ -2035,6 +2035,7 @@
     },
     "renew": {
       "title": "Renovação automática",
+      "offOnce": "Desligada: uma cobrança",
       "every_one": "Cobrança automática a cada {{count}} dia",
       "every_other": "Cobrança automática a cada {{count}} dias",
       "next": "Próxima cobrança {{date}} · {{charge}}",
@@ -2057,6 +2058,8 @@
       "payOnce": "Pagar sem renovação automática",
       "oneOffCard": "Uma cobrança, sem renovação automática. O cartão continua vinculado: desvincule aqui ou em Gerenciar.",
       "oneOffQr": "Uma cobrança, sem renovação automática. O SBP continua vinculado: desvincule aqui ou em Gerenciar.",
+      "oneOffLinkedCard": "Cobramos {{charge}} uma vez no cartão vinculado, sem renovação automática.",
+      "oneOffLinkedQr": "Cobramos {{charge}} uma vez pelo SBP vinculado, sem renovação automática.",
       "card_ru": {
         "link": "Vincular cartão",
         "linked": "Cartão vinculado",

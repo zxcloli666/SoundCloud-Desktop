@@ -2113,6 +2113,7 @@
     },
     "renew": {
       "title": "Auto-renew",
+      "offOnce": "Off: one charge",
       "every_one": "Charged automatically every {{count}} day",
       "every_other": "Charged automatically every {{count}} days",
       "next": "Next charge {{date}} · {{charge}}",
@@ -2133,6 +2134,8 @@
       "payOnce": "Pay without auto-renew",
       "oneOffCard": "One charge, no auto-renew. The card stays linked: unlink it here or in Manage.",
       "oneOffQr": "One charge, no auto-renew. SBP stays linked: unlink it here or in Manage.",
+      "oneOffLinkedCard": "We charge {{charge}} once to the linked card, no auto-renew.",
+      "oneOffLinkedQr": "We charge {{charge}} once via the linked SBP, no auto-renew.",
       "card_ru": {
         "link": "Link card",
         "linked": "Card linked",

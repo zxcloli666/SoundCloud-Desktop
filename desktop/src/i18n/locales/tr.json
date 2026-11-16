@@ -2036,6 +2036,7 @@
     },
     "renew": {
       "title": "Otomatik yenileme",
+      "offOnce": "Kapalı: tek seferlik çekim",
       "every_one": "Her {{count}} günde bir otomatik tahsil edilir",
       "every_other": "Her {{count}} günde bir otomatik tahsil edilir",
       "next": "Sonraki çekim {{date}} · {{charge}}",
@@ -2056,6 +2057,8 @@
       "payOnce": "Otomatik yenileme olmadan öde",
       "oneOffCard": "Tek seferlik çekim, otomatik yenileme yok. Kart bağlı kalır: buradan veya Yönet bölümünden kaldırabilirsin.",
       "oneOffQr": "Tek seferlik çekim, otomatik yenileme yok. SBP bağlı kalır: buradan veya Yönet bölümünden kaldırabilirsin.",
+      "oneOffLinkedCard": "Bağlı karttan bir kez {{charge}} çekilir, otomatik yenileme yok.",
+      "oneOffLinkedQr": "Bağlı SBP üzerinden bir kez {{charge}} çekilir, otomatik yenileme yok.",
       "card_ru": {
         "link": "Kartı bağla",
         "linked": "Kart bağlandı",
