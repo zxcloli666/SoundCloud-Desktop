@@ -58,7 +58,9 @@ export function useClusterWave(opts: UseClusterWaveOptions): UseQueryResult<Clus
 }
 
 function keepVisible(data: ClusterData, keep: FeedFilter): ClusterData {
-  const hidden = new Set(data.allTracks.filter((t) => !keep(t)).map((t) => t.urn));
+  const hidden = new Set(
+    data.clusters.flatMap((c) => c.tracks.filter((t) => !keep(t)).map((t) => t.urn)),
+  );
   if (hidden.size === 0) return data;
   const clusters = data.clusters.flatMap((c): ClusterHydrated[] => {
     const tracks = c.tracks.filter((t) => !hidden.has(t.urn));
@@ -66,7 +68,7 @@ function keepVisible(data: ClusterData, keep: FeedFilter): ClusterData {
     const neighbors = c.neighbors?.filter((n) => !hidden.has(n.track_urn));
     return [neighbors ? { ...c, tracks, neighbors } : { ...c, tracks }];
   });
-  return { clusters, allTracks: data.allTracks.filter((t) => !hidden.has(t.urn)) };
+  return { clusters };
 }
 
 export async function fetchAndHydrate(url: string): Promise<ClusterData> {
@@ -75,7 +77,7 @@ export async function fetchAndHydrate(url: string): Promise<ClusterData> {
     isKnownClusterId(c.id),
   );
   if (!known.some((c) => c.track_ids.length > 0)) {
-    return { clusters: [], allTracks: [] };
+    return { clusters: [] };
   }
 
   const tracksByCluster = await clusterTracks(known);
@@ -98,27 +100,7 @@ export async function fetchAndHydrate(url: string): Promise<ClusterData> {
     clusters.push(hydrated);
   });
 
-  const allTracks: Track[] = [];
-  const seen = new Set<string>();
-  const cursors = clusters.map(() => 0);
-  let advanced = true;
-  while (advanced) {
-    advanced = false;
-    for (let ci = 0; ci < clusters.length; ci++) {
-      const c = clusters[ci];
-      while (cursors[ci] < c.tracks.length) {
-        const t = c.tracks[cursors[ci]++];
-        if (!seen.has(t.urn)) {
-          seen.add(t.urn);
-          allTracks.push(t);
-          advanced = true;
-          break;
-        }
-      }
-    }
-  }
-
-  return { clusters, allTracks };
+  return { clusters };
 }
 
 function clusterUrns(cluster: ClusterDto): string[] {
@@ -142,4 +124,8 @@ async function clusterTracks(clusters: ClusterDto[]): Promise<Track[][]> {
 
 function isKnownClusterId(id: string): id is ClusterId {
   return (KNOWN_IDS as ReadonlyArray<string>).includes(id);
+}
+
+export function waveQueue(clusters: ClusterHydrated[]): Track[] {
+  return (clusters.find((c) => c.id === 'wave') ?? clusters[0])?.tracks ?? [];
 }

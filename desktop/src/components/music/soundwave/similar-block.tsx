@@ -10,6 +10,7 @@ import {
   ClusterSkeletonState,
   NeighborsRow,
   useClusterWave,
+  waveQueue,
 } from '../cluster';
 import { AmbientLayer } from './ambient';
 import { useInfiniteWave } from './use-infinite-wave';
@@ -48,7 +49,6 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
   });
 
   const clusters = useMemo(() => data?.clusters ?? [], [data]);
-  const allTracks = useMemo(() => data?.allTracks ?? [], [data]);
 
   const orderedClusters = useMemo(() => {
     const byId = new Map(clusters.map((c) => [c.id, c]));
@@ -60,6 +60,8 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
     [orderedClusters],
   );
 
+  const playQueue = useMemo(() => waveQueue(orderedClusters), [orderedClusters]);
+
   useInfiniteWave({
     enabled: !!trackUrn,
     seedKind: 'track',
@@ -70,12 +72,12 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
   });
 
   const handlePlay = useCallback(() => {
-    if (allTracks.length === 0) return;
-    usePlayerStore.getState().play(allTracks[0], allTracks);
-  }, [allTracks]);
+    if (playQueue.length === 0) return;
+    usePlayerStore.getState().play(playQueue[0], playQueue);
+  }, [playQueue]);
 
   const showEmpty = !isLoading && orderedClusters.length === 0;
-  const canPlay = allTracks.length > 0;
+  const canPlay = playQueue.length > 0;
 
   return (
     <section
@@ -172,7 +174,6 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
                   icon={CLUSTER_ICON[c.id]}
                   index={idx}
                   cluster={c}
-                  queue={c.tracks}
                 />
               ) : (
                 <ClusterRow

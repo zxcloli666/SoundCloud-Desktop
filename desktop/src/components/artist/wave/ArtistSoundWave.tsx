@@ -23,6 +23,7 @@ import {
   ClusterSkeletonState,
   NeighborsRow,
   useClusterWave,
+  waveQueue,
 } from '../../music/cluster';
 import { AmbientLayer } from '../../music/soundwave/ambient';
 import { useInfiniteWave } from '../../music/soundwave/use-infinite-wave';
@@ -101,11 +102,9 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
 
   const currentUrn = usePlayerStore((s) => s.currentTrack?.urn);
   const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const queueHead = usePlayerStore((s) => s.queue[0]?.urn);
 
   const clusters = useMemo(() => data?.clusters ?? [], [data]);
-  const allTracks = useMemo(() => data?.allTracks ?? [], [data]);
-  const waveUrns = useMemo(() => new Set(allTracks.map((t) => t.urn)), [allTracks]);
-  const isPlayingFromWave = isPlaying && !!currentUrn && waveUrns.has(currentUrn);
   const perf = usePerfMode();
   const sectionBlur = perf.blur(40);
 
@@ -118,6 +117,9 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
     () => orderedClusters.find((c) => c.id === 'wave') ?? null,
     [orderedClusters],
   );
+  const playQueue = useMemo(() => waveQueue(orderedClusters), [orderedClusters]);
+  const onWave = !!currentUrn && queueHead === playQueue[0]?.urn;
+  const isPlayingFromWave = isPlaying && onWave;
 
   useInfiniteWave({
     enabled: !!artistId,
@@ -129,22 +131,22 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
   });
 
   const handlePlay = useCallback(() => {
-    if (allTracks.length === 0) return;
+    if (playQueue.length === 0) return;
     const { play, pause, resume } = usePlayerStore.getState();
     if (isPlayingFromWave) {
       pause();
       return;
     }
-    if (currentUrn && waveUrns.has(currentUrn)) {
+    if (onWave) {
       resume();
       return;
     }
-    play(allTracks[0], allTracks);
-  }, [allTracks, currentUrn, isPlayingFromWave, waveUrns]);
+    play(playQueue[0], playQueue);
+  }, [playQueue, isPlayingFromWave, onWave]);
 
   const lightAura = isLight(aura);
   const showEmpty = !isLoading && orderedClusters.length === 0;
-  const canPlay = allTracks.length > 0;
+  const canPlay = playQueue.length > 0;
 
   const playIcon = isPlayingFromWave
     ? lightAura
@@ -368,7 +370,6 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
                           icon={CLUSTER_ICON[c.id]}
                           index={idx}
                           cluster={c}
-                          queue={allTracks}
                         />
                       ) : (
                         <ClusterRow
@@ -379,7 +380,7 @@ export const ArtistSoundWave = React.memo(function ArtistSoundWave({
                           icon={CLUSTER_ICON[c.id]}
                           index={idx}
                           tracks={c.tracks}
-                          queue={allTracks}
+                          queue={c.tracks}
                         />
                       ),
                     )}

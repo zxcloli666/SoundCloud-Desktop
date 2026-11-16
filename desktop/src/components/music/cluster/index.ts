@@ -1,3 +1,4 @@
+export { fetchArtistQueue } from './artistQueue';
 export { ClusterHeader } from './ClusterHeader';
 export { ClusterRow } from './ClusterRow';
 export { EmptyState as ClusterEmptyState } from './EmptyState';
@@ -13,4 +14,8 @@ export type {
   ClusterNeighborDto,
   ClusterResponseDto,
 } from './types';
-export { fetchAndHydrate as fetchAndHydrateClusters, useClusterWave } from './useClusterWave';
+export {
+  fetchAndHydrate as fetchAndHydrateClusters,
+  useClusterWave,
+  waveQueue,
+} from './useClusterWave';

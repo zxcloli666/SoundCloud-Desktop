@@ -50,5 +50,4 @@ export interface ClusterHydrated {
 
 export interface ClusterData {
   clusters: ClusterHydrated[];
-  allTracks: Track[];
 }
