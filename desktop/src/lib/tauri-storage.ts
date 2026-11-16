@@ -1,9 +1,11 @@
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import {
   BaseDirectory,
   exists,
   mkdir,
   readTextFile,
   remove,
+  rename,
   writeTextFile,
 } from '@tauri-apps/plugin-fs';
 import type { PersistStorage, StateStorage, StorageValue } from 'zustand/middleware';
@@ -24,11 +26,19 @@ function filePath(name: string) {
   return `${name}.json`;
 }
 
+async function replace(path: string, value: string) {
+  const temp = `${path}.${getCurrentWindow().label}.tmp`;
+  await writeTextFile(temp, value, { baseDir: BASE_DIR });
+  await rename(temp, path, { oldPathBaseDir: BASE_DIR, newPathBaseDir: BASE_DIR }).catch(() =>
+    writeTextFile(path, value, { baseDir: BASE_DIR }),
+  );
+}
+
 const files = latestWrites<string | null>(async (name, value) => {
   await ensureDir();
   const path = filePath(name);
   if (value === null) await remove(path, { baseDir: BASE_DIR });
-  else await writeTextFile(path, value, { baseDir: BASE_DIR });
+  else await replace(path, value);
 });
 
 export const tauriStorage: StateStorage = {

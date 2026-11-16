@@ -9,6 +9,8 @@ const CAPABILITIES = ['src-tauri/capabilities/default.json', 'src-tauri/dev/remo
 interface Scope {
   allow: string[];
   deny: string[];
+  permissions: string[];
+  windows: string[];
 }
 
 function sources(dir: string): string[] {
@@ -46,18 +48,17 @@ function scope(capability: string): Scope {
       (permission as { identifier?: string }).identifier === 'fs:scope',
   );
   const paths = (list: { path: string }[]) => list.map((item) => item.path);
-  return { allow: paths(entry.allow), deny: paths(entry.deny) };
+  const permissions = data.permissions.filter(
+    (permission: unknown) => typeof permission === 'string',
+  );
+  return { allow: paths(entry.allow), deny: paths(entry.deny), permissions, windows: data.windows };
 }
 
 function covers(pattern: string, file: string): boolean {
   const path = `$APPDATA/${file}`;
-  if (pattern === path) return true;
   if (pattern.endsWith('/**')) return path.startsWith(pattern.slice(0, -2));
-  if (pattern.endsWith('/*')) {
-    const dir = pattern.slice(0, -1);
-    return path.startsWith(dir) && !path.slice(dir.length).includes('/');
-  }
-  return false;
+  const parts = pattern.split('*').map((part) => part.replace(/[.$^+?()[\]{}|\\]/g, '\\$&'));
+  return new RegExp(`^${parts.join('[^/]*')}$`).test(path);
 }
 
 const files = appDataFiles();
@@ -69,10 +70,20 @@ test('the scan finds the stores that live in app data', () => {
 });
 
 for (const capability of CAPABILITIES) {
-  const { allow, deny } = scope(capability);
+  const { allow, deny, permissions, windows } = scope(capability);
 
   test(`${capability} lets the webview reach every store file`, () => {
     const missing = [...files].filter((file) => !allow.some((pattern) => covers(pattern, file)));
+    assert.deepEqual(missing, []);
+  });
+
+  test(`${capability} lets every window save a store through a temp file`, () => {
+    assert.ok(permissions.includes('fs:allow-rename'));
+    const missing = [...files].flatMap((file) =>
+      windows
+        .map((window) => `${file}.${window}.tmp`)
+        .filter((temp) => !allow.some((pattern) => covers(pattern, temp))),
+    );
     assert.deepEqual(missing, []);
   });
 
