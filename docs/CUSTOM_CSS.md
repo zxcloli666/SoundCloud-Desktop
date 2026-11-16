@@ -96,6 +96,11 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="comments"]` | Comments list |
 | `[data-ui="comment"]` | A comment |
 | `[data-ui="search-tabs"]` | Search mode tabs |
+| `[data-ui="search-strip"]` | Row with the search mode tabs and the view switch |
+| `[data-ui="search-view"]` | Covers / Moments switch in search |
+| `[data-ui="search-moments"]` | Moments view inside search |
+| `[data-ui="search-wave-tail"]` | Last card of search moments: continue as a wave |
+| `[data-ui="moments-from-here"]` | "Moments from here" button on a search cover |
 | `[data-ui="tab"]` | A tab |
 | `[data-ui="chip"]` | Genre and filter chips |
 | `[data-ui="shelf"]` | Horizontal shelf |

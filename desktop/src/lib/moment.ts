@@ -26,6 +26,12 @@ export function hasMoment(track: Track): boolean {
   return trackMoment(track) !== null;
 }
 
+export async function momentWindow(track: Track): Promise<MomentWindow> {
+  const moment = trackMoment(track);
+  if (moment) return moment;
+  return fitWindow(track, await previewStartMs(track, MOMENT_MS), MOMENT_MS);
+}
+
 export async function previewStartMs(track: Track, lengthMs: number): Promise<number> {
   const moment = trackMoment(track);
   if (moment) return fitWindow(track, moment.startMs, lengthMs).startMs;

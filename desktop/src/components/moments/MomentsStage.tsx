@@ -1,12 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+import React, { type ReactNode, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { art } from '../../lib/formatters';
 import { ChevronDown, ChevronUp } from '../../lib/icons';
-import { trackMoment } from '../../lib/moment';
 import { momentShare, subscribeMomentProgress } from '../../lib/moments/channel';
 import { getDisplayTitle } from '../../lib/track-display';
 import type { Track } from '../../stores/player';
 import { MomentCard } from './MomentCard';
+import { useMomentWindow } from './use-moment-window';
 import { useStageGestures } from './use-stage-gestures';
 
 const RAIL_SPAN = 3;
@@ -17,12 +17,14 @@ export function MomentsStage({
   go,
   toggle,
   listenFull,
+  tail,
 }: {
   tracks: Track[];
   index: number;
   go: (delta: 1 | -1) => unknown;
   toggle: () => void;
   listenFull: (track: Track) => void;
+  tail?: ReactNode;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -34,8 +36,9 @@ export function MomentsStage({
   useStageGestures(stageRef, cardRef, go, toggle);
 
   const track = tracks[index];
-  const moment = track ? trackMoment(track) : null;
+  const moment = useMomentWindow(track);
   const next = tracks[index + 1];
+  const enter = `${forward ? 'mo-in-up' : 'mo-in-down'} 460ms var(--ease-apple) backwards`;
 
   return (
     <div
@@ -44,19 +47,18 @@ export function MomentsStage({
       className="relative min-h-0 flex-1 touch-none overflow-hidden"
     >
       {track && moment && (
-        <div
-          key={track.urn}
-          className="mo-anim absolute inset-0"
-          style={{
-            animation: `${forward ? 'mo-in-up' : 'mo-in-down'} 460ms var(--ease-apple) backwards`,
-          }}
-        >
+        <div key={track.urn} className="mo-anim absolute inset-0" style={{ animation: enter }}>
           <div ref={cardRef} className="size-full will-change-transform">
             <MomentCard track={track} moment={moment} onToggle={toggle} onListenFull={listenFull} />
           </div>
         </div>
       )}
-      <MomentRail tracks={tracks} index={index} go={go} />
+      {!track && tail && (
+        <div key="tail" className="mo-anim absolute inset-0" style={{ animation: enter }}>
+          {tail}
+        </div>
+      )}
+      <MomentRail tracks={tracks} index={index} go={go} tail={!!tail} />
       {next && <NextPeek track={next} onClick={() => go(1)} />}
     </div>
   );
@@ -66,10 +68,12 @@ const MomentRail = React.memo(function MomentRail({
   tracks,
   index,
   go,
+  tail,
 }: {
   tracks: Track[];
   index: number;
   go: (delta: 1 | -1) => unknown;
+  tail: boolean;
 }) {
   const { t } = useTranslation();
   const from = Math.max(0, index - RAIL_SPAN);
@@ -109,7 +113,7 @@ const MomentRail = React.memo(function MomentRail({
       <button
         type="button"
         onClick={() => go(1)}
-        disabled={index >= tracks.length - 1}
+        disabled={index >= tracks.length - (tail ? 0 : 1)}
         title={t('moments.next')}
         aria-label={t('moments.next')}
         className={btn}

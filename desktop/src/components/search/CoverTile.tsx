@@ -1,5 +1,6 @@
-import {Pause, Play, Sparkles} from 'lucide-react';
+import {GalleryVerticalEnd, Pause, Play, Sparkles} from 'lucide-react';
 import {memo} from 'react';
+import {useTranslation} from 'react-i18next';
 import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {
   hardStopHoverPreview,
@@ -14,6 +15,7 @@ import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {useSearchPrefsStore} from '../../stores/searchPrefs';
 import {LikeButton} from '../music/LikeButton';
 import {hashStr, type WallItem} from './utils';
 
@@ -23,6 +25,7 @@ interface CoverTileProps {
   getQueue: () => Track[];
   onOpen?: () => void;
   onPlay?: () => void;
+  moments?: boolean;
 }
 
 /** Breathing phase seeded from the track's urn (stable across re-weaves), so a
@@ -40,7 +43,9 @@ export const CoverTile = memo(function CoverTile({
   getQueue,
   onOpen,
   onPlay,
+  moments,
 }: CoverTileProps) {
+  const {t} = useTranslation();
   const perf = usePerfMode();
   const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
@@ -55,6 +60,7 @@ export const CoverTile = memo(function CoverTile({
   const enter = () => {
     preloadTrack(track);
     startHoverPreview(track);
+    if (moments) useSearchPrefsStore.getState().noteFrom(track.urn);
   };
   const leave = () => {
     cancelPreload();
@@ -202,6 +208,22 @@ export const CoverTile = memo(function CoverTile({
             variant="overlay"
             position={hero ? 'top-14 right-3' : 'top-11 right-[7px]'}
           />
+          {moments && (
+            <button
+              type="button"
+              data-ui="moments-from-here"
+              title={t('search.view.fromHere')}
+              aria-label={t('search.view.fromHere')}
+              onClick={() => {
+                hardStopHoverPreview();
+                useSearchPrefsStore.getState().momentsFrom(track.urn);
+              }}
+              data-scheme="dark"
+              className={`absolute ${hero ? 'top-24 right-3' : 'top-[84px] right-[7px]'} w-8 h-8 flex items-center justify-center rounded-full bg-black/50 text-ink-80 hover:text-accent hover:bg-black/70 opacity-0 group-hover:opacity-100 group-hover:backdrop-blur-md transition-all duration-200 cursor-pointer`}
+            >
+              <GalleryVerticalEnd size={15} />
+            </button>
+          )}
         </div>
 
         {/* Rings live OUTSIDE the hover-scaled .tg-lift so the 15s progress arc

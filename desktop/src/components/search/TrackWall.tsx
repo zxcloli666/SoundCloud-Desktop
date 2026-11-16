@@ -1,32 +1,19 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 import { armTrackWaveContinuation } from '../../lib/queue-continuation';
-import type { Track } from '../../stores/player';
+import type { TrackResults } from '../../lib/search';
 import { useSettingsStore } from '../../stores/settings';
 import { type TileKind, toWallItems } from './utils';
 import { Wall } from './Wall';
 
 interface TrackWallProps {
-  tracks: Track[];
+  results: TrackResults;
   kind: TileKind;
-  isLoading: boolean;
-  hasMore?: boolean;
-  isFetchingMore?: boolean;
-  onLoadMore?: () => void;
   onOpen?: () => void;
   wave?: boolean;
 }
 
-export const TrackWall = memo(function TrackWall({
-  tracks,
-  kind,
-  isLoading,
-  hasMore,
-  isFetchingMore,
-  onLoadMore,
-  onOpen,
-  wave,
-}: TrackWallProps) {
-  const items = useMemo(() => toWallItems(tracks, kind), [tracks, kind]);
+export const TrackWall = memo(function TrackWall({ results, kind, onOpen, wave }: TrackWallProps) {
+  const items = useMemo(() => toWallItems(results.items, kind), [results.items, kind]);
   const itemsRef = useRef(items);
   itemsRef.current = items;
   const similar = useSettingsStore((s) => !!wave && s.searchPlayback === 'similar');
@@ -35,15 +22,18 @@ export const TrackWall = memo(function TrackWall({
     [similar],
   );
   return (
-    <Wall
-      items={items}
-      getQueue={getQueue}
-      isLoading={isLoading}
-      hasMore={hasMore}
-      isFetchingMore={isFetchingMore}
-      onLoadMore={onLoadMore}
-      onOpen={onOpen}
-      onPlay={similar ? armTrackWaveContinuation : undefined}
-    />
+    <div data-menu-scope="search">
+      <Wall
+        items={items}
+        getQueue={getQueue}
+        isLoading={results.isLoading}
+        hasMore={results.hasMore}
+        isFetchingMore={results.isFetchingMore}
+        onLoadMore={results.loadMore}
+        onOpen={onOpen}
+        onPlay={similar ? armTrackWaveContinuation : undefined}
+        moments
+      />
+    </div>
   );
 });

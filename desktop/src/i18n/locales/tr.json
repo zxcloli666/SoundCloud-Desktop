@@ -217,6 +217,13 @@
       "vibeHint": "Bir ruh halini veya hissi anlatın, ona benzeyen parçaları bulun.",
       "soundcloudHint": "Doğrudan SoundCloud sonuçları, SoundCloud sırasıyla."
     },
+    "view": {
+      "covers": "Kapaklar",
+      "moments": "Anlar",
+      "fromHere": "Buradan anlar",
+      "continueWave": "Dalga olarak devam et",
+      "empty": "“{{query}}” için an yok"
+    },
     "catalog": {
       "inLyrics": "Şarkı sözlerinde bulundu",
       "showMore": "Daha fazla göster",

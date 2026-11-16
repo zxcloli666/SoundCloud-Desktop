@@ -188,6 +188,13 @@
       "vibeHint": "분위기나 감정을 설명하면 그런 느낌의 트랙을 찾아 드려요.",
       "soundcloudHint": "SoundCloud에서 바로 가져온 실시간 결과예요. 순서도 SoundCloud 그대로예요."
     },
+    "view": {
+      "covers": "커버",
+      "moments": "모먼트",
+      "fromHere": "여기서부터 모먼트",
+      "continueWave": "웨이브로 이어 듣기",
+      "empty": "“{{query}}” 모먼트가 없어요"
+    },
     "catalog": {
       "inLyrics": "가사에서 찾음",
       "showMore": "더 보기",
