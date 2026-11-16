@@ -9,6 +9,7 @@ import {
   writeTextFile,
 } from '@tauri-apps/plugin-fs';
 import type { PersistStorage, StateStorage, StorageValue } from 'zustand/middleware';
+import { trackedInvoke as invoke } from './diagnostics';
 import { latestWrites } from './latest-write';
 
 const BASE_DIR = BaseDirectory.AppData;
@@ -29,6 +30,7 @@ function filePath(name: string) {
 async function replace(path: string, value: string) {
   const temp = `${path}.${getCurrentWindow().label}.tmp`;
   await writeTextFile(temp, value, { baseDir: BASE_DIR });
+  await invoke('store_flush', { name: temp }).catch(() => {});
   await rename(temp, path, { oldPathBaseDir: BASE_DIR, newPathBaseDir: BASE_DIR }).catch(() =>
     writeTextFile(path, value, { baseDir: BASE_DIR }),
   );

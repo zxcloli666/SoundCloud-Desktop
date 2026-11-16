@@ -298,6 +298,7 @@ pub fn run() {
             app::render_mode::render_mode_get,
             app::render_mode::render_mode_set,
             app::render_mode::render_mode_restart,
+            app::store_files::store_flush,
             app::hotkeys::hotkeys_apply,
             voice::commands::voice_status,
             voice::commands::voice_apply,
