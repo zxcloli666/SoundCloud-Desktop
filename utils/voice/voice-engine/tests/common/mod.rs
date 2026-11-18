@@ -521,7 +521,6 @@ impl Rig {
         self.engine.send(Command::Text {
             text: text.into(),
             source: Source::Typed,
-            id: None,
         });
     }
 

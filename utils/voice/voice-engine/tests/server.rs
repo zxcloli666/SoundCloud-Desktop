@@ -39,7 +39,6 @@ fn asked_to_pause(rig: &Rig) -> String {
     rig.engine.send(Command::Text {
         text: "пауза".into(),
         source: Source::Button,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     rig.command().id

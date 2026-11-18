@@ -231,40 +231,6 @@
       "warm": "따뜻함",
       "clear": "또렷함"
     },
-    "speakers": {
-      "title": "알리사와 살류트",
-      "alice": "알리사",
-      "salut": "살류트",
-      "connect": "연결",
-      "addMore": "하나 더",
-      "notLinked": "연결 안 됨",
-      "linked_other": "{{count}}개 연결됨",
-      "justLinked": "연결됨",
-      "how": {
-        "alice": "“Алиса, запусти навык Саунд Клауд”이라고 말하고 코드를 입력하세요",
-        "salut": "“Салют, запусти Саунд”이라고 말하고 코드를 말하세요"
-      },
-      "copy": "복사",
-      "copied": "복사됨",
-      "cancel": "취소",
-      "codeFailed": "코드를 받지 못했어요. 다시 시도하세요",
-      "lastUsed": "마지막 명령 {{when}}",
-      "neverUsed": "아직 명령 없음",
-      "revoke": "연결 해제",
-      "revokeYes": "해제",
-      "remote": {
-        "live": "연결됨",
-        "retrying": "재연결 중"
-      },
-      "confirm": {
-        "alice": "알리사를 연결할까요?",
-        "salut": "살류트를 연결할까요?"
-      },
-      "confirmSub": "스피커에서 코드를 입력했어요",
-      "confirmHint": "숫자를 확인하세요",
-      "yes": "예",
-      "no": "아니요"
-    },
     "models": {
       "title": "모델",
       "onDisk": "디스크 {{size}}",

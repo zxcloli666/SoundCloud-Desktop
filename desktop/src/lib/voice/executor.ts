@@ -15,8 +15,6 @@ import { execute, revert, type StepResult } from './execute';
 import { dismiss } from './hud';
 import { voiceIpc } from './ipc';
 import { playerPort } from './player-port';
-import { answerLink, markActive, settleRemote } from './remote';
-import type { RemoteState } from './remote-types';
 import { reply } from './replies';
 import { type DoneItem, useVoiceRuntime } from './runtime';
 import { type RowResult, useVoiceStore } from './store';
@@ -47,16 +45,6 @@ const ROW_RESULT: Record<StepResult['kind'], RowResult> = {
   cancelled: 'ignored',
 };
 
-const REMOTE_STATE: Record<StepResult['kind'], RemoteState> = {
-  done: 'done',
-  ask: 'ask',
-  not_found: 'not_found',
-  failed: 'failed',
-  ignored: 'failed',
-  chat: 'done',
-  cancelled: 'failed',
-};
-
 function language() {
   return useVoiceStore.getState().config.language;
 }
@@ -83,10 +71,6 @@ function groupOf(cmd: VoiceCommand): GroupRun {
     group = { id, items: [], speech: [], ok: true, undo: false };
   }
   return group;
-}
-
-function isLastStep(cmd: VoiceCommand): boolean {
-  return !cmd.steps || (cmd.step ?? 1) >= cmd.steps;
 }
 
 function show(cmd: VoiceCommand, res: StepResult, run: GroupRun) {
@@ -155,7 +139,6 @@ async function reread(id: string): Promise<boolean> {
 }
 
 async function handle(cmd: VoiceCommand) {
-  if (cmd.source !== 'remote') markActive();
   const run = groupOf(cmd);
   const res = await execute(cmd, playerPort, {
     lang: language(),
@@ -185,15 +168,6 @@ async function handle(cmd: VoiceCommand) {
   record(cmd, res, run);
   notifyUndo();
   if (res.kind !== 'ask') await voiceIpc.done(cmd.id, res.outcome).catch(() => {});
-  if (cmd.remote_id && (res.kind === 'ask' || isLastStep(cmd))) {
-    void settleRemote(
-      cmd.remote_id,
-      run.ok,
-      run.speech.join('. '),
-      displayOf(res, run),
-      REMOTE_STATE[res.kind],
-    );
-  }
 }
 
 export function enqueueCommand(cmd: VoiceCommand) {
@@ -235,7 +209,6 @@ export function answerAsk(choice: string) {
 export function dismissHud() {
   const runtime = useVoiceRuntime.getState();
   dismiss(runtime.hud, {
-    declineLink: (id) => answerLink(id, false),
     stopChat,
     cancelEngine: () => void voiceIpc.cancel().catch(() => {}),
     hide: runtime.hideHud,

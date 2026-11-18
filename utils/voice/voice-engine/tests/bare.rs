@@ -175,31 +175,6 @@ fn with_the_chat_on_a_name_after_a_verb_is_played_when_sure_and_left_to_the_chat
 }
 
 #[test]
-fn a_phrase_from_a_skill_is_read_as_with_the_chat_off() {
-    let said = |rig: &Rig, text: &str| {
-        rig.engine.send(Command::Text {
-            text: text.into(),
-            source: Source::Remote,
-            id: Some("r-1".into()),
-        });
-        rig.expect_state(State::Thinking);
-        rig.command()
-    };
-    let rig = rig(true);
-    let alone = said(&rig, "что нового");
-    let Some(DecisionEvent::Act { pick }) = &alone.decision else {
-        panic!("expected act, got {:?}", alone.decision);
-    };
-    assert_eq!((alone.intent, pick.entity.artist.as_str()), ("play", "ЛСП"));
-    rig.done(&alone.id, "");
-    rig.expect_state(State::Idle);
-    let asked = said(&rig, "включи как дела");
-    assert_eq!(asked.intent, "play");
-    assert!(matches!(asked.decision, Some(DecisionEvent::Ask { .. })));
-    rig.expect_state(State::Asking);
-}
-
-#[test]
 fn a_greeting_after_a_play_verb_plays_its_title_with_the_chat_on_or_off() {
     for chat in [true, false] {
         let rig = rig(chat);

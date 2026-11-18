@@ -14,7 +14,7 @@ function SayHi() {
   return (
     <SmallButton
       disabled={busy}
-      onClick={() => void voiceIpc.text(t('voice.you.hello'), 'typed').catch(() => {})}
+      onClick={() => void voiceIpc.text(t('voice.you.hello')).catch(() => {})}
     >
       <Hand size={13} />
       {t('voice.you.try')}

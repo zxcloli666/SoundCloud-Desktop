@@ -197,7 +197,6 @@ fn listener(set: &Set, language: Language, code: &str, next: &AtomicUsize) -> Ve
         rig.engine.send(Command::Text {
             text: row.text.clone(),
             source: Source::Button,
-            id: None,
         });
         let typed = understood(&rig);
         if typed.nothing_to_do() {

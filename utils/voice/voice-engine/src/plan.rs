@@ -20,7 +20,7 @@ pub struct Plan {
 }
 
 pub fn voiced(source: Source) -> bool {
-    !matches!(source, Source::Typed | Source::Remote)
+    source != Source::Typed
 }
 
 impl Core {
@@ -28,13 +28,12 @@ impl Core {
         self.plan.as_ref().is_some_and(|plan| plan.asking.is_none())
     }
 
-    pub fn think(&mut self, text: String, remote_id: Option<String>) {
+    pub fn think(&mut self, text: String) {
         self.phase = Phase::Thinking(Instant::now() + self.deps.timing.done);
         self.emit_state(State::Thinking, None);
         if let Some(index) = self.match_answer(&text) {
             if let Some(plan) = self.plan.as_mut() {
                 plan.origin.source = self.source;
-                plan.origin.remote_id = remote_id;
             }
             self.choose(index);
             return;
@@ -44,7 +43,6 @@ impl Core {
         self.plan = None;
         let origin = Origin {
             source: self.source,
-            remote_id,
             chatless: false,
         };
         self.read(text, origin);
@@ -96,7 +94,7 @@ impl Core {
         self.emit_state(State::Thinking, None);
         match self.match_answer(&text) {
             Some(index) => self.choose(index),
-            None => self.think(text, None),
+            None => self.think(text),
         }
     }
 
@@ -122,7 +120,7 @@ impl Core {
                 self.emit_state(State::Thinking, None);
                 self.choose(index);
             }
-            None => self.think(choice.to_string(), None),
+            None => self.think(choice.to_string()),
         }
     }
 

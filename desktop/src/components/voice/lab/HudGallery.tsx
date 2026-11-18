@@ -62,10 +62,6 @@ const CARDS: { label: string; hud: HudView }[] = [
     },
   },
   {
-    label: 'link confirm',
-    hud: { kind: 'link_confirm', id: 'lab-link', provider: 'alice', hint: '47' },
-  },
-  {
     label: 'chat',
     hud: {
       kind: 'chat',

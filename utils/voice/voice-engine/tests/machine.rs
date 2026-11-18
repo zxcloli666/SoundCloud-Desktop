@@ -125,21 +125,6 @@ fn nothing_found_is_a_play_with_not_found() {
 }
 
 #[test]
-fn remote_commands_keep_their_id() {
-    let rig = rig();
-    rig.engine.send(Command::Text {
-        text: "следующий трек".into(),
-        source: Source::Remote,
-        id: Some("r-42".into()),
-    });
-    rig.expect_state(State::Thinking);
-    let command = rig.command();
-    assert_eq!(command.intent, "next");
-    assert_eq!(command.remote_id.as_deref(), Some("r-42"));
-    assert_eq!(command.source, Source::Remote);
-}
-
-#[test]
 fn json_shape_matches_the_ui() {
     let rig = rig();
     rig.text("включи скриптонита");
@@ -155,7 +140,6 @@ fn json_shape_matches_the_ui() {
     assert!(json["decision"]["pick"]["score"].is_number());
     assert!(json["kind_hint"].is_null());
     assert!(json.get("group").is_none());
-    assert!(json.get("remote_id").is_none());
 }
 
 #[test]

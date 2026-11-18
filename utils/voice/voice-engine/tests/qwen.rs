@@ -153,7 +153,6 @@ fn reply(rig: &Rig, speech: &str) -> (Duration, usize) {
     rig.engine.send(Command::Text {
         text: "пауза".into(),
         source: Source::Button,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     let command = rig.command();
@@ -213,7 +212,6 @@ fn asked(rig: &Rig) -> String {
     rig.engine.send(Command::Text {
         text: "как твои дела".into(),
         source: Source::Button,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     let command = rig.command();

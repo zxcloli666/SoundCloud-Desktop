@@ -221,7 +221,7 @@ async function talk(cmd: VoiceCommand, port: PlayerPort, ctx: ExecuteContext): P
   const plain = help
     ? result('done', reply(ctx.lang, 'help', you), cmd, ctx.stack)
     : result('ignored', { speech: '', display: cmd.heard }, cmd, ctx.stack);
-  if (!ctx.chat || !cmd.heard.trim() || cmd.source === 'remote') return plain;
+  if (!ctx.chat || !cmd.heard.trim()) return plain;
   if (cmd.chatless) {
     const line = ctx.refused ? AWAY[failureOf(ctx.refused)] : 'chat_away';
     return help ? plain : awayResult(cmd, reply(ctx.lang, line, you), ctx.stack);

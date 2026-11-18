@@ -165,14 +165,12 @@ test('no intent goes to the chat when it is on and returns the reply as display 
   assert.equal(res.chat?.status, 'ok');
 });
 
-test('no intent stays ignored without the chat, for empty text and for smart speakers', async () => {
+test('no intent stays ignored without the chat and for empty text', async () => {
   const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] });
   const off = await execute(command('none', { heard: 'как дела' }), fakePort(), ctx());
   assert.equal(off.kind, 'ignored');
   const empty = await execute(command('none', { heard: '  ' }), fakePort(), { ...ctx(), chat });
   assert.equal(empty.kind, 'ignored');
-  const remote = command('none', { heard: 'как дела', source: 'remote' });
-  assert.equal((await execute(remote, fakePort(), { ...ctx(), chat })).kind, 'ignored');
   assert.deepEqual(asked, []);
 });
 
@@ -221,11 +219,6 @@ test('help keeps the fixed reply when the chat is off, fails or says nothing', a
     assert.deepEqual(res.outcome, fixed.outcome);
     assert.equal(res.chat, undefined);
   }
-  const remote = chatting({ status: 'ok', say: 'Умею вот что.', marks: [] });
-  const speaker = command('help', { heard: 'что умеешь', source: 'remote' });
-  const res = await execute(speaker, fakePort(), { ...ctx(), chat: remote.chat });
-  assert.deepEqual(res.outcome, fixed.outcome);
-  assert.deepEqual(remote.asked, []);
 });
 
 test('help cancelled in the chat stays quiet, the fixed reply is not spoken after it', async () => {

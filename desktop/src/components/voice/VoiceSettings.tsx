@@ -12,7 +12,6 @@ import { HeroCard } from './settings/HeroCard';
 import { HistoryCard } from './settings/HistoryCard';
 import { MicrophonesCard } from './settings/MicrophonesCard';
 import { ModelsCard } from './settings/ModelsCard';
-import { SpeakersCard } from './settings/SpeakersCard';
 import { VoiceLocked } from './settings/VoiceLocked';
 import { VoicePickerCard } from './settings/VoicePickerCard';
 import { YouCard } from './settings/YouCard';
@@ -40,7 +39,6 @@ export function VoiceSettings() {
           <VoicePickerCard />
           <ChatCard />
           <YouCard canTalk={enabled && ready} />
-          <SpeakersCard />
           <ModelsCard />
           <HistoryCard canTalk={enabled && ready} />
           <CreditsCard />

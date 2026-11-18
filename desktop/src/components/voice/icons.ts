@@ -24,15 +24,12 @@ import {
   MessageCircleHeart as _MessageCircleHeart,
   Mic as _Mic,
   MicOff as _MicOff,
-  MousePointerClick as _MousePointerClick,
   PenLine as _PenLine,
-  RadioTower as _RadioTower,
   SearchX as _SearchX,
   ShieldCheck as _ShieldCheck,
   Speaker as _Speaker,
   Square as _Square,
   Undo2 as _Undo2,
-  Unlink as _Unlink,
   Usb as _Usb,
   UserRound as _UserRound,
   UsersRound as _UsersRound,
@@ -65,15 +62,12 @@ export const Languages = memo(_Languages);
 export const MessageCircleHeart = memo(_MessageCircleHeart);
 export const Mic = memo(_Mic);
 export const MicOff = memo(_MicOff);
-export const MousePointerClick = memo(_MousePointerClick);
 export const PenLine = memo(_PenLine);
-export const RadioTower = memo(_RadioTower);
 export const SearchX = memo(_SearchX);
 export const ShieldCheck = memo(_ShieldCheck);
 export const Speaker = memo(_Speaker);
 export const StopSquare = memo(_Square);
 export const Undo2 = memo(_Undo2);
-export const Unlink = memo(_Unlink);
 export const Usb = memo(_Usb);
 export const UserRound = memo(_UserRound);
 export const UsersRound = memo(_UsersRound);

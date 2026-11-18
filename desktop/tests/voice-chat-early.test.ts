@@ -214,6 +214,5 @@ test('a chat starts ahead only for a phrase the chat may answer now', () => {
   assert.equal(startsAhead({ ...heard, source: 'typed' }, ready), true);
   assert.equal(startsAhead(heard, { on: false, resting: false }), false);
   assert.equal(startsAhead(heard, { on: true, resting: true }), false);
-  assert.equal(startsAhead({ ...heard, source: 'remote' }, ready), false);
   assert.equal(startsAhead({ ...heard, heard: '  ' }, ready), false);
 });

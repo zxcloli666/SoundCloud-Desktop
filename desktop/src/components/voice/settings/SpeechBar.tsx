@@ -16,7 +16,7 @@ export function SpeechBar({ example }: { example: string }) {
     e.preventDefault();
     const value = text.trim();
     if (!value) return;
-    void voiceIpc.text(value, 'typed').catch(() => {});
+    void voiceIpc.text(value).catch(() => {});
     setText('');
   };
 

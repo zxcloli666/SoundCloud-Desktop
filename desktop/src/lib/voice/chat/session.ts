@@ -42,7 +42,7 @@ export function interruptChat() {
 }
 
 function voiced(source: VoiceSource): boolean {
-  return source !== 'typed' && source !== 'remote';
+  return source !== 'typed';
 }
 
 function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unknown> {

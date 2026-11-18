@@ -234,41 +234,6 @@
       "warm": "sıcak",
       "clear": "net"
     },
-    "speakers": {
-      "title": "Alice ve Salut",
-      "alice": "Alice",
-      "salut": "Salut",
-      "connect": "Bağla",
-      "addMore": "Bir tane daha",
-      "notLinked": "Bağlı değil",
-      "linked_one": "{{count}} bağlı",
-      "linked_other": "{{count}} bağlı",
-      "justLinked": "Bağlandı",
-      "how": {
-        "alice": "“Алиса, запусти навык Саунд Клауд” deyin ve kodu girin",
-        "salut": "“Салют, запусти Саунд” deyin ve kodu söyleyin"
-      },
-      "copy": "Kopyala",
-      "copied": "Kopyalandı",
-      "cancel": "İptal",
-      "codeFailed": "Kod gelmedi, tekrar deneyin",
-      "lastUsed": "Son komut {{when}}",
-      "neverUsed": "Henüz komut yok",
-      "revoke": "Bağlantıyı kes",
-      "revokeYes": "Kes",
-      "remote": {
-        "live": "Çevrimiçi",
-        "retrying": "Yeniden bağlanıyor"
-      },
-      "confirm": {
-        "alice": "Alice bağlansın mı?",
-        "salut": "Salut bağlansın mı?"
-      },
-      "confirmSub": "Kod bir hoparlörde girildi",
-      "confirmHint": "Numarayı kontrol et",
-      "yes": "Evet",
-      "no": "Hayır"
-    },
     "models": {
       "title": "Modeller",
       "onDisk": "Diskte {{size}}",

@@ -265,7 +265,7 @@ impl Core {
                 }
             }
             Command::Cancel => self.cancel(),
-            Command::Text { text, source, id } => self.text(text, source, id),
+            Command::Text { text, source } => self.text(text, source),
             Command::Answer(choice) => self.answer(&choice),
             Command::Done { id, outcome } => self.done(&id, outcome),
             Command::Chat { id, step } => self.chat(id, step),
@@ -372,7 +372,7 @@ impl Core {
         self.drop_reply();
     }
 
-    fn text(&mut self, text: String, source: Source, id: Option<String>) {
+    fn text(&mut self, text: String, source: Source) {
         if !self.star {
             self.source = source;
             self.fail("not_star", None);
@@ -389,7 +389,7 @@ impl Core {
         self.drop_reading();
         self.drop_reply();
         self.source = source;
-        self.think(text.trim().to_string(), id);
+        self.think(text.trim().to_string());
     }
 
     pub fn level(&self, input: String, rms: f32) {

@@ -5,7 +5,7 @@ import { undoById } from '../../../lib/voice/executor';
 import type { HistoryRow as Row } from '../../../lib/voice/store';
 import { useVoiceStore } from '../../../lib/voice/store';
 import type { VoiceSource } from '../../../lib/voice/types';
-import { Flag, Headset, Mic, RadioTower, SearchX, Undo2, WandSparkles } from '../icons';
+import { Flag, Headset, Mic, SearchX, Undo2, WandSparkles } from '../icons';
 import { intentIcon } from '../intentIcon';
 import { clockTime } from '../time';
 import { HistoryReply } from './HistoryReply';
@@ -14,7 +14,6 @@ function sourceIcon(source: VoiceSource): ReactNode {
   if (source === 'typed') return <Keyboard size={13} />;
   if (source === 'headset') return <Headset size={13} />;
   if (source === 'wake') return <WandSparkles size={13} />;
-  if (source === 'remote') return <RadioTower size={13} />;
   return <Mic size={13} />;
 }
 

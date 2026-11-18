@@ -75,10 +75,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="voice-locked"]` | Voice block without STAR |
 | `[data-ui="voice-device"]` | A microphone tile, with `data-on` |
 | `[data-ui="voice-role"]` | A role tile in "You and the assistant", with `data-on` |
-| `[data-ui="voice-speaker"]` | Alice or Salut tile |
-| `[data-ui="voice-link-code"]` | Link code panel |
 | `[data-ui="voice-credits"]` | Licenses list in Settings > Voice |
-| `[data-ui="voice-link-confirm"]` | "Connect Alice?" question in the speaker tile |
 | `[data-ui="voice-model"]` | A model row, with `data-state` |
 | `[data-ui="voice-history-row"]` | A row in the voice history |
 

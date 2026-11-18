@@ -1,5 +1,4 @@
 import type { ToolMark } from '../../../lib/voice/chat/types';
-import type { RemoteLink } from '../../../lib/voice/remote-types';
 import type { HistoryRow, WakeMark } from '../../../lib/voice/store';
 import type { Devices, Entity, Model } from '../../../lib/voice/types';
 
@@ -174,7 +173,7 @@ export function labHistory(now: number): HistoryRow[] {
     {
       id: 'h4',
       at: at(42),
-      source: 'remote',
+      source: 'typed',
       heard: 'лайк',
       intents: ['like'],
       label: 'Лайк',
@@ -232,15 +231,4 @@ export function labHistory(now: number): HistoryRow[] {
 export function labWakeLog(now: number): WakeMark[] {
   const hours = [1, 2, 2, 4, 5, 7, 9, 13, 15, 18, 21];
   return hours.map((h, i) => ({ at: now - h * 3_600_000 - i * 60_000, ok: i !== 3 && i !== 8 }));
-}
-
-export function labLinks(now: number): RemoteLink[] {
-  return [
-    {
-      id: 'link-1',
-      provider: 'alice',
-      createdAt: now - 6 * 86_400_000,
-      lastUsedAt: now - 5 * 60_000,
-    },
-  ];
 }

@@ -76,20 +76,10 @@ pub enum Command {
     Release(Source),
     Stop,
     Cancel,
-    Text {
-        text: String,
-        source: Source,
-        id: Option<String>,
-    },
+    Text { text: String, source: Source },
     Answer(String),
-    Done {
-        id: String,
-        outcome: Outcome,
-    },
-    Chat {
-        id: String,
-        step: Chat,
-    },
+    Done { id: String, outcome: Outcome },
+    Chat { id: String, step: Chat },
     Reread(String),
     Meter(bool),
     Preview(Vec<u8>),

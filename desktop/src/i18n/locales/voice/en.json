@@ -234,41 +234,6 @@
       "warm": "warm",
       "clear": "clear"
     },
-    "speakers": {
-      "title": "Alice and Salut",
-      "alice": "Alice",
-      "salut": "Salut",
-      "connect": "Connect",
-      "addMore": "Add another",
-      "notLinked": "Not connected",
-      "linked_one": "{{count}} connected",
-      "linked_other": "{{count}} connected",
-      "justLinked": "Connected",
-      "how": {
-        "alice": "Say “Алиса, запусти навык Саунд Клауд” and enter the code",
-        "salut": "Say “Салют, запусти Саунд” and read the code"
-      },
-      "copy": "Copy",
-      "copied": "Copied",
-      "cancel": "Cancel",
-      "codeFailed": "No code came back, try again",
-      "lastUsed": "Last command {{when}}",
-      "neverUsed": "No commands yet",
-      "revoke": "Unlink",
-      "revokeYes": "Unlink",
-      "remote": {
-        "live": "Online",
-        "retrying": "Reconnecting"
-      },
-      "confirm": {
-        "alice": "Connect Alice?",
-        "salut": "Connect Salut?"
-      },
-      "confirmSub": "The code was entered on a speaker",
-      "confirmHint": "Check the number",
-      "yes": "Yes",
-      "no": "No"
-    },
     "models": {
       "title": "Models",
       "onDisk": "{{size}} on disk",

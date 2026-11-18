@@ -75,10 +75,7 @@
 | `[data-ui="voice-locked"]` | Блок голоса без STAR |
 | `[data-ui="voice-device"]` | Плитка микрофона, выбор в `data-on` |
 | `[data-ui="voice-role"]` | Плитка роли в «Ты и ассистент», выбор в `data-on` |
-| `[data-ui="voice-speaker"]` | Плитка Алисы или Салюта |
-| `[data-ui="voice-link-code"]` | Панель с кодом привязки |
 | `[data-ui="voice-credits"]` | Список лицензий в Настройки > Голос |
-| `[data-ui="voice-link-confirm"]` | Вопрос «Подключить Алису?» в плитке колонки |
 | `[data-ui="voice-model"]` | Строка модели, состояние в `data-state` |
 | `[data-ui="voice-history-row"]` | Строка в истории голоса |
 

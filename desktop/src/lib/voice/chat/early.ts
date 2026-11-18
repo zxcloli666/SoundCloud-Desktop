@@ -12,7 +12,7 @@ interface Ahead {
 }
 
 export function startsAhead(heard: HeardEvent, chat: { on: boolean; resting: boolean }): boolean {
-  return chat.on && !chat.resting && heard.source !== 'remote' && heard.heard.trim() !== '';
+  return chat.on && !chat.resting && heard.heard.trim() !== '';
 }
 
 async function release(turn: Ahead, onEvent: Listener): Promise<void> {

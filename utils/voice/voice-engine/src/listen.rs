@@ -358,7 +358,7 @@ impl Core {
         if for_ask {
             self.spoken_answer(text);
         } else {
-            self.think(text, None);
+            self.think(text);
         }
     }
 

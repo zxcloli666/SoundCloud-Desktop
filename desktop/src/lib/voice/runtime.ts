@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import type { Exchange } from './chat/dialog';
-import type { LinkAsk, SpeakerProvider } from './remote-types';
 import type {
   Devices,
   EngineState,
@@ -26,7 +25,6 @@ export type HudView =
   | { kind: 'thinking' }
   | { kind: 'done'; id: string; heard: string; items: DoneItem[]; undo: boolean; at: number }
   | { kind: 'asking'; id: string; heard: string; first: Scored; second: Scored | null }
-  | { kind: 'link_confirm'; id: string; provider: SpeakerProvider; hint?: string }
   | { kind: 'not_found'; heard: string }
   | { kind: 'failed'; display: string }
   | { kind: 'error'; code: VoiceErrorCode }
@@ -42,7 +40,6 @@ export type HudView =
     };
 
 export type Availability = 'unknown' | 'ready' | 'missing';
-export type RemoteLoop = 'off' | 'live' | 'retrying';
 
 interface VoiceRuntime {
   engine: EngineState;
@@ -55,8 +52,6 @@ interface VoiceRuntime {
   devices: Devices;
   headsetAt: number;
   previewing: string | null;
-  remote: RemoteLoop;
-  linkAsk: LinkAsk | null;
   settingsOpen: boolean;
   dialog: Exchange[];
   setHud: (hud: HudView) => void;
@@ -78,8 +73,6 @@ export const useVoiceRuntime = create<VoiceRuntime>((set) => ({
   devices: NO_DEVICES,
   headsetAt: 0,
   previewing: null,
-  remote: 'off',
-  linkAsk: null,
   settingsOpen: false,
   dialog: [],
   setHud: (hud) => set({ hud }),

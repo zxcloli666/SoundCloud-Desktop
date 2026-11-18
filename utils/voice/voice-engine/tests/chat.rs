@@ -118,7 +118,6 @@ fn asked(rig: &Rig, source: Source) -> String {
     rig.engine.send(Command::Text {
         text: "как твои дела".into(),
         source,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     let command = rig.command();
@@ -332,7 +331,6 @@ fn a_chat_cancel_does_not_stop_a_reply_to_something_else() {
     rig.engine.send(Command::Text {
         text: "пауза".into(),
         source: Source::Button,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     rig.done(&rig.command().id, LONG);
@@ -502,7 +500,6 @@ fn a_command_reply_is_still_one_phrase() {
     rig.engine.send(Command::Text {
         text: "пауза".into(),
         source: Source::Button,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     let command = rig.command();
@@ -528,7 +525,6 @@ fn a_voice_that_starts_the_phrase_over_is_waited_for_anew() {
     rig.engine.send(Command::Text {
         text: "пауза".into(),
         source: Source::Button,
-        id: None,
     });
     rig.expect_state(State::Thinking);
     let command = rig.command();

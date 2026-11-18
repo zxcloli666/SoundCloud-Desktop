@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Keyboard } from '../../../lib/icons';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import type { VoiceSource } from '../../../lib/voice/types';
-import { Headset, Mic, RadioTower, StopSquare, WandSparkles } from '../icons';
+import { Headset, Mic, StopSquare, WandSparkles } from '../icons';
 import { Orb } from '../Orb';
 import { Waveform } from '../Waveform';
 import { CloseX, Dots } from './parts';
@@ -11,7 +11,6 @@ function SourceIcon({ source }: { source: VoiceSource }) {
   if (source === 'hotkey') return <Keyboard size={10} />;
   if (source === 'headset') return <Headset size={10} />;
   if (source === 'wake') return <WandSparkles size={10} />;
-  if (source === 'remote') return <RadioTower size={10} />;
   return <Mic size={10} />;
 }
 

@@ -66,8 +66,11 @@ pub fn voice_cancel(voice: Managed<'_, Voice>) {
 }
 
 #[tauri::command]
-pub fn voice_text(voice: Managed<'_, Voice>, text: String, source: Source, id: Option<String>) {
-    voice.engine.send(Command::Text { text, source, id });
+pub fn voice_text(voice: Managed<'_, Voice>, text: String) {
+    voice.engine.send(Command::Text {
+        text,
+        source: Source::Typed,
+    });
 }
 
 #[tauri::command]

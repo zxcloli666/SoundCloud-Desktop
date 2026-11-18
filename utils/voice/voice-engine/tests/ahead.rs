@@ -128,7 +128,6 @@ fn say(rig: &Rig, text: &str, source: Source) {
     rig.engine.send(Command::Text {
         text: text.into(),
         source,
-        id: None,
     });
 }
 
@@ -324,11 +323,6 @@ fn nothing_is_announced_when_the_phrase_cannot_end_in_the_chat_or_has_nothing_to
     assert_eq!(remembered.announced(), None);
     assert_eq!(remembered.command.candidates.len(), 2);
     assert!(remembered.took < QUICK, "{:?}", remembered.took);
-
-    let (skill, _) = rig(QUICK, true);
-    let remote = heard(&skill, "как дела", Source::Remote);
-    assert_eq!((remote.command.intent, remote.announced()), ("play", None));
-    skill.expect_state(State::Asking);
 }
 
 #[test]

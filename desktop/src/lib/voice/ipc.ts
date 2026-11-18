@@ -7,8 +7,7 @@ export const voiceIpc = {
   start: (source: StartSource) => invoke<void>('voice_start', { source }),
   stop: () => invoke<void>('voice_stop'),
   cancel: () => invoke<void>('voice_cancel'),
-  text: (text: string, source: 'typed' | 'remote', id?: string) =>
-    invoke<void>('voice_text', { text, source, id }),
+  text: (text: string) => invoke<void>('voice_text', { text }),
   answer: (choice: string) => invoke<void>('voice_answer', { choice }),
   done: (id: string, outcome: Outcome) => invoke<void>('voice_done', { id, outcome }),
   reread: (id: string) => invoke<void>('voice_reread', { id }),

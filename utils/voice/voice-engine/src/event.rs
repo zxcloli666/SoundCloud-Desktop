@@ -14,7 +14,6 @@ pub enum Source {
     Button,
     Hud,
     Typed,
-    Remote,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -95,8 +94,6 @@ pub struct CommandEvent {
     pub chatless: bool,
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub candidates: Vec<EntityEvent>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub remote_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub group: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

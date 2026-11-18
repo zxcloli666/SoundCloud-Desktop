@@ -66,7 +66,7 @@ export interface EngineConfig extends VoiceConfig {
 }
 
 export type EngineState = 'idle' | 'listening' | 'thinking' | 'asking' | 'speaking' | 'error';
-export type VoiceSource = 'hotkey' | 'headset' | 'wake' | 'button' | 'hud' | 'typed' | 'remote';
+export type VoiceSource = 'hotkey' | 'headset' | 'wake' | 'button' | 'hud' | 'typed';
 export type StartSource = 'button' | 'hud';
 
 export interface StateEvent {
@@ -153,7 +153,6 @@ export interface VoiceCommand {
   talk?: boolean;
   chatless?: boolean;
   candidates?: Entity[];
-  remote_id?: string;
   group?: string;
   step?: number;
   steps?: number;

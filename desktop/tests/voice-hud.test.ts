@@ -23,7 +23,6 @@ function chatHud(phase: ChatHud['phase']): ChatHud {
 function dismissed(hud: HudView): string[] {
   const calls: string[] = [];
   const port: DismissPort = {
-    declineLink: (id) => calls.push(`decline:${id}`),
     stopChat: (id) => calls.push(`stop_chat:${id}`),
     cancelEngine: () => calls.push('cancel_engine'),
     hide: () => calls.push('hide'),
@@ -66,12 +65,6 @@ test('closing a busy island cancels the engine, a finished one only hides', () =
     { kind: 'error', code: 'mic_denied' },
   ];
   for (const hud of quiet) assert.deepEqual(dismissed(hud), ['hide'], hud.kind);
-});
-
-test('closing a link question declines it and nothing else', () => {
-  assert.deepEqual(dismissed({ kind: 'link_confirm', id: 'link-1', provider: 'alice' }), [
-    'decline:link-1',
-  ]);
 });
 
 test('a speech failure keeps the chat island and marks the voice as lost', () => {
