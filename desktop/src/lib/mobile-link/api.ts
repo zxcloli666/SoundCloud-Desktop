@@ -1,4 +1,5 @@
 import { ApiError, apiRequest } from '../api-client';
+import type { SubmitFailure } from './flow';
 
 export type LinkStatus =
   | 'pending'
@@ -65,4 +66,11 @@ export async function fetchLinkStatus(id: string): Promise<LinkStatus> {
 
 export function unlinkMobile(): Promise<void> {
   return apiRequest<void>('/auth/mobile', { method: 'DELETE' });
+}
+
+export function describeSubmitError(error: unknown): SubmitFailure {
+  if (error instanceof ApiError) {
+    return { status: error.status, code: error.code, retryAfterSeconds: error.retryAfterSeconds };
+  }
+  return { status: 0, code: null, retryAfterSeconds: null };
 }

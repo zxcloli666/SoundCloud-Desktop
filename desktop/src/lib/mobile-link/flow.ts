@@ -63,3 +63,27 @@ export function reachedStep(reached: number, phase: Phase): number {
 export function pollDelay(phase: Phase): number {
   return phase === 'received' ? FAST_POLL_MS : POLL_MS;
 }
+
+export interface SubmitFailure {
+  status: number;
+  code: string | null;
+  retryAfterSeconds: number | null;
+}
+
+export type SubmitOutcome =
+  | { kind: 'retry'; delayMs: number }
+  | { kind: 'expired' }
+  | { kind: 'failed' };
+
+export const MAX_SUBMIT_TRIES = 5;
+const DEFAULT_RETRY_SECONDS = 2;
+
+export function submitOutcome(failure: SubmitFailure): SubmitOutcome {
+  const { status, code, retryAfterSeconds } = failure;
+  const waits =
+    (status === 503 && code === 'mobile_link_not_replicated') ||
+    (status === 429 && code === 'mobile_rate_limited');
+  if (waits) return { kind: 'retry', delayMs: (retryAfterSeconds ?? DEFAULT_RETRY_SECONDS) * 1000 };
+  if (status === 410 && code === 'mobile_link_expired') return { kind: 'expired' };
+  return { kind: 'failed' };
+}

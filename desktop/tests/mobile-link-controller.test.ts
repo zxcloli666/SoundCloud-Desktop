@@ -5,11 +5,15 @@ import {
   type MobileLinkDeps,
   type StoredFlow,
 } from '../src/lib/mobile-link/controller.ts';
-import { LINK_TTL_MS } from '../src/lib/mobile-link/flow.ts';
+import { LINK_TTL_MS, type SubmitFailure, submitOutcome } from '../src/lib/mobile-link/flow.ts';
 
 const CALLBACK = { code: 'c1', state: 's1' };
 
-function rig(over: Partial<MobileLinkDeps> = {}) {
+function failure(status: number, code: string, retryAfterSeconds: number | null = null) {
+  return Object.assign(new Error(code), { status, code, retryAfterSeconds });
+}
+
+function rig(over: Partial<MobileLinkDeps> = {}, submitErrors: Error[] = []) {
   let now = 1_000_000;
   let stored: StoredFlow | null = null;
   let pending: typeof CALLBACK | null = null;
@@ -29,8 +33,11 @@ function rig(over: Partial<MobileLinkDeps> = {}) {
     },
     submit: async (id, callback) => {
       calls.submit.push([id, callback]);
+      const next = submitErrors.shift();
+      if (next) throw next;
     },
     status: async () => status,
+    describe: (e) => e as SubmitFailure,
     open: async () => {
       calls.opened++;
     },
@@ -220,4 +227,95 @@ test('a failed final phase with the dialog closed is announced and dismissed', a
   await r.tick();
   assert.deepEqual(r.calls.finished, ['expired']);
   assert.equal(r.link.store.getState().active, false);
+});
+
+const NOT_REPLICATED = () => failure(503, 'mobile_link_not_replicated', 3);
+
+async function sent(errors: Error[]) {
+  const r = rig({}, errors);
+  r.link.init();
+  r.link.openDialog();
+  await r.settle();
+  r.emit(CALLBACK);
+  await r.settle();
+  return r;
+}
+
+test('a not replicated answer waits Retry-After and resubmits the same callback', async () => {
+  const r = await sent([NOT_REPLICATED(), NOT_REPLICATED()]);
+  assert.equal(r.calls.submit.length, 1);
+  assert.equal(r.link.store.getState().phase, 'received');
+  await r.tick();
+  assert.equal(r.calls.submit.length, 2);
+  await r.tick();
+  assert.equal(r.calls.submit.length, 3);
+  assert.deepEqual(r.calls.submit[2], ['link-1', CALLBACK]);
+  assert.equal(r.link.store.getState().phase, 'received');
+});
+
+test('a rate limit answer is retried too', async () => {
+  const r = await sent([failure(429, 'mobile_rate_limited')]);
+  assert.equal(r.link.store.getState().phase, 'received');
+  await r.tick();
+  assert.equal(r.calls.submit.length, 2);
+});
+
+test('after five tries it fails', async () => {
+  const r = await sent(Array.from({ length: 5 }, NOT_REPLICATED));
+  for (let i = 0; i < 4; i++) await r.tick();
+  assert.equal(r.calls.submit.length, 5);
+  assert.equal(r.link.store.getState().phase, 'failed');
+});
+
+test('it stops retrying when the wait would pass the time limit', async () => {
+  const r = rig({}, [NOT_REPLICATED()]);
+  r.link.init();
+  r.link.openDialog();
+  await r.settle();
+  r.advance(LINK_TTL_MS - 1000);
+  r.emit(CALLBACK);
+  await r.settle();
+  assert.equal(r.calls.submit.length, 1);
+  assert.equal(r.link.store.getState().phase, 'failed');
+});
+
+test('a 410 expired answer ends in expired', async () => {
+  const r = await sent([failure(410, 'mobile_link_expired')]);
+  assert.equal(r.calls.submit.length, 1);
+  assert.deepEqual(r.calls.finished, ['expired']);
+});
+
+test('any other error fails at once', async () => {
+  const r = await sent([failure(400, 'mobile_link_state')]);
+  assert.equal(r.calls.submit.length, 1);
+  assert.deepEqual(r.calls.finished, ['failed']);
+});
+
+test('outcomes follow the backend codes and default to two seconds', () => {
+  assert.deepEqual(
+    submitOutcome({ status: 503, code: 'mobile_link_not_replicated', retryAfterSeconds: null }),
+    {
+      kind: 'retry',
+      delayMs: 2000,
+    },
+  );
+  assert.deepEqual(
+    submitOutcome({ status: 429, code: 'mobile_rate_limited', retryAfterSeconds: 7 }),
+    {
+      kind: 'retry',
+      delayMs: 7000,
+    },
+  );
+  assert.deepEqual(
+    submitOutcome({ status: 410, code: 'mobile_link_expired', retryAfterSeconds: null }),
+    {
+      kind: 'expired',
+    },
+  );
+  assert.deepEqual(submitOutcome({ status: 503, code: 'other', retryAfterSeconds: 2 }), {
+    kind: 'failed',
+  });
+  assert.deepEqual(submitOutcome({ status: 0, code: null, retryAfterSeconds: null }), {
+    kind: 'failed',
+  });
 });

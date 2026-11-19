@@ -4,11 +4,14 @@ import {
   acceptsCallback,
   isFinal,
   LINK_TTL_MS,
+  MAX_SUBMIT_TRIES,
   minutesLeft,
   type Phase,
   phaseOfStatus,
   pollDelay,
   reachedStep,
+  type SubmitFailure,
+  submitOutcome,
   wasSeen,
 } from './flow.ts';
 
@@ -21,6 +24,7 @@ export interface MobileLinkDeps {
   begin: () => Promise<LinkRequest>;
   submit: (id: string, callback: AuthCallback) => Promise<void>;
   status: (id: string) => Promise<LinkStatus>;
+  describe: (error: unknown) => SubmitFailure;
   open: (url: string) => Promise<void>;
   parse: (text: string) => Promise<AuthCallback | null>;
   takePending: () => Promise<AuthCallback | null>;
@@ -129,6 +133,35 @@ export function createMobileLink(deps: MobileLinkDeps) {
     cancelTimer = deps.after(pollDelay(phase()), tick);
   }
 
+  function sleep(ms: number) {
+    return new Promise<void>((resolve) => {
+      deps.after(ms, resolve);
+    });
+  }
+
+  async function submitWithRetry(link: Live, callback: AuthCallback, current: number) {
+    for (let tries = 1; ; tries++) {
+      try {
+        await deps.submit(link.id, callback);
+        return true;
+      } catch (e) {
+        if (current !== attempt) return false;
+        const outcome = submitOutcome(deps.describe(e));
+        const room = outcome.kind === 'retry' && tries < MAX_SUBMIT_TRIES;
+        const inTime =
+          outcome.kind === 'retry' && deps.now() + outcome.delayMs < link.startedAt + LINK_TTL_MS;
+        if (outcome.kind === 'retry' && room && inTime) {
+          await sleep(outcome.delayMs);
+          if (current !== attempt) return false;
+          continue;
+        }
+        deps.log(`[MobileLink] callback rejected: ${String(e)}`);
+        move(outcome.kind === 'expired' ? 'expired' : 'failed');
+        return false;
+      }
+    }
+  }
+
   async function receive(callback: AuthCallback) {
     const link = live;
     if (!link || !acceptsCallback(phase())) return;
@@ -137,14 +170,8 @@ export function createMobileLink(deps: MobileLinkDeps) {
     const current = attempt;
     move('received');
     pausePolling();
-    try {
-      await deps.submit(link.id, callback);
-    } catch (e) {
-      if (current !== attempt) return;
-      deps.log(`[MobileLink] callback rejected: ${String(e)}`);
-      move('failed');
-      return;
-    }
+    const sent = await submitWithRetry(link, callback, current);
+    if (!sent) return;
     if (current === attempt) poll(current);
   }
 

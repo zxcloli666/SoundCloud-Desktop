@@ -5,6 +5,7 @@ import i18n from '../i18n';
 import { logInfo } from '../lib/diagnostics';
 import {
   beginLink,
+  describeSubmitError,
   fetchLinkStatus,
   MOBILE_ACCESS_KEY,
   submitCallback,
@@ -39,6 +40,7 @@ export const mobileLink = createMobileLink({
   begin: beginLink,
   submit: submitCallback,
   status: fetchLinkStatus,
+  describe: describeSubmitError,
   open: openUrl,
   parse: parseAuthAddress,
   takePending: takePendingCallback,
