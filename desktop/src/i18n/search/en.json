@@ -1176,5 +1176,15 @@
     "clip cache size",
     "video quota",
     "video storage limit"
+  ],
+  "mobileLink.title": [
+    "extended access",
+    "link mobile access",
+    "connect android app",
+    "phone app account",
+    "relink soundcloud",
+    "unlink extended access",
+    "high quality streams access",
+    "extra soundcloud permissions"
   ]
 }

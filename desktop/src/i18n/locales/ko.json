@@ -2864,5 +2864,48 @@
     "failed": "불러오지 못했어요",
     "pause": "일시정지",
     "play": "재생"
+  },
+  "mobileLink": {
+    "title": "SoundCloud 확장 액세스",
+    "state": {
+      "off": "연결 안 됨",
+      "active": "활성",
+      "relink": "다시 로그인",
+      "waiting": "SoundCloud 대기 중"
+    },
+    "link": "연결",
+    "unlink": "연결 해제",
+    "relink": "다시 연결",
+    "dialogTitle": "확장 액세스 연결",
+    "dialogDesc": "브라우저에서 SoundCloud 페이지에서 승인하세요.",
+    "account": "계정",
+    "step": {
+      "browser": "브라우저",
+      "code": "코드",
+      "done": "완료"
+    },
+    "phase": {
+      "starting": "준비 중",
+      "waiting": "브라우저 대기 중",
+      "received": "코드 수신",
+      "completed": "연결됨",
+      "mismatch": "다른 계정",
+      "failed": "실패",
+      "expired": "시간 초과"
+    },
+    "hint": {
+      "mismatch": "브라우저에서 {{username}} 계정으로 로그인하세요.",
+      "browser": "브라우저가 열리지 않았습니다.",
+      "minutes_other": "{{count}}분 남음"
+    },
+    "openAgain": "다시 열기",
+    "retry": "다시 시도",
+    "done": "완료",
+    "paste": {
+      "toggle": "주소 붙여넣기",
+      "apply": "적용",
+      "invalid": "sc://auth 주소가 아닙니다"
+    },
+    "show": "보기"
   }
 }

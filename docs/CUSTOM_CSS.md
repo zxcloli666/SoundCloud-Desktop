@@ -125,6 +125,13 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-nav"]` | Section list in Settings |
 | `[data-ui="settings-nav-item"]` | A section in that list |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="mobile-access-badge"]` | Extended access status in Settings; `data-state` is `off`, `active` or `relink` |
+| `[data-ui="mobile-link"]` | Extended access link dialog; `data-phase` is `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` or `expired` |
+| `[data-ui="mobile-link-account"]` | Account being linked, in that dialog |
+| `[data-ui="mobile-link-steps"]` | Browser, code, done steps in that dialog |
+| `[data-ui="mobile-link-status"]` | Status block in that dialog; `data-tone` is `busy`, `ok`, `warn` or `bad` |
+| `[data-ui="mobile-link-paste"]` | Paste-the-address fallback in that dialog |
+| `[data-ui="mobile-link-island"]` | Pill at the bottom while a link waits for SoundCloud |
 | `[data-ui="settings-search"]` | Search field at the top of the Settings section list |
 | `[data-ui="settings-search-result"]` | Search result row, `[data-active]` is `true` on the lit one |
 | `[data-ui="settings-search-results"]` | Results list in Settings search |

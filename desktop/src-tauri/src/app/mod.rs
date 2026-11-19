@@ -1,5 +1,6 @@
 pub mod autostart;
 pub mod close_action;
+pub mod deep_link;
 pub mod desktop_wallpaper;
 pub mod diagnostics;
 pub mod hotkeys;

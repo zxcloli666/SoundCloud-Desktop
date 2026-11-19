@@ -2924,5 +2924,49 @@
     "failed": "Failed to load",
     "pause": "Pause",
     "play": "Play"
+  },
+  "mobileLink": {
+    "title": "SoundCloud extended access",
+    "state": {
+      "off": "Not linked",
+      "active": "Active",
+      "relink": "Sign in again",
+      "waiting": "Waiting for SoundCloud"
+    },
+    "link": "Link",
+    "unlink": "Unlink",
+    "relink": "Relink",
+    "dialogTitle": "Link extended access",
+    "dialogDesc": "Approve it on SoundCloud's own page in your browser.",
+    "account": "Account",
+    "step": {
+      "browser": "Browser",
+      "code": "Code",
+      "done": "Done"
+    },
+    "phase": {
+      "starting": "Preparing",
+      "waiting": "Waiting for browser",
+      "received": "Code received",
+      "completed": "Linked",
+      "mismatch": "Wrong account",
+      "failed": "Failed",
+      "expired": "Timed out"
+    },
+    "hint": {
+      "mismatch": "Sign in as {{username}} in the browser.",
+      "browser": "The browser did not open.",
+      "minutes_one": "{{count}} minute left",
+      "minutes_other": "{{count}} minutes left"
+    },
+    "openAgain": "Open again",
+    "retry": "Retry",
+    "done": "Done",
+    "paste": {
+      "toggle": "Paste address",
+      "apply": "Apply",
+      "invalid": "Not an sc://auth address"
+    },
+    "show": "Show"
   }
 }
