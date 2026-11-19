@@ -253,7 +253,11 @@
       "cachedUq": "Em cache (UQ)",
       "pending": "Processando",
       "tooLong": "Longa demais, fora do cache",
-      "failed": "Falha no processamento"
+      "failed": "Falha no processamento",
+      "video": "tem vídeo: {{kind}}",
+      "videoClip": "clipe",
+      "videoLoop": "loop",
+      "videoGenerated": "gerado"
     },
     "notFoundOnSc": "não encontrada no SoundCloud",
     "wantedHint": "A faixa é conhecida, mas ainda não foi enviada",

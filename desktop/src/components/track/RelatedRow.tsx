@@ -7,7 +7,7 @@ import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
+import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 
 export const RelatedRow = React.memo(
@@ -53,7 +53,7 @@ export const RelatedRow = React.memo(
         <TrackTitleArtist track={track} size="sm" />
 
         <div className="shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} />
+          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
         </div>
 
         <LikeButton track={track} />
@@ -80,5 +80,6 @@ export const RelatedRow = React.memo(
     prev.track.urn === next.track.urn &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta),
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos),
 );

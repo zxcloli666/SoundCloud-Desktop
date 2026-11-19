@@ -11,7 +11,7 @@ import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
+import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 
 export const LibraryTrackRow = React.memo(
@@ -108,7 +108,7 @@ export const LibraryTrackRow = React.memo(
         />
 
         <div className="hidden @lg:flex shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} />
+          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
         </div>
 
         <div className="hidden @3xl:flex items-center gap-4 shrink-0 pr-4">
@@ -138,5 +138,6 @@ export const LibraryTrackRow = React.memo(
     prev.grip === next.grip &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta),
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos),
 );

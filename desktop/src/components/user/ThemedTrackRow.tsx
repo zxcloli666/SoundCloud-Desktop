@@ -23,7 +23,7 @@ import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
 import { LikeButton } from '../music/LikeButton';
 import { PlayNextButton } from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
+import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 import { OwnerTrackMenu } from '../track/OwnerTrackMenu';
 
@@ -132,7 +132,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
       <div className="hidden @lg:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} />
+        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
       </div>
 
       <div className="hidden @3xl:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-ink-35">
@@ -190,6 +190,7 @@ const areEqual = (prev: ThemedTrackRowProps, next: ThemedTrackRowProps) =>
     prev.track.description === next.track.description &&
     prev.track.genre === next.track.genre &&
     prev.track.tag_list === next.track.tag_list &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta);
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos);
 
 export const ThemedTrackRow = React.memo(ThemedTrackRowImpl, areEqual);

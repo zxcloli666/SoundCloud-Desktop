@@ -253,7 +253,11 @@
       "cachedUq": "캐시됨(UQ)",
       "pending": "처리 중",
       "tooLong": "너무 길어서 캐시 안 됨",
-      "failed": "처리 실패"
+      "failed": "처리 실패",
+      "video": "영상 있음: {{kind}}",
+      "videoClip": "뮤직비디오",
+      "videoLoop": "루프",
+      "videoGenerated": "생성됨"
     },
     "notFoundOnSc": "SoundCloud에 없음",
     "wantedHint": "알려진 트랙이지만 아직 업로드되지 않았어요",

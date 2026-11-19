@@ -165,7 +165,7 @@ export const NeighborCard = React.memo(function NeighborCard({
           </div>
 
           <div className="absolute bottom-2 left-2 flex">
-            <TrackStatusBadges meta={track._scd_meta} variant="overlay" />
+            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} variant="overlay" />
           </div>
         </div>
 

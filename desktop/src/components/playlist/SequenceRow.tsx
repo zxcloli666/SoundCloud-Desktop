@@ -9,7 +9,7 @@ import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
+import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 import {genreColor} from '../search/utils';
 import {DragGrip, LIFTED_ROW_STYLE, useSortableRow} from '../ui/SortableVirtualList';
@@ -86,7 +86,7 @@ function RowBody({
       <TrackTitleArtist track={track} highlight={isThis} size="sm" />
 
       <div className="hidden @lg:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} />
+        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
       </div>
 
       <div className="hidden @2xl:flex items-center gap-3 shrink-0">
@@ -191,7 +191,8 @@ export const SortableSequenceRow = React.memo(
     prev.track.user_favorite === next.track.user_favorite &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta),
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos),
 );
 
 /** Floating copy rendered by DragOverlay while reordering — stays mounted even if
@@ -258,5 +259,6 @@ export const SequenceRow = React.memo(
     prev.track.user_favorite === next.track.user_favorite &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta),
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos),
 );
