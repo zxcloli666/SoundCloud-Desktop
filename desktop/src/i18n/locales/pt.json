@@ -3084,5 +3084,16 @@
       "invalid": "Não é um endereço sc://auth"
     },
     "show": "Mostrar"
+  },
+  "mobileActions": {
+    "link": "Vincular",
+    "relink": "Vincular de novo",
+    "linkNeeded": "Vincule sua conta do SoundCloud para isso",
+    "relinkNeeded": "Vincule sua conta do SoundCloud de novo",
+    "commentLike": "Curtir",
+    "commentUnlike": "Remover curtida",
+    "commentDelete": "Excluir comentário",
+    "deleted": "Excluído",
+    "undo": "Desfazer"
   }
 }

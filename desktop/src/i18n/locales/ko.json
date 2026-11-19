@@ -2907,5 +2907,16 @@
       "invalid": "sc://auth 주소가 아닙니다"
     },
     "show": "보기"
+  },
+  "mobileActions": {
+    "link": "연결",
+    "relink": "다시 연결",
+    "linkNeeded": "SoundCloud 계정을 연결해야 합니다",
+    "relinkNeeded": "SoundCloud 계정을 다시 연결해야 합니다",
+    "commentLike": "좋아요",
+    "commentUnlike": "좋아요 취소",
+    "commentDelete": "댓글 삭제",
+    "deleted": "삭제됨",
+    "undo": "되돌리기"
   }
 }

@@ -3068,5 +3068,16 @@
       "invalid": "Это не адрес sc://auth"
     },
     "show": "Показать"
+  },
+  "mobileActions": {
+    "link": "Привязать",
+    "relink": "Привязать заново",
+    "linkNeeded": "Нужна привязка аккаунта SoundCloud",
+    "relinkNeeded": "Нужно заново привязать аккаунт SoundCloud",
+    "commentLike": "Нравится",
+    "commentUnlike": "Убрать лайк",
+    "commentDelete": "Удалить комментарий",
+    "deleted": "Удалено",
+    "undo": "Вернуть"
   }
 }

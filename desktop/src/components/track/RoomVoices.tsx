@@ -1,6 +1,7 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
 import {fc} from '../../lib/formatters';
+import {useCommentLikesRead} from '../../lib/comment-likes-sync';
 import type {Comment} from '../../lib/hooks';
 import {Loader2, MessageCircle} from '../../lib/icons';
 import {CommentForm, VoiceCard} from './comments';
@@ -10,6 +11,7 @@ import type {TrackAura} from './useTrackAura';
  *  is a clickable jump-cut into the song; the composer pins to the live moment. */
 export const RoomVoices = React.memo(function RoomVoices({
                                                              trackUrn,
+                                                             trackOwned,
                                                              durationMs,
                                                              commentCount,
                                                              comments,
@@ -21,6 +23,7 @@ export const RoomVoices = React.memo(function RoomVoices({
                                                              onSeek,
                                                          }: {
     trackUrn: string;
+    trackOwned: boolean;
     durationMs: number;
     commentCount?: number;
     comments: Comment[];
@@ -32,6 +35,7 @@ export const RoomVoices = React.memo(function RoomVoices({
     onSeek: (seconds: number) => void;
 }) {
     const {t} = useTranslation();
+    useCommentLikesRead(trackUrn, comments);
 
     return (
         <section className="space-y-5">
@@ -78,10 +82,12 @@ export const RoomVoices = React.memo(function RoomVoices({
                     <p className="text-ink-30 text-sm">{t('track.noComments')}</p>
                 </div>
             ) : (
-                <div data-ui="comments" className="space-y-3">
+                <div data-ui="comments">
                     {comments.map((c) => (
                         <VoiceCard
                             key={c.id}
+                            trackUrn={trackUrn}
+                            trackOwned={trackOwned}
                             comment={c}
                             accent={aura.accent}
                             accentSoft={aura.accentSoft}

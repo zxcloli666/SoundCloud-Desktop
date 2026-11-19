@@ -121,6 +121,8 @@ const QUIET_ANSWERS: Record<string, number> = {
   soundcloud_search_busy: 503,
   resolve_busy: 503,
   resolve_upstream_unavailable: 502,
+  mobile_not_linked: 404,
+  mobile_relink_required: 409,
 };
 
 export function isQuietAnswer(error: unknown): boolean {
