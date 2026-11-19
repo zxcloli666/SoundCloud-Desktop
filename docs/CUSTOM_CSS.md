@@ -101,6 +101,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="comment"]` | A comment |
 | `[data-ui="comment-like"]` | Comment like button |
 | `[data-ui="comment-delete"]` | Comment delete button |
+| `[data-ui="moment-reaction"]` | Reaction button in the track actions |
+| `[data-ui="moment-reaction-mark"]` | Reaction mark on the waveform |
 | `[data-ui="search-tabs"]` | Search mode tabs |
 | `[data-ui="search-strip"]` | Row with the search mode tabs and the view switch |
 | `[data-ui="search-view"]` | Covers / Moments switch in search |

@@ -7,6 +7,7 @@ import type {Track} from '../../stores/player';
 import {useSettingsStore} from '../../stores/settings';
 import {LiveWaveform} from '../music/soundwave/waveform';
 import type {TrackAura} from './useTrackAura';
+import {MomentMarks} from './MomentMarks';
 import {WaveVoices} from './WaveVoices';
 
 /** The floor of the room: the live waveform, recolored to the track's own hue
@@ -56,6 +57,12 @@ export const RoomFloor = React.memo(function RoomFloor({
         >
             <div className="relative w-full">
                 <LiveWaveform track={track} isCurrent={isCurrent}/>
+                <MomentMarks
+                    trackUrn={track.urn}
+                    durationMs={durationMs}
+                    isCurrent={isCurrent}
+                    onSeek={onSeek}
+                />
                 {floatingComments && (
                     <WaveVoices
                         comments={comments}

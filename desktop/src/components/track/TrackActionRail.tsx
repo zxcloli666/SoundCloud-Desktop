@@ -7,6 +7,7 @@ import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineAction} from '../music/SaveOfflineButton';
 import {CopyIconAction, DownloadButton, IconAction, LikeBtn, PlayPill} from './actions';
+import {MomentReactionPicker} from './MomentReactionPicker';
 import {OwnerTrackActions} from './OwnerTrackActions';
 import {SuperlikeBtn} from './SuperlikeBtn';
 
@@ -15,11 +16,13 @@ import {SuperlikeBtn} from './SuperlikeBtn';
 export const TrackActionRail = React.memo(function TrackActionRail({
                                                                        track,
                                                                        isPlaying,
+                                                                       isCurrent,
                                                                        isOwner,
                                                                        onPlay,
                                                                    }: {
     track: Track;
     isPlaying: boolean;
+    isCurrent: boolean;
     isOwner: boolean;
     onPlay: () => void;
 }) {
@@ -43,6 +46,7 @@ export const TrackActionRail = React.memo(function TrackActionRail({
                     label={t('track.lyrics')}
                     onClick={() => openLyrics('lyrics')}
                 />
+                <MomentReactionPicker trackUrn={track.urn} isCurrent={isCurrent}/>
                 <span className="w-px h-5 bg-ink/[0.08] mx-0.5" aria-hidden/>
                 <AddToPlaylistDialog trackUrns={[track.urn]}>
                     <button
