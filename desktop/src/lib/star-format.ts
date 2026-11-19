@@ -43,10 +43,20 @@ export function usd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+export function priceIn(price: Price, currency: Currency): { amount: number; currency: Currency } {
+  if (currency === 'USD') return { amount: price.USD, currency };
+  if (currency === 'XTR' && price.XTR != null) return { amount: price.XTR, currency };
+  return { amount: price.RUB, currency: 'RUB' };
+}
+
 export function planPrice(plan: { price: Price }, currency: Currency): string {
-  if (currency === 'USD') return usd(plan.price.USD);
-  if (currency === 'XTR' && plan.price.XTR != null) return chargeAmount(plan.price.XTR, 'XTR');
-  return rub(plan.price.RUB);
+  const { amount, currency: shown } = priceIn(plan.price, currency);
+  return chargeAmount(amount, shown);
+}
+
+export function perMonth(plan: { price: Price; months: number }, currency: Currency): string {
+  const { amount, currency: shown } = priceIn(plan.price, currency);
+  return chargeAmount(Math.round(amount / plan.months), shown);
 }
 
 const CURRENCY_SIGN: Record<string, string> = { XTR: '★', RUB: '₽' };

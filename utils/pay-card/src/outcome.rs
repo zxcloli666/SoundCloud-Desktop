@@ -47,6 +47,14 @@ impl Outcome {
         }
     }
 
+    pub(crate) fn on_page(reply: Reply) -> Option<Self> {
+        match reply.state.as_deref() {
+            Some("page") => None,
+            Some("succeeded" | "pending" | "failed") => Some(Outcome::read(reply, &[])),
+            _ => Some(Outcome::failed("bad_state")),
+        }
+    }
+
     pub(crate) fn read(reply: Reply, page_hosts: &[String]) -> Self {
         let reason = reply.reason.as_deref().map(code);
         match reply.state.as_deref() {

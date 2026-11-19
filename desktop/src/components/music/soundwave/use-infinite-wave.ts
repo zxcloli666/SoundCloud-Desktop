@@ -38,6 +38,7 @@ export function useInfiniteWave(opts: {
   const cursorRef = useRef('');
   const shelfCursorRef = useRef(initialCursor);
   const fetchingRef = useRef(false);
+  const waveSessionRef = useRef(false);
   const languagesRef = useRef(languages);
   const filterRef = useRef(filterTrack);
   const hideListenedRef = useRef(hideListened);
@@ -94,6 +95,9 @@ export function useInfiniteWave(opts: {
 
     const unsubscribe = usePlayerStore.subscribe((state, prev) => {
       const { queue, queueIndex, currentTrack, isPlaying } = state;
+      if (state.playSeq !== prev.playSeq) {
+        waveSessionRef.current = queue.every((t) => tallyRef.current.owned.has(t.urn));
+      }
       const trackChanged = currentTrack?.urn !== prev.currentTrack?.urn;
       if (
         !trackChanged &&
@@ -110,7 +114,8 @@ export function useInfiniteWave(opts: {
       const leftWave = !!prev.currentTrack && owned.has(prev.currentTrack.urn);
       const remaining = queue.length - queueIndex - 1;
       const waveAhead = queue.slice(queueIndex + 1).filter((t) => owned.has(t.urn)).length;
-      const needsRefill = onWave && waveAhead <= minTail && (isPlaying || remaining <= 0);
+      const needsRefill =
+        waveSessionRef.current && onWave && waveAhead <= minTail && (isPlaying || remaining <= 0);
       const ping = trackChanged && (onWave || leftWave);
       if (!needsRefill && !ping) return;
 

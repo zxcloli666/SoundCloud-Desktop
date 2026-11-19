@@ -51,8 +51,6 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
   const retryStrips = () => {
     for (const strip of failedStrips) void strip.refetch();
   };
-  const loadMore = useCallback(() => void tracks.fetchNextPage(), [tracks.fetchNextPage]);
-  const moreLyrics = useCallback(() => void lyrics.fetchNextPage(), [lyrics.fetchNextPage]);
 
   const empty =
     !tracks.isLoading &&
@@ -76,14 +74,14 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
       ) : (
         <LyricsRow
           hits={lyrics.items}
-          hasMore={!!lyrics.hasNextPage && !lyrics.isFetchNextPageError}
-          isFetchingMore={lyrics.isFetchingNextPage}
-          onMore={moreLyrics}
+          hasMore={lyrics.hasMore}
+          isFetchingMore={lyrics.isFetchingMore}
+          onMore={lyrics.loadMore}
           onOpen={remember}
           wave
         />
       )}
-      {lyrics.isFetchNextPageError && <SectionError onRetry={moreLyrics} />}
+      {lyrics.isFetchNextPageError && <SectionError onRetry={lyrics.loadMore} />}
       {empty ? (
         <SearchState
           icon={<Database size={26} />}
@@ -96,18 +94,9 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
       ) : tracks.isError && tracks.items.length === 0 ? (
         <SearchError error={tracks.error} onRetry={() => void tracks.refetch()} />
       ) : (
-        <TrackWall
-          tracks={tracks.items}
-          kind="lexical"
-          isLoading={tracks.isLoading}
-          hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
-          isFetchingMore={tracks.isFetchingNextPage}
-          onLoadMore={loadMore}
-          onOpen={remember}
-          wave
-        />
+        <TrackWall results={tracks} kind="lexical" onOpen={remember} wave />
       )}
-      {tracks.isFetchNextPageError && <SectionError onRetry={loadMore} />}
+      {tracks.isFetchNextPageError && <SectionError onRetry={tracks.loadMore} />}
     </>
   );
 });

@@ -1,14 +1,17 @@
-import { memo, useEffect, useState } from 'react';
+import { memo, type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Check } from '../../../../lib/icons';
+import { X } from '../../../../lib/icons';
 import type { MethodId } from '../../../../lib/pay-client';
-import { type SbpFail, type SbpStage, useSbpLink } from '../../../../lib/sbp-link';
+import { type SbpStage, useSbpLink } from '../../../../lib/sbp-link';
 import { QrCode } from '../../../auth/QrCode';
 import { AccentSpinner } from '../AccentSpinner';
-import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from '../StarConsole';
+import { TimeRing } from '../pay/TimeRing';
+import { Btn } from '../ui/Btn';
+import { Done } from '../ui/Done';
+import { Title } from '../ui/Panel';
 import { type OnLinked, useLinkEnd } from '../useLinkEnd';
 
-const QR_SIZE = 160;
+const QR_SIZE = 168;
 const PNG_PREFIX = 'data:image/png;base64,';
 
 export const SbpPane = memo(function SbpPane({
@@ -26,89 +29,50 @@ export const SbpPane = memo(function SbpPane({
   onOnce: (() => void) | null;
   onBack: () => void;
 }) {
+  const { t } = useTranslation();
   const { stage, restart, relink } = useSbpLink(method, trial);
   const [relinked, setRelinked] = useState(false);
   useLinkEnd(stage, onLinked);
 
-  return (
-    <SbpStageView
-      stage={stage}
-      paying={paying}
-      relinked={relinked}
-      onRestart={restart}
-      onRelink={() => {
-        setRelinked(true);
-        relink();
-      }}
-      onOnce={onOnce}
-      onBack={onBack}
-    />
-  );
-});
-
-export const SbpStageView = memo(function SbpStageView({
-  stage,
-  paying = true,
-  relinked,
-  onRestart,
-  onRelink,
-  onOnce,
-  onBack,
-}: {
-  stage: SbpStage;
-  paying?: boolean;
-  relinked: boolean;
-  onRestart: () => void;
-  onRelink: () => void;
-  onOnce: (() => void) | null;
-  onBack: () => void;
-}) {
-  const { t } = useTranslation();
-  const once = onOnce && <LinkBtn onClick={onOnce}>{t('starpass.bind.payOnce')}</LinkBtn>;
-
   if (stage.kind === 'refused') return null;
   if (stage.kind === 'linked') {
     return (
-      <div>
-        <Ttl>{t('starpass.bind.sbp.title')}</Ttl>
-        <div className="flex items-center gap-3.5">
-          <span
-            className="grid size-[26px] place-items-center rounded-full"
-            style={{ background: 'var(--color-accent)' }}
-          >
-            <Check size={15} strokeWidth={3} className="text-accent-contrast" />
-          </span>
-          <span className="text-[14px] font-medium text-ink">{t('starpass.bind.sbp.linked')}</span>
-        </div>
+      <div data-ui="star-sbp-link" data-stage="linked">
+        <Title>{t('starpass.bind.sbp.title')}</Title>
+        <Done>{t('starpass.bind.sbp.linked')}</Done>
       </div>
     );
   }
-
+  const once = onOnce && <Btn onClick={onOnce}>{t('starpass.bind.payOnce')}</Btn>;
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+    <div
+      data-ui="star-sbp-link"
+      data-stage={stage.kind}
+      className="flex flex-col items-center gap-6 sm:flex-row sm:items-start"
+    >
       {(stage.kind === 'starting' || stage.kind === 'waiting') && <QrBox stage={stage} />}
       <div className="min-w-0 flex-1">
-        <Ttl>
-          {t('starpass.bind.sbp.title')}
-          {stage.kind === 'waiting' && (
-            <>
-              {' · '}
-              <Countdown until={stage.expiresAt} />
-            </>
-          )}
-        </Ttl>
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+          <h2 className="text-[18px] font-extrabold leading-tight tracking-tight text-ink">
+            {t('starpass.bind.sbp.title')}
+          </h2>
+          {stage.kind === 'waiting' && <TimeRing until={stage.expiresAt} />}
+        </div>
         {stage.kind === 'failed' ? (
-          <Failure reason={stage.reason} />
+          <Problem>{t(`starpass.bind.sbp.fail.${stage.reason}`)}</Problem>
         ) : stage.kind === 'expired' ? (
-          <p className="text-[12.5px] text-ink-80">{t('starpass.bind.sbp.expired')}</p>
+          <Problem>{t('starpass.bind.sbp.expired')}</Problem>
         ) : (
           <Steps paying={paying} relinked={relinked} />
         )}
-        <div className="mt-3.5 flex flex-wrap items-center gap-x-5 gap-y-2.5">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
           <Actions
             stage={stage}
-            onRestart={onRestart}
-            onRelink={onRelink}
+            onRestart={restart}
+            onRelink={() => {
+              setRelinked(true);
+              relink();
+            }}
             onBack={onBack}
             once={once}
           />
@@ -117,6 +81,17 @@ export const SbpStageView = memo(function SbpStageView({
     </div>
   );
 });
+
+function Problem({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span className="mt-px grid size-6 shrink-0 place-items-center rounded-full bg-bad/15 text-bad">
+        <X size={13} strokeWidth={3} />
+      </span>
+      <p className="text-[13px] leading-relaxed text-ink-80">{children}</p>
+    </div>
+  );
+}
 
 const Actions = memo(function Actions({
   stage,
@@ -129,14 +104,16 @@ const Actions = memo(function Actions({
   onRestart: () => void;
   onRelink: () => void;
   onBack: () => void;
-  once: React.ReactNode;
+  once: ReactNode;
 }) {
   const { t } = useTranslation();
   const again = t('starpass.bind.sbp.showAgain');
   if (stage.kind === 'failed' && stage.reason === 'exists') {
     return (
       <>
-        <PrimaryBtn onClick={onRelink}>{t('starpass.bind.relink')}</PrimaryBtn>
+        <Btn tone="primary" onClick={onRelink}>
+          {t('starpass.bind.relink')}
+        </Btn>
         {once}
       </>
     );
@@ -144,7 +121,7 @@ const Actions = memo(function Actions({
   if (stage.kind === 'failed' && (stage.reason === 'limit' || stage.reason === 'unavailable')) {
     return (
       <>
-        <GhostBtn onClick={onBack}>{t('starpass.back')}</GhostBtn>
+        <Btn onClick={onBack}>{t('starpass.back')}</Btn>
         {once}
       </>
     );
@@ -152,16 +129,20 @@ const Actions = memo(function Actions({
   if (stage.kind === 'failed' || stage.kind === 'expired') {
     return (
       <>
-        <PrimaryBtn onClick={onRestart}>{again}</PrimaryBtn>
+        <Btn tone="primary" onClick={onRestart}>
+          {again}
+        </Btn>
         {once}
       </>
     );
   }
   return (
     <>
-      <GhostBtn onClick={onRestart}>{again}</GhostBtn>
+      <Btn onClick={onRestart}>{again}</Btn>
       {once}
-      <LinkBtn onClick={onBack}>{t('starpass.card.cancel')}</LinkBtn>
+      <Btn tone="quiet" onClick={onBack}>
+        {t('starpass.card.cancel')}
+      </Btn>
     </>
   );
 });
@@ -172,52 +153,39 @@ const Steps = memo(function Steps({ paying, relinked }: { paying: boolean; relin
     <>
       <ol className="flex list-none flex-col gap-2 p-0">
         {(paying ? [1, 2] : [1]).map((n) => (
-          <li key={n} className="flex gap-2.5 text-[12.5px] text-ink-60">
-            <span className="min-w-[16px] font-mono text-[11px] text-accent">
-              {String(n).padStart(2, '0')}
+          <li key={n} className="flex gap-2.5 text-[13px] text-ink-75">
+            <span className="grid size-[18px] shrink-0 place-items-center rounded-full bg-accent/15 text-[10px] font-bold text-accent">
+              {n}
             </span>
             {t(`starpass.bind.sbp.step.${n}`)}
           </li>
         ))}
       </ol>
       {relinked && (
-        <p className="mt-2.5 text-[11.5px] leading-relaxed text-ink-45">
+        <p className="mt-3 text-[12px] leading-relaxed text-ink-50">
           {t('starpass.bind.sbp.relinkNote')}
         </p>
       )}
-      <p className="mt-2.5 text-[11.5px] leading-relaxed text-ink-45">
+      <p className="mt-3 text-[12px] leading-relaxed text-ink-45">
         {t('starpass.bind.sbp.cameraHelp')}
       </p>
     </>
   );
 });
 
-const Failure = memo(function Failure({ reason }: { reason: SbpFail }) {
-  const { t } = useTranslation();
-  return (
-    <p className="text-[12.5px] leading-relaxed text-ink-80">
-      {t(`starpass.bind.sbp.fail.${reason}`)}
-    </p>
-  );
-});
-
 const QrBox = memo(function QrBox({ stage }: { stage: SbpStage }) {
   const qr = stage.kind === 'waiting' ? stage.qr : null;
   if (qr && !qr.png.startsWith(PNG_PREFIX)) {
-    return (
-      <div className="shrink-0 self-center">
-        <QrCode payload={qr.uri} size={QR_SIZE} margin={8} />
-      </div>
-    );
+    return <QrCode payload={qr.uri} size={QR_SIZE} margin={10} />;
   }
   return (
     <div
-      className="grid shrink-0 place-items-center self-center rounded-[13px] p-2.5"
+      className="grid shrink-0 place-items-center rounded-[18px] p-3"
       style={{
-        width: QR_SIZE + 20,
-        height: QR_SIZE + 20,
+        width: QR_SIZE + 24,
+        height: QR_SIZE + 24,
         background: qr ? '#fff' : 'rgb(var(--ink) / 0.04)',
-        border: qr ? undefined : '1px dashed rgb(var(--ink) / 0.14)',
+        boxShadow: qr ? undefined : 'inset 0 0 0 1px rgb(var(--ink) / 0.10)',
       }}
     >
       {qr ? (
@@ -227,14 +195,4 @@ const QrBox = memo(function QrBox({ stage }: { stage: SbpStage }) {
       )}
     </div>
   );
-});
-
-const Countdown = memo(function Countdown({ until }: { until: number }) {
-  const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
-  useEffect(() => {
-    const id = setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
-    return () => clearInterval(id);
-  }, []);
-  const left = Math.max(0, until - now);
-  return <>{`${Math.floor(left / 60)}:${String(left % 60).padStart(2, '0')}`}</>;
 });

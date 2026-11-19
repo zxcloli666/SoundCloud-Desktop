@@ -1113,5 +1113,71 @@
     "음성 버튼 어디",
     "마이크 아이콘",
     "눌러서 말하는 버튼"
+  ],
+  "settings.video": [
+    "커버 대신 뮤비",
+    "움직이는 커버",
+    "라이브 아트워크",
+    "비디오 끄기",
+    "영상 끊김",
+    "플레이어 영상"
+  ],
+  "settings.videoOrder": [
+    "무엇을 먼저 보여줄지",
+    "영상 우선순위",
+    "클립 또는 루프",
+    "영상 순서 바꾸기",
+    "선호 영상 종류"
+  ],
+  "settings.videoPlace": [
+    "배경 영상",
+    "가사 뒤 영상",
+    "전체 화면 영상",
+    "커버에 영상",
+    "영상을 배경으로",
+    "영상 위치"
+  ],
+  "settings.videoCoverOpacity": [
+    "커버 투명도",
+    "영상 위 커버 숨기기",
+    "투명한 커버",
+    "커버 뒤 영상 보기",
+    "앨범아트 흐리게",
+    "커버가 영상을 가림"
+  ],
+  "settings.videoClip": [
+    "뮤직비디오",
+    "공식 뮤비",
+    "유튜브 클립",
+    "mv",
+    "music video"
+  ],
+  "settings.videoLoop": [
+    "반복 영상",
+    "짧은 루프",
+    "스포티파이 캔버스",
+    "반복 애니메이션",
+    "looping video"
+  ],
+  "settings.videoGenerated": [
+    "ai 영상",
+    "인공지능 영상",
+    "ai 생성",
+    "신경망 영상",
+    "ai generated"
+  ],
+  "settings.videoCacheSize": [
+    "영상이 차지하는 용량",
+    "비디오 캐시",
+    "영상 지우기",
+    "다운받은 클립 삭제",
+    "video cache"
+  ],
+  "settings.videoCacheLimit": [
+    "클립 용량 제한",
+    "영상이 공간을 많이 차지함",
+    "클립 캐시 크기",
+    "비디오 할당량",
+    "video storage limit"
   ]
 }

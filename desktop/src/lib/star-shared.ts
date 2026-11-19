@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../stores/auth';
 import {
+  type Currency,
   type Plan,
   payApi,
   payErrorCode,
@@ -9,6 +10,7 @@ import {
   type TierId,
 } from './pay-client';
 import { queryClient } from './query-client';
+import { chargeAmount, priceIn } from './star-format';
 import { PAY_SUB_KEY } from './star-offer';
 
 export const SHARED_KEY = ['pay', 'shared'] as const;
@@ -44,19 +46,24 @@ export function userUrn(scUserId: string): string {
 }
 
 export interface PerPerson {
-  each: number;
+  each: string;
   savePct: number;
 }
 
-/** What each person pays in a shared plan, and how much cheaper than a personal one. */
 export function perPerson(
   plan: Plan | undefined,
   solo: Plan | undefined,
   seats: number,
+  currency: Currency,
 ): PerPerson {
-  if (!plan || !solo) return { each: 0, savePct: 0 };
-  const each = Math.round(plan.price.RUB / (seats + 1));
-  return { each, savePct: Math.max(0, Math.round((1 - each / solo.price.RUB) * 100)) };
+  if (!plan || !solo) return { each: '', savePct: 0 };
+  const shared = priceIn(plan.price, currency);
+  const own = priceIn(solo.price, currency);
+  const each = Math.round(shared.amount / (seats + 1));
+  return {
+    each: chargeAmount(each, shared.currency),
+    savePct: Math.max(0, Math.round((1 - each / own.amount) * 100)),
+  };
 }
 
 export function tierPlans(tier: TierId, solo: Plan[], shared: SharedTier[] | undefined): Plan[] {

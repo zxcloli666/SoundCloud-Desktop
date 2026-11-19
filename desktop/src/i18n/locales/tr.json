@@ -217,6 +217,13 @@
       "vibeHint": "Bir ruh halini veya hissi anlatın, ona benzeyen parçaları bulun.",
       "soundcloudHint": "Doğrudan SoundCloud sonuçları, SoundCloud sırasıyla."
     },
+    "view": {
+      "covers": "Kapaklar",
+      "moments": "Anlar",
+      "fromHere": "Buradan anlar",
+      "continueWave": "Dalga olarak devam et",
+      "empty": "“{{query}}” için an yok"
+    },
     "catalog": {
       "inLyrics": "Şarkı sözlerinde bulundu",
       "showMore": "Daha fazla göster",
@@ -1522,7 +1529,21 @@
       "failed": "Önbellek taşınamadı"
     },
     "releaseNotifications": "Yeni çıkış bildirimleri",
-    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir"
+    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir",
+    "video": "Video",
+    "videoOrder": "Sıra",
+    "videoPlace": "Video nerede oynar",
+    "videoPlaceCover": "Kapak",
+    "videoPlaceBackground": "Arka plan",
+    "videoCoverOpacity": "Videonun üstündeki kapak",
+    "videoClip": "Klip",
+    "videoLoop": "Döngü",
+    "videoGenerated": "Üretilmiş",
+    "videoGeneratedHint": "Yapay zekâ yaptı",
+    "videoNoCodec": "H.264 yok",
+    "videoCacheSize": "Video",
+    "videoCacheLimit": "Video önbellek limiti",
+    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir"
   },
   "effects": {
     "title": "Efektler",
@@ -1700,30 +1721,11 @@
   },
   "starpass": {
     "guestHandle": "@sen",
-    "member": "Üye",
-    "allAccess": "CLASS · ALL-ACCESS",
-    "activatedStamp": "Aktif",
-    "bestValue": "En avantajlı",
+    "forWhom": "Kimin için",
+    "term": "Süre",
     "perMonth": " / ay",
-    "starsLabel": "Telegram Stars olarak",
-    "classLabel": "Class {{cls}}",
-    "afterPurchase": "satın alımdan sonra",
     "daysLeft_one": "{{count}} gün",
     "daysLeft_other": "{{count}} gün",
-    "tierPreview": "Tier · önizleme",
-    "tierActive": "Aktif pass",
-    "fieldSerial": "Seri №",
-    "fieldIssued": "Veriliş",
-    "fieldActivated": "Aktif edildi",
-    "fieldValidUntil": "Geçerlilik",
-    "fieldMethod": "Yöntem",
-    "fieldOrder": "Sipariş №",
-    "fieldRemaining": "Kalan",
-    "eyebrow": "Üyelik pasosu · seri 2026",
-    "heroTitle1": "Abonelik değil.",
-    "heroTitle2": "Sese bir paso.",
-    "heroLead": "STAR, kendi seri numarası olan kişisel bir pasodur. Özel sunucuyu, UQ sesi ve SoundWave'i açar. Satın al — kartı al; aktif et — canlanır.",
-    "choosePass": "Paso seç",
     "haveCode": "Kodum var",
     "plan": {
       "month": "Aylık",
@@ -1731,9 +1733,7 @@
       "year": "Yıllık"
     },
     "perksTitle": "İçinde neler var",
-    "ignite": "Yıldızını yak",
     "back": "Geri",
-    "perMonthShort": "ay",
     "legal": "Ödeme yaparak <offer>satış koşullarını</offer> ve <refund>iade politikasını</refund> kabul edersin.",
     "perk": {
       "goPlus": {
@@ -1815,23 +1815,13 @@
         "body": "TG yıldızlarıyla öde"
       }
     },
-    "caption": {
-      "member": "Member pass · SoundCloud client",
-      "boarding": "Boarding · ödeme bekleniyor",
-      "active": "Member pass · aktif"
-    },
-    "planTitle": "Paso sınıfını seç",
-    "planSub": "Süre uzadıkça ay ucuzlar. Tüm sınıflar aynı ayrıcalıkları açar.",
-    "toActivation": "Aktivasyona geç",
     "providerTitle": "Aktivasyon yöntemi",
     "howToPay": "Nasıl ödenir",
     "creating": "Sipariş oluşturuluyor…",
-    "continueWith": "{{method}} ile devam et",
     "continue": "Devam et",
     "toPay": "Ödenecek",
+    "paidTotal": "Ödendi",
     "checkoutError": "Sipariş oluşturulamadı. Başka bir yöntem dene.",
-    "payTitle": "Paso damgasını bekliyor",
-    "paySub": "Ödemeyi tamamla — kart otomatik aktif olur.",
     "retry": "Tekrar dene",
     "sbpStep": {
       "1": "Banka uygulamanı aç ve QR'ı tara.",
@@ -1842,32 +1832,20 @@
     "externalHint": "Sağlayıcının ödeme sayfasını tarayıcında açtık. Ödemeyi orada tamamla — bu ekran kendini günceller.",
     "openCheckout": "Ödemeyi aç",
     "openInBrowser": "Tarayıcıda aç",
-    "qrExpired": "Sipariş süresi doldu — baştan başla",
     "successTitle": "Paso aktif edildi",
     "successSub": "Kart damgasını aldı ve folyoyla parlıyor. Müziğe dönebilirsin.",
-    "welcome": "STAR'a hoş geldin, {{handle}}.",
-    "welcomeBody": "Paso {{date}} tarihine kadar geçerli. Özel sunucu, UQ ve SoundWave zaten açık — bir şey yeniden yüklemen gerekmiyor.",
     "until": "kadar",
     "backToMusic": "Müziğe dön",
     "managePass": "Pasoyu yönet",
     "redeemTitle": "Kodla aktivasyon",
-    "redeemSub": "Pasoyu bayiden mi aldın? Fişteki kodu gir.",
     "status": {
       "waiting": "Ödeme bekleniyor…",
-      "polling": "her 2.5 sn kontrol",
       "paid": "Ödeme alındı",
-      "activated": "paso aktif edildi",
       "failed": "Ödeme başarısız",
       "failedHint": "sipariş geçmedi — tekrar dene"
     },
     "redeem": {
-      "heading": "Tek kod — bir paso.",
-      "lead": "Kod, STAR önekinden sonra dört bloktur. Büyük-küçük harf önemli değil, tireleri biz koyarız. Süre aktivasyonda başlar.",
-      "center": "kodunu gir",
-      "format": "format",
-      "oneTime": "tek kullanımlık",
       "label": "Aktivasyon kodu",
-      "progress": "16 karakterden {{count}} girildi",
       "activate": "STAR'ı aktif et",
       "activating": "Aktif ediliyor…",
       "paste": "Panodan yapıştır",
@@ -1878,14 +1856,10 @@
       "errGeneric": "Kod aktif edilemedi. Tekrar dene."
     },
     "manage": {
-      "title": "Pasın",
-      "sub": "Pasın süresi, otomatik yenileme ve kaynağı.",
       "autoRenew": "Otomatik yenileme",
       "refund": "İade politikası",
       "autoRenewOff": "Kapalı. Erişim ödenen sürenin sonuna kadar.",
       "source": "Kaynak",
-      "sourceSub": "Nereden geldiği",
-      "afterExpiry": "Sonra ücretsiz moda geçer",
       "extend": "Uzat",
       "redeem": "Kod gir",
       "canceled": "Otomatik yenileme kapatıldı",
@@ -1904,21 +1878,18 @@
     },
     "discord": {
       "label": "Discord",
-      "linkedAs": "Bağlı",
       "unlinked": "Discord bağlı değil",
       "linkHint": "Discord sunucumuzu aç ve /sc-link yaz",
       "booster": "Booster",
       "starRole": "STAR rolü",
       "member": "Üye"
     },
-    "openVia": "Ödemeyi nerede aç",
     "openIn": {
       "app": "Telegram'da aç",
       "web": "Tarayıcıda aç",
       "mini": "Telegram Mini App"
     },
     "loadError": "Tarifeler yüklenemedi",
-    "loading": "Tarifeler yükleniyor…",
     "recipient": {
       "self": "Kendim için",
       "gift": "Hediye olarak"
@@ -1933,7 +1904,6 @@
       "copied": "Kopyalandı",
       "redeemed": "Kullanıldı",
       "ready": "Hediye hazır",
-      "center": "arkadaş için bir kod",
       "howTo": "Kodu arkadaşınıza gönderin. STAR'ı açıp \"Kodum var\"a tıklasın.",
       "shareText": "SoundCloud Desktop için STAR geçişi, benden 🎁\nKod: {{code}}\nSTAR'ı aç → \"Kodum var\". Uygulamayı indir: https://getsoundcloud.app"
     },
@@ -1968,8 +1938,7 @@
       "friends_other": "{{count}} / {{cap}} arkadaş",
       "earned_one": "+{{count}} gün",
       "earned_other": "+{{count}} gün",
-      "daysUnit": "gün",
-      "center": "sen ve arkadaşın için"
+      "daysUnit": "gün"
     },
     "ref": {
       "have": "Arkadaş kodunuz var mı?",
@@ -2019,7 +1988,7 @@
       "family": "Family",
       "people_one": "{{count}} kişi",
       "people_other": "{{count}} kişi",
-      "each": "kişi başı {{price}} ₽",
+      "each": "kişi başı {{price}}",
       "price": "{{price}} ₽",
       "save": "−{{pct}}%"
     },
@@ -2027,15 +1996,12 @@
       "carryTitle": "Mevcut STAR'ınız aktarılır",
       "carryDays_one": "+{{count}} gün",
       "carryDays_other": "+{{count}} gün",
-      "carryEnd": "Yeni bitiş {{date}}",
       "memberBuy": "Başkasının planındasınız. Kendi planınızı almak için önce ayrılın.",
-      "manageCta": "Üyeler",
       "seatsOf": "{{seats}} yerden {{used}}",
       "until": "{{date}} tarihine kadar",
       "invite": {
         "title": "Davet kodu",
         "copy": "Daveti kopyala",
-        "copied": "Kopyalandı",
         "regenerate": "Yeni kod",
         "regenerated": "Yeni kod hazır, eskisi artık çalışmaz",
         "shareText": "SoundCloud Desktop'taki STAR {{tier}} planıma katıl: STAR'ı aç, \"Kodum var\"a dokun ve {{code}} gir. https://getsoundcloud.app"
@@ -2057,8 +2023,7 @@
         "leaveAsk": "Bu plandan ayrılınsın mı? Kendi STAR'ınız kalır.",
         "leaveYes": "Ayrıl",
         "leaveNo": "Kal",
-        "left": "Plandan ayrıldınız",
-        "joined": "Plana katıldınız"
+        "left": "Plandan ayrıldınız"
       },
       "empty": {
         "title": "Henüz paylaşılan plan yok",
@@ -2088,18 +2053,16 @@
         "offer_device_used": "Bu teklif bu cihazda zaten kullanıldı.",
         "offer_card_used": "Bu teklif bu kartla zaten kullanıldı.",
         "method_unavailable": "Bu yöntem bu plan için kullanılamıyor."
-      },
-      "centerSeats": "{{seats}} yerden {{used}} dolu"
+      }
     },
     "renew": {
       "title": "Otomatik yenileme",
+      "offOnce": "Kapalı: tek seferlik çekim",
       "every_one": "Her {{count}} günde bir otomatik tahsil edilir",
       "every_other": "Her {{count}} günde bir otomatik tahsil edilir",
       "next": "Sonraki çekim {{date}} · {{charge}}",
       "refund": "Kapatmayı unuttun mu? 7 gün içinde e-posta yaz, tamamını iade ederiz, 6 ayda bir kez",
       "unavailable": "Bu yöntem veya süre için yok",
-      "everyOther_one": "Her {{count}} günde bir bağlı yöntemle tahsil edilir: ayrı bir bağlama gerekir",
-      "everyOther_other": "Her {{count}} günde bir bağlı yöntemle tahsil edilir: ayrı bir bağlama gerekir",
       "onceNote": "Otomatik yenileme olmadan: tek seferlik ödeme, bağlama yok"
     },
     "bind": {
@@ -2115,6 +2078,8 @@
       "payOnce": "Otomatik yenileme olmadan öde",
       "oneOffCard": "Tek seferlik çekim, otomatik yenileme yok. Kart bağlı kalır: buradan veya Yönet bölümünden kaldırabilirsin.",
       "oneOffQr": "Tek seferlik çekim, otomatik yenileme yok. SBP bağlı kalır: buradan veya Yönet bölümünden kaldırabilirsin.",
+      "oneOffLinkedCard": "Bağlı karttan bir kez {{charge}} çekilir, otomatik yenileme yok.",
+      "oneOffLinkedQr": "Bağlı SBP üzerinden bir kez {{charge}} çekilir, otomatik yenileme yok.",
       "card_ru": {
         "link": "Kartı bağla",
         "linked": "Kart bağlandı",
@@ -2165,7 +2130,8 @@
     "confirm": {
       "opening": "Banka onayı açılıyor…",
       "open": "Ödemeyi banka penceresinde onayla",
-      "closed": "Ödeme onaylanıyor… Banka penceresini erken mi kapattın? Yeniden aç.",
+      "closed": "Ödeme onaylanıyor…",
+      "closedHint": "Banka penceresini erken mi kapattın? Yeniden aç.",
       "failed": "Banka onayı açılamadı.",
       "reopen": "Banka penceresini aç",
       "renewal": "Banka yenilemeyi onaylamanı istiyor",

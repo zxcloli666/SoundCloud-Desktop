@@ -4,17 +4,13 @@ import {playWhite14} from '../../../lib/icons';
 import {ClusterFeedbackProvider} from '../../../lib/recsFeedback';
 import type {Track} from '../../../stores/player';
 import {usePlayerStore} from '../../../stores/player';
-import type {ClusterHydrated, ClusterNeighborDto} from '../../music/cluster';
+import {type ClusterHydrated, type ClusterNeighborDto, fetchArtistQueue} from '../../music/cluster';
 import {HorizontalScroll} from '../../ui/HorizontalScroll';
 
-/** «Твои артисты» — отмель: круги на линии воды. Клик играет очередь из лучших
- *  треков артиста (resolveQueue — тот же контракт, что у NeighborCard). */
 export const ArtistWire = React.memo(function ArtistWire({
   cluster,
-  resolveQueue,
 }: {
   cluster: ClusterHydrated;
-  resolveQueue: (track: Track) => Promise<Track[]>;
 }) {
   const ctx = useMemo(() => ({ clusterId: String(cluster.id) }), [cluster.id]);
 
@@ -30,9 +26,8 @@ export const ArtistWire = React.memo(function ArtistWire({
 
   if (pairs.length === 0) return null;
 
-  const play = async (track: Track) => {
-    const queue = await resolveQueue(track);
-    usePlayerStore.getState().play(queue[0] ?? track, queue);
+  const play = async (neighbor: ClusterNeighborDto, track: Track) => {
+    usePlayerStore.getState().play(track, await fetchArtistQueue(neighbor.artist_id, track));
   };
 
   return (
@@ -50,7 +45,7 @@ export const ArtistWire = React.memo(function ArtistWire({
             <button
               key={neighbor.artist_id}
               type="button"
-              onClick={() => void play(track)}
+              onClick={() => void play(neighbor, track)}
               className="group flex w-[128px] flex-none cursor-pointer flex-col items-center gap-2.5 transition-transform hover:-translate-y-1"
               title={`${neighbor.artist_name} — ${track.title}`}
             >

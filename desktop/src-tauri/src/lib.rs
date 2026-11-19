@@ -14,6 +14,7 @@ mod scrobble;
 mod shared;
 mod track_cache;
 mod upload;
+mod video_cache;
 mod voice;
 
 use std::sync::Arc;
@@ -116,6 +117,8 @@ pub fn run() {
             let images_dir = data_dir.join("images");
             std::fs::create_dir_all(&images_dir).ok();
 
+            let video_cache = video_cache::VideoCache::init(cache_dir.join("video"));
+
             network::edge::init(data_dir.clone());
             network::edge::attach(app.handle().clone());
 
@@ -150,6 +153,7 @@ pub fn run() {
                 local_covers_dir,
                 css_assets_dir,
                 theme_files_dir,
+                video_cache.dir().to_path_buf(),
             ));
             let rt_handle = rt.handle().clone();
             network::dns::init(rt_handle.clone());
@@ -164,6 +168,7 @@ pub fn run() {
                 rt.block_on(std::future::pending::<()>());
             });
 
+            app.manage(video_cache);
             app.manage(Arc::new(ServerState {
                 static_port,
                 proxy_port,
@@ -434,6 +439,10 @@ pub fn run() {
             network::image_cache::maintenance::image_cache_size,
             network::image_cache::maintenance::image_cache_clear,
             network::image_cache::maintenance::image_cache_enforce_limit,
+            video_cache::commands::video_fetch,
+            video_cache::commands::video_cache_size,
+            video_cache::commands::video_cache_clear,
+            video_cache::commands::video_cache_enforce_limit,
             network::call::call_set_enabled,
             network::call::call_is_enabled,
             network::call::call_device_id,

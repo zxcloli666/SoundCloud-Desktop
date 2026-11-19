@@ -12,8 +12,6 @@ use crate::testkit::{
 };
 use crate::visit::{PageEnd, Visit, visit};
 
-const RESULT: &str = "https://pay.boosty.to/app/payment/result";
-
 async fn bind(sg: Arc<FakeSg>, name: &str) -> Outcome {
     open_real("bind", testkit::bind_params(), sg, name)
         .submit(testkit::card())
@@ -36,7 +34,6 @@ fn every_real_bundle_verifies_with_its_key_entry_and_flow() {
         );
         assert_eq!((real.entry.as_str(), real.flow), (entry, flow));
         assert!(real.serial > bundle::SERIAL_FLOOR);
-        assert_eq!(real.result_url, RESULT);
     }
 }
 
@@ -155,30 +152,79 @@ async fn the_bind_script_needs_its_params() {
     assert!(sg.seen.lock().unwrap().is_empty());
 }
 
-#[tokio::test]
-async fn the_result_page_verdict_comes_back_as_pending_for_pay_to_settle() {
-    let session = open_real(
-        "bind",
-        testkit::bind_params(),
+async fn navigate(entry: &str, url: &str, name: &str) -> Option<Outcome> {
+    let params = match entry {
+        "bind" => testkit::bind_params(),
+        "token" => testkit::yuno_params(),
+        _ => json!({}),
+    };
+    open_real(
+        entry,
+        params,
         FakeSg::new(PENDING),
-        "real-result",
-    );
-    assert_eq!(
-        session
-            .result(format!("{RESULT}?result=success"))
-            .await
-            .unwrap(),
-        Outcome::Pending { reason: None }
-    );
-    assert_eq!(
-        session
-            .result(format!("{RESULT}?result=fail"))
-            .await
-            .unwrap(),
-        Outcome::Pending {
-            reason: Some("confirm_failed".into())
+        &format!("{name}-{entry}"),
+    )
+    .navigate(url.into())
+    .await
+    .unwrap()
+}
+
+#[tokio::test]
+async fn every_bundle_closes_the_window_on_a_boosty_finishing_page() {
+    let done = Some(Outcome::Pending { reason: None });
+    let failed = Some(Outcome::Pending {
+        reason: Some("confirm_failed".into()),
+    });
+    for entry in ["bind", "token", "confirm"] {
+        for (url, want) in [
+            (
+                "https://pay.boosty.to/app/payment/result?result=success",
+                &done,
+            ),
+            (
+                "https://pay.boosty.to/app/payment/result?result=fail",
+                &failed,
+            ),
+            ("https://pay.boosty.to/app/payment/result", &done),
+            ("https://boosty.to/", &done),
+            ("https://boosty.to/app/settings/payments?tab=cards", &done),
+            ("https://pay.boosty.to/app/payment/status/42", &done),
+            ("https://PAY.Boosty.to/app/done", &done),
+        ] {
+            assert_eq!(
+                &navigate(entry, url, "real-nav-end").await,
+                want,
+                "{entry} {url}"
+            );
         }
-    );
+    }
+}
+
+#[tokio::test]
+async fn bank_payment_form_and_foreign_pages_keep_the_window_open() {
+    for entry in ["bind", "token", "confirm"] {
+        for url in [
+            "https://acs.payeko.ru/3ds?id=1",
+            "https://checkout.y.uno/payment?session=s1&3ds=true",
+            "https://pay.boosty.to/new/payment/3ds",
+            "https://pay.boosty.to/new/payment/binding?id=1",
+            "https://pay.boosty.to/app/payment/3ds-check",
+            "https://api-pay.boosty.to/payment/callback",
+            "https://api.boosty.to/v1/x",
+            "https://boosty.to.evil.example/app/payment/result?result=success",
+            "https://evilboosty.to/",
+            "https://boosty.to@evil.example/",
+            "https://boosty.to:8443/",
+            "http://pay.boosty.to/app/payment/result?result=success",
+            "about:blank",
+        ] {
+            assert_eq!(
+                navigate(entry, url, "real-nav-stay").await,
+                None,
+                "{entry} {url}"
+            );
+        }
+    }
 }
 
 async fn token(yuno: Arc<FakeYuno>, name: &str) -> Outcome {
@@ -263,7 +309,7 @@ async fn token_pages_open_only_on_its_page_hosts() {
 }
 
 #[tokio::test]
-async fn the_confirm_bundle_has_no_form_and_reads_only_the_result() {
+async fn the_confirm_bundle_has_no_form_and_ends_where_the_window_says() {
     let session = open_real("confirm", json!({}), FakeSg::new(PENDING), "real-confirm");
     assert!(session.submit(testkit::card()).await.is_err());
     assert!(session.takes_page("https://pay.boosty.to/app/confirm?id=1"));
@@ -275,7 +321,7 @@ async fn the_confirm_bundle_has_no_form_and_reads_only_the_result() {
         Duration::from_secs(5),
         async |url: String| {
             shown.lock().unwrap().push(url);
-            PageEnd::Reached(format!("{RESULT}?result=success"))
+            PageEnd::Done(Outcome::Pending { reason: None })
         },
     )
     .await;
@@ -324,19 +370,6 @@ async fn a_visit_is_refused_off_its_hosts_and_closed_on_close_or_budget() {
         )
         .await,
         Visit::Closed
-    );
-    let fail = visit(
-        &session,
-        "https://pay.boosty.to/x",
-        Duration::from_secs(5),
-        async |_: String| PageEnd::Reached("https://pay.boosty.to/elsewhere".into()),
-    )
-    .await;
-    assert_eq!(
-        fail,
-        Visit::Result {
-            outcome: Outcome::failed("sandbox")
-        }
     );
 }
 

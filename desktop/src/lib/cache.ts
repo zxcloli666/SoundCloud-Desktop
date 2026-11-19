@@ -17,6 +17,7 @@ import {sanitizeFilename} from './filename';
 import {onIdle} from './idle';
 import {forgetAllPinned, forgetLikedUrn, forgetPinned, getOfflineKeptUrns} from './offline-index';
 import { requestedQuality } from './streaming';
+import {enforceVideoCacheLimit} from './video-cache';
 
 type StorageQuality = TrackScdMeta['storage_quality'];
 
@@ -275,6 +276,7 @@ export function setupCacheMaintenance() {
   });
 
   window.setTimeout(() => void enforceImageCacheLimit(), IMAGE_TRIM_STARTUP_DELAY_MS);
+  window.setTimeout(() => void enforceVideoCacheLimit().catch(() => {}), IMAGE_TRIM_STARTUP_DELAY_MS);
   onIdle(IDLE_TRIM_MS, trimWhileIdle);
 
   // Pause maintenance while the window is hidden — the WebView does not throttle timers.
@@ -327,6 +329,7 @@ export function enforceImageCacheLimit(
 
 function trimWhileIdle() {
   void import('./scproxy').then((m) => m.clearImageUrlMemo());
+  void enforceVideoCacheLimit().catch(() => {});
   void enforceImageCacheLimit();
   void enforceAudioCacheLimit();
 }

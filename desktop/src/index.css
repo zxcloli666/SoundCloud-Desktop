@@ -1792,6 +1792,104 @@ select,
   }
 }
 
+/* ── STAR page ─────────────────────────────────────────────── */
+@keyframes star-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes star-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes star-pulse {
+  0%, 100% {
+    opacity: 0.9;
+    transform: scale(0.86);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes star-sheen {
+  0% {
+    transform: translate3d(-120%, 0, 0) skewX(-18deg);
+  }
+  55%, 100% {
+    transform: translate3d(320%, 0, 0) skewX(-18deg);
+  }
+}
+
+@keyframes star-halo {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(-4vw, 3vh, 0);
+  }
+}
+
+.star-in,
+.star-stagger > * {
+  animation: star-in 0.42s var(--ease-apple) both;
+}
+
+.star-stagger > *:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.star-stagger > *:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.star-stagger > *:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.star-stagger > *:nth-child(n + 5) {
+  animation-delay: 200ms;
+}
+
+.star-pop {
+  animation: star-pop 0.5s var(--ease-apple) both;
+}
+
+.star-pulse {
+  animation: star-pulse 2.2s ease-in-out infinite;
+}
+
+.star-sheen {
+  animation: star-sheen 3.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star-in,
+  .star-stagger > *,
+  .star-pop,
+  .star-pulse,
+  .star-sheen {
+    animation: none !important;
+  }
+}
+
 /* ── Settings search: jump highlight ───────────────────────── */
 [data-search-flash] {
     position: relative;

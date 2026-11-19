@@ -7,7 +7,7 @@ use crate::outcome::Outcome;
 use crate::session::Session;
 
 pub enum PageEnd {
-    Reached(String),
+    Done(Outcome),
     Closed,
 }
 
@@ -28,13 +28,8 @@ pub async fn visit(
     if !session.takes_page(url) {
         return Visit::Refused;
     }
-    let reached = match timeout(budget, window(url.to_string())).await {
-        Ok(PageEnd::Reached(at)) => at,
-        _ => return Visit::Closed,
-    };
-    let outcome = match session.result(reached).await {
-        Ok(outcome) => outcome,
-        Err(error) => Outcome::failed(error.code()),
-    };
-    Visit::Result { outcome }
+    match timeout(budget, window(url.to_string())).await {
+        Ok(PageEnd::Done(outcome)) => Visit::Result { outcome },
+        _ => Visit::Closed,
+    }
 }

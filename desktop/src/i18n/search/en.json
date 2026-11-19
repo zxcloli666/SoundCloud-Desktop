@@ -1339,6 +1339,73 @@
     "what to press to pause",
     "all app keys"
   ],
+  "settings.video": [
+    "music video instead of cover",
+    "animated cover",
+    "live artwork",
+    "turn off video",
+    "video lags",
+    "canvas",
+    "video in player"
+  ],
+  "settings.videoOrder": [
+    "what to show first",
+    "video priority",
+    "clip or loop first",
+    "reorder videos",
+    "preferred video type"
+  ],
+  "settings.videoPlace": [
+    "video as background",
+    "video behind lyrics",
+    "full screen video background",
+    "video in cover",
+    "move video to background",
+    "where video plays"
+  ],
+  "settings.videoCoverOpacity": [
+    "cover opacity",
+    "hide cover over video",
+    "transparent cover",
+    "see video behind cover",
+    "fade the artwork",
+    "cover covers the video"
+  ],
+  "settings.videoClip": [
+    "music video",
+    "official video",
+    "youtube clip",
+    "videoclip",
+    "mv"
+  ],
+  "settings.videoLoop": [
+    "looping video",
+    "short loop",
+    "spotify canvas",
+    "looped animation",
+    "repeating clip"
+  ],
+  "settings.videoGenerated": [
+    "ai video",
+    "neural network video",
+    "ai generated",
+    "made by ai",
+    "generated visuals"
+  ],
+  "settings.videoCacheSize": [
+    "space used by clips",
+    "video cache",
+    "clear videos",
+    "delete downloaded clips",
+    "video storage"
+  ],
+  "settings.videoCacheLimit": [
+    "limit space for clips",
+    "videos take too much space",
+    "clip cache size",
+    "video quota",
+    "video storage limit"
+  ],
   "elsewhere.voice": [
     "mic button",
     "microphone in the player",

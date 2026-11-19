@@ -9,11 +9,12 @@ import {
 } from '../components/moments/MomentsChrome';
 import { MomentsStage } from '../components/moments/MomentsStage';
 import { useMomentsFeed } from '../components/moments/use-moments-feed';
+import { useWaveSource } from '../components/moments/use-wave-source';
 
 export function Moments() {
   const location = useLocation();
   const startUrn = (location.state as { startUrn?: string } | null)?.startUrn;
-  const feed = useMomentsFeed(startUrn);
+  const feed = useMomentsFeed(useWaveSource(startUrn));
   const current = feed.tracks[feed.index];
 
   return (

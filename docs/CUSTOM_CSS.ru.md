@@ -61,6 +61,8 @@
 | `[data-ui="queue-item"]` | Трек в очереди |
 | `[data-ui="lyrics"]` | Полноэкранный текст песни |
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |
+| `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view` или `moments` |
+| `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере |
 | `[data-ui="waveform"]` | Волна трека |
 
 ### Голос
@@ -112,6 +114,11 @@
 | `[data-ui="comments"]` | Список комментариев |
 | `[data-ui="comment"]` | Комментарий |
 | `[data-ui="search-tabs"]` | Вкладки режимов поиска |
+| `[data-ui="search-strip"]` | Строка с вкладками режимов поиска и переключателем вида |
+| `[data-ui="search-view"]` | Переключатель Обложки / Моменты в поиске |
+| `[data-ui="search-moments"]` | Вид Моменты внутри поиска |
+| `[data-ui="search-wave-tail"]` | Последняя карточка моментов поиска: дальше волной |
+| `[data-ui="moments-from-here"]` | Кнопка «Моменты отсюда» на обложке в поиске |
 | `[data-ui="tab"]` | Вкладка |
 | `[data-ui="chip"]` | Чипы жанров и фильтров |
 | `[data-ui="shelf"]` | Горизонтальная лента |
@@ -204,6 +211,34 @@
 | `[data-ui="chat-public-mute-reason"]` | Вторая строка плашки «вам запрещено писать»: причина от модератора или время окончания |
 
 Остальные окна чатов (новый чат, жалоба, удаление) это `[data-ui="modal"]`. Цвета чатов берутся из токенов схемы (раздел «Белая и тёмная»): `--ink` для текста и линий, `--paper` и `--surface` для подложек, `--shade` для колодцев и затемнений. Тема, которая их задаёт, меняет и чаты. Ваши сообщения, открытый чат и выбранный фильтр подкрашены `--color-chat-tint`.
+
+### Страница STAR
+
+| Селектор | Элемент |
+|---|---|
+| `[data-ui="star-header"]` | Заголовок с кнопкой «назад» |
+| `[data-ui="star-who"]` | Для кого: Личный, Duo, Family и переключатель подарка |
+| `[data-ui="star-term"]` | Плитки срока (месяц, квартал, год) |
+| `[data-ui="star-method"]` | Способы оплаты |
+| `[data-ui="star-renew"]` | Переключатель автопродления под способами |
+| `[data-ui="star-perks"]` | Плашки того, что входит в STAR |
+| `[data-ui="star-receipt"]` | Чек справа: строки `[data-ui="star-receipt-lines"]`, сумма `[data-ui="star-total"]`, кнопка оплаты `[data-star-act="pay"]`, ход оплаты `[data-ui="star-progress"]`, ссылки `[data-ui="star-extras"]` |
+| `[data-ui="star-offer"]` | Личное предложение в чеке |
+| `[data-ui="star-pay"]` | Идёт оплата; состояние внутри: `star-pay-qr`, `star-pay-open`, `star-pay-wait`, `star-pay-confirm` или `star-pay-failed` |
+| `[data-ui="star-timer"]` | Кольцо обратного отсчёта у QR и страницы оплаты |
+| `[data-ui="star-step"]` | Отдельный шаг, `data-step`: `card`, `sbp`, `trial`, `plan`, `redeem`, `invite` или `gifts`; форма привязки карты `[data-ui="star-card-link"]` с `data-stage`, ошибка привязки `[data-ui="star-card-failed"]` с `data-retry` (`same`, `edit` или `fresh`), картинка карты `[data-ui="star-card-face"]`, привязка СБП `[data-ui="star-sbp-link"]` с `data-stage` |
+| `[data-ui="star-trial"]` | Пробный период |
+| `[data-ui="star-redeem"]` | Ввод кода |
+| `[data-ui="star-invite"]` | Пригласить друга |
+| `[data-ui="star-gifts"]` | Коды подарков; один код `[data-ui="star-gift-ticket"]` |
+| `[data-ui="star-shared"]` | Места в Duo или Family; одно место `[data-ui="star-seat"]` |
+| `[data-ui="star-success"]` | Оплачено |
+| `[data-ui="star-manage"]` | Список управления: строки `star-autorenew`, `star-trial-row`, `star-bind`, `star-seats` |
+| `[data-ui="star-confirm-renewal"]`, `[data-ui="star-expiring"]` | Предупреждения над списком, `data-tone` это `warn` или `bad` |
+| `[data-ui="star-member"]` | Твоё место в чужом Duo или Family |
+| `[data-ui="star-tenure"]` | Серия STAR |
+| `[data-ui="star-discord"]` | Привязка Discord |
+| `[data-ui="star-pass-summary"]` | Карточка пропуска справа: сколько дней осталось, следующее списание, действия |
 
 ## Переменные
 

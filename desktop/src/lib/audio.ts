@@ -43,7 +43,7 @@ import {trackedInvoke as invoke, reportError} from './diagnostics';
 import {isBelow} from './playback-quality';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
-import {recordEvent} from './events';
+import {recordEvent, recordSeek} from './events';
 import {art} from './formatters';
 import {playbackServersDown} from './host-status';
 import {trackUrn} from './ids';
@@ -62,6 +62,7 @@ import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
+import type {PlaybackClock} from './video-sync';
 import {LATE_SKIP_SHARE} from './wave-feedback';
 
 const SKIP_THRESHOLD_SEC = 30;
@@ -83,6 +84,7 @@ let raceUrn: string | null = null;
 let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
+let tickAt = 0;
 let cachedDuration = 0;
 let acceptedShortFile = false;
 let downloadProgress: number | null = null;
@@ -123,6 +125,16 @@ export function subscribe(listener: () => void): () => void {
 
 export function getCurrentTime(): number {
   return cachedTime;
+}
+
+export function getPlaybackClock(): PlaybackClock {
+  const { isPlaying, playbackRate } = usePlayerStore.getState();
+  return {
+    pos: cachedTime,
+    at: tickAt,
+    rate: playbackRate,
+    playing: isPlaying && hasTrack && downloadProgress === null,
+  };
 }
 
 export function getDuration(): number {
@@ -170,14 +182,23 @@ export function subscribeSeek(listener: (seconds: number) => void): () => void {
 }
 
 export function seek(seconds: number) {
-  if (!playbackAllowed('seek')) return;
+  const track = usePlayerStore.getState().currentTrack;
+  const fromMs = getCurrentTime() * 1000;
+  if (!seekQuiet(seconds) || !track) return;
+  recordSeek(track.urn, seconds * 1000, fromMs, 'player');
+}
+
+function seekQuiet(seconds: number): boolean {
+  if (!playbackAllowed('seek') || !hasTrack) return false;
   alignTo(seconds);
+  return true;
 }
 
 export function alignTo(seconds: number) {
   if (!hasTrack) return;
   invoke('audio_seek', { position: seconds }).catch(console.error);
   cachedTime = seconds;
+  tickAt = performance.now();
   notify();
   setTimeout(() => updateMediaPosition(), 150);
   for (const listener of seekListeners) listener(seconds);
@@ -209,7 +230,7 @@ function takePendingStart(urn: string): number {
 
 export function handlePrev() {
   if (getCurrentTime() > 3) {
-    seek(0);
+    seekQuiet(0);
   } else {
     usePlayerStore.getState().prev();
   }
@@ -856,7 +877,7 @@ function handleTrackEnd() {
     const gen = loadGen;
     void loadPromise.then(() => {
       if (gen === loadGen && usePlayerStore.getState().currentTrack?.urn === track.urn) {
-        seek(a);
+        seekQuiet(a);
       }
     });
     return;
@@ -914,6 +935,7 @@ function maybeStartCrossfade() {
 listen<number>('audio:tick', (event) => {
   if (isCrossfadeLoading()) return;
   cachedTime = event.payload;
+  tickAt = performance.now();
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   notify();
   maybeStartCrossfade();

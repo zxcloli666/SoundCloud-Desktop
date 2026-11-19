@@ -36,7 +36,6 @@ pub struct Bundle {
     pub flow: Flow,
     pub allowed_hosts: Vec<String>,
     pub page_hosts: Vec<String>,
-    pub result_url: String,
     pub script: String,
     pub sig: String,
 }
@@ -55,8 +54,6 @@ pub enum Reject {
     OldSerial,
     #[error("bad_hosts")]
     BadHosts,
-    #[error("bad_result_url")]
-    BadResultUrl,
     #[error("entry")]
     Entry,
     #[error("params")]
@@ -74,7 +71,6 @@ impl Reject {
             Reject::Expired => "expired",
             Reject::OldSerial => "old_serial",
             Reject::BadHosts => "bad_hosts",
-            Reject::BadResultUrl => "bad_result_url",
             Reject::Entry => "entry",
             Reject::Params => "params",
             Reject::SerialNotSaved => "serial_not_saved",
@@ -122,7 +118,6 @@ impl Bundle {
             self.flow.as_str().as_bytes(),
             self.allowed_hosts.join("\n").as_bytes(),
             self.page_hosts.join("\n").as_bytes(),
-            self.result_url.as_bytes(),
             self.script.as_bytes(),
         ] {
             field(&mut out, part);
@@ -175,9 +170,6 @@ pub fn check(bundle: &Bundle, keys: &Keys, now: i64, highest_serial: i64) -> Res
     {
         return Err(Reject::BadHosts);
     }
-    if !guard::acceptable_page(&bundle.result_url) {
-        return Err(Reject::BadResultUrl);
-    }
     Ok(())
 }
 
@@ -188,7 +180,6 @@ pub(crate) mod tests {
     use super::*;
 
     pub const SERIAL: i64 = SERIAL_FLOOR + 1_800_000_000;
-    pub const RESULT_URL: &str = "https://pay.example/app/payment/result";
 
     pub fn key(seed: u8) -> SigningKey {
         SigningKey::from_bytes(&[seed; 32])
@@ -209,7 +200,6 @@ pub(crate) mod tests {
             flow: Flow::CardForm,
             allowed_hosts: hosts.iter().map(|host| host.to_string()).collect(),
             page_hosts: vec![],
-            result_url: RESULT_URL.into(),
             script: script.into(),
             sig: String::new(),
         }
@@ -277,11 +267,10 @@ pub(crate) mod tests {
 
     #[test]
     fn any_changed_field_breaks_the_signature() {
-        let edits: [fn(&mut Bundle); 10] = [
+        let edits: [fn(&mut Bundle); 9] = [
             |b| b.script = "return 2".into(),
             |b| b.allowed_hosts.push("evil.example".into()),
             |b| b.page_hosts.push("evil.example".into()),
-            |b| b.result_url = "https://evil.example/result".into(),
             |b| b.flow = Flow::Confirm,
             |b| b.serial += 1,
             |b| b.not_after = 9_999,
@@ -350,24 +339,6 @@ pub(crate) mod tests {
                 check(&signed(pages, &key(1)), &keys(1), 1_000, 0),
                 Err(Reject::BadHosts),
                 "{hosts:?}"
-            );
-        }
-    }
-
-    #[test]
-    fn a_result_url_must_be_an_https_page() {
-        for url in [
-            "http://pay.example/r",
-            "https://127.0.0.1/r",
-            "javascript:1",
-            "",
-        ] {
-            let mut bundle = sample("return 1", &[]);
-            bundle.result_url = url.into();
-            assert_eq!(
-                check(&signed(bundle, &key(1)), &keys(1), 1_000, 0),
-                Err(Reject::BadResultUrl),
-                "{url}"
             );
         }
     }

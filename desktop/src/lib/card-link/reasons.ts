@@ -30,3 +30,9 @@ export function stepEnd({ state, reason }: BindStep): 'linked' | FailReason | nu
   if (state === 'failed') return verdictFailure(reason ?? '');
   return null;
 }
+
+const RESEND = new Set<FailReason>(['timeout', 'network', 'expired', 'closed', 'page', 'busy']);
+
+export function resendable(reason: FailReason): boolean {
+  return RESEND.has(reason);
+}

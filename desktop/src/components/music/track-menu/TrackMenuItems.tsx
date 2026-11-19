@@ -10,6 +10,7 @@ import {
   ClipboardCopy,
   Disc3,
   Download,
+  GalleryVerticalEnd,
   Heart,
   LinkIcon,
   ListEnd,
@@ -37,6 +38,7 @@ import { getArtistDisplay, getArtistTarget } from '../../../lib/track-display';
 import { useAppMode } from '../../../stores/app-status';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { usePlayerStore } from '../../../stores/player';
+import { useSearchPrefsStore } from '../../../stores/searchPrefs';
 import { type TrackMenuTarget, useTrackMenuStore } from '../../../stores/trackMenu';
 import { SuperHeart } from '../superlike/SuperHeart';
 import { MenuItem, MenuSeparator } from './MenuItem';
@@ -177,6 +179,14 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
     [
       'navigate',
       [
+        target.scope === 'search' && (
+          <MenuItem
+            key="moments"
+            icon={<GalleryVerticalEnd size={15} />}
+            label={t('search.view.fromHere')}
+            onSelect={run(() => useSearchPrefsStore.getState().momentsFrom(track.urn))}
+          />
+        ),
         online && remote && playable && (
           <MenuItem
             key="track"

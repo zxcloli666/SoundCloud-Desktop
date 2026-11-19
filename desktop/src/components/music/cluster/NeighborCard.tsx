@@ -12,21 +12,17 @@ import {type Track, usePlayerStore} from '../../../stores/player';
 import {ArtistNameLinks} from '../ArtistNameLinks';
 import {LikeButton} from '../LikeButton';
 import {TrackStatusBadges} from '../TrackStatusBadges';
+import {fetchArtistQueue} from './artistQueue';
 import type {ClusterNeighborDto} from './types';
 
 interface Props {
   neighbor: ClusterNeighborDto;
   track: Track;
-  queue: Track[];
-  /** If provided, called on first play to build an async queue (e.g. same_artist similar). */
-  resolveQueue?: (track: Track) => Promise<Track[]>;
 }
 
 export const NeighborCard = React.memo(function NeighborCard({
   neighbor,
   track,
-  queue,
-  resolveQueue,
 }: Props) {
   const navigate = useNavigate();
   const perf = usePerfMode();
@@ -57,21 +53,14 @@ export const NeighborCard = React.memo(function NeighborCard({
       resume();
       return;
     }
-    if (resolveQueue) {
-      if (resolving) return;
-      setResolving(true);
-      try {
-        const resolved = await resolveQueue(track);
-        play(track, resolved.length > 0 ? resolved : [track]);
-      } catch {
-        play(track, [track]);
-      } finally {
-        setResolving(false);
-      }
-      return;
+    if (resolving) return;
+    setResolving(true);
+    try {
+      play(track, await fetchArtistQueue(neighbor.artist_id, track));
+    } finally {
+      setResolving(false);
     }
-    play(track, queue.length > 0 ? queue : [track]);
-  }, [clusterId, track, isThis, isThisPlaying, resolveQueue, resolving, queue]);
+  }, [clusterId, track, isThis, isThisPlaying, resolving, neighbor.artist_id]);
   const cover = art(track.artwork_url, 't300x300');
   const avatar = art(neighbor.avatar_url, 't120x120');
 

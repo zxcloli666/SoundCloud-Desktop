@@ -1151,5 +1151,71 @@
     "onde fica o botão de voz",
     "ícone do microfone",
     "apertar e falar"
+  ],
+  "settings.video": [
+    "clipe no lugar da capa",
+    "capa animada",
+    "capa ao vivo",
+    "desligar vídeo",
+    "vídeo travando",
+    "vídeo no player"
+  ],
+  "settings.videoOrder": [
+    "o que mostrar primeiro",
+    "prioridade de vídeo",
+    "clipe ou loop",
+    "reordenar vídeos",
+    "tipo de vídeo preferido"
+  ],
+  "settings.videoPlace": [
+    "video de fundo",
+    "video atras da letra",
+    "video em tela cheia",
+    "video na capa",
+    "fundo com clipe",
+    "onde o video aparece"
+  ],
+  "settings.videoCoverOpacity": [
+    "opacidade da capa",
+    "esconder capa sobre o video",
+    "capa transparente",
+    "ver video atras da capa",
+    "apagar a capa",
+    "capa cobre o video"
+  ],
+  "settings.videoClip": [
+    "videoclipe",
+    "clipe oficial",
+    "clipe do youtube",
+    "music video",
+    "mv"
+  ],
+  "settings.videoLoop": [
+    "vídeo em loop",
+    "loop curto",
+    "canvas do spotify",
+    "animação repetida",
+    "looping video"
+  ],
+  "settings.videoGenerated": [
+    "vídeo de ia",
+    "inteligência artificial",
+    "gerado por ia",
+    "vídeo de rede neural",
+    "ai video"
+  ],
+  "settings.videoCacheSize": [
+    "espaço usado por clipes",
+    "cache de vídeo",
+    "limpar vídeos",
+    "apagar clipes baixados",
+    "video cache"
+  ],
+  "settings.videoCacheLimit": [
+    "limitar espaço dos clipes",
+    "vídeos ocupam muito espaço",
+    "tamanho do cache de clipes",
+    "cota de vídeo",
+    "video storage limit"
   ]
 }

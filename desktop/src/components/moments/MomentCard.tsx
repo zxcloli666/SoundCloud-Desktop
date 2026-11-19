@@ -10,6 +10,7 @@ import { useAddToPlaylistRequest } from '../../stores/add-to-playlist';
 import type { Track } from '../../stores/player';
 import { ArtistNameLinks } from '../music/ArtistNameLinks';
 import { LikeButton } from '../music/LikeButton';
+import { MomentVideo } from '../music/lyrics/TrackVideo';
 import { MomentWave } from './MomentWave';
 
 export const MomentCard = React.memo(function MomentCard({
@@ -115,6 +116,7 @@ function MomentCover({
       ) : (
         <div className="size-full bg-ink/[0.05]" />
       )}
+      <MomentVideo track={track} />
       <span
         data-scheme="dark"
         className={`absolute inset-0 flex items-center justify-center transition-colors duration-300 ${

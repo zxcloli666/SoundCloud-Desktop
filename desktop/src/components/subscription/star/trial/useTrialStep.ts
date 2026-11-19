@@ -1,51 +1,36 @@
-import { useCallback, useState } from 'react';
-import type { MethodId, PayMethod, Plan } from '../../../../lib/pay-client';
+import { usePlans } from '../../../../lib/binds';
+import { usePremium } from '../../../../lib/premium-cache';
 import { planPrice } from '../../../../lib/star-format';
-import { refreshSubscription, usePaySubscription } from '../../../../lib/star-offer';
-import { type TrialBlock, type TrialOutcome, trialOffer } from '../../../../lib/star-trial';
-import type { Step } from '../meta';
+import { usePaySubscription } from '../../../../lib/star-offer';
+import { trialOffer } from '../../../../lib/star-trial';
+import { isGift, useFlow } from '../flow/store';
 
 const TRIAL_PLAN = 'm1';
 
-export function useTrialStep(
-  premium: boolean,
-  plans: Plan[],
-  methods: PayMethod[],
-  setStep: (step: Step) => void,
-  onGranted: () => void,
-) {
+export function useTrialStep() {
+  const premium = usePremium();
   const sub = usePaySubscription();
+  const plans = usePlans().data;
+  const picked = useFlow((s) => s.trialMethod);
+  const refused = useFlow((s) => s.trialBlocked);
   const offer = premium ? null : trialOffer(sub.data);
-  const [picked, setPicked] = useState<MethodId | null>(null);
-  const [blocked, setBlocked] = useState<TrialBlock | null>(null);
   const method = picked && offer?.methods.includes(picked) ? picked : (offer?.methods[0] ?? null);
-  const plan = plans.find((p) => p.id === TRIAL_PLAN);
-  const currency = methods.find((m) => m.id === method)?.bind?.currency ?? 'RUB';
-  const amount = plan && method ? planPrice(plan, currency) : '';
-
-  const open = useCallback(() => {
-    setBlocked(null);
-    setStep('trial');
-  }, [setStep]);
-
-  const done = useCallback(
-    (outcome: TrialOutcome | null) => {
-      refreshSubscription();
-      if (outcome?.kind === 'granted') return onGranted();
-      setBlocked(outcome?.kind === 'refused' ? outcome.refusal : 'failed');
-      setStep('trial');
-    },
-    [onGranted, setStep],
-  );
-
+  const plan = plans?.plans.find((p) => p.id === TRIAL_PLAN);
+  const currency = plans?.methods.find((m) => m.id === method)?.bind?.currency ?? 'RUB';
   return {
     offer,
     loading: sub.isLoading,
     method,
-    pick: setPicked,
-    amount,
-    blocked: blocked ?? (offer && !offer.available ? offer.reason : null),
-    open,
-    done,
+    currency,
+    amount: plan && method ? planPrice(plan, currency) : '',
+    blocked: refused ?? (offer && !offer.available ? offer.reason : null),
   };
+}
+
+export function useTrialDays(): number | null {
+  const premium = usePremium();
+  const sub = usePaySubscription(!premium).data;
+  const eligible = useFlow((s) => !isGift(s) && s.tier === 'solo');
+  const offer = premium || !eligible ? null : trialOffer(sub);
+  return offer?.available ? offer.days : null;
 }

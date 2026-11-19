@@ -15,6 +15,7 @@ interface WallProps {
     onLoadMore?: () => void;
     onOpen?: () => void;
     onPlay?: () => void;
+    moments?: boolean;
 }
 
 const GAP = 12;
@@ -59,6 +60,7 @@ export const Wall = memo(function Wall({
                                            onLoadMore,
                                            onOpen,
                                            onPlay,
+                                           moments,
                                        }: WallProps) {
     const ref = useRef<HTMLDivElement | null>(null);
     const fillAtRef = useRef(-1);
@@ -154,6 +156,7 @@ export const Wall = memo(function Wall({
                                 getQueue={getQueue}
                                 onOpen={onOpen}
                                 onPlay={onPlay}
+                                moments={moments}
                             />
                         ))}
                     </>

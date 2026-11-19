@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import type { Track } from '../stores/player';
 import { useSearchHistoryStore } from '../stores/searchHistory';
+import type { SearchMode } from '../stores/searchPrefs';
 import { api } from './api';
 import { ApiError, type ApiRequestOptions } from './api-client';
 import type { CatalogAlbum, CatalogArtist } from './discover';
@@ -19,6 +20,14 @@ export interface VibeResponse {
   items: Track[];
   atmosphere: { topGenres: string[] };
   status?: 'ready' | 'preparing';
+}
+
+export interface TrackResults {
+  items: Track[];
+  hasMore: boolean;
+  loadMore: () => void;
+  isLoading: boolean;
+  isFetchingMore: boolean;
 }
 
 export interface ResolvedEntity {
@@ -111,13 +120,20 @@ function usePagedSearch<T>(
   dedupe: (item: T) => string,
   extra?: Record<string, string | undefined>,
 ) {
-  return usePagedQuery<T>({
+  const query = usePagedQuery<T>({
     ...paged,
     queryKey: ['search', ...key, q, extra ?? {}],
     url: (page, size) => pagedUrl(base, page, size, params(q, extra)),
     limit,
     enabled: q.length >= MIN_SEARCH_QUERY,
     dedupe,
+  });
+  const { fetchNextPage } = query;
+  const loadMore = useCallback(() => void fetchNextPage(), [fetchNextPage]);
+  return Object.assign(query, {
+    hasMore: !!query.hasNextPage && !query.isFetchNextPageError,
+    isFetchingMore: query.isFetchingNextPage,
+    loadMore,
   });
 }
 
@@ -199,8 +215,35 @@ export function useVibe(q: string) {
     () => void queryClient.resetQueries({ queryKey: ['search', 'vibe', q], exact: true }),
     [queryClient, q],
   );
-  return { ...query, preparing: preparing && !slow, slow, restart };
+  return {
+    ...query,
+    items: query.data && !preparing ? query.data.items : NO_TRACKS,
+    hasMore: false,
+    loadMore: noMore,
+    isLoading: query.isLoading || (preparing && !slow),
+    isFetchingMore: false,
+    preparing: preparing && !slow,
+    slow,
+    restart,
+  };
 }
+
+export function useSearchTracks(mode: SearchMode, q: string): TrackResults {
+  const catalog = useCatalogTracks(mode === 'catalog' ? q : '');
+  const soundcloud = useScTracks(mode === 'soundcloud' ? q : '');
+  const vibe = useVibe(mode === 'vibe' ? q : '');
+  const active = mode === 'catalog' ? catalog : mode === 'soundcloud' ? soundcloud : vibe;
+  return {
+    items: active.items,
+    hasMore: active.hasMore,
+    loadMore: active.loadMore,
+    isLoading: active.isLoading,
+    isFetchingMore: active.isFetchingMore,
+  };
+}
+
+const NO_TRACKS: Track[] = [];
+function noMore() {}
 
 function resolvedLinkQuery(url: string | null) {
   return {

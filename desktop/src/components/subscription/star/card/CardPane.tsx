@@ -1,13 +1,14 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type FailReason, type Stage, useCardLink } from '../../../../lib/card-link/use-card-link';
+import { type Retry, type Stage, useCardLink } from '../../../../lib/card-link/use-card-link';
 import { type CardFields, EMPTY_CARD } from '../../../../lib/card-link/validate';
-import { Check } from '../../../../lib/icons';
 import type { MethodId } from '../../../../lib/pay-client';
-import { AccentSpinner } from '../AccentSpinner';
-import { GhostBtn, LinkBtn, PrimaryBtn, Ttl } from '../StarConsole';
+import { Btn } from '../ui/Btn';
+import { Done } from '../ui/Done';
+import { Title } from '../ui/Panel';
 import { type OnLinked, useLinkEnd } from '../useLinkEnd';
 import { CardFace } from './CardFace';
+import { CardFailed } from './CardFailed';
 import { CardForm } from './CardForm';
 import { CardProgress } from './CardProgress';
 
@@ -26,12 +27,12 @@ export const CardPane = memo(function CardPane({
   onOnce: (() => void) | null;
   onBack: () => void;
 }) {
-  const { stage, submit, retry } = useCardLink(method, trial);
+  const { stage, held, submit, retry } = useCardLink(method, trial);
   useLinkEnd(stage, onLinked);
-
   return (
     <CardStage
       stage={stage}
+      held={held}
       amount={amount}
       onSubmit={(card) => void submit(card)}
       onRetry={retry}
@@ -41,8 +42,9 @@ export const CardPane = memo(function CardPane({
   );
 });
 
-export const CardStage = memo(function CardStage({
+const CardStage = memo(function CardStage({
   stage,
+  held,
   amount,
   onSubmit,
   onRetry,
@@ -50,92 +52,51 @@ export const CardStage = memo(function CardStage({
   onBack,
 }: {
   stage: Stage;
+  held: string | null;
   amount: string | null;
   onSubmit: (card: CardFields) => void;
-  onRetry: () => void;
+  onRetry: (how: Retry) => void;
   onOnce: (() => void) | null;
   onBack: () => void;
 }) {
   const { t } = useTranslation();
   return (
-    <div>
-      <Ttl>{t('starpass.card.title')}</Ttl>
-      {stage.kind === 'starting' && (
-        <div className="flex items-center gap-4">
-          <CardFace fields={EMPTY_CARD} />
-          <AccentSpinner />
-        </div>
-      )}
+    <div data-ui="star-card-link" data-stage={stage.kind}>
+      <Title>{t('starpass.card.title')}</Title>
+      {stage.kind === 'starting' && <CardFace fields={EMPTY_CARD} busy />}
       {stage.kind === 'form' && (
-        <CardForm amount={amount} invalid={stage.invalid} onSubmit={onSubmit} onCancel={onBack} />
+        <CardForm
+          amount={amount}
+          initial={stage.card}
+          invalid={stage.invalid}
+          onSubmit={onSubmit}
+          onCancel={onBack}
+        />
       )}
       {stage.kind === 'working' && (
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-center">
           <CardFace fields={EMPTY_CARD} sealed />
           <div className="flex min-w-0 flex-1 flex-col items-start gap-4">
             <CardProgress stage={stage} />
             {stage.phase === 'confirm' && (
-              <span className="font-mono text-[10.5px] tracking-[0.06em] text-ink-45">
-                {t('starpass.card.confirmHint')}
-              </span>
+              <span className="text-[12.5px] text-ink-50">{t('starpass.card.confirmHint')}</span>
             )}
-            <LinkBtn onClick={onBack}>{t('starpass.card.cancel')}</LinkBtn>
+            <Btn size="sm" tone="quiet" onClick={onBack}>
+              {t('starpass.card.cancel')}
+            </Btn>
           </div>
         </div>
       )}
-      {stage.kind === 'linked' && (
-        <div className="flex items-center gap-3.5">
-          <span
-            className="grid size-[26px] place-items-center rounded-full"
-            style={{ background: 'var(--color-accent)' }}
-          >
-            <Check size={15} strokeWidth={3} className="text-accent-contrast" />
-          </span>
-          <span className="text-[14px] font-medium text-ink">{t('starpass.card.linked')}</span>
-        </div>
-      )}
+      {stage.kind === 'linked' && <Done>{t('starpass.card.linked')}</Done>}
       {stage.kind === 'failed' && (
-        <Failed reason={stage.reason} onRetry={onRetry} onOnce={onOnce} onBack={onBack} />
+        <CardFailed
+          reason={stage.reason}
+          held={held}
+          onRetry={onRetry}
+          onOnce={onOnce}
+          onBack={onBack}
+        />
       )}
-    </div>
-  );
-});
-
-const Failed = memo(function Failed({
-  reason,
-  onRetry,
-  onOnce,
-  onBack,
-}: {
-  reason: FailReason;
-  onRetry: () => void;
-  onOnce: (() => void) | null;
-  onBack: () => void;
-}) {
-  const { t } = useTranslation();
-  const retryable = reason !== 'unavailable' && reason !== 'bundle';
-  return (
-    <div className="flex flex-col items-start gap-4">
-      <div className="flex items-center gap-3">
-        <span
-          className="grid size-[22px] shrink-0 place-items-center rounded-full font-bold"
-          style={{ background: 'rgb(var(--bad))', color: 'rgb(var(--paper))' }}
-        >
-          ✕
-        </span>
-        <span className="text-[13.5px] text-ink-80">{t(`starpass.card.fail.${reason}`)}</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2.5">
-        {retryable ? (
-          <PrimaryBtn onClick={onRetry}>
-            {t(reason === 'inUse' ? 'starpass.card.linkOther' : 'starpass.retry')}
-          </PrimaryBtn>
-        ) : (
-          <GhostBtn onClick={onBack}>{t('starpass.back')}</GhostBtn>
-        )}
-        {onOnce && <LinkBtn onClick={onOnce}>{t('starpass.bind.payOnce')}</LinkBtn>}
-        {retryable && <LinkBtn onClick={onBack}>{t('starpass.changeMethod')}</LinkBtn>}
-      </div>
     </div>
   );
 });

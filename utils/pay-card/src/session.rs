@@ -32,7 +32,6 @@ struct Inner {
     script: String,
     hosts: Vec<String>,
     page_hosts: Vec<String>,
-    result_url: String,
     params: Value,
     env: Env,
     fetch: Arc<dyn Fetch>,
@@ -61,7 +60,6 @@ pub fn open(
             script: bundle.script,
             hosts: bundle.allowed_hosts,
             page_hosts: bundle.page_hosts,
-            result_url: bundle.result_url,
             params,
             env: Env {
                 language: language(&env.language).to_string(),
@@ -89,22 +87,17 @@ impl Session {
         guard::page_on(url, &self.inner.page_hosts)
     }
 
-    pub fn ends_at(&self, url: &str) -> bool {
-        guard::reaches(url, &self.inner.result_url)
-    }
-
     pub async fn submit(&self, card: Card) -> Result<Outcome, RunError> {
         if self.flow() != Flow::CardForm {
             return Err(RunError::Sandbox("flow".into()));
         }
-        self.run("submit", Some(card), None).await
+        let reply = self.run("submit", Some(card), None).await?;
+        Ok(Outcome::read(reply, &self.inner.page_hosts))
     }
 
-    pub async fn result(&self, url: String) -> Result<Outcome, RunError> {
-        if !self.ends_at(&url) {
-            return Err(RunError::Sandbox("result_url".into()));
-        }
-        self.run("result", None, Some(url)).await
+    pub async fn navigate(&self, url: String) -> Result<Option<Outcome>, RunError> {
+        let reply = self.run("navigate", None, Some(url)).await?;
+        Ok(Outcome::on_page(reply))
     }
 
     async fn run(
@@ -112,7 +105,7 @@ impl Session {
         action: &'static str,
         card: Option<Card>,
         url: Option<String>,
-    ) -> Result<Outcome, RunError> {
+    ) -> Result<Reply, RunError> {
         let inner = self.inner.clone();
         tokio::task::spawn_blocking(move || inner.run(action, card, url))
             .await
@@ -126,7 +119,7 @@ impl Inner {
         action: &str,
         card: Option<Card>,
         url: Option<String>,
-    ) -> Result<Outcome, RunError> {
+    ) -> Result<Reply, RunError> {
         let job = Job {
             script: &self.script,
             inputs: Inputs {
@@ -141,9 +134,7 @@ impl Inner {
             fetch: self.fetch.clone(),
             limits: Limits::default(),
         };
-        sandbox::run::<Reply>(job)
-            .map(|reply| Outcome::read(reply, &self.page_hosts))
-            .map_err(|error| redacted(error, card.as_ref()))
+        sandbox::run::<Reply>(job).map_err(|error| redacted(error, card.as_ref()))
     }
 }
 
@@ -321,20 +312,22 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn result_runs_only_on_the_bundle_result_url() {
-        let session = testkit::session_with("return { state = 'pending' }", fetch(), "result-url");
-        assert!(
-            session
-                .result("https://evil.example/app/payment/result".into())
-                .await
-                .is_err()
+    async fn navigate_stays_on_page_and_ends_only_on_a_final_state() {
+        let script = r#"
+            if inputs.url == "https://stay.example/" then return { state = "page" } end
+            if inputs.url == "https://token.example/" then return { state = "token", token = "t" } end
+            return { state = "failed", reason = inputs.action }
+        "#;
+        let session = testkit::session_with(script, fetch(), "navigate");
+        let at = |url: &str| session.navigate(url.into());
+        assert_eq!(at("https://stay.example/").await.unwrap(), None);
+        assert_eq!(
+            at("https://end.example/").await.unwrap(),
+            Some(Outcome::failed("navigate"))
         );
         assert_eq!(
-            session
-                .result("https://pay.example/app/payment/result?result=success".into())
-                .await
-                .unwrap(),
-            Outcome::Pending { reason: None }
+            at("https://token.example/").await.unwrap(),
+            Some(Outcome::failed("bad_state"))
         );
     }
 }

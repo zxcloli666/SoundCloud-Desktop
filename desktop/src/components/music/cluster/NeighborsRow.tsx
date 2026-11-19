@@ -12,10 +12,7 @@ interface Props {
   icon: React.ReactNode;
   index: number;
   cluster: ClusterHydrated;
-  queue: Track[];
   cardWidth?: number;
-  /** If set, NeighborCard click awaits this resolver to build the play queue. */
-  resolveQueue?: (track: Track) => Promise<Track[]>;
   /** Секция-обёртка уже рисует свой заголовок (станции «Эфира»). */
   hideHeader?: boolean;
 }
@@ -26,9 +23,7 @@ export const NeighborsRow = React.memo(function NeighborsRow({
   icon,
   index,
   cluster,
-  queue,
   cardWidth = 200,
-  resolveQueue,
   hideHeader = false,
 }: Props) {
   const tracksByUrn = useMemo(
@@ -62,8 +57,6 @@ export const NeighborsRow = React.memo(function NeighborsRow({
               <NeighborCard
                 neighbor={neighbor}
                 track={track}
-                queue={queue}
-                resolveQueue={resolveQueue}
               />
             </div>
           ))}

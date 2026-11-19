@@ -1,6 +1,7 @@
 use std::sync::{Arc, Mutex};
 
 use pay_card::{PageEnd, Session, acceptable_page};
+use tauri::webview::PageLoadEvent;
 use tauri::{Manager, Url, WebviewUrl, WebviewWindowBuilder, WindowEvent};
 use tokio::sync::oneshot;
 
@@ -41,12 +42,11 @@ pub async fn show(app: AppHandle, session: Session, url: String) -> PageEnd {
         .min_inner_size(MIN_SIZE.0, MIN_SIZE.1)
         .center()
         .incognito(true)
-        .on_navigation(move |next| {
-            if session.ends_at(next.as_str()) {
-                on_page(PageEnd::Reached(next.to_string()));
-                return false;
+        .on_navigation(stays_here)
+        .on_page_load(move |_, load| {
+            if load.event() == PageLoadEvent::Started {
+                judge(session.clone(), load.url().to_string(), on_page.clone());
             }
-            stays_here(next)
         })
         .build();
     let window = match built {
@@ -65,6 +65,18 @@ pub async fn show(app: AppHandle, session: Session, url: String) -> PageEnd {
         }
     });
     ended.await.unwrap_or(PageEnd::Closed)
+}
+
+fn judge(session: Session, url: String, finish: impl FnOnce(PageEnd) + Send + 'static) {
+    tauri::async_runtime::spawn(async move {
+        match session.navigate(url).await {
+            Ok(Some(outcome)) => finish(PageEnd::Done(outcome)),
+            Ok(None) => {}
+            Err(error) => {
+                diagnostics::warn(format!("[PayCard] page rule failed: {}", error.code()));
+            }
+        }
+    });
 }
 
 fn stays_here(url: &Url) -> bool {

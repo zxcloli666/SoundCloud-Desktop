@@ -36,7 +36,6 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   const retryStrips = () => {
     for (const strip of failedStrips) void strip.refetch();
   };
-  const loadMore = useCallback(() => void tracks.fetchNextPage(), [tracks.fetchNextPage]);
 
   const empty =
     !tracks.isLoading &&
@@ -67,18 +66,9 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
           }}
         />
       ) : (
-        <TrackWall
-          tracks={tracks.items}
-          kind="lexical"
-          isLoading={tracks.isLoading}
-          hasMore={!!tracks.hasNextPage && !tracks.isFetchNextPageError}
-          isFetchingMore={tracks.isFetchingNextPage}
-          onLoadMore={loadMore}
-          onOpen={remember}
-          wave
-        />
+        <TrackWall results={tracks} kind="lexical" onOpen={remember} wave />
       )}
-      {tracks.isFetchNextPageError && <SectionError onRetry={loadMore} />}
+      {tracks.isFetchNextPageError && <SectionError onRetry={tracks.loadMore} />}
     </>
   );
 });

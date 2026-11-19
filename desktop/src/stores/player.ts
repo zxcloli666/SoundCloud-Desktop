@@ -99,7 +99,17 @@ export interface Track {
   };
   enrichment?: TrackEnrichment;
   highlight?: TrackHighlight;
+  videos?: TrackVideo[];
   _scd_meta?: TrackScdMeta;
+}
+
+export type VideoKind = 'clip' | 'loop' | 'generated';
+
+export interface TrackVideo {
+  kind: string;
+  url: string;
+  offsetMs: number;
+  loop: boolean;
 }
 
 export interface TrackHighlight {
@@ -213,6 +223,7 @@ interface PlayNextCursor {
 interface PlayerState {
   currentTrack: Track | null;
   startedUrn: string | null;
+  playSeq: number;
   queue: Track[];
   originalQueue: Track[] | null;
   queueIndex: number;
@@ -268,6 +279,7 @@ export const usePlayerStore = create<PlayerState>()(
     (set, get) => ({
       currentTrack: null,
       startedUrn: null,
+      playSeq: 0,
       queue: [],
       originalQueue: null,
       queueIndex: -1,
@@ -299,6 +311,7 @@ export const usePlayerStore = create<PlayerState>()(
             set({
               currentTrack: track,
               startedUrn: track.urn,
+              playSeq: get().playSeq + 1,
               queue: [track, ...rest],
               queueIndex: 0,
               isPlaying: true,
@@ -308,6 +321,7 @@ export const usePlayerStore = create<PlayerState>()(
             set({
               currentTrack: track,
               startedUrn: track.urn,
+              playSeq: get().playSeq + 1,
               queue,
               queueIndex: realIdx,
               isPlaying: true,

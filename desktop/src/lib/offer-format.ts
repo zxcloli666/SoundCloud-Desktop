@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
 import type { PayOffer, Price } from './pay-client';
 import { rub, usd } from './star-format';
+import { useNowMs } from './tick';
 
 const HOUR_MS = 3_600_000;
 const DAY_SECS = 86_400;
@@ -21,14 +21,8 @@ export function leftShare(offer: PayOffer, now: number): number {
 }
 
 export function useOfferNow(endsAt: number | null): number {
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    if (endsAt === null) return;
-    const live = endsAt * 1000 - Date.now() <= 24 * HOUR_MS;
-    const id = window.setInterval(() => setNow(Date.now()), live ? 1000 : 60_000);
-    return () => window.clearInterval(id);
-  }, [endsAt]);
-  return now;
+  const live = endsAt !== null && endsAt * 1000 - Date.now() <= 24 * HOUR_MS;
+  return useNowMs(live ? 1000 : 60_000, endsAt !== null);
 }
 
 export function clock(ms: number): string {
