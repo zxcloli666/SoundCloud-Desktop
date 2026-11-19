@@ -2968,5 +2968,16 @@
       "invalid": "Not an sc://auth address"
     },
     "show": "Show"
+  },
+  "mobileActions": {
+    "link": "Link",
+    "relink": "Link again",
+    "linkNeeded": "Link your SoundCloud account to do this",
+    "relinkNeeded": "Link your SoundCloud account again",
+    "commentLike": "Like",
+    "commentUnlike": "Remove like",
+    "commentDelete": "Delete comment",
+    "deleted": "Deleted",
+    "undo": "Undo"
   }
 }

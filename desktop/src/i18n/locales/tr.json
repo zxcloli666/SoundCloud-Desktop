@@ -3000,5 +3000,16 @@
       "invalid": "sc://auth adresi değil"
     },
     "show": "Göster"
+  },
+  "mobileActions": {
+    "link": "Bağla",
+    "relink": "Yeniden bağla",
+    "linkNeeded": "Bunun için SoundCloud hesabını bağlamalısın",
+    "relinkNeeded": "SoundCloud hesabını yeniden bağlamalısın",
+    "commentLike": "Beğen",
+    "commentUnlike": "Beğeniyi kaldır",
+    "commentDelete": "Yorumu sil",
+    "deleted": "Silindi",
+    "undo": "Geri al"
   }
 }

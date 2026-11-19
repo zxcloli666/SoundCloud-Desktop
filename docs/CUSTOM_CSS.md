@@ -99,6 +99,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="discover-hero"]` | Top block of Discover |
 | `[data-ui="comments"]` | Comments list |
 | `[data-ui="comment"]` | A comment |
+| `[data-ui="comment-like"]` | Comment like button |
+| `[data-ui="comment-delete"]` | Comment delete button |
 | `[data-ui="search-tabs"]` | Search mode tabs |
 | `[data-ui="search-strip"]` | Row with the search mode tabs and the view switch |
 | `[data-ui="search-view"]` | Covers / Moments switch in search |

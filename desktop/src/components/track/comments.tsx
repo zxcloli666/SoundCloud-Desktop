@@ -5,18 +5,24 @@ import {getCurrentTime, subscribe} from '../../lib/audio';
 import {ago, art, durLong} from '../../lib/formatters';
 import {type Comment, usePostComment} from '../../lib/hooks';
 import {Clock, Loader2, Play, Send} from '../../lib/icons';
+import {useHiddenComments} from '../../stores/comment-delete';
 import {RichText} from '../ui/RichText';
+import {CommentDeleteButton, CommentLikeButton} from './CommentActions';
 
 /** A single voice in the room. The MOMENT it was left at (a glowing, genre-toned,
  *  clickable timestamp) is the hero of the card — click it to jump there. */
 export const VoiceCard = React.memo(function VoiceCard({
-                                                           comment,
-                                                           accent,
-                                                           accentSoft,
-                                                           accentGlow,
-                                                           maxSeconds,
-                                                           onSeek,
-                                                       }: {
+    trackUrn,
+    trackOwned,
+    comment,
+    accent,
+    accentSoft,
+    accentGlow,
+    maxSeconds,
+    onSeek,
+}: {
+    trackUrn: string;
+    trackOwned: boolean;
     comment: Comment;
     accent: string;
     accentSoft: string;
@@ -26,65 +32,90 @@ export const VoiceCard = React.memo(function VoiceCard({
 }) {
     const navigate = useNavigate();
     const {t} = useTranslation();
+    const removed = useHiddenComments((s) => !!s.urns[comment.urn]);
     const ts = comment.timestamp;
     const avatar = art(comment.user.avatar_url, 'small');
     const goUser = () => navigate(`/user/${encodeURIComponent(comment.user.urn)}`);
 
     return (
         <div
-            data-ui="comment"
-            className="group relative rounded-2xl p-4 pl-5 transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5"
-            style={{
-                background: 'rgb(var(--ink) / 0.035)',
-                border: '0.5px solid rgb(var(--ink) / 0.06)',
-            }}
+            inert={removed}
+            className={`grid transition-[grid-template-rows,opacity] duration-300 ease-[var(--ease-apple)] ${
+                removed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'
+            }`}
         >
-            {ts != null && (
-                <span
-                    className="absolute left-0 top-4 bottom-4 w-[2.5px] rounded-full"
-                    style={{background: accent, boxShadow: `0 0 12px ${accentGlow}`}}
-                />
-            )}
-            <div className="flex gap-3">
-                <button type="button" onClick={goUser} className="shrink-0 cursor-pointer">
-                    <img
-                        src={avatar ?? ''}
-                        alt=""
-                        loading="lazy"
-                        className="w-9 h-9 rounded-full object-cover ring-1 ring-ink/[0.08] hover:ring-ink/[0.22] transition-all duration-200"
-                    />
-                </button>
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-            <span
-                onClick={goUser}
-                className="text-[12.5px] font-semibold text-ink-85 hover:text-ink cursor-pointer transition-colors truncate"
-            >
-              {comment.user.username}
-            </span>
-                        <span className="text-[10px] text-ink-25 shrink-0">{ago(comment.created_at)}</span>
+            <div className="min-h-0 overflow-hidden -mx-4 px-4 -mt-1 pt-1">
+                <div className="pb-3">
+                    <div
+                        data-ui="comment"
+                        className="group relative rounded-2xl p-4 pl-5 transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5"
+                        style={{
+                            background: 'rgb(var(--ink) / 0.035)',
+                            border: '0.5px solid rgb(var(--ink) / 0.06)',
+                        }}
+                    >
                         {ts != null && (
-                            <button
-                                type="button"
-                                onClick={() => onSeek(ts / 1000)}
-                                title={t('track.seekTo', {time: durLong(ts)})}
-                                className="ml-auto inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[11px] font-semibold tabular-nums cursor-pointer transition-transform duration-200 hover:scale-105 shrink-0"
-                                style={{background: accentSoft, color: accent}}
-                            >
-                                <Play size={8} fill="currentColor"/>
-                                {durLong(ts)}
-                            </button>
+                            <span
+                                className="absolute left-0 top-4 bottom-4 w-[2.5px] rounded-full"
+                                style={{background: accent, boxShadow: `0 0 12px ${accentGlow}`}}
+                            />
                         )}
+                        <div className="flex gap-3">
+                            <button type="button" onClick={goUser} className="shrink-0 cursor-pointer">
+                                <img
+                                    src={avatar ?? ''}
+                                    alt=""
+                                    loading="lazy"
+                                    className="w-9 h-9 rounded-full object-cover ring-1 ring-ink/[0.08] hover:ring-ink/[0.22] transition-all duration-200"
+                                />
+                            </button>
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                    <span
+                                        onClick={goUser}
+                                        className="text-[12.5px] font-semibold text-ink-85 hover:text-ink cursor-pointer transition-colors truncate"
+                                    >
+                                        {comment.user.username}
+                                    </span>
+                                    <span className="text-[10px] text-ink-25 shrink-0">{ago(comment.created_at)}</span>
+                                    <div className="ml-auto flex items-center gap-1 shrink-0">
+                                        <CommentDeleteButton
+                                            trackUrn={trackUrn}
+                                            commentUrn={comment.urn}
+                                            authorUrn={comment.user.urn}
+                                            trackOwned={trackOwned}
+                                        />
+                                        <CommentLikeButton
+                                            trackUrn={trackUrn}
+                                            commentUrn={comment.urn}
+                                            accent={accent}
+                                        />
+                                        {ts != null && (
+                                            <button
+                                                type="button"
+                                                onClick={() => onSeek(ts / 1000)}
+                                                title={t('track.seekTo', {time: durLong(ts)})}
+                                                className="inline-flex items-center gap-1 h-6 px-2.5 rounded-full text-[11px] font-semibold tabular-nums cursor-pointer transition-transform duration-200 hover:scale-105 shrink-0"
+                                                style={{background: accentSoft, color: accent}}
+                                            >
+                                                <Play size={8} fill="currentColor"/>
+                                                {durLong(ts)}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <p className="selectable text-[13.5px] text-ink-70 mt-1.5 leading-relaxed break-words">
+                                    <RichText
+                                        text={comment.body}
+                                        maxSeconds={maxSeconds}
+                                        onSeek={onSeek}
+                                        accent={accent}
+                                        accentSoft={accentSoft}
+                                    />
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <p className="selectable text-[13.5px] text-ink-70 mt-1.5 leading-relaxed break-words">
-                        <RichText
-                            text={comment.body}
-                            maxSeconds={maxSeconds}
-                            onSeek={onSeek}
-                            accent={accent}
-                            accentSoft={accentSoft}
-                        />
-                    </p>
                 </div>
             </div>
         </div>
