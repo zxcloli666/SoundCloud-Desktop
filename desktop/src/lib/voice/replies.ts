@@ -240,14 +240,15 @@ const EN: Record<ReplyKey, Line> = {
   ask_one: (v) => ({ speech: `Play ${v.first}?`, display: `${v.first}?` }),
   not_found: (v) => ({ speech: `I couldn't find "${v.heard}"`, display: v.heard ?? '' }),
   failed: () => same("Couldn't do that"),
-  chat_away: () => same("I can't chat right now, but I can still play music. Just say what"),
+  chat_away: () =>
+    same("I can't chat right now, but I can still put music on. Just tell me what to play"),
   chat_busy: () =>
     same(
-      "That's a lot of questions in a row, give me a minute. I can still play music, just say what",
+      "That's a lot of questions in a row, give me a minute. I can still put music on, just tell me what to play",
     ),
   chat_lost: () =>
     same(
-      "Something's off with the connection, so I can't chat. I can still play music, just say what",
+      "Something's off with the connection, so I can't chat. I can still put music on, just tell me what to play",
     ),
 };
 
