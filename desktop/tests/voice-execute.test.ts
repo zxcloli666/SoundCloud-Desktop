@@ -273,8 +273,8 @@ test('the fixed line names why the chat is away', async () => {
   assert.match(await said('network'), /со связью.*музыку включу/);
   assert.match(await said('deadline'), /со связью/);
   assert.match(await said('unavailable'), /не могу поболтать/);
-  assert.match(await said('rate_limited', 'en'), /questions in a row.*play music/);
-  assert.match(await said('network', 'en'), /connection.*play music/);
+  assert.match(await said('rate_limited', 'en'), /questions in a row.*music on/);
+  assert.match(await said('network', 'en'), /connection.*music on/);
   assert.deepEqual(asked, []);
 });
 
