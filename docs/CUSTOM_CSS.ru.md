@@ -125,6 +125,12 @@
 | `[data-ui="settings-nav"]` | Список разделов в Настройках |
 | `[data-ui="settings-nav-item"]` | Раздел в этом списке |
 | `[data-ui="settings-row"]` | Строка настройки |
+| `[data-ui="mobile-access-badge"]` | Статус расширенного доступа в настройках; `data-state`: `off`, `active` или `relink` |
+| `[data-ui="mobile-link"]` | Окно подключения расширенного доступа; `data-phase`: `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` или `expired` |
+| `[data-ui="mobile-link-account"]` | Подключаемый аккаунт в этом окне |
+| `[data-ui="mobile-link-steps"]` | Шаги «браузер, код, готово» в этом окне |
+| `[data-ui="mobile-link-status"]` | Блок статуса в этом окне; `data-tone`: `busy`, `ok`, `warn` или `bad` |
+| `[data-ui="mobile-link-paste"]` | Запасное поле «вставить адрес» в этом окне |
 | `[data-ui="settings-search"]` | Поле поиска над списком разделов Настроек |
 | `[data-ui="settings-search-result"]` | Строка результата поиска, `[data-active]` равен `true` у подсвеченной |
 | `[data-ui="settings-search-results"]` | Список результатов поиска в Настройках |

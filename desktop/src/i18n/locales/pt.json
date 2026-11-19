@@ -3039,5 +3039,48 @@
     "failed": "Falha ao carregar",
     "pause": "Pausar",
     "play": "Tocar"
+  },
+  "mobileLink": {
+    "title": "Acesso estendido do SoundCloud",
+    "state": {
+      "off": "Não conectado",
+      "active": "Ativo",
+      "relink": "Entrar de novo"
+    },
+    "link": "Conectar",
+    "unlink": "Desconectar",
+    "relink": "Reconectar",
+    "dialogTitle": "Conectar acesso estendido",
+    "dialogDesc": "Aprove na página do próprio SoundCloud, no navegador.",
+    "account": "Conta",
+    "step": {
+      "browser": "Navegador",
+      "code": "Código",
+      "done": "Pronto"
+    },
+    "phase": {
+      "starting": "Preparando",
+      "waiting": "Aguardando navegador",
+      "received": "Código recebido",
+      "completed": "Conectado",
+      "mismatch": "Outra conta",
+      "failed": "Falhou",
+      "expired": "Tempo esgotado"
+    },
+    "hint": {
+      "mismatch": "Entre no navegador como {{username}}.",
+      "browser": "O navegador não abriu.",
+      "minutes_one": "Resta {{count}} minuto",
+      "minutes_many": "Restam {{count}} minutos",
+      "minutes_other": "Restam {{count}} minutos"
+    },
+    "openAgain": "Abrir de novo",
+    "retry": "Tentar de novo",
+    "done": "Pronto",
+    "paste": {
+      "toggle": "Colar endereço",
+      "apply": "Aplicar",
+      "invalid": "Não é um endereço sc://auth"
+    }
   }
 }

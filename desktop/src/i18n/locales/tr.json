@@ -2956,5 +2956,47 @@
     "failed": "Yüklenemedi",
     "pause": "Duraklat",
     "play": "Oynat"
+  },
+  "mobileLink": {
+    "title": "SoundCloud genişletilmiş erişim",
+    "state": {
+      "off": "Bağlı değil",
+      "active": "Etkin",
+      "relink": "Yeniden giriş"
+    },
+    "link": "Bağla",
+    "unlink": "Bağlantıyı kes",
+    "relink": "Yeniden bağla",
+    "dialogTitle": "Genişletilmiş erişimi bağla",
+    "dialogDesc": "Tarayıcıda SoundCloud'un kendi sayfasında onaylayın.",
+    "account": "Hesap",
+    "step": {
+      "browser": "Tarayıcı",
+      "code": "Kod",
+      "done": "Bitti"
+    },
+    "phase": {
+      "starting": "Hazırlanıyor",
+      "waiting": "Tarayıcı bekleniyor",
+      "received": "Kod alındı",
+      "completed": "Bağlandı",
+      "mismatch": "Yanlış hesap",
+      "failed": "Başarısız",
+      "expired": "Süre doldu"
+    },
+    "hint": {
+      "mismatch": "Tarayıcıda {{username}} olarak giriş yapın.",
+      "browser": "Tarayıcı açılmadı.",
+      "minutes_one": "{{count}} dakika kaldı",
+      "minutes_other": "{{count}} dakika kaldı"
+    },
+    "openAgain": "Yeniden aç",
+    "retry": "Tekrar dene",
+    "done": "Bitti",
+    "paste": {
+      "toggle": "Adres yapıştır",
+      "apply": "Uygula",
+      "invalid": "sc://auth adresi değil"
+    }
   }
 }
