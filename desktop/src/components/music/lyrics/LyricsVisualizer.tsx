@@ -2,6 +2,7 @@ import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useRef} from 'react';
 import {isAppIdle, subscribeAppIdle, usePerfMode} from '../../../lib/perf';
 import {createSpectrumClaim} from '../../../lib/spectrum';
+import {subscribeVideoOpaque, videoOpaqueIn} from '../../../lib/video-element';
 
 /* ── Fullscreen wave visualizer — driven by real FFT from Rust ────── */
 /* Rust `audio:fft` event delivers 64 log-spaced magnitude bins ~30Hz.
@@ -210,7 +211,7 @@ export const LyricsVisualizer = React.memo(() => {
 
         const setSpectrumEnabled = createSpectrumClaim();
         const syncIdle = () => {
-            const idle = isAppIdle();
+            const idle = quiet();
             setSpectrumEnabled(!idle);
             wrap.style.opacity = idle ? '0' : '1';
             if (!idle) return;
@@ -219,10 +220,11 @@ export const LyricsVisualizer = React.memo(() => {
         };
         syncIdle();
         const unsubscribeIdle = subscribeAppIdle(syncIdle);
+        const unsubscribeVideo = subscribeVideoOpaque(syncIdle);
 
         const unlistenPromise = listen<number[]>('audio:fft', (event) => {
             const bins = event.payload;
-            if (!bins || bins.length === 0 || isAppIdle()) return;
+            if (!bins || bins.length === 0 || quiet()) return;
             const target = targetRef.current;
             const n = Math.min(target.length, bins.length);
             for (let i = 0; i < n; i++) target[i] = bins[i];
@@ -233,6 +235,7 @@ export const LyricsVisualizer = React.memo(() => {
         return () => {
             if (rafId) cancelAnimationFrame(rafId);
             unsubscribeIdle();
+            unsubscribeVideo();
             setSpectrumEnabled(false);
             ro.disconnect();
             unlistenPromise.then((u) => u());
@@ -258,3 +261,7 @@ export const LyricsVisualizer = React.memo(() => {
         </div>
     );
 });
+
+function quiet(): boolean {
+    return isAppIdle() || videoOpaqueIn() === 'player-view';
+}

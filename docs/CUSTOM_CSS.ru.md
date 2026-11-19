@@ -60,8 +60,10 @@
 | `[data-ui="queue"]` | Панель очереди |
 | `[data-ui="queue-item"]` | Трек в очереди |
 | `[data-ui="lyrics"]` | Полноэкранный текст песни |
+| `[data-ui="lyrics-backdrop"]` | Размытый фон полноэкранного плеера |
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |
 | `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view` или `moments` |
+| `html[data-video-opaque]` | Стоит, пока видео целиком закрывает своё место (значения как у `data-place`); то, что под ним, скрыто |
 | `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере |
 | `[data-ui="waveform"]` | Волна трека |
 

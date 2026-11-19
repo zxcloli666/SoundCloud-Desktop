@@ -6,6 +6,7 @@ import {getCurrentTime, seek} from '../../../lib/audio';
 import {Search} from '../../../lib/icons';
 import type {LyricLine, LyricsSource} from '../../../lib/lyrics';
 import {usePerfMode} from '../../../lib/perf';
+import {subscribeVideoOpaque, videoOpaqueIn} from '../../../lib/video-element';
 import {usePlayerStore} from '../../../stores/player';
 import {useSettingsStore} from '../../../stores/settings';
 
@@ -229,8 +230,7 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         let lastTickTs = 0;
         const FRAME_BUDGET_MS = 33; // ~30fps — sweep is per-char so 30fps still looks smooth
         const tick = (ts: number) => {
-            // Park the rAF entirely while hidden; visibilitychange restarts it.
-            if (document.visibilityState === 'hidden') {
+            if (offScreen()) {
                 rafId = 0;
                 return;
             }
@@ -254,13 +254,14 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
         };
         if (perChar) rafId = requestAnimationFrame(tick);
 
-        const onVisibility = () => {
-            if (perChar && document.visibilityState !== 'hidden' && !rafId) {
+        const resume = () => {
+            if (perChar && !offScreen() && !rafId) {
                 lastTickTs = 0;
                 rafId = requestAnimationFrame(tick);
             }
         };
-        document.addEventListener('visibilitychange', onVisibility);
+        document.addEventListener('visibilitychange', resume);
+        const unsubVideo = subscribeVideoOpaque(resume);
 
         const applyPaused = (paused: boolean) => {
             container.classList.toggle('lyrics-paused', paused);
@@ -272,7 +273,8 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
 
         return () => {
             cancelAnimationFrame(rafId);
-            document.removeEventListener('visibilitychange', onVisibility);
+            document.removeEventListener('visibilitychange', resume);
+            unsubVideo();
             container.removeEventListener('wheel', markManual);
             container.removeEventListener('touchstart', markManual);
             container.removeEventListener('pointerdown', markManual);
@@ -402,3 +404,7 @@ export const LyricsSourceBadge = React.memo(
         );
     },
 );
+
+function offScreen(): boolean {
+    return document.visibilityState === 'hidden' || videoOpaqueIn() === 'player-view';
+}
