@@ -1,0 +1,72 @@
+diff --git a/src/pipeline-tts.cpp b/src/pipeline-tts.cpp
+index 7e64d76..ece36e8 100644
+--- a/src/pipeline-tts.cpp
++++ b/src/pipeline-tts.cpp
+@@ -510,6 +510,8 @@ struct TtsSlot {
+     // AR state, one to one with the single sequence loop.
+     int                  step;            // frames emitted so far
+     int64_t              subseq_counter;  // Philox subsequence cursor
++    int                  eos_held;
++    std::vector<float>   logits_kept;
+     std::vector<int32_t> talker_history;  // emitted c0, feeds repetition penalty
+     std::vector<int32_t> prev_ids;        // previous frame codes [num_code_groups]
+     const float *        prev_overlay;    // trailing text row or tts_pad row
+@@ -818,6 +820,7 @@ bool tts_engine_admit(TtsEngine * e, TtsJob * job) {
+     s.ref_codes_T      = 0;
+     s.step             = 0;
+     s.subseq_counter   = 0;
++    s.eos_held         = 0;
+     s.prev_overlay     = NULL;
+     s.pending_c0       = -1;
+     s.has_frame        = false;
+@@ -1155,12 +1158,25 @@ void tts_engine_step(TtsEngine * e, std::vector<TtsJob *> * retired) {
+         // codec_eos. Then run the upstream sampling chain.
+         Timer t_host;
+         apply_suppress(s.logits.data(), vocab, vocab - 1024, vocab, codec_eos_id);
++        bool can_hold = s.eos_held < p->eos_hold;
++        if (can_hold) {
++            s.logits_kept = s.logits;
++        }
+         float u_c0 = 0.0f;
+         int   c0   = sample_top_k_p(s.logits.data(), vocab, p->temperature, p->top_k, p->top_p, p->repetition_penalty,
+                                     s.talker_history.data(), (int) s.talker_history.size(), s.job->resolved_seed,
+                                     s.subseq_counter, &u_c0);
+-        s.perf.host_ms += t_host.ms();
+         s.subseq_counter++;
++        if (can_hold && c0 == codec_eos_id) {
++            s.eos_held++;
++            s.logits_kept[(size_t) codec_eos_id] = -INFINITY;
++            c0 = sample_top_k_p(s.logits_kept.data(), vocab, p->temperature, p->top_k, p->top_p, p->repetition_penalty,
++                                s.talker_history.data(), (int) s.talker_history.size(), s.job->resolved_seed,
++                                s.subseq_counter, &u_c0);
++            s.subseq_counter++;
++            qt_log(QT_LOG_INFO, "[Pipeline] EOS held at step %d (slot %d)", s.step, i);
++        }
++        s.perf.host_ms += t_host.ms();
+         if (c0 < 0) {
+             qt_set_error("tts_engine_step: c0 sample returned no candidate");
+             qt_log(QT_LOG_ERROR, "[Pipeline] c0 sample returned no candidate");
+diff --git a/src/qwen.cpp b/src/qwen.cpp
+index 0974624..ecbcadd 100644
+--- a/src/qwen.cpp
++++ b/src/qwen.cpp
+@@ -258,6 +258,7 @@ void qt_tts_default_params(struct qt_tts_params * p) {
+     p->subtalker_temperature = QT_DEFAULT_SUBTALKER_TEMPERATURE;
+     p->subtalker_top_k       = QT_DEFAULT_SUBTALKER_TOP_K;
+     p->subtalker_top_p       = QT_DEFAULT_SUBTALKER_TOP_P;
++    p->eos_hold              = 0;
+     p->dump_dir              = nullptr;
+     p->cancel                = nullptr;
+     p->cancel_user_data      = nullptr;
+diff --git a/src/qwen.h b/src/qwen.h
+index 8dce26d..9dd482c 100644
+--- a/src/qwen.h
++++ b/src/qwen.h
+@@ -318,6 +318,7 @@ struct qt_tts_params {
+     float   subtalker_temperature;
+     int     subtalker_top_k;
+     float   subtalker_top_p;
++    int     eos_hold;
+ 
+     // Intermediate tensor dump directory. NULL disables dumps. Debug
+     // only, slows the run.

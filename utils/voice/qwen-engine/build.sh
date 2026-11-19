@@ -8,9 +8,11 @@ out=$1
 shift
 
 "$here/fetch.sh" "$src"
-if ! git -C "$src" apply --reverse --check "$here/threads.patch" 2>/dev/null; then
-    git -C "$src" apply "$here/threads.patch"
-fi
+for patch in "$here"/*.patch; do
+    if ! git -C "$src" apply --reverse --check "$patch" 2>/dev/null; then
+        git -C "$src" apply "$patch"
+    fi
+done
 
 cmake -S "$src" -B "$build" \
     -DCMAKE_BUILD_TYPE=Release \

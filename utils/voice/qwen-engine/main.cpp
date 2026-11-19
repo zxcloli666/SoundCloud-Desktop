@@ -38,6 +38,7 @@ struct Sampling {
     float temperature;
     float top_p;
     float sub_temperature;
+    int   eos_hold = 0;
 };
 
 struct Job {
@@ -126,9 +127,15 @@ bool tune(const std::string & payload, Sampling * sampling) {
         }
         at = end;
     }
-    bool sane = values[0] >= 0 && values[0] <= 2 && values[1] > 0 && values[1] <= 1 && values[2] >= 0 && values[2] <= 2;
+    char * end  = nullptr;
+    long   hold = std::strtol(at, &end, 10);
+    if (end == at) {
+        hold = 0;
+    }
+    bool sane = values[0] >= 0 && values[0] <= 2 && values[1] > 0 && values[1] <= 1 && values[2] >= 0 && values[2] <= 2 &&
+                hold >= 0 && hold <= 8;
     if (sane) {
-        *sampling = { true, values[0], values[1], values[2] };
+        *sampling = { true, values[0], values[1], values[2], (int) hold };
     }
     return sane;
 }
@@ -141,6 +148,7 @@ void speak(qt_context * engine, const Job & job) {
         params.temperature           = job.sampling.temperature;
         params.top_p                 = job.sampling.top_p;
         params.subtalker_temperature = job.sampling.sub_temperature;
+        params.eos_hold              = job.sampling.eos_hold;
     }
     params.text             = job.text.c_str();
     params.lang             = job.lang.c_str();
