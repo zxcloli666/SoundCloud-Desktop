@@ -112,7 +112,7 @@ export const QueueRow = React.memo(function QueueRow({
       <QueueTrackRowBody track={track} isCurrent={isCurrent} onClick={handleClick} />
 
       <div className="shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} />
+        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
       </div>
 
       <span className="text-[10px] text-ink-20 tabular-nums shrink-0">{dur(track.duration)}</span>

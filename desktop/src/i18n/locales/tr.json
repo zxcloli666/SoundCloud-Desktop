@@ -292,7 +292,11 @@
       "cachedUq": "Önbellekte (UQ)",
       "pending": "İşleniyor",
       "tooLong": "Çok uzun — önbelleğe alınmaz",
-      "failed": "İşleme başarısız"
+      "failed": "İşleme başarısız",
+      "video": "video var: {{kind}}",
+      "videoClip": "klip",
+      "videoLoop": "döngü",
+      "videoGenerated": "üretilmiş"
     },
     "notFoundOnSc": "SoundCloud'da bulunamadı",
     "wantedHint": "Şarkı biliniyor ama henüz yüklenmedi",

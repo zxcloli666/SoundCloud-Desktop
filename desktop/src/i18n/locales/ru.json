@@ -253,7 +253,11 @@
       "cachedUq": "В кэше (UQ)",
       "pending": "Обрабатывается",
       "tooLong": "Слишком длинный — не кэшируется",
-      "failed": "Ошибка обработки"
+      "failed": "Ошибка обработки",
+      "video": "есть видео: {{kind}}",
+      "videoClip": "клип",
+      "videoLoop": "петля",
+      "videoGenerated": "сгенерированное"
     },
     "notFoundOnSc": "не найдено на SoundCloud",
     "wantedHint": "Трек известен, но ещё не залит на SC",

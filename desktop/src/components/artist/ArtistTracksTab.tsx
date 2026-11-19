@@ -400,7 +400,7 @@ const WantedRow = memo(({ track, index }: { track: Track; index: number }) => {
         <p className="text-[11px] text-ink-25 truncate">{artistDisplay.primary}</p>
       </div>
       <div className="hidden @lg:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} />
+        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
       </div>
       {track.enrichment?.release_year && (
         <span className="text-[11px] text-ink-25 tabular-nums shrink-0">

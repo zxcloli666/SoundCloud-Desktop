@@ -67,7 +67,7 @@ export const NowPlayingCard = React.memo(() => {
       </div>
       <NowPlayingBody track={currentTrack} />
       <div className="relative shrink-0">
-        <TrackStatusBadges meta={currentTrack._scd_meta} />
+        <TrackStatusBadges meta={currentTrack._scd_meta} videos={currentTrack.videos} />
       </div>
       <span className="relative text-[10px] text-ink-35 tabular-nums shrink-0">
         {dur(currentTrack.duration)}

@@ -11,7 +11,7 @@ import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, TrackStatusBadges} from '../music/TrackStatusBadges';
+import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
 import {TrackTitleArtist} from '../music/TrackTitleArtist';
 
 interface AlbumTrackRowProps {
@@ -105,7 +105,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
       <div className="hidden @md:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} />
+        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
       </div>
 
       <div className="flex items-center gap-0.5 shrink-0">
@@ -140,6 +140,7 @@ const areEqual = (prev: AlbumTrackRowProps, next: AlbumTrackRowProps) =>
   prev.aura.accent[1] === next.aura.accent[1] &&
   prev.aura.accent[2] === next.aura.accent[2] &&
   prev.track.user_favorite === next.track.user_favorite &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta);
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos);
 
 export const AlbumTrackRow = memo(AlbumTrackRowImpl, areEqual);

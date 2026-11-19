@@ -5,7 +5,7 @@ import {pauseBlack14, playBlack14} from '../../../lib/icons';
 import {useAutoHide} from '../../../lib/useAutoHide';
 import {useTrackPlay} from '../../../lib/useTrackPlay';
 import type {Track} from '../../../stores/player';
-import {sameScdMeta, TrackStatusBadges} from '../TrackStatusBadges';
+import {sameScdMeta, sameVideos, TrackStatusBadges} from '../TrackStatusBadges';
 import {TrackTitleArtist} from '../TrackTitleArtist';
 
 function formatMMSS(sec: number): string {
@@ -88,7 +88,7 @@ export const WaveTrackHeader = React.memo(
         <TrackTitleArtist track={track} highlight={isCurrent} size="md" />
 
         <div className="shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} />
+          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
         </div>
 
         {isCurrent ? (
@@ -106,5 +106,6 @@ export const WaveTrackHeader = React.memo(
     prev.isCurrent === next.isCurrent &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta),
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+    sameVideos(prev.track.videos, next.track.videos),
 );

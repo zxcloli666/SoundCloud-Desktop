@@ -124,7 +124,7 @@ export const RoomHero = React.memo(function RoomHero({
 
           <div className="flex-1 min-w-0 w-full text-center @min-[740px]:text-left">
             <div className="flex items-center gap-2 flex-wrap justify-center @min-[740px]:justify-start mb-3.5">
-              <TrackStatusBadges meta={track._scd_meta} />
+              <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
               {track.genre && (
                 <span
                   className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.06] text-ink-55 border border-ink/[0.06] uppercase tracking-[0.14em]"

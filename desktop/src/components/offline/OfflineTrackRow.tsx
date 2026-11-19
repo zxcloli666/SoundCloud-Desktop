@@ -218,7 +218,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
       </div>
 
       <div className="hidden items-center justify-end gap-1.5 md:flex">
-        <TrackStatusBadges meta={track._scd_meta} />
+        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
         {inv?.stage === 'raw' && !forging && <Stamp tone="raw">RAW</Stamp>}
         {forging && <Stamp tone="forge">{t('offline.stampForging')}</Stamp>}
         {truncated && <Stamp tone="cut">{t('offline.stampCut')}</Stamp>}
