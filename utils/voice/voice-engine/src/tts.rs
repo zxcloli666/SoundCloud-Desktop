@@ -15,7 +15,7 @@ use crate::qwen;
 use crate::server::{Ask, Said, Server};
 use crate::shape::Shaper;
 
-const REST: Duration = Duration::from_secs(120);
+const REST: Duration = Duration::from_secs(300);
 const SERVED: &str = "server";
 
 pub trait Voice: Send {
