@@ -969,6 +969,14 @@
     "fundo com clipe",
     "onde o video aparece"
   ],
+  "settings.videoCoverOpacity": [
+    "opacidade da capa",
+    "esconder capa sobre o video",
+    "capa transparente",
+    "ver video atras da capa",
+    "apagar a capa",
+    "capa cobre o video"
+  ],
   "settings.videoClip": [
     "videoclipe",
     "clipe oficial",

@@ -10,6 +10,7 @@ import {PlaybackRateSlider, ProgressSlider, ProgressTime} from '../../layout/Now
 import {ControlVolumeBtn, VolumeLabel, VolumeSlider} from '../../layout/VolumeControls';
 import {AltUploadMark} from '../AltUploadMark';
 import {ArtistNameLinks} from '../ArtistNameLinks';
+import {CoverFade} from './CoverFade';
 import {Controls} from './LyricsControls';
 import {MediaView} from './MediaView';
 import {PlayerVideo} from './TrackVideo';
@@ -25,7 +26,10 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
   const [isSwitching, setIsSwitching] = useState(false);
   const [view, setView] = useState<'art' | 'video' | null>(null);
   const inCover = useSettingsStore((s) => s.videoPlace) === 'cover';
-  const videoOver = useVideoOpaque() === 'player-cover';
+  const opaque = useVideoOpaque();
+  const videoOver = opaque === 'player-cover';
+  const behind = opaque === 'player-background';
+  const coverOpacity = useSettingsStore((s) => s.videoCoverOpacity);
   const switchTimerRef = useRef<number | null>(null);
 
   const prevUrlRef = useRef(track.artwork_url);
@@ -57,41 +61,45 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col items-center justify-center gap-[clamp(8px,1.4vh,22px)] overflow-y-auto scrollbar-hide px-12 py-6">
-      <div
-        className={`${widthClass} aspect-square rounded-2xl overflow-hidden shadow-2xl shadow-black/60 ring-1 ring-ink/[0.08] relative group/art`}
-      >
-        {artwork500 ? (
-          <>
-            <img
-              src={artwork200 || artwork500}
-              alt=""
-              decoding="async"
-              className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-[var(--ease-apple)] ${
-                isSwitching ? 'blur-2xl scale-125' : 'scale-110'
-              } ${loaded ? 'opacity-0' : 'opacity-100'}`}
-            />
-            <img
-              src={artwork500}
-              alt=""
-              decoding="async"
-              onLoad={() => {
-                setLoaded(true);
-                setIsSwitching(false);
-              }}
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[var(--ease-apple)] ${loaded ? 'opacity-100' : 'opacity-0'}`}
-            />
-            {inCover && <PlayerVideo track={track} host="player-cover" />}
-            <OpenButton label={t('track.viewArtwork')} plain={videoOver} onClick={() => setView(videoOver ? 'video' : 'art')} />
-          </>
-        ) : (
-          <>
-            <div className="w-full h-full bg-gradient-to-br from-ink/[0.06] to-ink/[0.02] flex items-center justify-center">
-              <MicVocal size={48} className="text-ink-10" />
-            </div>
-            {inCover && <PlayerVideo track={track} host="player-cover" />}
-            {videoOver && <OpenButton label={t('track.viewArtwork')} plain onClick={() => setView('video')} />}
-          </>
-        )}
+      <div className={`${widthClass} aspect-square relative group/art`}>
+        <div
+          className="size-full rounded-2xl overflow-hidden shadow-2xl shadow-black/60 ring-1 ring-ink/[0.08] relative transition-opacity duration-200"
+          style={{ opacity: behind ? coverOpacity : 1 }}
+        >
+          {artwork500 ? (
+            <>
+              <img
+                src={artwork200 || artwork500}
+                alt=""
+                decoding="async"
+                className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-[var(--ease-apple)] ${
+                  isSwitching ? 'blur-2xl scale-125' : 'scale-110'
+                } ${loaded ? 'opacity-0' : 'opacity-100'}`}
+              />
+              <img
+                src={artwork500}
+                alt=""
+                decoding="async"
+                onLoad={() => {
+                  setLoaded(true);
+                  setIsSwitching(false);
+                }}
+                className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[var(--ease-apple)] ${loaded ? 'opacity-100' : 'opacity-0'}`}
+              />
+              {inCover && <PlayerVideo track={track} host="player-cover" />}
+              <OpenButton label={t('track.viewArtwork')} plain={videoOver} onClick={() => setView(videoOver ? 'video' : 'art')} />
+            </>
+          ) : (
+            <>
+              <div className="w-full h-full bg-gradient-to-br from-ink/[0.06] to-ink/[0.02] flex items-center justify-center">
+                <MicVocal size={48} className="text-ink-10" />
+              </div>
+              {inCover && <PlayerVideo track={track} host="player-cover" />}
+              {videoOver && <OpenButton label={t('track.viewArtwork')} plain onClick={() => setView('video')} />}
+            </>
+          )}
+        </div>
+        {behind && <CoverFade />}
       </div>
 
       {view === 'art' && artwork500 && (

@@ -980,6 +980,14 @@
     "klip arka plan",
     "video nerede oynar"
   ],
+  "settings.videoCoverOpacity": [
+    "kapak saydamligi",
+    "videodaki kapagi gizle",
+    "saydam kapak",
+    "kapagin arkasindaki video",
+    "kapagi soldur",
+    "kapak videoyu kapatiyor"
+  ],
   "settings.videoClip": [
     "müzik klibi",
     "resmi klip",

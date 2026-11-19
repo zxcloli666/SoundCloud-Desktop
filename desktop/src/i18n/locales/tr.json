@@ -1535,6 +1535,7 @@
     "videoPlace": "Video nerede oynar",
     "videoPlaceCover": "Kapak",
     "videoPlaceBackground": "Arka plan",
+    "videoCoverOpacity": "Videonun üstündeki kapak",
     "videoClip": "Klip",
     "videoLoop": "Döngü",
     "videoGenerated": "Üretilmiş",

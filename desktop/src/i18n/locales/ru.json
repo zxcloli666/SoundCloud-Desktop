@@ -1519,6 +1519,7 @@
     "videoPlace": "Где играет видео",
     "videoPlaceCover": "Обложка",
     "videoPlaceBackground": "Фон",
+    "videoCoverOpacity": "Обложка поверх видео",
     "videoClip": "Клип",
     "videoLoop": "Петля",
     "videoGenerated": "Сгенерированное",

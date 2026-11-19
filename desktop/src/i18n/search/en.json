@@ -1134,6 +1134,14 @@
     "move video to background",
     "where video plays"
   ],
+  "settings.videoCoverOpacity": [
+    "cover opacity",
+    "hide cover over video",
+    "transparent cover",
+    "see video behind cover",
+    "fade the artwork",
+    "cover covers the video"
+  ],
   "settings.videoClip": [
     "music video",
     "official video",

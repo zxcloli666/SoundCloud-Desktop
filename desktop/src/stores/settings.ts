@@ -152,6 +152,7 @@ export interface SettingsState {
   videoUserSet: boolean;
   videoOrder: VideoKind[];
   videoPlace: VideoPlace;
+  videoCoverOpacity: number;
   videoOff: VideoKind[];
   videoCacheLimitMB: number;
   lyricsHighlight: LyricsHighlight;
@@ -248,6 +249,7 @@ export interface SettingsState {
   setVideoKindOn: (kind: VideoKind, on: boolean) => void;
   setVideoCacheLimitMB: (mb: number) => void;
   setVideoPlace: (place: VideoPlace) => void;
+  setVideoCoverOpacity: (opacity: number) => void;
   setLyricsHighlight: (v: LyricsHighlight) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
@@ -343,7 +345,8 @@ const DEFAULTS = {
   videoEnabled: true,
   videoUserSet: false,
   videoOrder: VIDEO_KINDS,
-  videoPlace: 'cover' as VideoPlace,
+  videoPlace: 'background' as VideoPlace,
+  videoCoverOpacity: 1,
   videoOff: [] as VideoKind[],
   videoCacheLimitMB: 1024,
   lyricsHighlight: 'word' as LyricsHighlight,
@@ -522,6 +525,8 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       setVideoCacheLimitMB: (videoCacheLimitMB) => set({ videoCacheLimitMB }),
       setVideoPlace: (videoPlace) => set({ videoPlace }),
+      setVideoCoverOpacity: (opacity) =>
+        set({ videoCoverOpacity: Math.min(1, Math.max(0, opacity)) }),
       setLyricsHighlight: (lyricsHighlight) => set({ lyricsHighlight }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
@@ -677,6 +682,7 @@ export const useSettingsStore = create<SettingsState>()(
         videoUserSet: s.videoUserSet,
         videoOrder: s.videoOrder,
         videoPlace: s.videoPlace,
+        videoCoverOpacity: s.videoCoverOpacity,
         videoOff: s.videoOff,
         videoCacheLimitMB: s.videoCacheLimitMB,
         lyricsHighlight: s.lyricsHighlight,

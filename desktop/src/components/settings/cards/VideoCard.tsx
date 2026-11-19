@@ -6,7 +6,7 @@ import { canPlayH264 } from '../../../lib/video-element';
 import { videoOrder } from '../../../lib/video-pick';
 import type { VideoKind } from '../../../stores/player';
 import { useSettingsStore, type VideoPlace } from '../../../stores/settings';
-import { Card, Row, Segmented, Toggle } from '../primitives';
+import { Card, RangeSlider, Row, Segmented, Toggle } from '../primitives';
 import { LayoutList } from './LayoutList';
 
 const ICONS: Record<VideoKind, ReactNode> = {
@@ -25,6 +25,8 @@ export function VideoCard() {
   const setKindOn = useSettingsStore((s) => s.setVideoKindOn);
   const place = useSettingsStore((s) => s.videoPlace);
   const setPlace = useSettingsStore((s) => s.setVideoPlace);
+  const coverOpacity = useSettingsStore((s) => s.videoCoverOpacity);
+  const setCoverOpacity = useSettingsStore((s) => s.setVideoCoverOpacity);
   const supported = canPlayH264();
   const live = enabled && supported;
   const order = videoOrder(savedOrder);
@@ -88,6 +90,25 @@ export function VideoCard() {
             ]}
           />
         </Row>
+        <div
+          inert={place !== 'background'}
+          className={`transition-opacity duration-200 ${place === 'background' ? '' : 'opacity-40'}`}
+        >
+          <Row title={t('settings.videoCoverOpacity')}>
+            <div className="flex w-48 items-center gap-3">
+              <RangeSlider
+                value={coverOpacity}
+                min={0}
+                max={1}
+                step={0.05}
+                onChange={setCoverOpacity}
+              />
+              <span className="w-9 text-right text-[12px] tabular-nums text-ink-50">
+                {Math.round(coverOpacity * 100)}%
+              </span>
+            </div>
+          </Row>
+        </div>
         <div data-ui="settings-row" className="space-y-2.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-35">
             {t('settings.videoOrder')}

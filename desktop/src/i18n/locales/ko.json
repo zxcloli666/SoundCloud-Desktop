@@ -1467,6 +1467,7 @@
     "videoPlace": "영상 위치",
     "videoPlaceCover": "커버",
     "videoPlaceBackground": "배경",
+    "videoCoverOpacity": "영상 위 커버",
     "videoClip": "뮤직비디오",
     "videoLoop": "루프",
     "videoGenerated": "생성됨",

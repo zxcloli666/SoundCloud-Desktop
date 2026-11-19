@@ -1483,6 +1483,7 @@
     "videoPlace": "Where video plays",
     "videoPlaceCover": "Cover",
     "videoPlaceBackground": "Background",
+    "videoCoverOpacity": "Cover over video",
     "videoClip": "Clip",
     "videoLoop": "Loop",
     "videoGenerated": "Generated",
