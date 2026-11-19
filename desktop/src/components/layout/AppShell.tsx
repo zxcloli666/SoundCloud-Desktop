@@ -18,6 +18,7 @@ import {useSettingsStore} from '../../stores/settings';
 import {useShortcutsStore} from '../../stores/shortcuts';
 import {ChatDock} from '../chat/shell/ChatDock';
 import {ImportHost} from '../import/ImportHost';
+import {MobileLinkHost} from '../mobile-link/MobileLinkHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
@@ -493,6 +494,7 @@ export const AppShell = React.memo(() => {
       <StarMomentsHost />
       <UploadTrackDialog />
       <ImportHost />
+      <MobileLinkHost />
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

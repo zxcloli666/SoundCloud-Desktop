@@ -3045,7 +3045,8 @@
     "state": {
       "off": "Não conectado",
       "active": "Ativo",
-      "relink": "Entrar de novo"
+      "relink": "Entrar de novo",
+      "waiting": "Aguardando SoundCloud"
     },
     "link": "Conectar",
     "unlink": "Desconectar",
@@ -3081,6 +3082,7 @@
       "toggle": "Colar endereço",
       "apply": "Aplicar",
       "invalid": "Não é um endereço sc://auth"
-    }
+    },
+    "show": "Mostrar"
   }
 }

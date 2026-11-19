@@ -303,6 +303,7 @@ pub fn run() {
             app::diagnostics::diagnostics_reveal_log,
             app::launch_flags::custom_css_suppressed,
             app::deep_link::deep_link_parse,
+            app::deep_link::deep_link_take_pending,
             app::themes::theme_file_store,
             app::themes::theme_files_gc,
             app::themes::sentinel::theme_alive,

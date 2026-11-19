@@ -2962,7 +2962,8 @@
     "state": {
       "off": "Bağlı değil",
       "active": "Etkin",
-      "relink": "Yeniden giriş"
+      "relink": "Yeniden giriş",
+      "waiting": "SoundCloud bekleniyor"
     },
     "link": "Bağla",
     "unlink": "Bağlantıyı kes",
@@ -2997,6 +2998,7 @@
       "toggle": "Adres yapıştır",
       "apply": "Uygula",
       "invalid": "sc://auth adresi değil"
-    }
+    },
+    "show": "Göster"
   }
 }

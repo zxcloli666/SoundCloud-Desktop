@@ -2930,7 +2930,8 @@
     "state": {
       "off": "Not linked",
       "active": "Active",
-      "relink": "Sign in again"
+      "relink": "Sign in again",
+      "waiting": "Waiting for SoundCloud"
     },
     "link": "Link",
     "unlink": "Unlink",
@@ -2965,6 +2966,7 @@
       "toggle": "Paste address",
       "apply": "Apply",
       "invalid": "Not an sc://auth address"
-    }
+    },
+    "show": "Show"
   }
 }

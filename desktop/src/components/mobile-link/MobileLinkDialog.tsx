@@ -1,24 +1,18 @@
 import { useTranslation } from 'react-i18next';
 import { RefreshCw, Shield, X } from '../../lib/icons';
 import { isFinal } from '../../lib/mobile-link/flow';
+import { mobileLink, useMobileLinkState } from '../../stores/mobile-link';
 import { Modal, ModalClose, ModalContent, ModalDescription, ModalTitle } from '../ui/Modal';
 import { AccountChip } from './AccountChip';
 import { LinkSteps } from './LinkSteps';
 import { PasteFallback } from './PasteFallback';
 import { PhaseStatus } from './PhaseStatus';
 import { PRIMARY_BUTTON, QUIET_BUTTON } from './styles';
-import { useMobileLink } from './useMobileLink';
 
-interface MobileLinkDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onCompleted: () => void;
-}
-
-export function MobileLinkDialog({ open, onOpenChange, onCompleted }: MobileLinkDialogProps) {
+export function MobileLinkDialog() {
   const { t } = useTranslation();
-  const { view, retry, reopen, paste, clearPasteError } = useMobileLink(open, onCompleted);
-  const { phase, account } = view;
+  const view = useMobileLinkState();
+  const { phase, account, dialogOpen } = view;
   const retryable = phase === 'mismatch' || phase === 'failed' || phase === 'expired';
   const pasteable = phase === 'waiting' || phase === 'failed' || phase === 'expired';
 
@@ -32,7 +26,7 @@ export function MobileLinkDialog({ open, onOpenChange, onCompleted }: MobileLink
           : undefined;
 
   return (
-    <Modal open={open} onOpenChange={onOpenChange}>
+    <Modal open={dialogOpen} onOpenChange={(open) => !open && mobileLink.closeDialog()}>
       <ModalContent size="sm" showClose={false} zClass="z-[100]">
         <div data-ui="mobile-link" data-phase={phase} className="relative p-7">
           <ModalClose className="absolute top-4 right-4 p-1.5 rounded-lg text-ink-30 hover:text-ink-60 hover:bg-ink/[0.06] transition-colors cursor-pointer">
@@ -58,10 +52,10 @@ export function MobileLinkDialog({ open, onOpenChange, onCompleted }: MobileLink
             <PhaseStatus phase={phase} hint={hint} />
 
             <div className="flex flex-wrap items-center justify-center gap-2">
-              {phase === 'waiting' && (
+              {phase === 'waiting' && view.canReopen && (
                 <button
                   type="button"
-                  onClick={reopen}
+                  onClick={mobileLink.reopen}
                   className={view.browserFailed ? PRIMARY_BUTTON : QUIET_BUTTON}
                 >
                   {t('mobileLink.openAgain')}
@@ -71,7 +65,7 @@ export function MobileLinkDialog({ open, onOpenChange, onCompleted }: MobileLink
                 <button
                   type="button"
                   autoFocus
-                  onClick={() => void retry()}
+                  onClick={() => void mobileLink.start()}
                   className={PRIMARY_BUTTON}
                 >
                   <RefreshCw size={12} />
@@ -82,21 +76,29 @@ export function MobileLinkDialog({ open, onOpenChange, onCompleted }: MobileLink
                 <button
                   type="button"
                   autoFocus
-                  onClick={() => onOpenChange(false)}
+                  onClick={() => mobileLink.closeDialog()}
                   className={PRIMARY_BUTTON}
                 >
                   {t('mobileLink.done')}
                 </button>
               )}
               {!isFinal(phase) && phase !== 'starting' && (
-                <button type="button" onClick={() => onOpenChange(false)} className={QUIET_BUTTON}>
+                <button
+                  type="button"
+                  onClick={() => mobileLink.closeDialog()}
+                  className={QUIET_BUTTON}
+                >
                   {t('common.cancel')}
                 </button>
               )}
             </div>
 
             {pasteable && (
-              <PasteFallback invalid={view.pasteInvalid} onApply={paste} onEdit={clearPasteError} />
+              <PasteFallback
+                invalid={view.pasteInvalid}
+                onApply={mobileLink.paste}
+                onEdit={mobileLink.clearPasteError}
+              />
             )}
           </div>
         </div>

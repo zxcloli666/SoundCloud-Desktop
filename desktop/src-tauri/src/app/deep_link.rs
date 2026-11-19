@@ -1,4 +1,5 @@
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 use sc_deep_link::AuthCallback;
 use serde::Serialize;
@@ -11,17 +12,32 @@ use crate::rt::AppHandle;
 const EVENT: &str = "mobile-link:callback";
 const WINDOW: &str = "main";
 
-#[derive(Default)]
-pub struct Seen(Mutex<Option<String>>);
+const PENDING_TTL: Duration = Duration::from_secs(15 * 60);
 
-impl Seen {
-    fn first_time(&self, state: &str) -> bool {
-        let mut last = self.0.lock().unwrap_or_else(|e| e.into_inner());
-        if last.as_deref() == Some(state) {
+#[derive(Default)]
+struct Slots {
+    last_state: Option<String>,
+    pending: Option<(Payload, Instant)>,
+}
+
+#[derive(Default)]
+pub struct Inbox(Mutex<Slots>);
+
+impl Inbox {
+    fn accept(&self, payload: &Payload, at: Instant) -> bool {
+        let mut slots = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        if slots.last_state.as_deref() == Some(payload.state.as_str()) {
             return false;
         }
-        *last = Some(state.to_owned());
+        slots.last_state = Some(payload.state.clone());
+        slots.pending = Some((payload.clone(), at));
         true
+    }
+
+    fn take(&self, now: Instant) -> Option<Payload> {
+        let mut slots = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        let (payload, at) = slots.pending.take()?;
+        (now.saturating_duration_since(at) <= PENDING_TTL).then_some(payload)
     }
 }
 
@@ -41,7 +57,7 @@ impl From<AuthCallback> for Payload {
 }
 
 pub fn attach(app: &AppHandle) {
-    app.manage(Seen::default());
+    app.manage(Inbox::default());
     let links = app.deep_link();
     let handler = app.clone();
     links.on_open_url(move |event| receive(&handler, event.urls()));
@@ -64,14 +80,18 @@ fn receive(app: &AppHandle, urls: Vec<Url>) {
 }
 
 fn forward(app: &AppHandle, payload: Payload) {
-    let fresh = app.state::<Seen>().first_time(&payload.state);
-    if !fresh {
+    if !app.state::<Inbox>().accept(&payload, Instant::now()) {
         return;
     }
     visibility::show_main(app);
     if let Err(e) = app.emit_to(WINDOW, EVENT, payload) {
         diagnostics::warn(format!("[DeepLink] emit failed: {e}"));
     }
+}
+
+#[tauri::command]
+pub fn deep_link_take_pending(inbox: tauri::State<'_, Inbox>) -> Option<Payload> {
+    inbox.take(Instant::now())
 }
 
 #[tauri::command]
@@ -85,13 +105,63 @@ pub fn deep_link_parse(url: String) -> Result<Payload, String> {
 mod tests {
     use super::*;
 
+    fn payload(state: &str) -> Payload {
+        Payload {
+            code: "c".into(),
+            state: state.into(),
+        }
+    }
+
     #[test]
     fn the_same_state_passes_once() {
-        let seen = Seen::default();
-        assert!(seen.first_time("a"));
-        assert!(!seen.first_time("a"));
-        assert!(seen.first_time("b"));
-        assert!(!seen.first_time("b"));
+        let inbox = Inbox::default();
+        let now = Instant::now();
+        assert!(inbox.accept(&payload("a"), now));
+        assert!(!inbox.accept(&payload("a"), now));
+        assert!(inbox.accept(&payload("b"), now));
+        assert!(!inbox.accept(&payload("b"), now));
+    }
+
+    #[test]
+    fn pending_is_taken_once() {
+        let inbox = Inbox::default();
+        let now = Instant::now();
+        inbox.accept(&payload("a"), now);
+        assert_eq!(inbox.take(now).map(|p| p.state), Some("a".to_string()));
+        assert!(inbox.take(now).is_none());
+    }
+
+    #[test]
+    fn pending_keeps_only_the_last_callback() {
+        let inbox = Inbox::default();
+        let now = Instant::now();
+        inbox.accept(&payload("a"), now);
+        inbox.accept(&payload("b"), now);
+        assert_eq!(inbox.take(now).map(|p| p.state), Some("b".to_string()));
+    }
+
+    #[test]
+    fn pending_expires_after_fifteen_minutes() {
+        let inbox = Inbox::default();
+        let at = Instant::now();
+        inbox.accept(&payload("a"), at);
+        assert!(
+            inbox
+                .take(at + PENDING_TTL + Duration::from_secs(1))
+                .is_none()
+        );
+        inbox.accept(&payload("b"), at);
+        assert!(inbox.take(at + PENDING_TTL).is_some());
+    }
+
+    #[test]
+    fn a_dropped_pending_does_not_reopen_the_state() {
+        let inbox = Inbox::default();
+        let at = Instant::now();
+        inbox.accept(&payload("a"), at);
+        inbox.take(at);
+        assert!(!inbox.accept(&payload("a"), at));
+        assert!(inbox.take(at).is_none());
     }
 
     #[test]

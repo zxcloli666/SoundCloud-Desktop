@@ -131,6 +131,7 @@
 | `[data-ui="mobile-link-steps"]` | Шаги «браузер, код, готово» в этом окне |
 | `[data-ui="mobile-link-status"]` | Блок статуса в этом окне; `data-tone`: `busy`, `ok`, `warn` или `bad` |
 | `[data-ui="mobile-link-paste"]` | Запасное поле «вставить адрес» в этом окне |
+| `[data-ui="mobile-link-island"]` | Плашка внизу, пока подключение ждёт SoundCloud |
 | `[data-ui="settings-search"]` | Поле поиска над списком разделов Настроек |
 | `[data-ui="settings-search-result"]` | Строка результата поиска, `[data-active]` равен `true` у подсвеченной |
 | `[data-ui="settings-search-results"]` | Список результатов поиска в Настройках |

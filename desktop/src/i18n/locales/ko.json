@@ -2870,7 +2870,8 @@
     "state": {
       "off": "연결 안 됨",
       "active": "활성",
-      "relink": "다시 로그인"
+      "relink": "다시 로그인",
+      "waiting": "SoundCloud 대기 중"
     },
     "link": "연결",
     "unlink": "연결 해제",
@@ -2904,6 +2905,7 @@
       "toggle": "주소 붙여넣기",
       "apply": "적용",
       "invalid": "sc://auth 주소가 아닙니다"
-    }
+    },
+    "show": "보기"
   }
 }

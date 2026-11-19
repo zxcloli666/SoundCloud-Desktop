@@ -24,3 +24,11 @@ export async function parseAuthAddress(text: string): Promise<AuthCallback | nul
     return null;
   }
 }
+
+export async function takePendingCallback(): Promise<AuthCallback | null> {
+  try {
+    return await trackedInvoke<AuthCallback | null>('deep_link_take_pending');
+  } catch {
+    return null;
+  }
+}
