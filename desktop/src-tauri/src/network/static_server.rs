@@ -109,6 +109,7 @@ pub async fn start(
     local_covers_dir: PathBuf,
     css_assets_dir: PathBuf,
     theme_files_dir: PathBuf,
+    video_dir: PathBuf,
 ) -> u16 {
     let routes = dir_route("wallpapers", wallpapers_dir, any_name)
         .or(dir_route("local-covers", local_covers_dir, any_name))
@@ -120,6 +121,8 @@ pub async fn start(
             theme_files_dir,
             themes::is_served_name,
         ))
+        .unify()
+        .or(crate::network::video_server::route(video_dir))
         .unify()
         .with(cors());
 

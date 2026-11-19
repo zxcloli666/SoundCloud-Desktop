@@ -36,6 +36,7 @@ import {ThemeCard} from './cards/ThemeCard';
 import {ThemesCard} from './cards/ThemesCard';
 import {UiScaleCard} from './cards/UiScaleCard';
 import {UpdatesCard} from './cards/UpdatesCard';
+import {VideoCard} from './cards/VideoCard';
 import {WallpaperCard} from './cards/WallpaperCard';
 
 export type SettingsCategoryId =
@@ -93,6 +94,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
                 <LayoutCard/>
                 <MiniPlayerCard/>
                 <PerformanceCard/>
+                <VideoCard/>
                 <CustomCssCard/>
             </>
         ),

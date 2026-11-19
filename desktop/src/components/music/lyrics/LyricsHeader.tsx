@@ -1,7 +1,9 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {PanelLeftClose, PanelLeftOpen, X} from '../../../lib/icons';
+import {Film, PanelLeftClose, PanelLeftOpen, X} from '../../../lib/icons';
+import {canPlayH264} from '../../../lib/video-element';
 import type {LyricsPanelTab} from '../../../stores/lyrics';
+import {useSettingsStore} from '../../../stores/settings';
 
 const TabButton = React.memo(
     ({
@@ -68,6 +70,7 @@ export const LyricsHeader = React.memo(
 
                 {/* fixed right cluster — always top-right */}
                 <div className="flex items-center gap-2">
+                    <VideoToggle/>
                     <button
                         type="button"
                         onClick={onTogglePanel}
@@ -84,3 +87,23 @@ export const LyricsHeader = React.memo(
         );
     },
 );
+
+function VideoToggle() {
+    const {t} = useTranslation();
+    const on = useSettingsStore((s) => s.videoEnabled);
+    const setOn = useSettingsStore((s) => s.setVideoEnabled);
+    if (!canPlayH264()) return null;
+    return (
+        <button
+            type="button"
+            data-ui="lyrics-video-toggle"
+            aria-pressed={on}
+            onClick={() => setOn(!on)}
+            title={t('settings.video')}
+            className={glassBtn}
+            style={on ? {color: 'var(--color-accent)', borderColor: 'var(--color-accent-glow)', boxShadow: '0 0 14px var(--color-accent-glow)'} : undefined}
+        >
+            <Film size={17}/>
+        </button>
+    );
+}

@@ -23,6 +23,7 @@ import {
 } from '../../../lib/cache-limit';
 import {formatBytes} from '../../../lib/formatters';
 import {Database, Download, Loader2, Trash2, X} from '../../../lib/icons';
+import {clearVideoCache, enforceVideoCacheLimit, getVideoCacheSize} from '../../../lib/video-cache';
 import {useSettingsStore} from '../../../stores/settings';
 import {Skeleton} from '../../ui/Skeleton';
 import {Card, Divider, Row, Toggle} from '../primitives';
@@ -74,11 +75,15 @@ export function CacheCard() {
   const setAudioCacheLimitMB = useSettingsStore((s) => s.setAudioCacheLimitMB);
   const imageCacheLimitMB = useSettingsStore((s) => s.imageCacheLimitMB);
   const setImageCacheLimitMB = useSettingsStore((s) => s.setImageCacheLimitMB);
+  const videoCacheLimitMB = useSettingsStore((s) => s.videoCacheLimitMB);
+  const setVideoCacheLimitMB = useSettingsStore((s) => s.setVideoCacheLimitMB);
   const hoverPreload = useSettingsStore((s) => s.hoverPreload);
   const setHoverPreload = useSettingsStore((s) => s.setHoverPreload);
   const [audioSize, setAudioSize] = useState<number | null>(null);
   const [imagesSize, setImagesSize] = useState<number | null>(null);
   const [likedSize, setLikedSize] = useState<number | null>(null);
+  const [videoSize, setVideoSize] = useState<number | null>(null);
+  const [clearingVideo, setClearingVideo] = useState(false);
   const [clearingAudio, setClearingAudio] = useState(false);
   const [clearingImages, setClearingImages] = useState(false);
   const [clearingLiked, setClearingLiked] = useState(false);
@@ -102,6 +107,7 @@ export function CacheCard() {
   useEffect(() => {
     void getCacheSize().then(setAudioSize);
     void getImageCacheSize().then(setImagesSize);
+    void getVideoCacheSize().then(setVideoSize);
     refreshLikedSize();
   }, [refreshLikedSize]);
 
@@ -137,6 +143,18 @@ export function CacheCard() {
     [setImageCacheLimitMB],
   );
 
+  const handleVideoLimit = useCallback(
+    (step: number) => {
+      const limitMb = IMAGE_CACHE_STEPS[step];
+      setVideoCacheLimitMB(limitMb);
+      void enforceVideoCacheLimit(limitMb)
+        .then(getVideoCacheSize)
+        .then(setVideoSize)
+        .catch(() => {});
+    },
+    [setVideoCacheLimitMB],
+  );
+
   const handleCacheLikes = useCallback(async () => {
     try {
       const queued = await startLikes();
@@ -146,8 +164,9 @@ export function CacheCard() {
     }
   }, [startLikes, t]);
 
-  const totalSize = (audioSize ?? 0) + (imagesSize ?? 0) + (likedSize ?? 0);
-  const allLoaded = audioSize !== null && imagesSize !== null && likedSize !== null;
+  const totalSize = (audioSize ?? 0) + (imagesSize ?? 0) + (likedSize ?? 0) + (videoSize ?? 0);
+  const allLoaded =
+    audioSize !== null && imagesSize !== null && likedSize !== null && videoSize !== null;
   const cacheOff = isAudioCacheOff(audioCacheLimitMB);
   const limitLabel = cacheOff
     ? t('settings.audioCacheOff')
@@ -158,6 +177,10 @@ export function CacheCard() {
     imageCacheLimitMB === CACHE_UNLIMITED
       ? t('settings.unlimited')
       : formatCacheLimit(imageCacheLimitMB);
+  const videoLimitLabel =
+    videoCacheLimitMB === CACHE_UNLIMITED
+      ? t('settings.unlimited')
+      : formatCacheLimit(videoCacheLimitMB);
   const progressPct =
     progress && progress.total > 0
       ? Math.min(100, Math.round((progress.done / progress.total) * 100))
@@ -201,6 +224,14 @@ export function CacheCard() {
           clearing={clearingLiked}
           clearLabel={t('settings.clearCache')}
           onClear={() => clearWith(clearLikedCache, setClearingLiked, setLikedSize)}
+        />
+        <CacheRow
+          data-ui="settings-row"
+          label={t('settings.videoCacheSize')}
+          size={videoSize}
+          clearing={clearingVideo}
+          clearLabel={t('settings.clearCache')}
+          onClear={() => clearWith(clearVideoCache, setClearingVideo, setVideoSize)}
         />
       </div>
 
@@ -273,6 +304,19 @@ export function CacheCard() {
         minLabel={formatCacheLimit(IMAGE_CACHE_STEPS[0])}
         maxLabel={t('settings.unlimited')}
         onChange={handleImageLimit}
+      />
+
+      <Divider />
+      <CacheLimitSlider
+        data-ui="settings-row"
+        title={t('settings.videoCacheLimit')}
+        desc={t('settings.videoCacheLimitDesc')}
+        valueLabel={videoLimitLabel}
+        step={imageCacheStep(videoCacheLimitMB)}
+        steps={IMAGE_CACHE_STEPS.length}
+        minLabel={formatCacheLimit(IMAGE_CACHE_STEPS[0])}
+        maxLabel={t('settings.unlimited')}
+        onChange={handleVideoLimit}
       />
 
       <Divider />

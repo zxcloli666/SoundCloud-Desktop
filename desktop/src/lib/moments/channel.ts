@@ -6,6 +6,7 @@ import { ensureTrackCached, expectedDurationMs } from '../cache';
 import { trackedInvoke as invoke } from '../diagnostics';
 import { recordSeek } from '../events';
 import { type MomentWindow, momentWindow, trackMoment } from '../moment';
+import type { PlaybackClock } from '../video-sync';
 
 export type MomentPhase = 'idle' | 'loading' | 'playing' | 'paused' | 'handed' | 'failed';
 
@@ -25,6 +26,7 @@ interface Live {
 
 let live: Live | null = null;
 let positionMs = 0;
+let positionAt = 0;
 let phase: MomentPhase = 'idle';
 let phaseUrn: string | null = null;
 let token = 0;
@@ -97,7 +99,7 @@ export async function playMoment(track: Track, crossfadeMs: number): Promise<boo
       gen,
       endFired: false,
     };
-    positionMs = startMs;
+    setPosition(startMs);
     notifyProgress();
     setPhase('playing', track.urn);
     return true;
@@ -154,7 +156,7 @@ export async function seekMoment(urn: string, share: number): Promise<void> {
   }
   live = { ...current, gen, endFired: false };
   recordSeek(urn, targetMs, positionMs, 'moment');
-  positionMs = targetMs;
+  setPosition(targetMs);
   notifyProgress();
   setPhase('playing', urn);
 }
@@ -207,6 +209,21 @@ export function momentShare(urn: string): number {
   return Math.min(1, Math.max(0, (positionMs - startMs) / lengthMs));
 }
 
+export function getMomentClock(urn: string): PlaybackClock {
+  const mine = live?.urn === urn;
+  return {
+    pos: mine ? positionMs / 1000 : 0,
+    at: positionAt,
+    rate: 1,
+    playing: mine && phase === 'playing',
+  };
+}
+
+function setPosition(ms: number) {
+  positionMs = ms;
+  positionAt = performance.now();
+}
+
 export function subscribeMomentProgress(listener: () => void): () => void {
   progressListeners.add(listener);
   return () => progressListeners.delete(listener);
@@ -239,7 +256,7 @@ function notifyProgress() {
 
 function onTick(gen: number, ms: number) {
   if (!live || live.gen !== gen) return;
-  positionMs = ms;
+  setPosition(ms);
   notifyProgress();
   const endAt = live.window.startMs + live.window.lengthMs - AUTO_CROSSFADE_MS;
   if (ms >= endAt) fireEnd();

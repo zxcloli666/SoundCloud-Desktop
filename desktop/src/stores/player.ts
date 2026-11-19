@@ -99,7 +99,17 @@ export interface Track {
   };
   enrichment?: TrackEnrichment;
   highlight?: TrackHighlight;
+  videos?: TrackVideo[];
   _scd_meta?: TrackScdMeta;
+}
+
+export type VideoKind = 'clip' | 'loop' | 'generated';
+
+export interface TrackVideo {
+  kind: string;
+  url: string;
+  offsetMs: number;
+  loop: boolean;
 }
 
 export interface TrackHighlight {

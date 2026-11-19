@@ -4,12 +4,14 @@ import {useTranslation} from 'react-i18next';
 import {art} from '../../../lib/formatters';
 import {Eye, MicVocal, X} from '../../../lib/icons';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
+import {useVideoOpaque} from '../../../lib/video-element';
 import type {Track} from '../../../stores/player';
 import {PlaybackRateSlider, ProgressSlider, ProgressTime} from '../../layout/NowPlayingBar';
 import {ControlVolumeBtn, VolumeLabel, VolumeSlider} from '../../layout/VolumeControls';
 import {AltUploadMark} from '../AltUploadMark';
 import {ArtistNameLinks} from '../ArtistNameLinks';
 import {Controls} from './LyricsControls';
+import {PlayerVideo} from './TrackVideo';
 
 const ArtworkViewModal = React.memo(
   ({
@@ -86,6 +88,7 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
   const [loaded, setLoaded] = useState(false);
   const [isSwitching, setIsSwitching] = useState(false);
   const [showFullArt, setShowFullArt] = useState(false);
+  const videoOver = useVideoOpaque() === 'player';
   const switchTimerRef = useRef<number | null>(null);
 
   const prevUrlRef = useRef(track.artwork_url);
@@ -140,11 +143,12 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
               }}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[var(--ease-apple)] ${loaded ? 'opacity-100' : 'opacity-0'}`}
             />
+            <PlayerVideo track={track} />
             <button
               type="button"
               onClick={() => setShowFullArt(true)}
               data-scheme="dark"
-              className="absolute inset-0 bg-black/40 opacity-0 group-hover/art:opacity-100 transition-opacity duration-300 flex items-center justify-center text-ink-90 backdrop-blur-[2px] cursor-pointer outline-none"
+              className={`absolute inset-0 bg-black/40 opacity-0 group-hover/art:opacity-100 transition-opacity duration-300 flex items-center justify-center text-ink-90 cursor-pointer outline-none ${videoOver ? '' : 'backdrop-blur-[2px]'}`}
             >
               <div className="flex flex-col items-center gap-2 scale-90 group-hover/art:scale-100 transition-transform duration-300">
                 <div className="w-12 h-12 rounded-full bg-ink/20 flex items-center justify-center border border-ink/20">
@@ -157,9 +161,12 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
             </button>
           </>
         ) : (
-          <div className="w-full h-full bg-gradient-to-br from-ink/[0.06] to-ink/[0.02] flex items-center justify-center">
-            <MicVocal size={48} className="text-ink-10" />
-          </div>
+          <>
+            <div className="w-full h-full bg-gradient-to-br from-ink/[0.06] to-ink/[0.02] flex items-center justify-center">
+              <MicVocal size={48} className="text-ink-10" />
+            </div>
+            <PlayerVideo track={track} />
+          </>
         )}
       </div>
 

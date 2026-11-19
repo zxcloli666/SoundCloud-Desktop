@@ -956,5 +956,55 @@
     "tuş listesi",
     "duraklatmak için ne basılır",
     "kısayollar penceresi"
+  ],
+  "settings.video": [
+    "kapak yerine klip",
+    "hareketli kapak",
+    "canlı kapak",
+    "videoyu kapat",
+    "video takılıyor",
+    "oynatıcıda video"
+  ],
+  "settings.videoOrder": [
+    "önce ne gösterilsin",
+    "video önceliği",
+    "klip mi döngü mü",
+    "videoları sırala",
+    "tercih edilen video"
+  ],
+  "settings.videoClip": [
+    "müzik klibi",
+    "resmi klip",
+    "youtube klibi",
+    "videoklip",
+    "music video"
+  ],
+  "settings.videoLoop": [
+    "döngülü video",
+    "kısa döngü",
+    "spotify canvas",
+    "tekrarlayan animasyon",
+    "looping video"
+  ],
+  "settings.videoGenerated": [
+    "yapay zeka videosu",
+    "ai video",
+    "yapay zeka üretimi",
+    "sinir ağı videosu",
+    "ai generated"
+  ],
+  "settings.videoCacheSize": [
+    "klipler ne kadar yer kaplıyor",
+    "video önbelleği",
+    "videoları temizle",
+    "klipleri sil",
+    "video cache"
+  ],
+  "settings.videoCacheLimit": [
+    "klipler için yer sınırı",
+    "videolar çok yer kaplıyor",
+    "klip önbellek boyutu",
+    "video kotası",
+    "video storage limit"
   ]
 }

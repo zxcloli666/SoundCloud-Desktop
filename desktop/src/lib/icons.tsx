@@ -29,6 +29,7 @@ import {
   ChevronUp as _ChevronUp,
   CircleCheck as _CircleCheck,
   ClipboardCopy as _ClipboardCopy,
+  Clapperboard as _Clapperboard,
   Clock as _Clock,
   Cloud as _Cloud,
   Compass as _Compass,
@@ -41,6 +42,8 @@ import {
   Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
+  Film as _Film,
+  Infinity as _Infinity,
   EyeOff as _EyeOff,
   FastForward as _FastForward,
   FileDown as _FileDown,
@@ -200,6 +203,7 @@ export const ChevronRight = memo(_ChevronRight);
 export const CornerDownRight = memo(_CornerDownRight);
 export const ChevronUp = memo(_ChevronUp);
 export const CircleCheck = memo(_CircleCheck);
+export const Clapperboard = memo(_Clapperboard);
 export const Clock = memo(_Clock);
 export const Bell = memo(_Bell);
 export const BookOpen = memo(_BookOpen);
@@ -212,6 +216,8 @@ export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
+export const Film = memo(_Film);
+export const InfinityLoop = memo(_Infinity);
 export const EyeOff = memo(_EyeOff);
 export const FastForward = memo(_FastForward);
 export const Fullscreen = memo(_Fullscreen);

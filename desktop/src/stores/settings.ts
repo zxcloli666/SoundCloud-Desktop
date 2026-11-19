@@ -13,6 +13,8 @@ import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 import type {TrackSort} from '../lib/track-sort';
+import {VIDEO_KINDS} from '../lib/video-pick';
+import type {VideoKind} from './player';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -145,6 +147,11 @@ export interface SettingsState {
   soundwaveHideListened: boolean;
   blockedKeywords: string[];
   lyricsVisualizer: boolean;
+  videoEnabled: boolean;
+  videoUserSet: boolean;
+  videoOrder: VideoKind[];
+  videoOff: VideoKind[];
+  videoCacheLimitMB: number;
   lyricsHighlight: LyricsHighlight;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
@@ -234,6 +241,10 @@ export interface SettingsState {
   setSoundwaveHideListened: (v: boolean) => void;
   setBlockedKeywords: (keywords: string[]) => void;
   setLyricsVisualizer: (v: boolean) => void;
+  setVideoEnabled: (v: boolean) => void;
+  setVideoOrder: (order: VideoKind[]) => void;
+  setVideoKindOn: (kind: VideoKind, on: boolean) => void;
+  setVideoCacheLimitMB: (mb: number) => void;
   setLyricsHighlight: (v: LyricsHighlight) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
@@ -326,6 +337,11 @@ const DEFAULTS = {
   soundwaveHideListened: true,
   blockedKeywords: [] as string[],
   lyricsVisualizer: false,
+  videoEnabled: true,
+  videoUserSet: false,
+  videoOrder: VIDEO_KINDS,
+  videoOff: [] as VideoKind[],
+  videoCacheLimitMB: 1024,
   lyricsHighlight: 'word' as LyricsHighlight,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
@@ -494,6 +510,13 @@ export const useSettingsStore = create<SettingsState>()(
       setSoundwaveHideListened: (soundwaveHideListened) => set({ soundwaveHideListened }),
       setBlockedKeywords: (blockedKeywords) => set({ blockedKeywords }),
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
+      setVideoEnabled: (videoEnabled) => set({ videoEnabled, videoUserSet: true }),
+      setVideoOrder: (videoOrder) => set({ videoOrder }),
+      setVideoKindOn: (kind, on) =>
+        set((s) => ({
+          videoOff: on ? s.videoOff.filter((k) => k !== kind) : [...new Set([...s.videoOff, kind])],
+        })),
+      setVideoCacheLimitMB: (videoCacheLimitMB) => set({ videoCacheLimitMB }),
       setLyricsHighlight: (lyricsHighlight) => set({ lyricsHighlight }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
@@ -645,6 +668,11 @@ export const useSettingsStore = create<SettingsState>()(
         soundwaveHideListened: s.soundwaveHideListened,
         blockedKeywords: s.blockedKeywords,
         lyricsVisualizer: s.lyricsVisualizer,
+        videoEnabled: s.videoEnabled,
+        videoUserSet: s.videoUserSet,
+        videoOrder: s.videoOrder,
+        videoOff: s.videoOff,
+        videoCacheLimitMB: s.videoCacheLimitMB,
         lyricsHighlight: s.lyricsHighlight,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,

@@ -945,5 +945,55 @@
     "janela de atalhos",
     "tecla para pausar",
     "guia de teclas"
+  ],
+  "settings.video": [
+    "clipe no lugar da capa",
+    "capa animada",
+    "capa ao vivo",
+    "desligar vídeo",
+    "vídeo travando",
+    "vídeo no player"
+  ],
+  "settings.videoOrder": [
+    "o que mostrar primeiro",
+    "prioridade de vídeo",
+    "clipe ou loop",
+    "reordenar vídeos",
+    "tipo de vídeo preferido"
+  ],
+  "settings.videoClip": [
+    "videoclipe",
+    "clipe oficial",
+    "clipe do youtube",
+    "music video",
+    "mv"
+  ],
+  "settings.videoLoop": [
+    "vídeo em loop",
+    "loop curto",
+    "canvas do spotify",
+    "animação repetida",
+    "looping video"
+  ],
+  "settings.videoGenerated": [
+    "vídeo de ia",
+    "inteligência artificial",
+    "gerado por ia",
+    "vídeo de rede neural",
+    "ai video"
+  ],
+  "settings.videoCacheSize": [
+    "espaço usado por clipes",
+    "cache de vídeo",
+    "limpar vídeos",
+    "apagar clipes baixados",
+    "video cache"
+  ],
+  "settings.videoCacheLimit": [
+    "limitar espaço dos clipes",
+    "vídeos ocupam muito espaço",
+    "tamanho do cache de clipes",
+    "cota de vídeo",
+    "video storage limit"
   ]
 }

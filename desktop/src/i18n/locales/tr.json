@@ -1529,7 +1529,17 @@
       "failed": "Önbellek taşınamadı"
     },
     "releaseNotifications": "Yeni çıkış bildirimleri",
-    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir"
+    "releaseNotificationsDesc": "Takip ettiğiniz sanatçılar yeni bir şey yüklediğinde sistem bildirimi. Uygulama açıkken 30 dakikada bir kontrol edilir",
+    "video": "Video",
+    "videoOrder": "Sıra",
+    "videoClip": "Klip",
+    "videoLoop": "Döngü",
+    "videoGenerated": "Üretilmiş",
+    "videoGeneratedHint": "Yapay zekâ yaptı",
+    "videoNoCodec": "H.264 yok",
+    "videoCacheSize": "Video",
+    "videoCacheLimit": "Video önbellek limiti",
+    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir"
   },
   "effects": {
     "title": "Efektler",

@@ -62,6 +62,7 @@ import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
+import type {PlaybackClock} from './video-sync';
 import {LATE_SKIP_SHARE} from './wave-feedback';
 
 const SKIP_THRESHOLD_SEC = 30;
@@ -83,6 +84,7 @@ let raceUrn: string | null = null;
 let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
+let tickAt = 0;
 let cachedDuration = 0;
 let acceptedShortFile = false;
 let downloadProgress: number | null = null;
@@ -123,6 +125,16 @@ export function subscribe(listener: () => void): () => void {
 
 export function getCurrentTime(): number {
   return cachedTime;
+}
+
+export function getPlaybackClock(): PlaybackClock {
+  const { isPlaying, playbackRate } = usePlayerStore.getState();
+  return {
+    pos: cachedTime,
+    at: tickAt,
+    rate: playbackRate,
+    playing: isPlaying && hasTrack && downloadProgress === null,
+  };
 }
 
 export function getDuration(): number {
@@ -186,6 +198,7 @@ export function alignTo(seconds: number) {
   if (!hasTrack) return;
   invoke('audio_seek', { position: seconds }).catch(console.error);
   cachedTime = seconds;
+  tickAt = performance.now();
   notify();
   setTimeout(() => updateMediaPosition(), 150);
   for (const listener of seekListeners) listener(seconds);
@@ -922,6 +935,7 @@ function maybeStartCrossfade() {
 listen<number>('audio:tick', (event) => {
   if (isCrossfadeLoading()) return;
   cachedTime = event.payload;
+  tickAt = performance.now();
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   notify();
   maybeStartCrossfade();
