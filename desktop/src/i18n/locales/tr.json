@@ -3010,6 +3010,9 @@
     "commentUnlike": "Beğeniyi kaldır",
     "commentDelete": "Yorumu sil",
     "deleted": "Silindi",
-    "undo": "Geri al"
+    "undo": "Geri al",
+    "momentReaction": "Bu ana tepki ver",
+    "momentReactionIdle": "Tepki vermek için parçayı çal",
+    "momentMark": "{{time}} anındaki tepkiler: {{count}}"
   }
 }

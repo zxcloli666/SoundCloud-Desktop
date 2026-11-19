@@ -3094,6 +3094,9 @@
     "commentUnlike": "Remover curtida",
     "commentDelete": "Excluir comentário",
     "deleted": "Excluído",
-    "undo": "Desfazer"
+    "undo": "Desfazer",
+    "momentReaction": "Reação neste momento",
+    "momentReactionIdle": "Toque a faixa para reagir",
+    "momentMark": "Reações em {{time}}: {{count}}"
   }
 }

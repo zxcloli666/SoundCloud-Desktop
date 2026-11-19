@@ -116,6 +116,7 @@ import {
   Shuffle as _Shuffle,
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
+  SmilePlus as _SmilePlus,
   SlidersHorizontal as _SlidersHorizontal,
   Smartphone as _Smartphone,
   Sparkles as _Sparkles,
@@ -281,6 +282,7 @@ export const Shuffle = memo(_Shuffle);
 export const Smartphone = memo(_Smartphone);
 export const SkipBack = memo(_SkipBack);
 export const SkipForward = memo(_SkipForward);
+export const SmilePlus = memo(_SmilePlus);
 export const Sparkles = memo(_Sparkles);
 export const Star = memo(_Star);
 export const Square = memo(_Square);

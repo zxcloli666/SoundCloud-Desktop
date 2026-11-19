@@ -2978,6 +2978,9 @@
     "commentUnlike": "Remove like",
     "commentDelete": "Delete comment",
     "deleted": "Deleted",
-    "undo": "Undo"
+    "undo": "Undo",
+    "momentReaction": "Reaction at this moment",
+    "momentReactionIdle": "Play the track to react",
+    "momentMark": "Reactions at {{time}}: {{count}}"
   }
 }

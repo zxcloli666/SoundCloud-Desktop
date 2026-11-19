@@ -101,6 +101,8 @@
 | `[data-ui="comment"]` | Комментарий |
 | `[data-ui="comment-like"]` | Кнопка лайка комментария |
 | `[data-ui="comment-delete"]` | Кнопка удаления комментария |
+| `[data-ui="moment-reaction"]` | Кнопка реакции в действиях трека |
+| `[data-ui="moment-reaction-mark"]` | Метка реакции на волне |
 | `[data-ui="search-tabs"]` | Вкладки режимов поиска |
 | `[data-ui="search-strip"]` | Строка с вкладками режимов поиска и переключателем вида |
 | `[data-ui="search-view"]` | Переключатель Обложки / Моменты в поиске |

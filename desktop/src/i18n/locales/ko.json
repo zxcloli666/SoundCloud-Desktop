@@ -2917,6 +2917,9 @@
     "commentUnlike": "좋아요 취소",
     "commentDelete": "댓글 삭제",
     "deleted": "삭제됨",
-    "undo": "되돌리기"
+    "undo": "되돌리기",
+    "momentReaction": "이 순간에 반응",
+    "momentReactionIdle": "트랙을 재생하면 반응할 수 있습니다",
+    "momentMark": "{{time}}의 반응: {{count}}"
   }
 }

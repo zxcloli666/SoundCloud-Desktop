@@ -253,6 +253,7 @@ export const RoomHero = React.memo(function RoomHero({
               <TrackActionRail
                 track={track}
                 isPlaying={isThisPlaying}
+                isCurrent={isThis}
                 isOwner={isOwner}
                 onPlay={onPlay}
               />
