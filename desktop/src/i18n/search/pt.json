@@ -961,6 +961,14 @@
     "reordenar vídeos",
     "tipo de vídeo preferido"
   ],
+  "settings.videoPlace": [
+    "video de fundo",
+    "video atras da letra",
+    "video em tela cheia",
+    "video na capa",
+    "fundo com clipe",
+    "onde o video aparece"
+  ],
   "settings.videoClip": [
     "videoclipe",
     "clipe oficial",

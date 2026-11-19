@@ -972,6 +972,14 @@
     "videoları sırala",
     "tercih edilen video"
   ],
+  "settings.videoPlace": [
+    "arka planda video",
+    "sozlerin arkasinda video",
+    "tam ekran video",
+    "kapakta video",
+    "klip arka plan",
+    "video nerede oynar"
+  ],
   "settings.videoClip": [
     "müzik klibi",
     "resmi klip",

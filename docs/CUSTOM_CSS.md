@@ -61,7 +61,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="queue-item"]` | A track in the queue |
 | `[data-ui="lyrics"]` | Full-screen lyrics |
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
-| `[data-ui="track-video"]` | Track video over the cover in full screen and in Moments |
+| `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view` or `moments` |
 | `[data-ui="lyrics-video-toggle"]` | Video on/off button in full screen |
 | `[data-ui="waveform"]` | Waveform |
 

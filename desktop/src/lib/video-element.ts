@@ -1,8 +1,13 @@
 import { type RefObject, useSyncExternalStore } from 'react';
 
-export type VideoHost = 'player' | 'moments';
+export type VideoHost = 'player-cover' | 'player-background' | 'player-view' | 'moments';
 
-const RANK: Record<VideoHost, number> = { moments: 0, player: 1 };
+const RANK: Record<VideoHost, number> = {
+  moments: 0,
+  'player-cover': 1,
+  'player-background': 1,
+  'player-view': 2,
+};
 const H264 = 'video/mp4; codecs="avc1.640028"';
 
 interface Claim {
@@ -82,8 +87,10 @@ function settleOwner() {
   if (owner) setVideoOpaque(owner.host, false);
   owner = next;
   const video = videoElement();
-  if (next) next.slot.appendChild(video);
-  else {
+  if (next) {
+    video.style.objectFit = next.host === 'player-view' ? 'contain' : '';
+    next.slot.appendChild(video);
+  } else {
     video.pause();
     video.removeAttribute('src');
     video.load();

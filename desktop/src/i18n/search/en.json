@@ -1126,6 +1126,14 @@
     "reorder videos",
     "preferred video type"
   ],
+  "settings.videoPlace": [
+    "video as background",
+    "video behind lyrics",
+    "full screen video background",
+    "video in cover",
+    "move video to background",
+    "where video plays"
+  ],
   "settings.videoClip": [
     "music video",
     "official video",

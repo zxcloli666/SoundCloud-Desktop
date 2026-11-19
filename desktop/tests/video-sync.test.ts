@@ -38,6 +38,11 @@ test('medium drift is nudged by five percent towards the audio', () => {
   assert.deepEqual(syncStep(10, 9.7, 120, 1), { kind: 'nudge', rate: 1.05 });
 });
 
+test('once nudging it keeps going until the drift is nearly gone', () => {
+  assert.deepEqual(syncStep(10, 10.1, 120, 1, true), { kind: 'nudge', rate: 0.95 });
+  assert.deepEqual(syncStep(10, 10.03, 120, 1, true), { kind: 'hold', rate: 1 });
+});
+
 test('large drift jumps to the audio', () => {
   assert.deepEqual(syncStep(10, 12, 120, 1), { kind: 'jump', time: 10, rate: 1 });
   assert.deepEqual(syncStep(10, 2, 120, 1), { kind: 'jump', time: 10, rate: 1 });

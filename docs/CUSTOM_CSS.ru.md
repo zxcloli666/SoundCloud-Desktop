@@ -61,7 +61,7 @@
 | `[data-ui="queue-item"]` | Трек в очереди |
 | `[data-ui="lyrics"]` | Полноэкранный текст песни |
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |
-| `[data-ui="track-video"]` | Видео трека поверх обложки в полноэкранном плеере и в Моментах |
+| `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view` или `moments` |
 | `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере |
 | `[data-ui="waveform"]` | Волна трека |
 

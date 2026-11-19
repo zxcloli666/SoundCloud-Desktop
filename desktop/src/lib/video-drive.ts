@@ -35,6 +35,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   let wantPlay = false;
   let playAfterSeek = false;
   let endedAt = 0;
+  let nudging = false;
   let stallTimer = 0;
   let opaqueTimer = 0;
 
@@ -80,7 +81,8 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
       return show(ready);
     }
     const target = videoTarget(clockTime(now, performance.now()), picked.offsetMs);
-    const step = syncStep(target, video.currentTime, video.duration, now.rate);
+    const step = syncStep(target, video.currentTime, video.duration, now.rate, nudging);
+    nudging = step.kind === 'nudge';
     if (step.kind === 'wait') {
       pause();
       seekTo(0);

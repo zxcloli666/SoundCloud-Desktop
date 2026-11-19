@@ -25,6 +25,7 @@ export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
 export type SearchPlayback = 'similar' | 'results';
 export type RoomCrossfade = 'mine' | 'room';
 export type RoomAccess = 'private' | 'public';
+export type VideoPlace = 'cover' | 'background';
 export const CROSSFADE_MAX_SEC = 12;
 export const MINI_PLAYER_OPACITY_MIN = 0.1;
 export const miniPlayerStockOpacity = (mode: PerfMode) => (mode === 'light' ? 0.92 : 0.55);
@@ -150,6 +151,7 @@ export interface SettingsState {
   videoEnabled: boolean;
   videoUserSet: boolean;
   videoOrder: VideoKind[];
+  videoPlace: VideoPlace;
   videoOff: VideoKind[];
   videoCacheLimitMB: number;
   lyricsHighlight: LyricsHighlight;
@@ -245,6 +247,7 @@ export interface SettingsState {
   setVideoOrder: (order: VideoKind[]) => void;
   setVideoKindOn: (kind: VideoKind, on: boolean) => void;
   setVideoCacheLimitMB: (mb: number) => void;
+  setVideoPlace: (place: VideoPlace) => void;
   setLyricsHighlight: (v: LyricsHighlight) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
@@ -340,6 +343,7 @@ const DEFAULTS = {
   videoEnabled: true,
   videoUserSet: false,
   videoOrder: VIDEO_KINDS,
+  videoPlace: 'cover' as VideoPlace,
   videoOff: [] as VideoKind[],
   videoCacheLimitMB: 1024,
   lyricsHighlight: 'word' as LyricsHighlight,
@@ -517,6 +521,7 @@ export const useSettingsStore = create<SettingsState>()(
           videoOff: on ? s.videoOff.filter((k) => k !== kind) : [...new Set([...s.videoOff, kind])],
         })),
       setVideoCacheLimitMB: (videoCacheLimitMB) => set({ videoCacheLimitMB }),
+      setVideoPlace: (videoPlace) => set({ videoPlace }),
       setLyricsHighlight: (lyricsHighlight) => set({ lyricsHighlight }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
@@ -671,6 +676,7 @@ export const useSettingsStore = create<SettingsState>()(
         videoEnabled: s.videoEnabled,
         videoUserSet: s.videoUserSet,
         videoOrder: s.videoOrder,
+        videoPlace: s.videoPlace,
         videoOff: s.videoOff,
         videoCacheLimitMB: s.videoCacheLimitMB,
         lyricsHighlight: s.lyricsHighlight,

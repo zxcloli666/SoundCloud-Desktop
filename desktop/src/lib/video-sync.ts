@@ -15,6 +15,7 @@ export type SyncStep =
 export const VIDEO_LEAD_MS = 0;
 export const SYNC_EVERY_MS = 500;
 export const DRIFT_HOLD_SEC = 0.15;
+export const DRIFT_SETTLED_SEC = 0.04;
 export const DRIFT_JUMP_SEC = 0.5;
 export const NUDGE = 0.05;
 
@@ -32,12 +33,14 @@ export function syncStep(
   current: number,
   duration: number,
   rate: number,
+  nudging = false,
 ): SyncStep {
   if (target < 0) return { kind: 'wait' };
   if (Number.isFinite(duration) && duration > 0 && target >= duration) return { kind: 'end' };
   const drift = current - target;
   const size = Math.abs(drift);
-  if (size <= DRIFT_HOLD_SEC) return { kind: 'hold', rate };
+  const hold = nudging ? DRIFT_SETTLED_SEC : DRIFT_HOLD_SEC;
+  if (size <= hold) return { kind: 'hold', rate };
   if (size <= DRIFT_JUMP_SEC) {
     return { kind: 'nudge', rate: rate * (drift > 0 ? 1 - NUDGE : 1 + NUDGE) };
   }

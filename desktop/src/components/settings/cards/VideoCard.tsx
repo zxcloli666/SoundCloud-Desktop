@@ -5,8 +5,8 @@ import { Clapperboard, Film, InfinityLoop, Sparkles } from '../../../lib/icons';
 import { canPlayH264 } from '../../../lib/video-element';
 import { videoOrder } from '../../../lib/video-pick';
 import type { VideoKind } from '../../../stores/player';
-import { useSettingsStore } from '../../../stores/settings';
-import { Card, Toggle } from '../primitives';
+import { useSettingsStore, type VideoPlace } from '../../../stores/settings';
+import { Card, Row, Segmented, Toggle } from '../primitives';
 import { LayoutList } from './LayoutList';
 
 const ICONS: Record<VideoKind, ReactNode> = {
@@ -23,6 +23,8 @@ export function VideoCard() {
   const off = useSettingsStore((s) => s.videoOff);
   const setOrder = useSettingsStore((s) => s.setVideoOrder);
   const setKindOn = useSettingsStore((s) => s.setVideoKindOn);
+  const place = useSettingsStore((s) => s.videoPlace);
+  const setPlace = useSettingsStore((s) => s.setVideoPlace);
   const supported = canPlayH264();
   const live = enabled && supported;
   const order = videoOrder(savedOrder);
@@ -72,15 +74,26 @@ export function VideoCard() {
       }
     >
       <div
-        data-ui="settings-row"
         inert={!live}
         aria-disabled={!live}
-        className={`space-y-2.5 transition-opacity duration-200 ${live ? '' : 'opacity-40 grayscale'}`}
+        className={`space-y-4 transition-opacity duration-200 ${live ? '' : 'opacity-40 grayscale'}`}
       >
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-35">
-          {t('settings.videoOrder')}
-        </p>
-        <LayoutList items={items} onMove={move} />
+        <Row title={t('settings.videoPlace')}>
+          <Segmented<VideoPlace>
+            value={place}
+            onChange={setPlace}
+            options={[
+              { id: 'cover', label: t('settings.videoPlaceCover') },
+              { id: 'background', label: t('settings.videoPlaceBackground') },
+            ]}
+          />
+        </Row>
+        <div data-ui="settings-row" className="space-y-2.5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-35">
+            {t('settings.videoOrder')}
+          </p>
+          <LayoutList items={items} onMove={move} />
+        </div>
       </div>
     </Card>
   );
