@@ -46,3 +46,9 @@ test('a reading does not overwrite a fresh local change', () => {
   seedCommentLikes([{ commentUrn: URN, liked: false, count: 1 }], 40_000);
   assert.equal(getCommentLike(URN)?.liked, false);
 });
+
+test('forgetting clears every like', () => {
+  seedCommentLikes([{ commentUrn: URN, liked: true, count: 2 }]);
+  forgetCommentLikes();
+  assert.equal(getCommentLike(URN), undefined);
+});

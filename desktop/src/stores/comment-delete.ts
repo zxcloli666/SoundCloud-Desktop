@@ -56,3 +56,12 @@ async function sendDelete(trackUrn: string, commentUrn: string) {
   if (done) dropCommentFromCache(queryClient, trackUrn, commentUrn);
   setHidden(commentUrn, false);
 }
+
+export function cancelPendingDeletes() {
+  for (const [commentUrn, timer] of timers) {
+    clearTimeout(timer);
+    toast.dismiss(toastId(commentUrn));
+  }
+  timers.clear();
+  useHiddenComments.setState({ urns: {} });
+}
