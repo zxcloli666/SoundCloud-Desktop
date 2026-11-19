@@ -237,9 +237,9 @@ impl Keys {
         if v.fallback || v.alias_kind.is_some() {
             return None;
         }
-        if self.titled(&v.text) >= SAID_MIN {
+        if v.title.is_none() && self.titled(&v.text) >= SAID_MIN {
             return Some(Said {
-                name: Some(v.text.clone()),
+                name: v.spoken.name.clone(),
                 artist: None,
             });
         }
@@ -252,8 +252,8 @@ impl Keys {
             .as_ref()
             .is_some_and(|a| near(qa, a) >= SAID_MIN);
         (named || credited).then(|| Said {
-            name: named.then(|| qt.clone()),
-            artist: credited.then(|| qa.clone()),
+            name: v.spoken.name.clone().filter(|_| named),
+            artist: v.spoken.artist.clone().filter(|_| credited),
         })
     }
 
@@ -316,6 +316,7 @@ pub struct QueryKeys {
     pub text: String,
     pub artist: Option<String>,
     pub title: Option<String>,
+    pub spoken: Said,
     pub kept: bool,
     pub lemmatized: bool,
     pub fallback: bool,
@@ -336,6 +337,10 @@ impl QueryKeys {
             text,
             artist: v.artist.as_deref().map(fold),
             title,
+            spoken: Said {
+                name: v.title.clone().or_else(|| Some(v.text.clone())),
+                artist: v.artist.clone(),
+            },
             kept: v.kept_fillers,
             lemmatized: v.lemmatized,
             fallback: v.fallback,
