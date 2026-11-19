@@ -13,6 +13,8 @@ import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type
 import type {PerfMode} from '../lib/perf';
 import {tauriStorage} from '../lib/tauri-storage';
 import type {TrackSort} from '../lib/track-sort';
+import {VIDEO_KINDS} from '../lib/video-pick';
+import type {VideoKind} from './player';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -23,6 +25,7 @@ export type SkipStuckAfterSec = 0 | 10 | 20 | 30 | 60;
 export type SearchPlayback = 'similar' | 'results';
 export type RoomCrossfade = 'mine' | 'room';
 export type RoomAccess = 'private' | 'public';
+export type VideoPlace = 'cover' | 'background';
 export const CROSSFADE_MAX_SEC = 12;
 export const MINI_PLAYER_OPACITY_MIN = 0.1;
 export const miniPlayerStockOpacity = (mode: PerfMode) => (mode === 'light' ? 0.92 : 0.55);
@@ -145,6 +148,13 @@ export interface SettingsState {
   soundwaveHideListened: boolean;
   blockedKeywords: string[];
   lyricsVisualizer: boolean;
+  videoEnabled: boolean;
+  videoUserSet: boolean;
+  videoOrder: VideoKind[];
+  videoPlace: VideoPlace;
+  videoCoverOpacity: number;
+  videoOff: VideoKind[];
+  videoCacheLimitMB: number;
   lyricsHighlight: LyricsHighlight;
   artistWaveCollapsed: boolean;
   wallhavenApiKey: string;
@@ -234,6 +244,12 @@ export interface SettingsState {
   setSoundwaveHideListened: (v: boolean) => void;
   setBlockedKeywords: (keywords: string[]) => void;
   setLyricsVisualizer: (v: boolean) => void;
+  setVideoEnabled: (v: boolean) => void;
+  setVideoOrder: (order: VideoKind[]) => void;
+  setVideoKindOn: (kind: VideoKind, on: boolean) => void;
+  setVideoCacheLimitMB: (mb: number) => void;
+  setVideoPlace: (place: VideoPlace) => void;
+  setVideoCoverOpacity: (opacity: number) => void;
   setLyricsHighlight: (v: LyricsHighlight) => void;
   setArtistWaveCollapsed: (v: boolean) => void;
   setWallhavenApiKey: (key: string) => void;
@@ -326,6 +342,13 @@ const DEFAULTS = {
   soundwaveHideListened: true,
   blockedKeywords: [] as string[],
   lyricsVisualizer: false,
+  videoEnabled: true,
+  videoUserSet: false,
+  videoOrder: VIDEO_KINDS,
+  videoPlace: 'background' as VideoPlace,
+  videoCoverOpacity: 1,
+  videoOff: [] as VideoKind[],
+  videoCacheLimitMB: 1024,
   lyricsHighlight: 'word' as LyricsHighlight,
   artistWaveCollapsed: false,
   wallhavenApiKey: '',
@@ -494,6 +517,16 @@ export const useSettingsStore = create<SettingsState>()(
       setSoundwaveHideListened: (soundwaveHideListened) => set({ soundwaveHideListened }),
       setBlockedKeywords: (blockedKeywords) => set({ blockedKeywords }),
       setLyricsVisualizer: (lyricsVisualizer) => set({ lyricsVisualizer }),
+      setVideoEnabled: (videoEnabled) => set({ videoEnabled, videoUserSet: true }),
+      setVideoOrder: (videoOrder) => set({ videoOrder }),
+      setVideoKindOn: (kind, on) =>
+        set((s) => ({
+          videoOff: on ? s.videoOff.filter((k) => k !== kind) : [...new Set([...s.videoOff, kind])],
+        })),
+      setVideoCacheLimitMB: (videoCacheLimitMB) => set({ videoCacheLimitMB }),
+      setVideoPlace: (videoPlace) => set({ videoPlace }),
+      setVideoCoverOpacity: (opacity) =>
+        set({ videoCoverOpacity: Math.min(1, Math.max(0, opacity)) }),
       setLyricsHighlight: (lyricsHighlight) => set({ lyricsHighlight }),
       setArtistWaveCollapsed: (artistWaveCollapsed) => set({ artistWaveCollapsed }),
       setWallhavenApiKey: (wallhavenApiKey) => set({ wallhavenApiKey }),
@@ -645,6 +678,13 @@ export const useSettingsStore = create<SettingsState>()(
         soundwaveHideListened: s.soundwaveHideListened,
         blockedKeywords: s.blockedKeywords,
         lyricsVisualizer: s.lyricsVisualizer,
+        videoEnabled: s.videoEnabled,
+        videoUserSet: s.videoUserSet,
+        videoOrder: s.videoOrder,
+        videoPlace: s.videoPlace,
+        videoCoverOpacity: s.videoCoverOpacity,
+        videoOff: s.videoOff,
+        videoCacheLimitMB: s.videoCacheLimitMB,
         lyricsHighlight: s.lyricsHighlight,
         artistWaveCollapsed: s.artistWaveCollapsed,
         wallhavenApiKey: s.wallhavenApiKey,

@@ -1477,7 +1477,21 @@
       "failed": "Could not move the cache"
     },
     "releaseNotifications": "New release notifications",
-    "releaseNotificationsDesc": "A system notification when artists you follow upload something new. Checked every 30 minutes while the app runs"
+    "releaseNotificationsDesc": "A system notification when artists you follow upload something new. Checked every 30 minutes while the app runs",
+    "video": "Video",
+    "videoOrder": "Order",
+    "videoPlace": "Where video plays",
+    "videoPlaceCover": "Cover",
+    "videoPlaceBackground": "Background",
+    "videoCoverOpacity": "Cover over video",
+    "videoClip": "Clip",
+    "videoLoop": "Loop",
+    "videoGenerated": "Generated",
+    "videoGeneratedHint": "Made by AI",
+    "videoNoCodec": "No H.264",
+    "videoCacheSize": "Video",
+    "videoCacheLimit": "Video cache limit",
+    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first"
   },
   "effects": {
     "title": "Effects",

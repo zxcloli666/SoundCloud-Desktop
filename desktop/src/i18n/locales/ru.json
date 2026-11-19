@@ -1513,7 +1513,21 @@
       "failed": "Не удалось перенести кэш"
     },
     "releaseNotifications": "Уведомления о новых релизах",
-    "releaseNotificationsDesc": "Системное уведомление, когда артисты из подписок загружают что-то новое. Проверка раз в 30 минут, пока приложение запущено"
+    "releaseNotificationsDesc": "Системное уведомление, когда артисты из подписок загружают что-то новое. Проверка раз в 30 минут, пока приложение запущено",
+    "video": "Видео",
+    "videoOrder": "Порядок",
+    "videoPlace": "Где играет видео",
+    "videoPlaceCover": "Обложка",
+    "videoPlaceBackground": "Фон",
+    "videoCoverOpacity": "Обложка поверх видео",
+    "videoClip": "Клип",
+    "videoLoop": "Петля",
+    "videoGenerated": "Сгенерированное",
+    "videoGeneratedHint": "Сделано ИИ",
+    "videoNoCodec": "Нет H.264",
+    "videoCacheSize": "Видео",
+    "videoCacheLimit": "Лимит кэша видео",
+    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели"
   },
   "effects": {
     "title": "Эффекты",

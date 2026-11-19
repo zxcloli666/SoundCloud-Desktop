@@ -1519,7 +1519,21 @@
       "failed": "Não foi possível mover o cache"
     },
     "releaseNotifications": "Notificações de lançamentos",
-    "releaseNotificationsDesc": "Uma notificação do sistema quando artistas que você segue publicam algo novo. Verificamos a cada 30 minutos enquanto o app está aberto"
+    "releaseNotificationsDesc": "Uma notificação do sistema quando artistas que você segue publicam algo novo. Verificamos a cada 30 minutos enquanto o app está aberto",
+    "video": "Vídeo",
+    "videoOrder": "Ordem",
+    "videoPlace": "Onde o vídeo aparece",
+    "videoPlaceCover": "Capa",
+    "videoPlaceBackground": "Fundo",
+    "videoCoverOpacity": "Capa sobre o vídeo",
+    "videoClip": "Clipe",
+    "videoLoop": "Loop",
+    "videoGenerated": "Gerado",
+    "videoGeneratedHint": "Feito por IA",
+    "videoNoCodec": "Sem H.264",
+    "videoCacheSize": "Vídeo",
+    "videoCacheLimit": "Limite do cache de vídeo",
+    "videoCacheLimitDesc": "Vídeos que você não vê há mais tempo são apagados primeiro"
   },
   "effects": {
     "title": "Efeitos",

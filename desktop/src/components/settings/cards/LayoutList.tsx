@@ -22,7 +22,7 @@ import { lockX } from '../../layout/SortableStack';
 export interface LayoutListItem {
   id: string;
   icon: ReactNode;
-  label: string;
+  label: ReactNode;
   hint?: string;
   dimmed?: boolean;
   trailing?: ReactNode;

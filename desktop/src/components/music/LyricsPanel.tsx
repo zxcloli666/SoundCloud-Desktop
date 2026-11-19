@@ -10,6 +10,7 @@ import {LyricsVisualizer} from './lyrics/LyricsVisualizer';
 import {SplitDivider} from './lyrics/SplitDivider';
 import {TimedCommentsRail} from './lyrics/TimedComments';
 import {TrackColumn} from './lyrics/TrackColumn';
+import {PlayerVideo} from './lyrics/TrackVideo';
 
 /* ── Lyrics Panel (fullscreen) ────────────────────────────────
  * Thin shell: immersive backdrop (wallpaper-aware) + floating header (close is
@@ -30,6 +31,7 @@ export const LyricsPanel = React.memo(() => {
   const colorRef = useArtworkColor(track?.artwork_url ?? null);
   const splitLayoutRef = useRef<HTMLDivElement>(null);
   const visualizerEnabled = useSettingsStore((s) => s.lyricsVisualizer);
+  const videoBehind = useSettingsStore((s) => s.videoPlace) === 'background';
 
   useEffect(() => {
     if (!open) return;
@@ -48,6 +50,7 @@ export const LyricsPanel = React.memo(() => {
   return (
     <div data-ui="lyrics" data-scheme="dark" className="fixed inset-0 z-[60] flex flex-col overflow-hidden animate-fade-in-up bg-[#08080a]">
         <LyricsBackdrop artworkSrc={artwork500} color={colorRef.current}/>
+        {videoBehind && <PlayerVideo track={track} host="player-background"/>}
         {visualizerEnabled && <LyricsVisualizer/>}
 
         <LyricsHeader

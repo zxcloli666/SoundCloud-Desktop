@@ -1,4 +1,5 @@
 pub mod audio_route;
+pub mod byte_range;
 pub mod call;
 pub mod call_nodes;
 pub mod dns;
@@ -19,4 +20,5 @@ pub mod server;
 pub mod static_server;
 pub mod system_proxy;
 pub mod traced;
+pub mod video_server;
 pub mod wallpapers;

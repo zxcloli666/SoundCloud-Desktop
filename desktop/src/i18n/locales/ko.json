@@ -1461,7 +1461,21 @@
       "failed": "캐시를 이동하지 못했어요"
     },
     "releaseNotifications": "새 릴리스 알림",
-    "releaseNotificationsDesc": "팔로우한 아티스트가 새 곡을 올리면 시스템 알림을 보냅니다. 앱이 실행 중일 때 30분마다 확인합니다"
+    "releaseNotificationsDesc": "팔로우한 아티스트가 새 곡을 올리면 시스템 알림을 보냅니다. 앱이 실행 중일 때 30분마다 확인합니다",
+    "video": "비디오",
+    "videoOrder": "순서",
+    "videoPlace": "영상 위치",
+    "videoPlaceCover": "커버",
+    "videoPlaceBackground": "배경",
+    "videoCoverOpacity": "영상 위 커버",
+    "videoClip": "뮤직비디오",
+    "videoLoop": "루프",
+    "videoGenerated": "생성됨",
+    "videoGeneratedHint": "AI가 만든 영상",
+    "videoNoCodec": "H.264 없음",
+    "videoCacheSize": "비디오",
+    "videoCacheLimit": "비디오 캐시 한도",
+    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요"
   },
   "effects": {
     "title": "효과",
