@@ -257,7 +257,7 @@
       "video": "there is a video: {{kind}}",
       "videoClip": "clip",
       "videoLoop": "loop",
-      "videoGenerated": "generated"
+      "videoGenerated": "AI"
     },
     "notFoundOnSc": "not found on SoundCloud",
     "wantedHint": "Track is known but not uploaded yet",

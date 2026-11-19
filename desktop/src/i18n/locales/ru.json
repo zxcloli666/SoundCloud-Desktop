@@ -257,7 +257,7 @@
       "video": "есть видео: {{kind}}",
       "videoClip": "клип",
       "videoLoop": "петля",
-      "videoGenerated": "сгенерированное"
+      "videoGenerated": "AI"
     },
     "notFoundOnSc": "не найдено на SoundCloud",
     "wantedHint": "Трек известен, но ещё не залит на SC",

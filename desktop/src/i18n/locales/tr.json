@@ -296,7 +296,7 @@
       "video": "video var: {{kind}}",
       "videoClip": "klip",
       "videoLoop": "döngü",
-      "videoGenerated": "üretilmiş"
+      "videoGenerated": "AI"
     },
     "notFoundOnSc": "SoundCloud'da bulunamadı",
     "wantedHint": "Şarkı biliniyor ama henüz yüklenmedi",
