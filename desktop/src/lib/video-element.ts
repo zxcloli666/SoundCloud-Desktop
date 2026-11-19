@@ -57,6 +57,8 @@ export function setVideoOpaque(host: VideoHost, opaque: boolean): void {
   const next = opaque ? host : opaqueIn === host ? null : opaqueIn;
   if (next === opaqueIn) return;
   opaqueIn = next;
+  if (next) document.documentElement.dataset.videoOpaque = next;
+  else delete document.documentElement.dataset.videoOpaque;
   for (const listener of opaqueListeners) listener();
 }
 
