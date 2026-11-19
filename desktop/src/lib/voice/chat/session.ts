@@ -3,6 +3,7 @@ import { getDuration } from '../../audio';
 import { getIsPremium } from '../../premium-cache';
 import type { ExecuteContext, PlayerPort, StepResult } from '../execute';
 import { playerPort } from '../player-port';
+import { marked } from '../readings';
 import { type HudView, useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
 import type { Entity, HeardEvent, VoiceCommand, VoiceSource } from '../types';
@@ -155,6 +156,7 @@ export async function chatStep(
     if (active?.abort === abort) active = null;
   });
   if (end.status === 'ok') {
+    if (end.kept) useVoiceStore.getState().learnReadings(marked(end.kept));
     const said = { at: Date.now(), user: cmd.heard, assistant: end.kept ?? end.say };
     useVoiceRuntime.setState((s) => ({ dialog: withExchange(s.dialog, said) }));
   }

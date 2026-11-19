@@ -100,9 +100,15 @@ export interface Entity {
   id: string;
 }
 
+export interface Said {
+  name?: string;
+  artist?: string;
+}
+
 export interface Scored {
   entity: Entity;
   score: number;
+  said?: Said;
 }
 
 export type Decision =

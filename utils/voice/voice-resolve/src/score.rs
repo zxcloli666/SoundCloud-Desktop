@@ -72,7 +72,12 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
     let mut out: Vec<Scored> = cands
         .into_iter()
         .map(|entity| {
-            let (sim, qlen, fallback, alias) = best_match(&Keys::new(&entity), &queries);
+            let keys = Keys::new(&entity);
+            let (sim, query) = best_match(&keys, &queries);
+            let qlen = query.map_or(0, |q| q.text.chars().count());
+            let fallback = query.is_some_and(|q| q.fallback);
+            let alias = query.is_some_and(|q| q.alias_kind.is_some());
+            let said = query.and_then(|q| keys.said(q));
             let score = sim.powi(2)
                 * popularity_factor(entity.popularity)
                 * kind_factor(entity.kind, parsed.kind_hint)
@@ -84,6 +89,7 @@ pub fn rank(parsed: &Parsed, cands: Vec<Entity>, boosts: &Boosts) -> Vec<Scored>
                 qlen,
                 fallback,
                 alias,
+                said,
             }
         })
         .collect();

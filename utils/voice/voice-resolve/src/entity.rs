@@ -21,6 +21,14 @@ impl Entity {
     }
 }
 
+#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+pub struct Said {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub artist: Option<String>,
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct Scored {
     pub entity: Entity,
@@ -29,6 +37,8 @@ pub struct Scored {
     pub score: f32,
     pub fallback: bool,
     pub alias: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub said: Option<Said>,
 }
 
 #[derive(Debug, Clone, Serialize)]

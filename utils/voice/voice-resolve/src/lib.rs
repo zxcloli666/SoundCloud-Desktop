@@ -11,7 +11,7 @@ mod spoken;
 pub use answer::answer_ask;
 pub use bare::Bare;
 pub use catalog::{Catalog, FixtureCatalog};
-pub use entity::{Decision, Entity, Scored};
+pub use entity::{Decision, Entity, Said, Scored};
 pub use phrase::{Lookup, Phrase};
 pub use score::{Boosts, rank};
 
@@ -354,6 +354,31 @@ album\tГруппа крови\tКино\t2000000\t
             search("альбом группа крови", &Kind::ALL)[0],
             "Кино - Группа крови"
         );
+    }
+
+    #[test]
+    fn a_pick_keeps_the_words_it_was_called_by() {
+        let rows =
+            format!("{ROWS}artist\tPsychosis\t\t90000\t\ntrack\tNightmare\tPsychosis\t40000\t\n");
+        let catalog = FixtureCatalog::from_tsv(&rows, true);
+        let said =
+            |heard: &str| match interpret_one(heard, &catalog, &Boosts::none(), Bare::Popular)
+                .decision
+            {
+                Some(Decision::Act { pick }) => (pick.entity.label(), pick.said),
+                other => panic!("{heard}: {other:?}"),
+            };
+        let called = |name: &str| {
+            Some(Said {
+                name: Some(name.into()),
+                artist: None,
+            })
+        };
+        assert_eq!(
+            said("включи психосис"),
+            ("Psychosis".into(), called("психосис"))
+        );
+        assert_eq!(said("включи цепи").1, called("цепи"));
     }
 
     #[test]

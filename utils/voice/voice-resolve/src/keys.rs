@@ -1,4 +1,4 @@
-use crate::entity::Entity;
+use crate::entity::{Entity, Said};
 use voice_nlu::{Kind, Variant, fold, skeleton, word_ends};
 
 type Grams = Vec<(char, char)>;
@@ -233,6 +233,30 @@ impl Keys {
         credits(artist) || credits(title)
     }
 
+    pub fn said(&self, v: &QueryKeys) -> Option<Said> {
+        if v.fallback || v.alias_kind.is_some() {
+            return None;
+        }
+        if self.titled(&v.text) >= SAID_MIN {
+            return Some(Said {
+                name: Some(v.text.clone()),
+                artist: None,
+            });
+        }
+        let (Some(qa), Some(qt)) = (&v.artist, &v.title) else {
+            return None;
+        };
+        let named = self.titled(qt) >= SAID_MIN;
+        let credited = self
+            .artist
+            .as_ref()
+            .is_some_and(|a| near(qa, a) >= SAID_MIN);
+        (named || credited).then(|| Said {
+            name: named.then(|| qt.clone()),
+            artist: credited.then(|| qa.clone()),
+        })
+    }
+
     fn titled(&self, title: &str) -> f32 {
         let sims = self.names.iter().map(|(name, w)| near(title, name) * w);
         sims.fold(0.0f32, f32::max)
@@ -249,6 +273,7 @@ const CALLED: f32 = 0.97;
 const ONE_WORD: f32 = 0.9;
 const STRICT_SLACK: f32 = 0.2;
 const CREDIT_MIN: f32 = 0.88;
+const SAID_MIN: f32 = 0.75;
 const FALLBACK_FACTOR: f32 = 0.92;
 const ALIAS_FACTOR: f32 = 0.96;
 
@@ -366,17 +391,12 @@ pub fn best_sim(keys: &Keys, queries: &[QueryKeys]) -> f32 {
     best_match(keys, queries).0
 }
 
-pub fn best_match(keys: &Keys, queries: &[QueryKeys]) -> (f32, usize, bool, bool) {
-    let mut best = (0.0f32, 0usize, false, false);
+pub fn best_match<'a>(keys: &Keys, queries: &'a [QueryKeys]) -> (f32, Option<&'a QueryKeys>) {
+    let mut best = (0.0f32, None);
     for q in queries {
         let sim = keys.sim(q);
         if sim > best.0 {
-            best = (
-                sim,
-                q.text.chars().count(),
-                q.fallback,
-                q.alias_kind.is_some(),
-            );
+            best = (sim, Some(q));
         }
     }
     best

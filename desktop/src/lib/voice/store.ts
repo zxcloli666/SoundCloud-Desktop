@@ -3,6 +3,7 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import { tauriStorage } from '../tauri-storage';
 import type { ToolMark } from './chat/types';
 import { defaultConfig } from './defaults';
+import { learned, type Readings } from './readings';
 import { mergeConfig, SAVED_VERSION, upgradeSaved } from './saved';
 import type {
   ActivationConfig,
@@ -51,6 +52,7 @@ interface VoiceStore {
   history: HistoryRow[];
   notes: string[];
   wakeLog: WakeMark[];
+  readings: Readings;
   patch: (patch: Partial<VoiceConfig>) => void;
   patchActivation: (patch: Partial<ActivationConfig>) => void;
   patchWake: (patch: Partial<WakeConfig>) => void;
@@ -63,6 +65,7 @@ interface VoiceStore {
   clearHistory: () => void;
   setNotes: (notes: string[]) => void;
   markWake: (mark: WakeMark) => void;
+  learnReadings: (pairs: [string, string][]) => void;
 }
 
 export const useVoiceStore = create<VoiceStore>()(
@@ -72,6 +75,7 @@ export const useVoiceStore = create<VoiceStore>()(
       history: [],
       notes: [],
       wakeLog: [],
+      readings: {},
       patch: (patch) => set((s) => ({ config: { ...s.config, ...patch } })),
       patchActivation: (patch) =>
         set((s) => ({ config: { ...s.config, activation: { ...s.config.activation, ...patch } } })),
@@ -107,6 +111,8 @@ export const useVoiceStore = create<VoiceStore>()(
         set((s) => ({
           wakeLog: [...s.wakeLog.filter((m) => mark.at - m.at < WAKE_WINDOW_MS), mark],
         })),
+      learnReadings: (pairs) =>
+        set((s) => (pairs.length ? { readings: learned(s.readings, pairs) } : s)),
     }),
     {
       name: 'sc-voice',
@@ -119,6 +125,7 @@ export const useVoiceStore = create<VoiceStore>()(
         history: s.history,
         notes: s.notes,
         wakeLog: s.wakeLog,
+        readings: s.readings,
       }),
       merge: (persisted, current) => {
         const saved = (persisted ?? {}) as Partial<VoiceStore>;

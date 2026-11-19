@@ -15,6 +15,7 @@ import { execute, revert, type StepResult } from './execute';
 import { dismiss } from './hud';
 import { voiceIpc } from './ipc';
 import { playerPort } from './player-port';
+import { spoken } from './readings';
 import { reply } from './replies';
 import { type DoneItem, useVoiceRuntime } from './runtime';
 import { type RowResult, useVoiceStore } from './store';
@@ -138,16 +139,32 @@ async function reread(id: string): Promise<boolean> {
   );
 }
 
+function withReadings(cmd: VoiceCommand, res: StepResult): StepResult {
+  const pick = cmd.decision?.decision === 'act' ? cmd.decision.pick : null;
+  if (res.kind === 'done' && pick?.said) {
+    useVoiceStore.getState().learnReadings([
+      [pick.entity.name, pick.said.name ?? ''],
+      [pick.entity.artist ?? '', pick.said.artist ?? ''],
+    ]);
+  }
+  if (language() !== 'ru' || !res.outcome.speech) return res;
+  const speech = spoken(useVoiceStore.getState().readings, res.outcome.speech);
+  return { ...res, outcome: { ...res.outcome, speech } };
+}
+
 async function handle(cmd: VoiceCommand) {
   const run = groupOf(cmd);
-  const res = await execute(cmd, playerPort, {
-    lang: language(),
-    address: address(),
-    now: Date.now(),
-    stack,
-    chat: chatOn() ? chatStep : undefined,
-    refused,
-  });
+  const res = withReadings(
+    cmd,
+    await execute(cmd, playerPort, {
+      lang: language(),
+      address: address(),
+      now: Date.now(),
+      stack,
+      chat: chatOn() ? chatStep : undefined,
+      refused,
+    }),
+  );
   dropChatAhead(cmd.id);
   stack = res.stack;
   const code = refusal(res);
