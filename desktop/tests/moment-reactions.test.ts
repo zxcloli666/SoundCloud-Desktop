@@ -62,3 +62,9 @@ test('an emoji comes from the known values or from the urn', () => {
   assert.equal(emojiOf(FIRE, []), '\u{1F525}');
   assert.equal(emojiOf('sc:interactiontypevalue:nope', []), '');
 });
+
+test('forgetting clears every moment', () => {
+  setOwnReaction(TRACK, 5, FIRE);
+  forgetMoments();
+  assert.equal(getMoment(TRACK, 5), undefined);
+});
