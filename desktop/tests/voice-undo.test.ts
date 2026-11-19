@@ -70,7 +70,7 @@ test('undo is refused once the user changed the same thing by hand', async () =>
     stack: res.stack,
   });
   assert.equal(undo.kind, 'failed');
-  assert.equal(undo.outcome.speech, 'Нечего отменять');
+  assert.equal(undo.outcome.speech, 'Отменять нечего');
   assert.equal(port.state.volume, 70);
 });
 

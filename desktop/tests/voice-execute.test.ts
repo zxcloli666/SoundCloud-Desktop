@@ -278,15 +278,15 @@ test('the fixed line names why the chat is away', async () => {
   assert.deepEqual(asked, []);
 });
 
-test('the fixed chat lines say «скажите» to a formal listener and stay as they were otherwise', async () => {
+test('the fixed chat lines say «назовите» to a formal listener and stay as they were otherwise', async () => {
   const { chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] });
   const cmd = command('none', { heard: 'как дела', chatless: true });
   const said = async (refused: string, address?: Address | null, lang: 'ru' | 'en' = 'ru') =>
     (await execute(cmd, fakePort(), { ...ctx([], lang), chat, refused, address })).outcome.speech;
   const today = {
-    away: 'Сейчас не могу поболтать, но музыку включу — скажи, что поставить',
-    busy: 'Слишком много вопросов подряд, дай мне минутку. А музыку включу — скажи, что поставить',
-    lost: 'Что-то со связью, поболтать не выходит. А музыку включу — скажи, что поставить',
+    away: 'Сейчас не могу поболтать, но музыку включу — просто назови трек или артиста',
+    busy: 'Слишком много вопросов подряд, дай мне минутку. А музыку включу — просто назови трек или артиста',
+    lost: 'Что-то со связью, поболтать не выходит. А музыку включу — просто назови трек или артиста',
   };
   for (const address of [undefined, null, 'informal'] as const) {
     assert.equal(await said('unavailable', address), today.away);
@@ -295,15 +295,15 @@ test('the fixed chat lines say «скажите» to a formal listener and stay 
   }
   assert.equal(
     await said('unavailable', 'formal'),
-    'Сейчас не могу поболтать, но музыку включу — скажите, что поставить',
+    'Сейчас не могу поболтать, но музыку включу — просто назовите трек или артиста',
   );
   assert.equal(
     await said('rate_limited', 'formal'),
-    'Слишком много вопросов подряд, дайте мне минутку. А музыку включу — скажите, что поставить',
+    'Слишком много вопросов подряд, дайте мне минутку. А музыку включу — просто назовите трек или артиста',
   );
   assert.equal(
     await said('network', 'formal'),
-    'Что-то со связью, поболтать не выходит. А музыку включу — скажите, что поставить',
+    'Что-то со связью, поболтать не выходит. А музыку включу — просто назовите трек или артиста',
   );
   for (const refused of ['unavailable', 'rate_limited', 'network']) {
     assert.equal(await said(refused, 'formal', 'en'), await said(refused, null, 'en'));
@@ -328,7 +328,7 @@ test('a role that brings a formal address makes the fixed lines polite', async (
   const nobody = { gender: null, name: '', address: null };
   const address = addressOf(nobody, { role: 'butler', own: '' });
   const res = await execute(cmd, fakePort(), { ...ctx(), chat, address });
-  assert.match(res.outcome.speech, /скажите, что поставить$/);
+  assert.match(res.outcome.speech, /просто назовите трек или артиста$/);
   const friend = addressOf(nobody, { role: 'friend', own: '' });
   const help = await execute(command('help', { heard: 'что умеешь' }), fakePort(), {
     ...ctx(),
