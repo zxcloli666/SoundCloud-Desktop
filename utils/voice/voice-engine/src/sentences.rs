@@ -76,8 +76,9 @@ impl Splitter {
         let mut sentences = Vec::new();
         while let Some(end) = self.end(last) {
             let piece: Vec<char> = self.pending.drain(..end).collect();
-            let sentence = clean(&piece).and_then(|sentence| self.grown(sentence));
-            sentences.extend(sentence);
+            if let Some(sentence) = clean(&piece) {
+                sentences.extend(self.grown(sentence));
+            }
         }
         if last || self.waited() {
             sentences.extend(self.release());
@@ -85,9 +86,11 @@ impl Splitter {
         sentences
     }
 
-    fn grown(&mut self, sentence: String) -> Option<String> {
-        if !self.opening {
-            return Some(sentence);
+    fn grown(&mut self, sentence: String) -> Vec<String> {
+        let mut ready = Vec::new();
+        let joined = self.held.chars().count() + 2 + sentence.chars().count();
+        if !self.held.is_empty() && joined > self.longest {
+            ready.extend(self.release());
         }
         if self.held.ends_with(char::is_alphanumeric) {
             self.held.push('.');
@@ -96,8 +99,11 @@ impl Splitter {
             self.held.push(' ');
         }
         self.held.push_str(&sentence);
-        let enough = self.held.chars().count() >= self.least;
-        enough.then(|| self.release()).flatten()
+        let enough = !self.opening || self.held.chars().count() >= self.least;
+        if enough && !swallowed(&self.held) {
+            ready.extend(self.release());
+        }
+        ready
     }
 
     fn waited(&self) -> bool {
@@ -127,6 +133,12 @@ impl Splitter {
             end => end,
         }
     }
+}
+
+fn swallowed(text: &str) -> bool {
+    let word = text.trim_end_matches(|c: char| !c.is_alphanumeric());
+    let mut ending = word.chars().rev().take(2).flat_map(char::to_lowercase);
+    ending.next() == Some('ь') && ending.next() == Some('т')
 }
 
 fn sentence_end(text: &[char]) -> Option<usize> {
@@ -510,10 +522,38 @@ mod tests {
     }
 
     #[test]
+    fn a_sentence_ending_on_a_soft_t_is_said_with_the_next_one() {
+        assert_eq!(
+            whole("Мне жаль это слышать. Может, включу что-нибудь тёплое? Или волну."),
+            [
+                "Мне жаль это слышать. Может, включу что-нибудь тёплое?",
+                "Или волну."
+            ]
+        );
+        assert_eq!(
+            streamed("Что включить? Могу поставить. Скажи слово.", 3),
+            ["Что включить? Могу поставить. Скажи слово."]
+        );
+        assert_eq!(
+            whole("Просто скажи, что хочешь послушать."),
+            ["Просто скажи, что хочешь послушать."]
+        );
+    }
+
+    #[test]
+    fn a_held_sentence_goes_alone_when_the_next_one_would_not_fit() {
+        let next = "А потом ".to_owned() + &"очень ".repeat(16) + "длинная фраза.";
+        let mut served = Splitter::new(0).within(LONGEST_SERVED);
+        let mut out = served.push(&format!("Что включить? {next} Всё."));
+        out.extend(served.finish());
+        assert_eq!(out, ["Что включить?", next.as_str(), "Всё."]);
+    }
+
+    #[test]
     fn an_ellipsis_ends_only_before_a_new_sentence() {
         assert_eq!(
-            whole("Ну... не знаю… Может быть. Хм... Ладно."),
-            ["Ну... не знаю…", "Может быть.", "Хм...", "Ладно."]
+            whole("Ну... не знаю… Может, и так. Хм... Ладно."),
+            ["Ну... не знаю…", "Может, и так.", "Хм...", "Ладно."]
         );
     }
 
@@ -709,7 +749,7 @@ mod tests {
         let text = "Привет! Сегодня 3.5 градуса, т. е. холодно... Но музыка греет. \
                     Включаю «Кино»? Dr. Dre тоже есть. Готово";
         let expected = whole(text);
-        assert_eq!(expected.len(), 6, "{expected:?}");
+        assert_eq!(expected.len(), 5, "{expected:?}");
         for size in [1, 2, 3, 7, 15, 40] {
             assert_eq!(streamed(text, size), expected, "by {size}");
         }

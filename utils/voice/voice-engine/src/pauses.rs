@@ -11,6 +11,8 @@ const SHARE: f32 = 0.4;
 const HELD: f32 = 2.0;
 const SPARE: f32 = 0.4;
 const SILENT: f32 = 1.5;
+const LONG_PAUSE: f32 = 0.7;
+const BLIP: f32 = 0.12;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Mark {
@@ -139,8 +141,12 @@ impl Pauses {
 pub struct Tail {
     window: usize,
     limit: usize,
+    long_pause: usize,
+    blip: usize,
     spoke: bool,
     still: usize,
+    held: Vec<f32>,
+    held_sound: usize,
 }
 
 impl Tail {
@@ -149,20 +155,40 @@ impl Tail {
         Tail {
             window: ((rate * WINDOW).round() as usize).max(1),
             limit: (rate * SILENT).round() as usize,
+            long_pause: (rate * LONG_PAUSE).round() as usize,
+            blip: (rate * BLIP).round() as usize,
             spoke: false,
             still: 0,
+            held: Vec::new(),
+            held_sound: 0,
         }
     }
 
-    pub fn push(&mut self, samples: &[f32]) {
+    pub fn pass(&mut self, samples: &[f32]) -> Vec<f32> {
+        let mut out = Vec::with_capacity(samples.len());
         for window in samples.chunks(self.window) {
-            if quiet(window) {
-                self.still += window.len();
-            } else {
+            let loud = !quiet(window);
+            let after_long_pause = loud && self.spoke && self.still >= self.long_pause;
+            if loud {
                 self.spoke = true;
                 self.still = 0;
+            } else {
+                self.still += window.len();
+            }
+            if self.held.is_empty() && !after_long_pause {
+                out.extend_from_slice(window);
+                continue;
+            }
+            self.held.extend_from_slice(window);
+            if loud {
+                self.held_sound += window.len();
+            }
+            if self.held_sound > self.blip {
+                out.append(&mut self.held);
+                self.held_sound = 0;
             }
         }
+        out
     }
 
     pub fn fell_silent(&self) -> bool {
@@ -338,28 +364,56 @@ mod tests {
     #[test]
     fn a_line_that_keeps_silent_after_its_words_fell_silent() {
         let mut tail = Tail::new(RATE);
-        tail.push(&loud(0.5));
-        tail.push(&still(1.4));
+        tail.pass(&loud(0.5));
+        tail.pass(&still(1.4));
         assert!(!tail.fell_silent());
-        tail.push(&still(0.1));
+        tail.pass(&still(0.1));
         assert!(tail.fell_silent());
     }
 
     #[test]
     fn a_pause_before_more_words_is_not_the_end_of_a_line() {
         let mut tail = Tail::new(RATE);
-        tail.push(&loud(0.5));
-        tail.push(&still(1.4));
-        tail.push(&loud(0.2));
-        tail.push(&still(1.4));
+        tail.pass(&loud(0.5));
+        tail.pass(&still(1.4));
+        tail.pass(&loud(0.2));
+        tail.pass(&still(1.4));
         assert!(!tail.fell_silent());
     }
 
     #[test]
     fn silence_before_the_first_word_ends_nothing() {
         let mut tail = Tail::new(RATE);
-        tail.push(&still(5.0));
+        tail.pass(&still(5.0));
         assert!(!tail.fell_silent());
+    }
+
+    #[test]
+    fn a_short_sound_after_a_long_pause_at_the_end_of_a_line_is_dropped() {
+        let mut tail = Tail::new(RATE);
+        let mut heard = tail.pass(&loud(0.5));
+        heard.extend(tail.pass(&still(0.9)));
+        heard.extend(tail.pass(&loud(0.1)));
+        heard.extend(tail.pass(&still(0.3)));
+        assert_eq!(heard.len(), loud(0.5).len() + still(0.9).len());
+    }
+
+    #[test]
+    fn words_after_a_long_pause_are_kept_whole() {
+        let mut tail = Tail::new(RATE);
+        let whole: Vec<f32> = [loud(0.5), still(0.9), loud(0.4), still(0.2)].concat();
+        let mut heard = Vec::new();
+        for piece in whole.chunks(1000) {
+            heard.extend(tail.pass(piece));
+        }
+        assert_eq!(heard.len(), whole.len());
+    }
+
+    #[test]
+    fn a_short_word_after_an_ordinary_pause_is_kept() {
+        let mut tail = Tail::new(RATE);
+        let whole: Vec<f32> = [loud(0.5), still(0.6), loud(0.1)].concat();
+        assert_eq!(tail.pass(&whole).len(), whole.len());
     }
 
     #[test]

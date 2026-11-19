@@ -10,8 +10,7 @@ const RATE: u32 = 24000;
 const PER_CHAR: usize = 240;
 const CHUNK: usize = 480;
 const BROKEN: &str = "сломайся";
-const LONG: &str =
-    "Это довольно длинная фраза, чтобы речь шла заметное время и её можно было оборвать.";
+const LONG: &str = "Это довольно длинная фраза, чтобы речь шла заметное время и её можно было оборвать на середине.";
 
 #[derive(Clone, Default)]
 struct Said(Arc<Mutex<Vec<String>>>);

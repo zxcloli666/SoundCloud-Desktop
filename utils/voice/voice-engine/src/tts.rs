@@ -185,7 +185,7 @@ impl Out<'_> {
 
 impl Sink for Live<'_> {
     fn audio(&mut self, samples: Vec<f32>) {
-        self.tail.push(&samples);
+        let samples = self.tail.pass(&samples);
         self.raw.extend_from_slice(&samples);
         self.out.audio(RATE, self.shaper.push(samples));
     }
