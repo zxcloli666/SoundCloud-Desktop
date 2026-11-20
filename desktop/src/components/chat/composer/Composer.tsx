@@ -49,6 +49,7 @@ import { wrapSelection } from './wrap';
 
 const NO_COMPOSE: Compose = { reply: null, edit: null };
 const NO_MEMBERS: Member[] = [];
+const INPUT_MIN_PX = 36;
 const INPUT_MAX_PX = 168;
 const COUNTER_FROM = 200;
 const LINKS_SCAN = 16;
@@ -68,7 +69,10 @@ function asMember(user: UserRef): Member {
 function fitHeight(input: HTMLTextAreaElement | null, empty: boolean) {
   if (!input) return;
   input.style.height = 'auto';
-  if (!empty) input.style.height = `${Math.min(input.scrollHeight, INPUT_MAX_PX)}px`;
+  const full = empty ? INPUT_MIN_PX : Math.max(input.scrollHeight, INPUT_MIN_PX);
+  input.style.height = `${Math.min(full, INPUT_MAX_PX)}px`;
+  input.style.overflowY = full > INPUT_MAX_PX ? 'auto' : 'hidden';
+  if (empty) input.scrollTop = 0;
 }
 
 export const Composer = memo(function Composer({ conversationId }: { conversationId: ConvId }) {
@@ -133,6 +137,19 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
   }, [compose.reply]);
 
   useLayoutEffect(() => fitHeight(inputRef.current, text === ''), [text]);
+
+  useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+    let width = input.clientWidth;
+    const watch = new ResizeObserver(() => {
+      if (input.clientWidth === width) return;
+      width = input.clientWidth;
+      fitHeight(input, input.value === '');
+    });
+    watch.observe(input);
+    return () => watch.disconnect();
+  }, []);
 
   const setComposeState = (change: Partial<Compose>) =>
     useChatThreadStore.getState().setCompose(conversationId, change);
@@ -320,7 +337,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
               )}
               disabled={paused}
               style={{ outline: 'none' }}
-              className="max-h-[168px] min-h-[36px] flex-1 resize-none bg-transparent px-2 py-[8px] text-[13.5px] leading-[1.45] text-ink-92 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed"
+              className="max-h-[168px] min-h-[36px] flex-1 resize-none overflow-y-hidden bg-transparent px-2 py-[8px] text-[13.5px] leading-5 text-ink-92 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed"
             />
             {limited && !editing && <NewcomerRing text={rich.text} bodyMax={newcomer.bodyMax} />}
             <EmojiButton onFocusInput={() => inputRef.current?.focus()} />
