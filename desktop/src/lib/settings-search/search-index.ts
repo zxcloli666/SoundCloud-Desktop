@@ -35,6 +35,13 @@ export interface SearchIndex {
   postings: Map<string, Posting[]>;
   idf: Map<string, number>;
   unknownIdf: number;
+  matched: Map<string, WordMatch>;
+}
+
+interface WordMatch {
+  words: { word: string; sim: number }[];
+  idf: number;
+  bestSim: number;
 }
 
 export function buildSearchIndex(docs: SearchDoc[]): SearchIndex {
@@ -67,6 +74,7 @@ export function buildSearchIndex(docs: SearchDoc[]): SearchIndex {
     postings,
     idf,
     unknownIdf: rarity(docs.length, 0) * UNKNOWN_WORD_WEIGHT,
+    matched: new Map(),
   };
 }
 
@@ -162,7 +170,9 @@ function scoreDocs(index: SearchIndex, tokens: string[]): { known: number; score
   return { known, scored };
 }
 
-function matchWords(index: SearchIndex, token: string) {
+function matchWords(index: SearchIndex, token: string): WordMatch {
+  const known = index.matched.get(token);
+  if (known) return known;
   const words: { word: string; sim: number }[] = [];
   let bestSim = 0;
   let idf = index.unknownIdf;
@@ -175,7 +185,9 @@ function matchWords(index: SearchIndex, token: string) {
       idf = index.idf.get(word) ?? idf;
     }
   }
-  return { words, idf, bestSim };
+  const match = { words, idf, bestSim };
+  index.matched.set(token, match);
+  return match;
 }
 
 function rarity(docCount: number, withToken: number): number {
