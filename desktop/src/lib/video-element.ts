@@ -1,9 +1,10 @@
 import { type RefObject, useSyncExternalStore } from 'react';
 
-export type VideoHost = 'player-cover' | 'player-background' | 'player-view' | 'moments';
+export type VideoHost = 'player-cover' | 'player-background' | 'player-view' | 'moments' | 'room';
 
 const RANK: Record<VideoHost, number> = {
   moments: 0,
+  room: 0,
   'player-cover': 1,
   'player-background': 1,
   'player-view': 2,

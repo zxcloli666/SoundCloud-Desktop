@@ -62,7 +62,7 @@
 | `[data-ui="lyrics"]` | Полноэкранный текст песни |
 | `[data-ui="lyrics-backdrop"]` | Размытый фон полноэкранного плеера |
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |
-| `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view` или `moments` |
+| `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view`, `moments` или `room` (обложка страницы трека) |
 | `html[data-video-opaque]` | Стоит, пока видео целиком закрывает своё место (значения как у `data-place`); то, что под ним, скрыто |
 | `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере |
 | `[data-ui="waveform"]` | Волна трека |
@@ -96,6 +96,7 @@
 | `[data-ui="user-banner"]` | Баннер профиля над этим блоком |
 | `[data-ui="user-banner-glow"]` | Размытый баннер под всем блоком |
 | `[data-ui="track-hero"]` | Верхний блок страницы трека |
+| `[data-ui="track-cover-video"]` | Слой видео в обложке страницы трека, гаснет, когда трек перестаёт быть текущим |
 | `[data-ui="discover-hero"]` | Верхний блок Обзора |
 | `[data-ui="comments"]` | Список комментариев |
 | `[data-ui="comment"]` | Комментарий |

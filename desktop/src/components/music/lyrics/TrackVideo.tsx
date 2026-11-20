@@ -25,20 +25,20 @@ const DIM =
 
 type PlayerHost = Extract<VideoHost, `player-${string}`>;
 
-const VideoLayer = React.memo(function VideoLayer(feed: VideoFeed) {
+export const VideoLayer = React.memo(function VideoLayer(feed: VideoFeed) {
   const slotRef = useTrackVideo(feed);
   return (
     <div
       ref={slotRef}
       data-ui="track-video"
       data-place={feed.host}
-      className={`pointer-events-none absolute inset-0 overflow-hidden bg-black ${feed.host === 'player-background' ? DIM : ''}`}
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${feed.host === 'room' ? '' : 'bg-black'} ${feed.host === 'player-background' ? DIM : ''}`}
       style={{ opacity: 0 }}
     />
   );
 });
 
-function onPlayerSeek(listener: () => void) {
+export function onPlayerSeek(listener: () => void) {
   return subscribeSeek(() => listener());
 }
 
@@ -50,19 +50,13 @@ export const PlayerVideo = React.memo(function PlayerVideo({
   host: PlayerHost;
 }) {
   const allowed = useVideoAllowed();
-  const ask = allowed && track.videos === undefined && !isLocalUrn(track.urn);
-  const { data } = useQuery({
-    queryKey: ['track', track.urn],
-    queryFn: () => api<Track>(`/tracks/${encodeURIComponent(track.urn)}`),
-    enabled: ask,
-    staleTime: FRESH_MS,
-  });
+  const videos = useTrackVideos(track, allowed);
   usePrefetchUpcoming(allowed && host !== 'player-view');
   return (
     <VideoLayer
       host={host}
       urn={track.urn}
-      videos={track.videos ?? data?.videos}
+      videos={videos}
       clock={getPlaybackClock}
       onSeek={onPlayerSeek}
     />
@@ -80,7 +74,18 @@ export const MomentVideo = React.memo(function MomentVideo({ track }: { track: T
   );
 });
 
-function usePrefetchUpcoming(allowed: boolean) {
+export function useTrackVideos(track: Track, allowed: boolean) {
+  const ask = allowed && track.videos === undefined && !isLocalUrn(track.urn);
+  const { data } = useQuery({
+    queryKey: ['track', track.urn],
+    queryFn: () => api<Track>(`/tracks/${encodeURIComponent(track.urn)}`),
+    enabled: ask,
+    staleTime: FRESH_MS,
+  });
+  return track.videos ?? data?.videos;
+}
+
+export function usePrefetchUpcoming(allowed: boolean) {
   useEffect(() => {
     if (!allowed) return;
     let done: string | null = null;

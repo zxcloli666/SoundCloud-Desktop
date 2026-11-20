@@ -119,6 +119,7 @@ export const RoomHero = React.memo(function RoomHero({
             aura={aura.aura}
             verified={ad.isEnriched && ad.verified}
             isPlaying={isThisPlaying}
+            isCurrent={isThis}
             onToggle={onPlay}
           />
 
