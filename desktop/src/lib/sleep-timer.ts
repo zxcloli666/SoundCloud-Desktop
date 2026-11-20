@@ -1,7 +1,6 @@
 import { usePlayerStore } from '../stores/player';
-import { useSettingsStore } from '../stores/settings';
 import { type SleepTimer, useSleepTimerStore } from '../stores/sleep-timer';
-import { getCurrentTime, getDuration, subscribe, subscribeTrackEnd } from './audio';
+import { getCurrentTime, getDuration, holdTrackEnd, subscribe, subscribeTrackEnd } from './audio';
 import { trackedInvoke as invoke } from './diagnostics';
 
 export const SLEEP_MINUTES = [15, 30, 45, 60];
@@ -53,17 +52,18 @@ function watchTime(endsAt: number) {
 }
 
 function watchTrackEnd() {
+  holdTrackEnd(true);
   const unsubscribeTick = subscribe(() => {
     const duration = getDuration();
     if (duration <= 0) return;
     const { playbackRate } = usePlayerStore.getState();
-    const crossfade = useSettingsStore.getState().crossfadeSec;
-    const leftMs = ((duration - crossfade - getCurrentTime()) / playbackRate) * 1000;
+    const leftMs = ((duration - getCurrentTime()) / playbackRate) * 1000;
     if (leftMs <= FADE_MS) fadeTo(leftMs);
     else restoreVolume();
   });
-  const unsubscribeEnd = subscribeTrackEnd(() => setTimeout(finish, 0));
+  const unsubscribeEnd = subscribeTrackEnd(finish);
   return () => {
+    holdTrackEnd(false);
     unsubscribeTick();
     unsubscribeEnd();
   };
