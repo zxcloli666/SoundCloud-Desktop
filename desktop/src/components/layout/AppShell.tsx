@@ -80,6 +80,8 @@ const keybindings: Keybinding[] = [
   },
   { key: 'q', label: 'kb.queue', group: 'panels', display: 'Q' },
   { key: 'l', label: 'kb.lyrics', group: 'panels', display: 'L' },
+  { key: ',', label: 'kb.lyricsEarlier', group: 'panels', display: ',' },
+  { key: '.', label: 'kb.lyricsLater', group: 'panels', display: '.' },
   { key: '[', label: 'kb.sidebar', group: 'panels', display: '[' },
   { key: 'F11', label: 'kb.fullscreen', group: 'panels', display: 'F11' },
   { key: 'Ctrl+=', label: 'kb.zoomIn', group: 'panels', display: isMac() ? '⌘ +' : 'Ctrl +' },

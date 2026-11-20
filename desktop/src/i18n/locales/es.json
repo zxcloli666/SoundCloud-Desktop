@@ -351,7 +351,10 @@
     "deleteAction": "Eliminar",
     "deleteConfirm": "\"{{title}}\" se eliminará de SoundCloud para siempre. Las reproducciones, los me gusta y los comentarios también se perderán.",
     "deleted": "Pista eliminada",
-    "notSyncedYet": "Esta pista aún no está sincronizada, inténtalo en un minuto"
+    "notSyncedYet": "Esta pista aún no está sincronizada, inténtalo en un minuto",
+    "lyricsEarlier": "Letra 0,5 s antes",
+    "lyricsLater": "Letra 0,5 s después",
+    "lyricsOffsetReset": "Restablecer ajuste de letra"
   },
   "playlist": {
     "playAll": "Reproducir todo",
@@ -1623,7 +1626,9 @@
     "groupGlobal": "Globales (en cualquier app)",
     "zoomIn": "Acercar la interfaz",
     "zoomOut": "Alejar la interfaz",
-    "zoomReset": "Restablecer escala de la interfaz"
+    "zoomReset": "Restablecer escala de la interfaz",
+    "lyricsEarlier": "Letra antes",
+    "lyricsLater": "Letra después"
   },
   "importer": {
     "title": "Importar",

@@ -350,7 +350,10 @@
     "deleteAction": "Delete",
     "deleteConfirm": "\"{{title}}\" will be deleted from SoundCloud for good. Plays, likes and comments go with it.",
     "deleted": "Track deleted",
-    "notSyncedYet": "This track isn't synced yet, try again in a minute"
+    "notSyncedYet": "This track isn't synced yet, try again in a minute",
+    "lyricsEarlier": "Lyrics earlier 0.5 s",
+    "lyricsLater": "Lyrics later 0.5 s",
+    "lyricsOffsetReset": "Reset lyrics offset"
   },
   "playlist": {
     "playAll": "Play All",
@@ -1600,7 +1603,9 @@
     "groupGlobal": "Global (any app)",
     "zoomIn": "Zoom interface in",
     "zoomOut": "Zoom interface out",
-    "zoomReset": "Reset interface scale"
+    "zoomReset": "Reset interface scale",
+    "lyricsEarlier": "Lyrics earlier",
+    "lyricsLater": "Lyrics later"
   },
   "importer": {
     "title": "Import",

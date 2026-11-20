@@ -90,6 +90,9 @@
           "path": "$APPDATA/sc-local-library.json"
         },
         {
+          "path": "$APPDATA/sc-lyrics-offset.json"
+        },
+        {
           "path": "$APPDATA/sc-player.json"
         },
         {
