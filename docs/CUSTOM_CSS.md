@@ -135,6 +135,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="shelf"]` | Horizontal shelf |
 | `[data-ui="sync-wait"]` | Your library is still in the sync queue: placeholders, the queue card, a strip in place of a shelf, the STAR lane. `[data-stage]` is `calm`, `long` or `priority`, `[data-kind]` is `syncing` or `stalled` |
 | `[data-ui="sync-wait-progress"]` | Inside the sync strip: the lane, the countdown and the saved count. `[data-lane]` is `read` or `queue` |
+| `[data-ui="library-sync-now"]` | The "Sync now" button next to the library sync chip. `[data-state]` is `ready`, `pending` or `cooldown` |
 
 ### Controls
 

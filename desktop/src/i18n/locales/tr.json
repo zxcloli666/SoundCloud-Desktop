@@ -3063,5 +3063,11 @@
     "ahead_one": "{{count}} önde",
     "ahead_other": "{{count}} önde",
     "saved": "Alındı"
+  },
+  "syncNow": {
+    "label": "Şimdi eşitle",
+    "hint": "Beğenilerini ve çalma listelerini SoundCloud'dan yeniden oku",
+    "next": "Sonraki eşitleme {{time}}",
+    "failed": "Başlatılamadı, daha sonra tekrar dene"
   }
 }

@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertCircle, Check, Clock, Lock, RefreshCw } from '../../lib/icons';
 import { usePerfMode } from '../../lib/perf';
 import { type SyncState, type SyncStatus, syncStateOf, useSyncStatus } from '../../lib/sync-status';
+import { LibrarySyncButton } from './LibrarySyncButton';
 import { useSyncCopy } from './useSyncCopy';
 
 const TONE: Record<SyncState, string> = {
@@ -68,14 +69,25 @@ export const SyncStatusBadge = React.memo(function SyncStatusBadge({
 export const SyncStatusChip = React.memo(function SyncStatusChip({
   enabled = true,
   quietWhenSynced = false,
+  syncNow = false,
   className,
 }: {
   enabled?: boolean;
   quietWhenSynced?: boolean;
+  syncNow?: boolean;
   className?: string;
 }) {
   const { data } = useSyncStatus({ enabled });
-  if (!data) return null;
-  if (quietWhenSynced && syncStateOf(data) === 'synced') return null;
-  return <SyncStatusBadge status={data} withAction={enabled} className={className} />;
+  const quiet = !data || (quietWhenSynced && syncStateOf(data) === 'synced');
+  if (!syncNow) {
+    return quiet ? null : (
+      <SyncStatusBadge status={data} withAction={enabled} className={className} />
+    );
+  }
+  return (
+    <span className={`inline-flex flex-wrap items-center gap-2 ${className ?? ''}`}>
+      {!quiet && <SyncStatusBadge status={data} withAction={enabled} />}
+      <LibrarySyncButton enabled={enabled} />
+    </span>
+  );
 });

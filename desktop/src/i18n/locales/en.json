@@ -3031,5 +3031,11 @@
     "ahead_one": "{{count}} ahead",
     "ahead_other": "{{count}} ahead",
     "saved": "Saved"
+  },
+  "syncNow": {
+    "label": "Sync now",
+    "hint": "Re-read your likes and playlists from SoundCloud",
+    "next": "Next sync at {{time}}",
+    "failed": "Couldn't start sync, try again later"
   }
 }

@@ -3097,5 +3097,11 @@
     "ahead_one": "{{count}} devant",
     "ahead_other": "{{count}} devant",
     "saved": "Enregistré"
+  },
+  "syncNow": {
+    "label": "Synchroniser",
+    "hint": "Relire vos likes et playlists depuis SoundCloud",
+    "next": "Prochaine synchro à {{time}}",
+    "failed": "Impossible de lancer, réessayez plus tard"
   }
 }

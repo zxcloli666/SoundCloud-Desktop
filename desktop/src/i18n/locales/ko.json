@@ -2970,5 +2970,11 @@
     "ahead_one": "앞에 {{count}}",
     "ahead_other": "앞에 {{count}}",
     "saved": "저장됨"
+  },
+  "syncNow": {
+    "label": "지금 동기화",
+    "hint": "SoundCloud에서 좋아요와 플레이리스트를 다시 불러오기",
+    "next": "다음 동기화 {{time}}",
+    "failed": "시작하지 못했어요, 나중에 다시 시도하세요"
   }
 }
