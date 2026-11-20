@@ -32,6 +32,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="sidebar"]` | Left navigation |
 | `[data-ui="nav-item"]` | A link in the left navigation |
 | `[data-ui="sidebar-pins"]` | Pinned artists in the left navigation |
+| `[data-ui="offline-toggle"]` | Offline mode switch in the left navigation and on the Offline page. `data-active="true"` while it is on |
 | `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |

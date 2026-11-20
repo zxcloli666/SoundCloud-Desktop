@@ -93,6 +93,9 @@
           "path": "$APPDATA/sc-effects.json"
         },
         {
+          "path": "$APPDATA/sc-history-queue.json"
+        },
+        {
           "path": "$APPDATA/sc-local-library.json"
         },
         {

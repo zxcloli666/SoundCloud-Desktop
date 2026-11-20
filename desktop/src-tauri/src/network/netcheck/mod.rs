@@ -138,6 +138,9 @@ fn auto_gap(reports: &[NetReport]) -> Duration {
 }
 
 fn start(trigger: Trigger, reason: Option<String>) -> Option<Flight> {
+    if crate::network::offline::on() {
+        return None;
+    }
     let checker = CHECKER.get()?;
     let mut memory = checker.memory();
     if let Some(flight) = memory

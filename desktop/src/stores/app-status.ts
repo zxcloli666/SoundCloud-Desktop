@@ -8,9 +8,11 @@ interface AppStatusState {
   navigatorOnline: boolean;
   backendReachable: boolean;
   offlineBypass: boolean;
+  offlineMode: boolean;
   setNavigatorOnline: (online: boolean) => void;
   setBackendReachable: (reachable: boolean) => void;
   setOfflineBypass: (value: boolean) => void;
+  setOfflineMode: (value: boolean) => void;
   confirmOnline: () => void;
 }
 
@@ -20,9 +22,11 @@ export const useAppStatusStore = create<AppStatusState>()(
       navigatorOnline: typeof navigator === 'undefined' ? true : navigator.onLine,
       backendReachable: true,
       offlineBypass: false,
+      offlineMode: false,
       setNavigatorOnline: (online) => set({ navigatorOnline: online }),
       setBackendReachable: (backendReachable) => set({ backendReachable }),
       setOfflineBypass: (offlineBypass) => set({ offlineBypass }),
+      setOfflineMode: (offlineMode) => set({ offlineMode }),
       confirmOnline: () => set({ navigatorOnline: true, backendReachable: true }),
     }),
     {
@@ -34,7 +38,9 @@ export const useAppStatusStore = create<AppStatusState>()(
 );
 
 export const selectAppMode = (s: AppStatusState): AppMode =>
-  s.offlineBypass || !s.navigatorOnline || !s.backendReachable ? 'offline' : 'online';
+  s.offlineMode || s.offlineBypass || !s.navigatorOnline || !s.backendReachable
+    ? 'offline'
+    : 'online';
 
 export function useAppMode(): AppMode {
   return useAppStatusStore(selectAppMode);
@@ -46,4 +52,8 @@ export function getAppMode(): AppMode {
 
 export function isOfflineMode() {
   return getAppMode() !== 'online';
+}
+
+export function offlineModeOn(): boolean {
+  return useAppStatusStore.getState().offlineMode;
 }

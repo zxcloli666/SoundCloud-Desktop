@@ -41,7 +41,7 @@ struct Routed<S> {
 static SNAPSHOT: OnceLock<Mutex<Snapshot>> = OnceLock::new();
 
 pub fn follow(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
-    let builder = crate::network::dns::install(builder);
+    let builder = crate::network::offline::gate(crate::network::dns::install(builder));
     if env_proxy_set() {
         return builder;
     }

@@ -194,6 +194,7 @@ pub fn audio_set_metadata(
     duration_secs: f64,
     state: State<'_, AudioState>,
 ) {
+    let cover_url = cover_url.filter(|_| !crate::network::offline::on());
     engine::set_metadata(title, artist, cover_url, duration_secs, state);
 }
 

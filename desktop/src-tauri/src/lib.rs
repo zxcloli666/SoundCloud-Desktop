@@ -97,6 +97,7 @@ pub fn run() {
                 .path()
                 .app_data_dir()
                 .expect("failed to resolve app data dir");
+            network::offline::load(&data_dir);
 
             let storage = Arc::new(app::storage::StorageLocation::init(&cache_dir, &data_dir));
             let audio_dirs = storage.audio_dirs();
@@ -158,6 +159,7 @@ pub fn run() {
                 video_cache.dir().to_path_buf(),
             ));
             let rt_handle = rt.handle().clone();
+            network::offline::commands::forward(app.handle().clone(), &rt_handle);
             network::dns::init(rt_handle.clone());
             network::netcheck::init(app.handle().clone(), rt_handle.clone(), data_dir.clone());
             diag::start::run(
@@ -467,6 +469,8 @@ pub fn run() {
             network::edge::edge_note,
             network::fetch::net_fetch,
             network::fetch::net_fetch_cancel,
+            network::offline::commands::offline_mode_get,
+            network::offline::commands::offline_mode_set,
             diag::commands::diag_error,
             diag::commands::diag_bundle,
             diag::commands::diag_queue_batch,

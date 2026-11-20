@@ -11,6 +11,7 @@ mod h2_server;
 pub mod health;
 pub mod image_cache;
 pub mod netcheck;
+pub mod offline;
 pub mod pace;
 pub mod pro;
 pub mod proxy;

@@ -587,6 +587,13 @@
     "elegir altavoces",
     "dispositivo de salida"
   ],
+  "settings.offlineMode": [
+    "usar sin internet",
+    "modo avión",
+    "bloquear la red",
+    "ahorrar datos",
+    "no conectar al servidor"
+  ],
   "netCheck.title": [
     "sin internet",
     "no conecta",
@@ -961,7 +968,6 @@
     "guardar likes en el disco",
     "música sin internet",
     "escuchar sin conexión",
-    "modo sin conexión",
     "disco lleno"
   ],
   "settings.audioCacheSize": [
