@@ -123,6 +123,7 @@ export interface SettingsState {
   closeAction: CloseAction;
   uiScale: number;
   miniPlayerOpacity: number | null;
+  pinnedLikes: boolean;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   pinnedArtists: SidebarPinnedArtist[];
   discordRpcEnabled: boolean;
@@ -214,6 +215,7 @@ export interface SettingsState {
   setCloseAction: (action: CloseAction) => void;
   setUiScale: (scale: number) => void;
   setMiniPlayerOpacity: (opacity: number) => void;
+  setPinnedLikes: (pinned: boolean) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   renamePinnedPlaylist: (urn: string, title: string) => void;
@@ -317,6 +319,7 @@ const DEFAULTS = {
   closeAction: 'tray' as CloseAction,
   uiScale: 100,
   miniPlayerOpacity: null as number | null,
+  pinnedLikes: false,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   pinnedArtists: [] as SidebarPinnedArtist[],
   discordRpcEnabled: true,
@@ -455,6 +458,7 @@ export const useSettingsStore = create<SettingsState>()(
       setUiScale: (uiScale) => set({ uiScale }),
       setMiniPlayerOpacity: (opacity) =>
         set({ miniPlayerOpacity: Math.min(1, Math.max(MINI_PLAYER_OPACITY_MIN, opacity)) }),
+      setPinnedLikes: (pinnedLikes) => set({ pinnedLikes }),
       pinPlaylist: (playlist) =>
         set((s) => ({
           pinnedPlaylists: [
@@ -653,6 +657,7 @@ export const useSettingsStore = create<SettingsState>()(
         closeAction: s.closeAction,
         uiScale: s.uiScale,
         miniPlayerOpacity: s.miniPlayerOpacity,
+        pinnedLikes: s.pinnedLikes,
         pinnedPlaylists: s.pinnedPlaylists,
         pinnedArtists: s.pinnedArtists,
         discordRpcEnabled: s.discordRpcEnabled,

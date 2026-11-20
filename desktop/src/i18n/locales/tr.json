@@ -69,6 +69,8 @@
     "quickAccess": "Hızlı Erişim",
     "pinPlaylist": "Çalma listesini sabitle",
     "unpinPlaylist": "Çalma listesinin sabitini kaldır",
+    "pinLikes": "Beğenileri sabitle",
+    "unpinLikes": "Beğenilerin sabitini kaldır",
     "pinned": "Kenar çubuğuna sabitlendi",
     "unpinned": "Kenar çubuğundan kaldırıldı",
     "pinArtist": "Kenar çubuğuna sabitle",

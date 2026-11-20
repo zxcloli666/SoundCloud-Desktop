@@ -33,6 +33,8 @@
     "quickAccess": "Quick Access",
     "pinPlaylist": "Pin playlist",
     "unpinPlaylist": "Unpin playlist",
+    "pinLikes": "Pin likes",
+    "unpinLikes": "Unpin likes",
     "pinned": "Pinned to sidebar",
     "unpinned": "Removed from sidebar",
     "pinArtist": "Pin to sidebar",

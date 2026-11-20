@@ -33,6 +33,8 @@
     "quickAccess": "Acesso rápido",
     "pinPlaylist": "Fixar playlist",
     "unpinPlaylist": "Desafixar playlist",
+    "pinLikes": "Fixar curtidas",
+    "unpinLikes": "Desafixar curtidas",
     "pinned": "Fixada na barra lateral",
     "unpinned": "Removida da barra lateral",
     "pinArtist": "Fixar na barra lateral",
