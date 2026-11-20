@@ -10,6 +10,7 @@ import {
     Check,
     Copy,
     Heart,
+    ImagePlus,
     LinkIcon,
     MapPin,
     Pencil,
@@ -133,6 +134,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                                                                        onShuffle,
                                                                        onTogglePin,
                                                                        onEdit,
+                                                                       onChangeCover,
                                                                        onDelete,
                                                                        canArrange,
                                                                        onArrange,
@@ -148,6 +150,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     onShuffle: () => void;
     onTogglePin: () => void;
     onEdit: () => void;
+    onChangeCover: () => void;
     onDelete: () => void;
     canArrange: boolean;
     onArrange: (mode: ArrangeMode) => void;
@@ -249,6 +252,15 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                             className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-55 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
                         >
                             <Pencil size={15}/>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onChangeCover}
+                            title={t('playlist.cover.change')}
+                            aria-label={t('playlist.cover.change')}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-55 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer"
+                        >
+                            <ImagePlus size={15}/>
                         </button>
                         <ArrangeMenu disabled={!canArrange} onArrange={onArrange}/>
                         <button

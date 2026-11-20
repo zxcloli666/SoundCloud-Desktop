@@ -438,7 +438,22 @@
     "findClear": "Clear",
     "findCount": "{{count}} of {{total}}",
     "findNoMatches": "Nothing in this playlist matches “{{query}}”",
-    "findLoading": "Loading the whole playlist…"
+    "findLoading": "Loading the whole playlist…",
+    "cover": {
+      "change": "Change cover",
+      "title": "Playlist cover",
+      "replace": "Replace",
+      "pickAnother": "Pick another",
+      "zoom": "Zoom",
+      "crop": "Crop",
+      "sending": "Sending",
+      "syncing": "Syncing",
+      "tooSmall": "Image too small",
+      "tooLarge": "Image too large",
+      "unsupported": "Unsupported format",
+      "unreadable": "Can't read image",
+      "notSaved": "Not saved"
+    }
   },
   "user": {
     "followers": "Followers",
