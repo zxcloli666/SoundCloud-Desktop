@@ -22,6 +22,7 @@ import {
 import { startDiag } from './lib/diag';
 import { initEdge } from './lib/edge';
 import { installFpsCap } from './lib/fps-cap';
+import { initHistoryQueue } from './lib/history-queue';
 import { initOfflineMode } from './lib/offline-mode';
 import { queryClient } from './lib/query-client';
 import { initReloadKeys } from './lib/reload';
@@ -106,6 +107,7 @@ async function bootstrap() {
   await bootThemes();
 
   await initOfflineMode();
+  initHistoryQueue();
 
   // Вердикт транспорта (прямой / relay / воркеры) — до первого запроса,
   // иначе забаненный юзер платит таймаутом на логине.
