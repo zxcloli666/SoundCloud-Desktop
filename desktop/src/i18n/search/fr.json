@@ -1302,6 +1302,15 @@
     "slowed",
     "sped up"
   ],
+  "elsewhere.sleep": [
+    "minuteur de sommeil",
+    "éteindre la musique après",
+    "arrêter dans 30 minutes",
+    "s'endormir en musique",
+    "pause automatique",
+    "arrêter à la fin du titre",
+    "minuteur de nuit"
+  ],
   "elsewhere.shortcuts": [
     "raccourcis clavier",
     "liste des raccourcis",

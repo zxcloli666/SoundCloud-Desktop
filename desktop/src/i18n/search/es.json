@@ -1302,6 +1302,15 @@
     "slowed",
     "sped up"
   ],
+  "elsewhere.sleep": [
+    "temporizador de sueño",
+    "apagar la música después de",
+    "parar en 30 minutos",
+    "dormir con música",
+    "pausa automática",
+    "parar al acabar la canción",
+    "temporizador nocturno"
+  ],
   "elsewhere.shortcuts": [
     "atajos de teclado",
     "lista de atajos",

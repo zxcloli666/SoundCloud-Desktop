@@ -1791,6 +1791,7 @@
     }
   },
   "common": {
+    "backToTop": "Volver arriba",
     "loading": "Cargando...",
     "error": "Algo salió mal",
     "retry": "Reintentar",
@@ -2769,8 +2770,15 @@
     "hintOn": "Se aplica cada vez que suena esta pista",
     "noTrack": "Reproduce una pista para recordar su sonido"
   },
+  "sleep": {
+    "title": "Temporizador de sueño",
+    "minutes": "{{count}} min",
+    "endOfTrack": "Fin de la pista",
+    "cancel": "Cancelar temporizador"
+  },
   "trackMenu": {
     "menuLabel": "Acciones de la pista",
+    "downloadCover": "Descargar portada",
     "playNext": "Reproducir a continuación",
     "playLast": "Añadir al final de la cola",
     "removeFromQueue": "Quitar de la cola",
