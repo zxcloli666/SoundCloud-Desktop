@@ -72,6 +72,8 @@ export function DiscordCard() {
     const setStatus = useSettingsStore((s) => s.setDiscordRpcStatus);
     const showButton = useSettingsStore((s) => s.discordRpcShowButton);
     const setShowButton = useSettingsStore((s) => s.setDiscordRpcShowButton);
+    const hidePaused = useSettingsStore((s) => s.discordRpcHidePaused);
+    const setHidePaused = useSettingsStore((s) => s.setDiscordRpcHidePaused);
     const lyrics = useSettingsStore((s) => s.discordRpcLyrics);
     const setLyrics = useSettingsStore((s) => s.setDiscordRpcLyrics);
     const connection = useDiscordStatusStore((s) => s.status);
@@ -153,6 +155,9 @@ export function DiscordCard() {
                         </Row>
                         {lyrics && lyricsAvailable && <LyricsPreview/>}
                     </div>
+                    <Row title={t('settings.discordRpcHidePaused')} desc={t('settings.discordRpcHidePausedDesc')}>
+                        <Toggle checked={hidePaused} onChange={() => setHidePaused(!hidePaused)}/>
+                    </Row>
                     <Row title={t('settings.discordRpcButton')} desc={t('settings.discordRpcButtonDesc')}>
                         <Toggle checked={showButton} onChange={() => setShowButton(!showButton)}/>
                     </Row>

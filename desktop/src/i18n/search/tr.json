@@ -581,6 +581,13 @@
     "lyrics discord",
     "satır satır söz"
   ],
+  "settings.discordRpcHidePaused": [
+    "duraklatınca discord gizle",
+    "duraklatınca durumu kaldır",
+    "duraklatılan parça profilde",
+    "çalmıyorsa gösterme",
+    "discord durumunu temizle"
+  ],
   "settings.discordRpcButton": [
     "discord'daki buton",
     "bağlantı butonu",

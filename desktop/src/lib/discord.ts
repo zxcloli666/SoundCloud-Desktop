@@ -95,6 +95,10 @@ async function pushPresence(): Promise<boolean> {
 
   const { currentTrack: track, isPlaying } = usePlayerStore.getState();
   if (!track) return true;
+  if (!isPlaying && useSettingsStore.getState().discordRpcHidePaused) {
+    await clearPresence();
+    return true;
+  }
 
   try {
     const { discordRpcMode, discordRpcStatus, discordRpcShowButton } = useSettingsStore.getState();
@@ -222,6 +226,7 @@ useSettingsStore.subscribe((state, prev) => {
     state.discordRpcMode !== prev.discordRpcMode ||
     state.discordRpcStatus !== prev.discordRpcStatus ||
     state.discordRpcShowButton !== prev.discordRpcShowButton ||
+    state.discordRpcHidePaused !== prev.discordRpcHidePaused ||
     state.discordRpcLyrics !== prev.discordRpcLyrics;
 
   if (!rpcSettingsChanged) return;

@@ -1231,6 +1231,8 @@
     "discordRpcLyricsSample": "Şarkının o anki satırı burada görünür",
     "discordRpcButton": "SoundCloud düğmesi",
     "discordRpcButtonDesc": "Parçayı SoundCloud'da açan düğmeyi göster",
+    "discordRpcHidePaused": "Duraklatınca gizle",
+    "discordRpcHidePausedDesc": "Müzik duraklatılınca durum kaybolur, çalınca geri gelir",
     "scrobble": "Scrobble",
     "scrobbleDesc": "Dinlediklerini Last.fm ve ListenBrainz'e gönder",
     "scrobbleLastfmTagline": "2002'den beri müzik günlüğün",

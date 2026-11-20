@@ -671,6 +671,14 @@
     "karaoke in profile",
     "synced lyrics in rpc"
   ],
+  "settings.discordRpcHidePaused": [
+    "hide discord on pause",
+    "remove status when paused",
+    "clear rpc on pause",
+    "paused track in profile",
+    "discord shows paused song",
+    "stop showing when not playing"
+  ],
   "settings.discordRpcButton": [
     "button under status",
     "track link in discord",

@@ -1214,6 +1214,8 @@
     "discordRpcLyricsSample": "A linha atual da música aparece aqui",
     "discordRpcButton": "Mostrar botão do SoundCloud",
     "discordRpcButtonDesc": "Exibe o botão que abre a faixa no SoundCloud",
+    "discordRpcHidePaused": "Ocultar na pausa",
+    "discordRpcHidePausedDesc": "O status some enquanto a música está pausada e volta ao tocar",
     "scrobble": "Scrobbling",
     "scrobbleDesc": "Envia o que você ouve para o Last.fm e o ListenBrainz",
     "scrobbleLastfmTagline": "Seu diário musical desde 2002",
