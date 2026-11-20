@@ -1470,6 +1470,8 @@
     "uiScaleToast": "Масштаб интерфейса: {{value}}%",
     "miniPlayerDesc": "Открывается из иконки в трее",
     "miniPlayerOpacity": "Непрозрачность фона",
+    "miniPlayerSolid": "Сплошной, без рамки",
+    "miniPlayerSolidDesc": "Непрозрачный фон без стеклянной рамки",
     "updates": "Обновления",
     "updatesDesc": "Ваша версия и способ обновления",
     "checkUpdates": "Проверить обновления",

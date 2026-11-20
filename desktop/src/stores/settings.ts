@@ -123,6 +123,7 @@ export interface SettingsState {
   closeAction: CloseAction;
   uiScale: number;
   miniPlayerOpacity: number | null;
+  miniPlayerSolid: boolean;
   pinnedLikes: boolean;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   pinnedArtists: SidebarPinnedArtist[];
@@ -215,6 +216,7 @@ export interface SettingsState {
   setCloseAction: (action: CloseAction) => void;
   setUiScale: (scale: number) => void;
   setMiniPlayerOpacity: (opacity: number) => void;
+  setMiniPlayerSolid: (solid: boolean) => void;
   setPinnedLikes: (pinned: boolean) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
@@ -319,6 +321,7 @@ const DEFAULTS = {
   closeAction: 'tray' as CloseAction,
   uiScale: 100,
   miniPlayerOpacity: null as number | null,
+  miniPlayerSolid: false,
   pinnedLikes: false,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   pinnedArtists: [] as SidebarPinnedArtist[],
@@ -459,6 +462,7 @@ export const useSettingsStore = create<SettingsState>()(
       setMiniPlayerOpacity: (opacity) =>
         set({ miniPlayerOpacity: Math.min(1, Math.max(MINI_PLAYER_OPACITY_MIN, opacity)) }),
       setPinnedLikes: (pinnedLikes) => set({ pinnedLikes }),
+      setMiniPlayerSolid: (miniPlayerSolid) => set({ miniPlayerSolid }),
       pinPlaylist: (playlist) =>
         set((s) => ({
           pinnedPlaylists: [
@@ -657,6 +661,7 @@ export const useSettingsStore = create<SettingsState>()(
         closeAction: s.closeAction,
         uiScale: s.uiScale,
         miniPlayerOpacity: s.miniPlayerOpacity,
+        miniPlayerSolid: s.miniPlayerSolid,
         pinnedLikes: s.pinnedLikes,
         pinnedPlaylists: s.pinnedPlaylists,
         pinnedArtists: s.pinnedArtists,

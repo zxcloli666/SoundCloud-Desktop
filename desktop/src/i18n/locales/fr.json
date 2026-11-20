@@ -1455,6 +1455,8 @@
     "uiScaleToast": "Échelle de l'interface : {{value}} %",
     "miniPlayerDesc": "S'ouvre depuis l'icône de la zone de notification",
     "miniPlayerOpacity": "Opacité de l'arrière-plan",
+    "miniPlayerSolid": "Plein, sans cadre",
+    "miniPlayerSolidDesc": "Fond opaque sans cadre de verre",
     "updates": "Mises à jour",
     "updatesDesc": "Votre version et la façon dont les mises à jour l'atteignent",
     "checkUpdates": "Rechercher des mises à jour",

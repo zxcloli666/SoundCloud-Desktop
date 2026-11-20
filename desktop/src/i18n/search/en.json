@@ -417,6 +417,15 @@
     "shelves",
     "remove recommendations"
   ],
+  "settings.miniPlayerSolid": [
+    "mini player frame",
+    "remove mini player border",
+    "solid mini player",
+    "opaque mini player",
+    "mini player no glass",
+    "mini player background",
+    "transparent border around mini player"
+  ],
   "trayMenu.mini": [
     "mini player",
     "small window",

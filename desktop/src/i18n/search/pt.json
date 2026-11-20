@@ -353,6 +353,13 @@
     "seção da onda",
     "desligar recomendação de ia"
   ],
+  "settings.miniPlayerSolid": [
+    "moldura do mini player",
+    "remover borda do mini player",
+    "mini player sólido",
+    "mini player opaco",
+    "fundo do mini player"
+  ],
   "trayMenu.mini": [
     "janela pequena",
     "modo mini",

@@ -1486,6 +1486,8 @@
     "uiScaleToast": "Arayüz ölçeği: %{{value}}",
     "miniPlayerDesc": "Tepsi simgesinden açılır",
     "miniPlayerOpacity": "Arka plan opaklığı",
+    "miniPlayerSolid": "Düz, çerçevesiz",
+    "miniPlayerSolidDesc": "Cam çerçevesiz opak arka plan",
     "updates": "Güncellemeler",
     "updatesDesc": "Sürümünüz ve güncellemelerin nasıl geldiği",
     "checkUpdates": "Güncellemeleri denetle",

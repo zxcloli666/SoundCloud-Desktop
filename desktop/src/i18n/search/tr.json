@@ -358,6 +358,13 @@
     "wave bölümü",
     "yapay zeka önerisi kapat"
   ],
+  "settings.miniPlayerSolid": [
+    "mini oynatıcı çerçevesi",
+    "mini oynatıcı kenarlığını kaldır",
+    "düz mini oynatıcı",
+    "opak mini oynatıcı",
+    "mini oynatıcı arka planı"
+  ],
   "trayMenu.mini": [
     "küçük pencere",
     "mini mod",

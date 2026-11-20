@@ -46,6 +46,16 @@ body,
     opacity: var(--tp-card-fade, 1);
 }
 
+:root[data-tp-solid] .tp-dock {
+    background: rgb(var(--surface));
+}
+
+:root[data-tp-solid] .tp-dock::before,
+:root[data-tp-solid] .tp-aura,
+:root[data-tp-solid] .tp .npb-glass {
+    display: none;
+}
+
 @keyframes tp-in {
     from {
         opacity: 0;

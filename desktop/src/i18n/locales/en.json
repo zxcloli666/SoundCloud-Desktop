@@ -1434,6 +1434,8 @@
     "uiScaleToast": "Interface scale: {{value}}%",
     "miniPlayerDesc": "Opens from the tray icon",
     "miniPlayerOpacity": "Background opacity",
+    "miniPlayerSolid": "Solid, no frame",
+    "miniPlayerSolidDesc": "Opaque background without the glass frame",
     "updates": "Updates",
     "updatesDesc": "Your version and how updates reach it",
     "checkUpdates": "Check for updates",

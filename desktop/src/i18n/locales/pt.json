@@ -1476,6 +1476,8 @@
     "uiScaleToast": "Escala da interface: {{value}}%",
     "miniPlayerDesc": "Abre pelo ícone da bandeja",
     "miniPlayerOpacity": "Opacidade do fundo",
+    "miniPlayerSolid": "Sólido, sem moldura",
+    "miniPlayerSolidDesc": "Fundo opaco sem a moldura de vidro",
     "updates": "Atualizações",
     "updatesDesc": "Sua versão e como as atualizações chegam até ela",
     "checkUpdates": "Verificar atualizações",
