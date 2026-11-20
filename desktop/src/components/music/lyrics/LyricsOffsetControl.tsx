@@ -1,10 +1,11 @@
 import React, { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Minus, Plus, RotateCcw } from '../../../lib/icons';
-import type { LyricLine, LyricsSource } from '../../../lib/lyrics';
+import type { LyricLine, LyricsResult } from '../../../lib/lyrics';
 import { formatLyricsOffset, shiftLyricLines, stepLyricsOffset } from '../../../lib/lyrics-offset';
 import { useLyricsOffsetStore } from '../../../stores/lyrics-offset';
-import { LyricsSourceBadge, SyncedLyrics } from './SyncedLyrics';
+import { LyricsBar } from './LyricsBar';
+import { SyncedLyrics } from './SyncedLyrics';
 
 const stepBtn =
   'w-7 h-7 flex items-center justify-center rounded-full text-ink-40 hover:text-ink hover:bg-ink/10 transition-colors cursor-pointer';
@@ -77,21 +78,21 @@ export const OffsetSyncedLyrics = React.memo(
   ({
     urn,
     lines,
-    source,
-    onSearch,
+    lyrics,
+    onEdit,
   }: {
     urn: string;
     lines: LyricLine[];
-    source: LyricsSource;
-    onSearch: () => void;
+    lyrics: LyricsResult;
+    onEdit: () => void;
   }) => {
     const offset = useLyricsOffsetStore((s) => s.offsets[urn] ?? 0);
     const shifted = useMemo(() => shiftLyricLines(lines, offset), [lines, offset]);
     return (
       <>
-        <LyricsSourceBadge source={source} onSearch={onSearch}>
+        <LyricsBar urn={urn} lyrics={lyrics} onEdit={onEdit}>
           <OffsetControl urn={urn} />
-        </LyricsSourceBadge>
+        </LyricsBar>
         <SyncedLyrics lines={shifted} />
       </>
     );
