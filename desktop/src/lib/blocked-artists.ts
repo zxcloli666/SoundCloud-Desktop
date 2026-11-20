@@ -12,22 +12,25 @@ import { idOf } from './ids';
 interface BlockIndex {
   users: Set<string>;
   artists: Set<string>;
+  targets: Set<string>;
 }
 
 let indexSource: BlockedArtist[] | null = null;
-let index: BlockIndex = { users: new Set(), artists: new Set() };
+let index: BlockIndex = { users: new Set(), artists: new Set(), targets: new Set() };
 
 function indexFor(entries: BlockedArtist[]): BlockIndex {
   if (entries !== indexSource) {
     const users = new Set<string>();
     const artists = new Set<string>();
+    const targets = new Set<string>();
     for (const e of entries) {
+      targets.add(`${e.kind}:${e.id}`);
       if (e.kind === 'artist') artists.add(e.id);
       else users.add(e.id);
       for (const id of e.sc_user_ids) users.add(id);
     }
     indexSource = entries;
-    index = { users, artists };
+    index = { users, artists, targets };
   }
   return index;
 }
@@ -64,7 +67,7 @@ export function isTrackBlocked(track: Track | null | undefined): boolean {
 }
 
 export function useIsBlocked(kind: BlockKind, id: string | null | undefined): boolean {
-  return useBlockedArtistsStore((s) => !!id && s.entries.some((e) => sameTarget(e, kind, id)));
+  return useBlockedArtistsStore((s) => !!id && indexFor(s.entries).targets.has(`${kind}:${id}`));
 }
 
 export function useBlocklistVersion(): BlockedArtist[] {
