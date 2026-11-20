@@ -62,7 +62,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="lyrics"]` | Full-screen lyrics |
 | `[data-ui="lyrics-backdrop"]` | Blurred background of the full screen player |
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
-| `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view` or `moments` |
+| `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view`, `moments` or `room` (track page cover) |
 | `html[data-video-opaque]` | Set while the video fully covers its place (same values as `data-place`); what it covers is hidden |
 | `[data-ui="lyrics-video-toggle"]` | Video on/off button in full screen |
 | `[data-ui="waveform"]` | Waveform |
@@ -96,6 +96,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="user-banner"]` | Profile banner above that block |
 | `[data-ui="user-banner-glow"]` | Blurred banner behind the whole block |
 | `[data-ui="track-hero"]` | Top block of a track page |
+| `[data-ui="track-cover-video"]` | Video layer inside the track page cover, fades out when the track stops being current |
 | `[data-ui="discover-hero"]` | Top block of Discover |
 | `[data-ui="comments"]` | Comments list |
 | `[data-ui="comment"]` | A comment |
