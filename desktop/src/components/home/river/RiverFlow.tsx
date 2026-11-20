@@ -65,6 +65,8 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
   const anchorsRef = useRef<AnchorMap>(new Map());
   const selectedLanguages = useSettingsStore((s) => s.soundwaveLanguages);
   const setSelectedLanguages = useSettingsStore((s) => s.setSoundwaveLanguages);
+  const selectedGenres = useSettingsStore((s) => s.soundwaveGenres);
+  const setSelectedGenres = useSettingsStore((s) => s.setSoundwaveGenres);
   const hideLiked = useSettingsStore((s) => s.soundwaveHideLiked);
   const setHideLiked = useSettingsStore((s) => s.setSoundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
@@ -76,18 +78,21 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
 
   const stableLanguages = useMemo(() => [...selectedLanguages].sort(), [selectedLanguages]);
   const langKey = stableLanguages.join(',') || 'all';
+  const stableGenres = useMemo(() => [...selectedGenres].sort(), [selectedGenres]);
+  const genreKey = stableGenres.join(',') || 'any';
 
   const url = useMemo(() => {
     if (!isAuthenticated) return null;
     const qs = new URLSearchParams();
     if (stableLanguages.length > 0) qs.set('languages', stableLanguages.join(','));
+    if (stableGenres.length > 0) qs.set('genres', stableGenres.join(','));
     qs.set('hide_listened', hideListened ? '1' : '0');
     const suffix = qs.toString() ? `?${qs}` : '';
     return `/recommendations${suffix}`;
-  }, [isAuthenticated, stableLanguages, hideListened]);
+  }, [isAuthenticated, stableLanguages, stableGenres, hideListened]);
 
   const { data, isLoading, isError, isFetching, refetch } = useClusterWave({
-    queryKey: ['cluster-wave', 'home', langKey, hideListened],
+    queryKey: ['cluster-wave', 'home', langKey, genreKey, hideListened],
     url,
     enabled: isAuthenticated,
   });
@@ -214,6 +219,8 @@ export const RiverFlow = React.memo(function RiverFlow({ tint }: { tint?: string
         onHideLiked={setHideLiked}
         languages={selectedLanguages}
         onLanguages={setSelectedLanguages}
+        genres={selectedGenres}
+        onGenres={setSelectedGenres}
         spinning={isRefreshing || isFetching}
         onRefresh={() => void handleRefresh()}
         onPlayWave={handlePlayWave}
