@@ -27,6 +27,10 @@ export type RoomCrossfade = 'mine' | 'room';
 export type RoomAccess = 'private' | 'public';
 export type VideoPlace = 'cover' | 'background';
 export const CROSSFADE_MAX_SEC = 12;
+export type TrackColumnId = 'plays' | 'likes';
+export const TRACK_COLUMN_DEFAULTS: Record<TrackColumnId, number> = { plays: 64, likes: 56 };
+export const TRACK_COLUMN_MIN = 40;
+export const TRACK_COLUMN_MAX = 160;
 export const MINI_PLAYER_OPACITY_MIN = 0.1;
 export const miniPlayerStockOpacity = (mode: PerfMode) => (mode === 'light' ? 0.92 : 0.55);
 export type DiscordRpcStatus = 'app' | 'track' | 'artist';
@@ -124,6 +128,7 @@ export interface SettingsState {
   uiScale: number;
   miniPlayerOpacity: number | null;
   miniPlayerSolid: boolean;
+  trackColumns: Partial<Record<TrackColumnId, number>>;
   pinnedLikes: boolean;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   pinnedArtists: SidebarPinnedArtist[];
@@ -217,6 +222,7 @@ export interface SettingsState {
   setUiScale: (scale: number) => void;
   setMiniPlayerOpacity: (opacity: number) => void;
   setMiniPlayerSolid: (solid: boolean) => void;
+  setTrackColumn: (id: TrackColumnId, width: number | null) => void;
   setPinnedLikes: (pinned: boolean) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
@@ -322,6 +328,7 @@ const DEFAULTS = {
   uiScale: 100,
   miniPlayerOpacity: null as number | null,
   miniPlayerSolid: false,
+  trackColumns: {} as Partial<Record<TrackColumnId, number>>,
   pinnedLikes: false,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   pinnedArtists: [] as SidebarPinnedArtist[],
@@ -463,6 +470,13 @@ export const useSettingsStore = create<SettingsState>()(
         set({ miniPlayerOpacity: Math.min(1, Math.max(MINI_PLAYER_OPACITY_MIN, opacity)) }),
       setPinnedLikes: (pinnedLikes) => set({ pinnedLikes }),
       setMiniPlayerSolid: (miniPlayerSolid) => set({ miniPlayerSolid }),
+      setTrackColumn: (id, width) =>
+        set((s) => {
+          const { [id]: _, ...rest } = s.trackColumns;
+          if (width == null) return { trackColumns: rest };
+          const clamped = Math.round(Math.min(TRACK_COLUMN_MAX, Math.max(TRACK_COLUMN_MIN, width)));
+          return { trackColumns: { ...rest, [id]: clamped } };
+        }),
       pinPlaylist: (playlist) =>
         set((s) => ({
           pinnedPlaylists: [
@@ -662,6 +676,7 @@ export const useSettingsStore = create<SettingsState>()(
         uiScale: s.uiScale,
         miniPlayerOpacity: s.miniPlayerOpacity,
         miniPlayerSolid: s.miniPlayerSolid,
+        trackColumns: s.trackColumns,
         pinnedLikes: s.pinnedLikes,
         pinnedPlaylists: s.pinnedPlaylists,
         pinnedArtists: s.pinnedArtists,

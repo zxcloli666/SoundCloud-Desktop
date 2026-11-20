@@ -233,6 +233,7 @@
     "related": "관련 트랙",
     "addComment": "댓글 추가...",
     "plays": "재생",
+    "columnResize": "끌어서 너비 조절, 두 번 클릭하면 초기화",
     "likes": "좋아요",
     "reposts": "리포스트",
     "posted": "게시일",

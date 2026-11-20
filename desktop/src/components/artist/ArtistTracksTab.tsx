@@ -6,6 +6,7 @@ import {Calendar, ListMusic, Loader2, Music} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
+import {TrackColumns} from '../music/columns/TrackColumns';
 import {TrackStatusBadges} from '../music/TrackStatusBadges';
 import {VirtualList} from '../ui/VirtualList';
 import {ThemedTrackRow} from '../user/ThemedTrackRow';
@@ -165,16 +166,18 @@ function ArtistTracksTabImpl({
       )}
 
       {view === 'list' && available.length > 0 && (
-        <VirtualList
-          items={available}
-          rowHeight={ROW_HEIGHT}
-          overscan={8}
-          className="flex flex-col gap-1"
-          getItemKey={(track) => track.urn}
-          renderItem={(track, i) => (
-            <ThemedTrackRow track={track} index={i} queue={available} aura={aura} />
-          )}
-        />
+        <TrackColumns ownerUrn={available[0]?.user?.urn}>
+          <VirtualList
+            items={available}
+            rowHeight={ROW_HEIGHT}
+            overscan={8}
+            className="flex flex-col gap-1"
+            getItemKey={(track) => track.urn}
+            renderItem={(track, i) => (
+              <ThemedTrackRow track={track} index={i} queue={available} aura={aura} />
+            )}
+          />
+        </TrackColumns>
       )}
 
       {view === 'years' && yearBuckets.length > 0 && (
@@ -246,10 +249,14 @@ const YearBlock = memo(
         </div>
 
         {/* Tracks of the year */}
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          {bucket.items.map((track, i) => (
-            <ThemedTrackRow key={track.urn} track={track} index={i} queue={queue} aura={aura} />
-          ))}
+        <div className="flex-1 min-w-0">
+          <TrackColumns ownerUrn={bucket.items[0]?.user?.urn} header={false}>
+            <div className="flex flex-col gap-1">
+              {bucket.items.map((track, i) => (
+                <ThemedTrackRow key={track.urn} track={track} index={i} queue={queue} aura={aura} />
+              ))}
+            </div>
+          </TrackColumns>
         </div>
       </div>
     );

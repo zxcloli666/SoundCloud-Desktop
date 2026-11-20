@@ -25,6 +25,7 @@ import { Avatar } from '../ui/Avatar';
 import { type SyncedQuery, SyncNotice, syncNoticeOf } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
 import { VirtualList } from '../ui/VirtualList';
+import { TrackColumns } from '../music/columns/TrackColumns';
 import { ThemedTrackRow } from './ThemedTrackRow';
 
 interface TabWrapperProps {
@@ -110,14 +111,16 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
   );
   return (
     <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q} ownerUrn={urn}>
-      <VirtualList
-        items={q.tracks}
-        rowHeight={72}
-        overscan={8}
-        className="flex flex-col gap-1"
-        getItemKey={(t) => t.urn}
-        renderItem={renderItem}
-      />
+      <TrackColumns ownerUrn={urn}>
+        <VirtualList
+          items={q.tracks}
+          rowHeight={72}
+          overscan={8}
+          className="flex flex-col gap-1"
+          getItemKey={(t) => t.urn}
+          renderItem={renderItem}
+        />
+      </TrackColumns>
       <div ref={ref} className="h-16 flex items-center justify-center">
         {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
@@ -136,14 +139,16 @@ export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
   );
   return (
     <TabWrapper isLoading={isLoading} isEmpty={tracks.length === 0} query={popular} ownerUrn={urn}>
-      <VirtualList
-        items={tracks}
-        rowHeight={72}
-        overscan={8}
-        className="flex flex-col gap-1"
-        getItemKey={(t) => t.urn}
-        renderItem={renderItem}
-      />
+      <TrackColumns ownerUrn={urn}>
+        <VirtualList
+          items={tracks}
+          rowHeight={72}
+          overscan={8}
+          className="flex flex-col gap-1"
+          getItemKey={(t) => t.urn}
+          renderItem={renderItem}
+        />
+      </TrackColumns>
     </TabWrapper>
   );
 }
@@ -196,14 +201,16 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
       ownerUrn={urn}
       scope="likes"
     >
-      <VirtualList
-        items={q.tracks}
-        rowHeight={72}
-        overscan={8}
-        className="flex flex-col gap-1"
-        getItemKey={(t) => t.urn}
-        renderItem={renderItem}
-      />
+      <TrackColumns ownerUrn={urn}>
+        <VirtualList
+          items={q.tracks}
+          rowHeight={72}
+          overscan={8}
+          className="flex flex-col gap-1"
+          getItemKey={(t) => t.urn}
+          renderItem={renderItem}
+        />
+      </TrackColumns>
       <div ref={ref} className="h-16 flex items-center justify-center">
         {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
@@ -247,14 +254,16 @@ export function UserSearchTracksTab({
       isError={q.isError}
       onRetry={() => void q.refetch()}
     >
-      <VirtualList
-        items={q.items}
-        rowHeight={72}
-        overscan={8}
-        className="flex flex-col gap-1"
-        getItemKey={(t) => t.urn}
-        renderItem={renderItem}
-      />
+      <TrackColumns ownerUrn={urn}>
+        <VirtualList
+          items={q.items}
+          rowHeight={72}
+          overscan={8}
+          className="flex flex-col gap-1"
+          getItemKey={(t) => t.urn}
+          renderItem={renderItem}
+        />
+      </TrackColumns>
       <div ref={ref} className="h-16 flex items-center justify-center">
         {q.isFetchingNextPage && <Loader2 size={20} className="text-ink-20 animate-spin" />}
       </div>
