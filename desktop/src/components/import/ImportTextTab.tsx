@@ -1,4 +1,7 @@
+import { invoke } from '@tauri-apps/api/core';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Vk } from '../../lib/icons';
 
 interface Props {
   text: string;
@@ -6,12 +9,31 @@ interface Props {
   disabled: boolean;
 }
 
+interface Preview {
+  count: number;
+  vk: boolean;
+}
+
 const FIELD =
   'w-full px-4 py-3 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[13px] text-ink-80 placeholder:text-ink-20 focus:border-ink/[0.12] focus:bg-ink/[0.06] transition-all duration-200 outline-none disabled:opacity-50';
 
 export function ImportTextTab({ text, onText, disabled }: Props) {
   const { t } = useTranslation();
-  const lines = text.split('\n').filter((line) => line.trim() !== '').length;
+  const [preview, setPreview] = useState<Preview>({ count: 0, vk: false });
+
+  useEffect(() => {
+    let current = true;
+    const timer = setTimeout(() => {
+      invoke<Preview>('import_text_preview', { text }).then(
+        (found) => current && setPreview(found),
+        () => current && setPreview({ count: 0, vk: false }),
+      );
+    }, 120);
+    return () => {
+      current = false;
+      clearTimeout(timer);
+    };
+  }, [text]);
 
   return (
     <div className="space-y-2">
@@ -24,9 +46,19 @@ export function ImportTextTab({ text, onText, disabled }: Props) {
         spellCheck={false}
         className={`${FIELD} resize-none font-mono text-[12px] leading-relaxed`}
       />
-      <p className="min-h-[18px] text-right text-[12px] tabular-nums text-ink-40">
-        {lines > 0 && t('importer.savedCount', { count: lines })}
-      </p>
+      <div className="flex min-h-[18px] items-center justify-between gap-3 text-[12px]">
+        <p
+          className={`flex min-w-0 items-center gap-1.5 transition-colors duration-200 ${
+            preview.vk ? 'text-accent' : 'text-ink-40'
+          }`}
+        >
+          <Vk size={13} className="shrink-0" />
+          <span className="truncate">{t('importer.vkHint')}</span>
+        </p>
+        <p className="shrink-0 tabular-nums text-ink-40">
+          {preview.count > 0 && t('importer.savedCount', { count: preview.count })}
+        </p>
+      </div>
     </div>
   );
 }

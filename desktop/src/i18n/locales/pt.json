@@ -2927,6 +2927,7 @@
     "linkPlaceholder": "Cole um link do Spotify, YouTube ou Yandex Music...",
     "unknownLink": "Link não reconhecido",
     "textPlaceholder": "Artista - Título\nArtista - Título\n...",
+    "vkHint": "Playlist do VK: selecione as faixas, copie e cole",
     "namePlaceholder": "Nome da playlist",
     "defaultTitle": "Importada",
     "start": "Iniciar importação",

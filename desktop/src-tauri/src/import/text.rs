@@ -1,16 +1,45 @@
 use super::failure::{Failure, SOURCE_EMPTY};
 use super::model::{ExtList, ExtTrack};
+use super::vk_text;
 
 const DASHES: [char; 3] = ['-', '\u{2013}', '\u{2014}'];
 
-pub fn parse(text: &str) -> Result<ExtList, Failure> {
+#[derive(serde::Serialize)]
+pub struct TextPreview {
+    pub count: usize,
+    pub vk: bool,
+}
+
+pub fn preview(text: &str) -> TextPreview {
+    match vk_text::parse(text) {
+        Some(tracks) => TextPreview {
+            count: tracks.len(),
+            vk: true,
+        },
+        None => TextPreview {
+            count: plain(text).len(),
+            vk: false,
+        },
+    }
+}
+
+fn plain(text: &str) -> Vec<ExtTrack> {
     let tracks: Vec<ExtTrack> = text
         .lines()
         .map(strip_numbering)
         .filter(|line| !line.is_empty())
-        .filter_map(split_line)
+        .filter_map(|line| {
+            let (line, duration_ms) = strip_tail(line);
+            let mut track = split_line(line)?;
+            track.duration_ms = duration_ms;
+            Some(track)
+        })
         .collect();
-    let tracks = drop_header(tracks);
+    drop_header(tracks)
+}
+
+pub fn parse(text: &str) -> Result<ExtList, Failure> {
+    let tracks = vk_text::parse(text).unwrap_or_else(|| plain(text));
     if tracks.is_empty() {
         return Err(Failure::new(SOURCE_EMPTY, "no lines"));
     }
@@ -19,6 +48,29 @@ pub fn parse(text: &str) -> Result<ExtList, Failure> {
         tracks,
         partial: false,
     })
+}
+
+fn strip_tail(line: &str) -> (&str, Option<u64>) {
+    let is_marker = |token: &str| matches!(token, "E" | "\u{415}" | "\u{1F174}");
+    let (mut rest, mut marked) = (line.trim_end(), false);
+    if let Some((head, token)) = rest.rsplit_once(char::is_whitespace)
+        && is_marker(token)
+    {
+        rest = head.trim_end();
+        marked = true;
+    }
+    let Some((head, token)) = rest.rsplit_once(char::is_whitespace) else {
+        return (line, None);
+    };
+    let Some(ms) = vk_text::duration(token) else {
+        return (line, None);
+    };
+    let head = head.trim_end();
+    let head = match head.rsplit_once(char::is_whitespace) {
+        Some((before, token)) if is_marker(token) && !marked => before.trim_end(),
+        _ => head,
+    };
+    (head, Some(ms))
 }
 
 fn drop_header(mut tracks: Vec<ExtTrack>) -> Vec<ExtTrack> {
@@ -31,7 +83,7 @@ fn drop_header(mut tracks: Vec<ExtTrack>) -> Vec<ExtTrack> {
     tracks
 }
 
-fn strip_numbering(line: &str) -> &str {
+pub(super) fn strip_numbering(line: &str) -> &str {
     let line = line
         .trim()
         .trim_start_matches(['\u{2022}', '*'])
@@ -49,7 +101,7 @@ fn strip_numbering(line: &str) -> &str {
     }
 }
 
-fn split_line(line: &str) -> Option<ExtTrack> {
+pub(super) fn split_line(line: &str) -> Option<ExtTrack> {
     let (artist, title) = split_tab(line)
         .or_else(|| split_dash(line))
         .or_else(|| split_csv(line))
@@ -138,5 +190,26 @@ mod tests {
             vec![pair("Moby", "Porcelain")]
         );
         assert!(parse(" \n\n").is_err());
+    }
+
+    #[test]
+    fn inline_durations_and_markers_are_stripped() {
+        let text = "Moby - Porcelain 4:01\nSkrillex \u{2014} Bangarang 3:35\nDaft Punk \u{2013} One More Time\t5:20\nEminem - Lose Yourself E 5:26\nTravis Scott - Sicko Mode 5:12 E\nVitamin E\n";
+        let tracks = parse(text).unwrap().tracks;
+        let found: Vec<_> = tracks
+            .iter()
+            .map(|t| (t.artist.as_str(), t.title.as_str(), t.duration_ms))
+            .collect();
+        assert_eq!(
+            found,
+            vec![
+                ("Moby", "Porcelain", Some(241_000)),
+                ("Skrillex", "Bangarang", Some(215_000)),
+                ("Daft Punk", "One More Time", Some(320_000)),
+                ("Eminem", "Lose Yourself", Some(326_000)),
+                ("Travis Scott", "Sicko Mode", Some(312_000)),
+                ("", "Vitamin E", None),
+            ]
+        );
     }
 }

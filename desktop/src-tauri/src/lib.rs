@@ -408,6 +408,7 @@ pub fn run() {
             import::import_start,
             import::import_stop,
             import::import_detect,
+            import::import_text_preview,
             import::import_ym_library,
             import::import_read_list_file,
             import::import_notify,
