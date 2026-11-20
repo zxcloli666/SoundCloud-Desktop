@@ -8,7 +8,13 @@ import { SuggestSearch } from './SuggestSearch';
 
 const COOLDOWN_S = 10;
 
-export const SuggestButton = memo(function SuggestButton({ disabled }: { disabled: boolean }) {
+export const SuggestButton = memo(function SuggestButton({
+  disabled,
+  direct,
+}: {
+  disabled: boolean;
+  direct: boolean;
+}) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [wait, setWait] = useState(0);
@@ -25,7 +31,9 @@ export const SuggestButton = memo(function SuggestButton({ disabled }: { disable
   };
 
   const label =
-    wait > 0 ? t('chat.room.suggest.wait', { value: wait }) : t('chat.room.suggest.button');
+    wait > 0
+      ? t('chat.room.suggest.wait', { value: wait })
+      : t(direct ? 'chat.room.suggest.add' : 'chat.room.suggest.button');
   return (
     <RoomPopover
       open={open}
@@ -47,7 +55,7 @@ export const SuggestButton = memo(function SuggestButton({ disabled }: { disable
             )}
           </span>
           <span className="w-full truncate px-0.5 text-center text-[10.5px] font-medium">
-            {t('chat.room.suggest.short')}
+            {t(direct ? 'chat.room.suggest.addShort' : 'chat.room.suggest.short')}
           </span>
         </button>
       }

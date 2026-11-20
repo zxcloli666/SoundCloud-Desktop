@@ -1,9 +1,10 @@
 import { memo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Embed } from '../../../lib/chat/types';
+import type { Embed, SystemEvent } from '../../../lib/chat/types';
 import { art } from '../../../lib/formatters';
 import { Check, ListPlus, Loader2 } from '../../../lib/icons';
 import { queueSuggestion } from '../../../lib/together/room-actions';
+import { moderatorPick } from '../../../lib/together/room-rules';
 import { isRoomHost, useTogetherStore } from '../../../stores/together';
 
 type QueueState = 'idle' | 'busy' | 'done';
@@ -41,9 +42,28 @@ function QueueButton({ urn }: { urn: string }) {
   );
 }
 
-export const SuggestCard = memo(function SuggestCard({ track, by }: { track: Embed; by: string }) {
+function QueuedBadge() {
+  const { t } = useTranslation();
+  return (
+    <span className="flex h-7 shrink-0 items-center gap-1 rounded-full bg-emerald-300/[0.12] px-2.5 text-[11.5px] font-semibold text-emerald-200">
+      <Check size={12} strokeWidth={3} />
+      {t('chat.room.suggest.queued')}
+    </span>
+  );
+}
+
+export const SuggestCard = memo(function SuggestCard({
+  event,
+  track,
+  by,
+}: {
+  event: SystemEvent;
+  track: Embed;
+  by: string;
+}) {
   const { t } = useTranslation();
   const host = useTogetherStore(isRoomHost);
+  const added = useTogetherStore((state) => !!state.room && moderatorPick(state.room, event));
   const playing = useTogetherStore((state) => state.room?.playback.trackUrn === track.urn);
   const cover = art(track.artworkUrl, 't200x200');
 
@@ -65,12 +85,14 @@ export const SuggestCard = memo(function SuggestCard({ track, by }: { track: Emb
         </div>
         <div className="mt-2 flex items-center gap-2">
           <span className="min-w-0 flex-1 truncate text-[11px] text-ink-40">
-            {t('chat.room.suggest.by', { name: by })}
+            {t(added ? 'chat.room.suggest.addedBy' : 'chat.room.suggest.by', { name: by })}
           </span>
           {playing ? (
             <span className="shrink-0 text-[11.5px] font-semibold text-accent">
               {t('chat.room.suggest.playing')}
             </span>
+          ) : added ? (
+            <QueuedBadge />
           ) : (
             host && <QueueButton urn={track.urn} />
           )}

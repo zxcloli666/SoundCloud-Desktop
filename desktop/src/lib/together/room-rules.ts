@@ -1,4 +1,4 @@
-import type { Member } from '../chat/types.ts';
+import type { Member, SystemEvent } from '../chat/types.ts';
 import type { RoomMember, RoomView } from './types.ts';
 
 export const MAX_MODERATORS = 3;
@@ -31,6 +31,10 @@ export function isModerator(view: RoomView, userId: string | null): boolean {
 
 export function canModerate(view: RoomView, userId: string | null): boolean {
   return isHost(view, userId) || isModerator(view, userId);
+}
+
+export function moderatorPick(view: RoomView, event: SystemEvent): boolean {
+  return event.kind === 'suggest' && isModerator(view, event.actor);
 }
 
 export function hasModeration(view: RoomView): boolean {

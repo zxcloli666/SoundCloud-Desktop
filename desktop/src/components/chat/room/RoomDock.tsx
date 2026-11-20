@@ -55,7 +55,7 @@ export const RoomDock = memo(function RoomDock({ children, onBack }: RoomDockPro
           room={room}
           selfId={self.id}
           moderation={moderation}
-          trailing={suggest && <SuggestButton disabled={muted !== null} />}
+          trailing={suggest && <SuggestButton disabled={muted !== null} direct={self.moderates} />}
         />
         <div className="relative flex min-h-0 flex-1 flex-col">
           <HandoffBanner />

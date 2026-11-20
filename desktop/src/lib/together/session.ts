@@ -11,6 +11,7 @@ import { acceptTimed, type RoomRole, resetClock, serverTime, setViewListener, sl
 import { roomChanges } from './room-changes';
 import { startRoomChat } from './room-chat';
 import { exited } from './room-chat-state';
+import { startRoomQueue } from './room-queue';
 import { exitOf, exitToast, type RoomExit } from './room-rules';
 import type { Profile, RoomView } from './types';
 
@@ -188,3 +189,4 @@ useAuthStore.subscribe((state, prev) => {
 });
 
 startRoomChat();
+startRoomQueue();

@@ -21,6 +21,7 @@ import {
   exitToast,
   isHost,
   memberActions,
+  moderatorPick,
   mutedUntil,
   nextHost,
   orderedMembers,
@@ -495,4 +496,15 @@ test('room rows pick out track changes, suggestions and moderator changes', () =
   assert.equal(roomRowKind({ ...base, kind: 'deleted', actor: '7' }), null);
   assert.equal(roomRowKind({ ...base, kind: 'muted', actor: '7', target: '8' }), null);
   assert.equal(roomRowKind({ ...base, kind: 'other' }), null);
+});
+
+test('only suggestions from moderators go straight to the queue', () => {
+  const track = { kind: 'track', urn: 'soundcloud:tracks:1', title: 'Song' };
+  const room = { hostId: '1', moderators: ['2'] };
+  const event = (kind, actor) => ({ kind, actor, track });
+  assert.equal(moderatorPick(room, event('suggest', '2')), true);
+  assert.equal(moderatorPick(room, event('suggest', '3')), false);
+  assert.equal(moderatorPick(room, event('suggest', '1')), false);
+  assert.equal(moderatorPick(room, event('track', '2')), false);
+  assert.equal(moderatorPick({ hostId: '1' }, event('suggest', '2')), false);
 });
