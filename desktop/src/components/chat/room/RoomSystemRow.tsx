@@ -29,7 +29,7 @@ export const RoomSystemRow = memo(function RoomSystemRow({ event, nameOf }: Room
   const kind = roomRowKind(event);
   if (kind === 'track' && event.track) return <TrackChangeRow track={event.track} />;
   if (kind === 'suggest' && event.track) {
-    return <SuggestCard track={event.track} by={event.name ?? nameOf(event.actor)} />;
+    return <SuggestCard event={event} track={event.track} by={event.name ?? nameOf(event.actor)} />;
   }
   if (kind === 'moderator') {
     return <ModeratorRow name={event.name ?? nameOf(event.target)} on={event.on !== false} />;
