@@ -61,7 +61,7 @@ export const LocalTrackRow = React.memo(function LocalTrackRow({
 
   return (
     <div
-      className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-ink/[0.045] pl-2 pr-4 transition-colors hover:bg-ink/[0.03] md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px] ${
+      className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_var(--col-size,88px)_var(--col-time,64px)] items-center gap-3 border-b border-ink/[0.045] pl-2 pr-4 transition-colors hover:bg-ink/[0.03] md:grid-cols-[28px_minmax(0,1fr)_auto_var(--col-size,88px)_var(--col-time,64px)] ${
         missing ? 'opacity-55' : ''
       }`}
     >

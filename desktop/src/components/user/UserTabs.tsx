@@ -27,6 +27,7 @@ import { VirtualGrid } from '../ui/VirtualGrid';
 import { VirtualList } from '../ui/VirtualList';
 import { TrackColumns } from '../music/columns/TrackColumns';
 import { ThemedTrackRow } from './ThemedTrackRow';
+import { useThemedShape } from './useThemedShape';
 
 interface TabWrapperProps {
   isLoading: boolean;
@@ -102,6 +103,7 @@ export const TabWrapper = React.memo(TabWrapperImpl);
 
 export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
   const q = useUserTracks(urn);
+  const shape = useThemedShape(urn);
   const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
   const renderItem = useCallback(
     (track: (typeof q.tracks)[number], i: number) => (
@@ -111,7 +113,7 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
   );
   return (
     <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q} ownerUrn={urn}>
-      <TrackColumns ownerUrn={urn}>
+      <TrackColumns shape={shape}>
         <VirtualList
           items={q.tracks}
           rowHeight={72}
@@ -130,6 +132,7 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
 
 export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
   const popular = useUserPopularTracks(urn);
+  const shape = useThemedShape(urn);
   const { tracks, isLoading } = popular;
   const renderItem = useCallback(
     (track: (typeof tracks)[number], i: number) => (
@@ -139,7 +142,7 @@ export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
   );
   return (
     <TabWrapper isLoading={isLoading} isEmpty={tracks.length === 0} query={popular} ownerUrn={urn}>
-      <TrackColumns ownerUrn={urn}>
+      <TrackColumns shape={shape}>
         <VirtualList
           items={tracks}
           rowHeight={72}
@@ -186,6 +189,7 @@ export function UserPlaylistsTab({ urn }: { urn: string }) {
 
 export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
   const q = useUserLikedTracks(urn);
+  const shape = useThemedShape();
   const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
   const renderItem = useCallback(
     (track: (typeof q.tracks)[number], i: number) => (
@@ -201,7 +205,7 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
       ownerUrn={urn}
       scope="likes"
     >
-      <TrackColumns ownerUrn={urn}>
+      <TrackColumns shape={shape}>
         <VirtualList
           items={q.tracks}
           rowHeight={72}
@@ -235,6 +239,7 @@ export function UserSearchTracksTab({
 }) {
   const { t } = useTranslation();
   const q = useCatalogTracks(query.trim(), urn);
+  const shape = useThemedShape(urn);
   const ref = useInfiniteScroll(
     !!q.hasNextPage && !q.isFetchNextPageError,
     !!q.isFetchingNextPage,
@@ -254,7 +259,7 @@ export function UserSearchTracksTab({
       isError={q.isError}
       onRetry={() => void q.refetch()}
     >
-      <TrackColumns ownerUrn={urn}>
+      <TrackColumns shape={shape}>
         <VirtualList
           items={q.items}
           rowHeight={72}

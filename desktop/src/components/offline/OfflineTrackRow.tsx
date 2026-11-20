@@ -109,7 +109,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
   return (
     <div
       onContextMenu={onContextMenu}
-      className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-ink/[0.045] pl-2 pr-4 transition-colors md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px] ${
+      className={`group relative grid h-full select-none grid-cols-[28px_minmax(0,1fr)_var(--col-size,88px)_var(--col-time,64px)] items-center gap-3 border-b border-ink/[0.045] pl-2 pr-4 transition-colors md:grid-cols-[28px_minmax(0,1fr)_auto_var(--col-size,88px)_var(--col-time,64px)] ${
         forging ? '' : 'hover:bg-ink/[0.03]'
       } ${!cached && likesSection ? 'opacity-60' : ''}`}
     >

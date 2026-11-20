@@ -13,6 +13,7 @@ import {WaitStrip} from '../sync-wait/WaitStrip';
 import {GripSpace} from '../ui/SortableVirtualList';
 import {SyncNotice, type SyncNoticeKind, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualList} from '../ui/VirtualList';
+import {LIBRARY_GRIP_SHAPE, TrackColumns} from '../music/columns/TrackColumns';
 import {LibraryTrackRow} from './LibraryTrackRow';
 import {OrderableTracks} from './OrderableTracks';
 
@@ -71,6 +72,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
 
     return (
         <div className="min-h-[400px]" data-menu-scope={sorted ? undefined : LIKED_ORDER_SCOPE}>
+            <TrackColumns shape={LIBRARY_GRIP_SHAPE} header={!isLoading && filtered.length > 0}>
             <div className="flex flex-col gap-1">
                 {isLoading ? (
                     <div className="flex justify-center py-20">
@@ -108,6 +110,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     <div className="py-20 text-center text-ink-20">{t('library.noLikedTracks')}</div>
                 )}
             </div>
+            </TrackColumns>
             {!loadAll ? (
                 <div ref={sentinelRef} className="h-12 flex items-center justify-center mt-4">
                     {likesQuery.isFetchingNextPage && (

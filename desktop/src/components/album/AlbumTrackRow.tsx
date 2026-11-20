@@ -1,13 +1,14 @@
 import {memo} from 'react';
 import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
-import {art, dur} from '../../lib/formatters';
-import {ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
+import {art, dur, fc} from '../../lib/formatters';
+import {headphones11, heart11, ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {useTrackColumns} from '../music/columns/TrackColumns';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
@@ -26,6 +27,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const pick = useRowPick(track);
+  const columns = useTrackColumns();
   const cover = art(track.artwork_url, 't200x200');
   const lightAura = isLight(aura);
   const playIcon = lightAura ? playBlack14 : playWhite14;
@@ -107,11 +109,39 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
 
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
-      <div className="hidden @md:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-      </div>
+      {columns.badges && (
+        <div className="flex shrink-0">
+          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+        </div>
+      )}
 
-      <div className="flex items-center gap-0.5 shrink-0">
+      {columns.plays > 0 && (
+        <span
+          className="inline-flex shrink-0 items-center gap-1.5 text-[11px] tabular-nums text-ink-35"
+          style={{ width: columns.plays }}
+        >
+          {track.playback_count != null && (
+            <>
+              {headphones11} {fc(track.playback_count)}
+            </>
+          )}
+        </span>
+      )}
+
+      {columns.likes > 0 && (
+        <span
+          className="inline-flex shrink-0 items-center gap-1.5 text-[11px] tabular-nums text-ink-35"
+          style={{ width: columns.likes }}
+        >
+          {(track.favoritings_count ?? track.likes_count) != null && (
+            <>
+              {heart11} {fc(track.favoritings_count ?? track.likes_count)}
+            </>
+          )}
+        </span>
+      )}
+
+      <div className="flex shrink-0 items-center justify-end gap-0.5" style={{ width: columns.actions }}>
         <LikeButton track={track} />
         <SaveOfflineRowButton track={track} />
         <AddToPlaylistDialog trackUrns={[track.urn]}>

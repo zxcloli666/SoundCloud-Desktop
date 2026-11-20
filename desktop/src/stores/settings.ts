@@ -27,8 +27,13 @@ export type RoomCrossfade = 'mine' | 'room';
 export type RoomAccess = 'private' | 'public';
 export type VideoPlace = 'cover' | 'background';
 export const CROSSFADE_MAX_SEC = 12;
-export type TrackColumnId = 'plays' | 'likes';
-export const TRACK_COLUMN_DEFAULTS: Record<TrackColumnId, number> = { plays: 64, likes: 56 };
+export type TrackColumnId = 'plays' | 'likes' | 'size' | 'time';
+export const TRACK_COLUMN_DEFAULTS: Record<TrackColumnId, number> = {
+  plays: 64,
+  likes: 56,
+  size: 88,
+  time: 64,
+};
 export const TRACK_COLUMN_MIN = 40;
 export const TRACK_COLUMN_MAX = 160;
 export const MINI_PLAYER_OPACITY_MIN = 0.1;

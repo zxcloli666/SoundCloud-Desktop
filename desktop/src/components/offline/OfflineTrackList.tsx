@@ -5,6 +5,8 @@ import {useTranslation} from 'react-i18next';
 import {VirtualList} from '../ui/VirtualList';
 import {OfflineRowClone, OfflineTrackRow, ROW_HEIGHT, SortableOfflineRow,} from './OfflineTrackRow';
 import type {OfflineEntry} from './types';
+import { HeadCell } from '../music/columns/HeadCell';
+import { useColumnVars } from '../music/columns/useColumnVars';
 
 interface OfflineTrackListProps {
   entries: OfflineEntry[];
@@ -22,12 +24,12 @@ interface OfflineTrackListProps {
 
 function ListHead({ t }: { t: (k: string) => string }) {
   return (
-    <div className="grid h-8 grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-ink/[0.07] bg-ink/[0.015] pl-2 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-30 md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px]">
+    <div className="grid h-8 grid-cols-[28px_minmax(0,1fr)_var(--col-size,88px)_var(--col-time,64px)] items-center gap-3 border-b border-ink/[0.07] bg-ink/[0.015] pl-2 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-30 md:grid-cols-[28px_minmax(0,1fr)_auto_var(--col-size,88px)_var(--col-time,64px)]">
       <span className="text-center">№</span>
       <span>{t('offline.listTrack')}</span>
       <span className="hidden text-right md:block">{t('offline.listStamp')}</span>
-      <span className="text-right">{t('offline.listWeight')}</span>
-      <span className="text-right">{t('offline.listTime')}</span>
+      <HeadCell id="size">{t('offline.listWeight')}</HeadCell>
+      <HeadCell id="time">{t('offline.listTime')}</HeadCell>
     </div>
   );
 }
@@ -48,6 +50,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
   onReorder,
 }: OfflineTrackListProps) {
   const { t } = useTranslation();
+  const vars = useColumnVars();
   const [activeUrn, setActiveUrn] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const urns = useMemo(() => entries.map((e) => e.urn), [entries]);
@@ -88,7 +91,10 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
   );
 
   return (
-    <section className="overflow-hidden rounded-[18px] border border-ink/[0.07] bg-[rgb(var(--ink)/0.015)]">
+    <section
+      className="overflow-hidden rounded-[18px] border border-ink/[0.07] bg-[rgb(var(--ink)/0.015)]"
+      style={vars}
+    >
       <ListHead t={t} />
       {sortable ? (
         <DndContext

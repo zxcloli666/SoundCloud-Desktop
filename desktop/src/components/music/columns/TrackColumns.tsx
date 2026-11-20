@@ -1,13 +1,39 @@
-import { createContext, type ReactNode, useContext, useLayoutEffect, useRef, useState } from 'react';
-import { useAuthStore } from '../../../stores/auth';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { TRACK_COLUMN_DEFAULTS, useSettingsStore } from '../../../stores/settings';
 import { TrackColumnsHeader } from './TrackColumnsHeader';
 
 const MIN_TITLE = 220;
 const BADGES_WIDTH = 100;
-const ROW_FIXED = 32 + 40 + 48 + 48 + 64;
-const ACTIONS = 136;
-const ACTIONS_OWNER = 170;
+
+export interface RowShape {
+  fixed: number;
+  gap: number;
+  actions: number;
+  duration: number;
+  tail: number;
+}
+
+export const THEMED_SHAPE: RowShape = { fixed: 184, gap: 16, actions: 136, duration: 48, tail: 0 };
+export const THEMED_OWNER_SHAPE: RowShape = { ...THEMED_SHAPE, actions: 170 };
+export const ALBUM_SHAPE: RowShape = { fixed: 176, gap: 16, actions: 134, duration: 48, tail: 0 };
+export const LIBRARY_SHAPE: RowShape = { fixed: 172, gap: 16, actions: 168, duration: 48, tail: 0 };
+export const LIBRARY_GRIP_SHAPE: RowShape = { ...LIBRARY_SHAPE, fixed: 204 };
+export const SEQUENCE_SHAPE: RowShape = {
+  fixed: 160,
+  gap: 14,
+  actions: 100,
+  duration: 40,
+  tail: 0,
+};
+export const SEQUENCE_REMOVE_SHAPE: RowShape = { ...SEQUENCE_SHAPE, tail: 42 };
+export const SEQUENCE_SORTABLE_SHAPE: RowShape = { ...SEQUENCE_SHAPE, fixed: 180, tail: 42 };
 
 export interface TrackColumnsLayout {
   plays: number;
@@ -16,44 +42,48 @@ export interface TrackColumnsLayout {
   actions: number;
 }
 
-const HIDDEN: TrackColumnsLayout = { plays: 0, likes: 0, badges: false, actions: ACTIONS };
+const HIDDEN: TrackColumnsLayout = { plays: 0, likes: 0, badges: false, actions: 0 };
 
 const TrackColumnsContext = createContext<TrackColumnsLayout>(HIDDEN);
 
 export const useTrackColumns = () => useContext(TrackColumnsContext);
 
+export function useColumnWidth(id: keyof typeof TRACK_COLUMN_DEFAULTS): number {
+  return useSettingsStore((s) => s.trackColumns[id] ?? TRACK_COLUMN_DEFAULTS[id]);
+}
+
 function fit(
   width: number,
-  actions: number,
+  shape: RowShape,
   wanted: { plays: number; likes: number },
 ): TrackColumnsLayout {
-  let free = width - ROW_FIXED - actions - MIN_TITLE;
-  const layout = { ...HIDDEN, actions };
-  if (free >= wanted.plays + 16) {
+  const { gap } = shape;
+  let free = width - shape.fixed - shape.actions - shape.duration - shape.tail - MIN_TITLE;
+  const layout = { ...HIDDEN, actions: shape.actions };
+  if (free >= wanted.plays + gap) {
     layout.plays = wanted.plays;
-    free -= wanted.plays + 16;
+    free -= wanted.plays + gap;
   }
-  if (layout.plays > 0 && free >= wanted.likes + 16) {
+  if (layout.plays > 0 && free >= wanted.likes + gap) {
     layout.likes = wanted.likes;
-    free -= wanted.likes + 16;
+    free -= wanted.likes + gap;
   }
-  layout.badges = layout.likes > 0 && free >= BADGES_WIDTH + 16;
+  layout.badges = layout.likes > 0 && free >= BADGES_WIDTH + gap;
   return layout;
 }
 
 export function TrackColumns({
-  ownerUrn,
+  shape,
   header = true,
   children,
 }: {
-  ownerUrn?: string;
+  shape: RowShape;
   header?: boolean;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const stored = useSettingsStore((s) => s.trackColumns);
-  const owner = useAuthStore((s) => !!ownerUrn && s.user?.urn === ownerUrn);
 
   useLayoutEffect(() => {
     const el = ref.current;
@@ -64,7 +94,7 @@ export function TrackColumns({
     return () => observer.disconnect();
   }, []);
 
-  const layout = fit(width, owner ? ACTIONS_OWNER : ACTIONS, {
+  const layout = fit(width, shape, {
     plays: stored.plays ?? TRACK_COLUMN_DEFAULTS.plays,
     likes: stored.likes ?? TRACK_COLUMN_DEFAULTS.likes,
   });
@@ -72,7 +102,7 @@ export function TrackColumns({
   return (
     <TrackColumnsContext.Provider value={layout}>
       <div ref={ref}>
-        {header && <TrackColumnsHeader layout={layout} />}
+        {header && <TrackColumnsHeader layout={layout} shape={shape} />}
         {children}
       </div>
     </TrackColumnsContext.Provider>

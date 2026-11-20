@@ -6,6 +6,7 @@ import {ListMusic, Music} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
+import {ALBUM_SHAPE, TrackColumns} from '../music/columns/TrackColumns';
 import {AlbumTrackRow} from './AlbumTrackRow';
 
 interface AlbumTrackListProps {
@@ -117,6 +118,7 @@ function AlbumTrackListImpl({ tracks, aura }: AlbumTrackListProps) {
       </div>
 
       {available.length > 0 && (
+        <TrackColumns shape={ALBUM_SHAPE}>
         <div className="flex flex-col gap-1">
           {available.map((track, i) => (
             <AlbumTrackRow
@@ -128,6 +130,7 @@ function AlbumTrackListImpl({ tracks, aura }: AlbumTrackListProps) {
             />
           ))}
         </div>
+        </TrackColumns>
       )}
 
       {wanted.length > 0 && (

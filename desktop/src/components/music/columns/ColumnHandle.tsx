@@ -1,7 +1,19 @@
 import { useTranslation } from 'react-i18next';
-import { TRACK_COLUMN_MAX, TRACK_COLUMN_MIN, type TrackColumnId, useSettingsStore } from '../../../stores/settings';
+import {
+  TRACK_COLUMN_MAX,
+  TRACK_COLUMN_MIN,
+  type TrackColumnId,
+  useSettingsStore,
+} from '../../../stores/settings';
 
 const STEP = 8;
+
+const LABEL: Record<TrackColumnId, string> = {
+  plays: 'track.plays',
+  likes: 'track.likes',
+  size: 'offline.listWeight',
+  time: 'offline.listTime',
+};
 
 export function ColumnHandle({ id, width }: { id: TrackColumnId; width: number }) {
   const { t } = useTranslation();
@@ -39,7 +51,7 @@ export function ColumnHandle({ id, width }: { id: TrackColumnId; width: number }
       aria-valuemin={TRACK_COLUMN_MIN}
       aria-valuemax={TRACK_COLUMN_MAX}
       aria-valuenow={width}
-      aria-label={t(id === 'plays' ? 'track.plays' : 'track.likes')}
+      aria-label={t(LABEL[id])}
       title={t('track.columnResize')}
       tabIndex={0}
       onPointerDown={onPointerDown}
