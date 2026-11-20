@@ -1,0 +1,77 @@
+{
+  "unboundTitle": "Confirma el inicio de sesión para activar los chats",
+  "boundOtherTitle": "Confirma de nuevo tu inicio de sesión",
+  "musicStays": "La música seguirá con la sesión iniciada",
+  "confirm": "Confirmar inicio de sesión",
+  "done": "Chats activados",
+  "retry": "Reintentar",
+  "steps": {
+    "waiting": "Esperando la autorización de SoundCloud",
+    "token": "Intercambiando el código de autorización",
+    "extract": "Obteniendo tu perfil",
+    "finalizing": "Finalizando la sesión"
+  },
+  "errors": {
+    "unreachable": "No se puede conectar con el servidor",
+    "unreachableDesc": "El servidor no responde. Comprueba tu conexión o inténtalo de nuevo en un momento.",
+    "limited": "El inicio de sesión está limitado temporalmente",
+    "limitedDesc": "El servidor está limitando los inicios de sesión ahora mismo. Inténtalo de nuevo en {{seconds}} s.",
+    "expired": "El inicio de sesión caducó",
+    "failed": "No se pudo iniciar sesión"
+  },
+  "keychain": {
+    "title": "Los chats necesitan acceso a tus claves",
+    "mac": "Las claves de cifrado de los chats están en el llavero de macOS y se denegó el acceso. Pulsa Reintentar y elige Permitir.",
+    "linux": "Las claves de cifrado de los chats están en el almacén de contraseñas del sistema y se cerró la ventana de desbloqueo. Pulsa Reintentar y desbloquea el almacén.",
+    "windows": "Las claves de cifrado de los chats están en el Administrador de credenciales de Windows y se denegó el acceso. Pulsa Reintentar.",
+    "again": "Se denegó el acceso otra vez. Los chats se activarán cuando lo permitas.",
+    "failed": "No se pudo solicitar el acceso. Inténtalo de nuevo.",
+    "asking": "Esperando al sistema",
+    "skip": "Iniciar sesión sin chats",
+    "unavailable": {
+      "title": "Las claves de los chats no están disponibles",
+      "mac": "El llavero de macOS no responde. Los chats lo siguen intentando solos y tu historial se queda en este ordenador.",
+      "linux": "El almacén de contraseñas del sistema no responde. Inícialo o desbloquéalo. Los chats lo siguen intentando solos y tu historial se queda en este ordenador.",
+      "windows": "El Administrador de credenciales de Windows no responde. Los chats lo siguen intentando solos y tu historial se queda en este ordenador.",
+      "again": "Sigue sin haber respuesta. Los chats lo siguen intentando solos.",
+      "asking": "Comprobando las claves",
+      "file": "No se puede leer el archivo de claves de la carpeta de la app. Los chats lo siguen intentando solos."
+    },
+    "reset": {
+      "open": "¿Olvidaste la contraseña? Restablecer claves de los chats",
+      "openFile": "Restablecer claves de los chats",
+      "title": "¿Restablecer las claves de los chats en este ordenador?",
+      "lost": "Se eliminarán los chats guardados en este ordenador: mensajes, borradores, mensajes sin enviar, fotos en espera de subida y la caché de fotos.",
+      "back": "Tus chats siguen en el servidor. Cuando confirmes el inicio de sesión, los mensajes nuevos llegarán enseguida.",
+      "history": "Los mensajes antiguos volverán cuando elijas Fui yo en un dispositivo que uses desde hace 3 días o más, o por sí solos tras 3 días.",
+      "hidden": "Los mensajes que eliminaste solo para ti pueden volver a aparecer.",
+      "others": "En tus otros dispositivos aparecerá Nuevo inicio de sesión en tus chats. Elige Fui yo. No fui yo cierra la sesión de SoundCloud en este ordenador.",
+      "file": {
+        "mac": "Las claves nuevas se guardarán en un archivo privado de la carpeta de la app, no en el llavero de macOS.",
+        "linux": "Las claves nuevas se guardarán en un archivo privado de la carpeta de la app, no en el almacén de contraseñas del sistema.",
+        "windows": "Las claves nuevas se guardarán en un archivo privado de la carpeta de la app, no en el Administrador de credenciales de Windows."
+      },
+      "probe": "Si el Administrador de credenciales de Windows sigue fallando, las claves nuevas se guardarán en un archivo privado de la carpeta de la app.",
+      "os": {
+        "mac": "Las claves nuevas volverán al llavero de macOS. Si lo rechaza, se guardarán en un archivo privado de la carpeta de la app.",
+        "linux": "Las claves nuevas volverán al almacén de contraseñas del sistema. Si lo rechaza, se guardarán en un archivo privado de la carpeta de la app.",
+        "windows": "Las claves nuevas volverán al Administrador de credenciales de Windows. Si falla, se guardarán en un archivo privado de la carpeta de la app."
+      },
+      "confirm": "Restablecer claves",
+      "cancel": "Cancelar",
+      "working": "Restableciendo",
+      "failed": "No se pudieron borrar los datos de los chats en este ordenador. Inténtalo de nuevo."
+    }
+  },
+  "limit": {
+    "title": "Demasiados inicios de sesión nuevos hoy",
+    "opens": "Los chats en este ordenador se abrirán antes de {{time}}",
+    "trying": "Los chats lo siguen intentando solos",
+    "cap": {
+      "title_one": "Los chats ya están abiertos en {{count}} dispositivo, el máximo",
+      "title_other": "Los chats ya están abiertos en {{count}} dispositivos, el máximo",
+      "title_many": "Los chats ya están abiertos en {{count}} dispositivos, el máximo",
+      "remove": "En otro dispositivo, elimina uno que ya no uses"
+    }
+  }
+}

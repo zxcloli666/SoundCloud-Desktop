@@ -1,0 +1,68 @@
+{
+  "open": "Ouvrir",
+  "more": "Plus",
+  "remove": "Retirer",
+  "track": {
+    "play": "Lecture",
+    "pause": "Pause",
+    "seek": "Aller à",
+    "from": "Lire à partir de {{time}}",
+    "unavailable": "Indisponible",
+    "playNext": "Lire ensuite",
+    "queue": "Ajouter à la file d'attente",
+    "together": "Écouter ensemble"
+  },
+  "playlist": {
+    "playAll": "Lecture",
+    "shuffle": "Aléatoire",
+    "save": "Enregistrer",
+    "saved": "Enregistré"
+  },
+  "user": {
+    "followers_one": "{{value}} abonné",
+    "followers_other": "{{value}} abonnés",
+    "followers_many": "{{value}} abonnés",
+    "follow": "S'abonner",
+    "following": "Abonné",
+    "top": "Populaires",
+    "noTracks": "Aucun titre pour l'instant"
+  },
+  "room": {
+    "live": "En direct",
+    "closed": "Salon fermé",
+    "join": "Rejoindre",
+    "here": "Vous êtes ici",
+    "untitled": "Écoute ensemble",
+    "host": "Animé par {{name}}",
+    "full": "Complet"
+  },
+  "share": {
+    "action": "Envoyer",
+    "title": "Envoyer",
+    "search": "Rechercher",
+    "comment": "Commentaire",
+    "send": "Envoyer",
+    "sendCount": "Envoyer ({{count}})",
+    "sent_one": "Envoyé à {{count}} chat",
+    "sent_other": "Envoyé à {{count}} chats",
+    "sent_many": "Envoyé à {{count}} chats",
+    "failed_one": "Non envoyé à {{count}} chat",
+    "failed_other": "Non envoyé à {{count}} chats",
+    "failed_many": "Non envoyé à {{count}} chats",
+    "saved": "Enregistré",
+    "room": "Salon",
+    "untitled": "Sans nom",
+    "empty": "Aucun chat pour l'instant",
+    "noMatch": "Aucun résultat",
+    "loadFailed": "Les chats n'ont pas chargé"
+  },
+  "message": {
+    "write": "Message",
+    "unavailable": "Vous ne pouvez pas encore écrire à {{name}}",
+    "failed": "Impossible d'ouvrir le chat",
+    "invite": "Inviter",
+    "inviteText": "Écrivez-moi dans SoundCloud Desktop : {{url}}",
+    "inviteCopied": "Invitation copiée",
+    "copyFailed": "Copie impossible"
+  }
+}

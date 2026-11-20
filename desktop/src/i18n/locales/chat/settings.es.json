@@ -1,0 +1,83 @@
+{
+  "title": "Chats",
+  "unavailable": "Los chats no están disponibles ahora mismo",
+  "loadFailed": "No se cargaron los ajustes",
+  "retry": "Reintentar",
+  "whoCanWrite": {
+    "title": "Quién puede escribirme",
+    "everyone": "Todos",
+    "following": "Gente a la que sigo",
+    "nobody": "Nadie",
+    "hint": {
+      "everyone": "Los mensajes llegan al instante",
+      "following": "Los demás irán a solicitudes",
+      "nobody": "Solo tú puedes iniciar chats nuevos"
+    }
+  },
+  "visibility": {
+    "title": "Visibilidad",
+    "presence": "Mostrar lo que escucho",
+    "presenceHint": "Solo lo ven tus contactos",
+    "receipts": "Confirmaciones de lectura",
+    "typing": "Mostrar cuando escribo"
+  },
+  "notify": {
+    "title": "Notificaciones",
+    "preview": "Qué mostrar",
+    "previews": {
+      "full": "Texto",
+      "name_only": "Solo el nombre",
+      "hidden": "Nada"
+    },
+    "streamMode": "Solo el nombre en directo",
+    "streamHint": "Mientras OBS está transmitiendo",
+    "sound": "Sonido"
+  },
+  "dock": {
+    "title": "Dock de chats",
+    "hotkey": "Mostrar u ocultar",
+    "reset": "Restablecer",
+    "problem": {
+      "needsModifier": "Añade Ctrl, Alt o {{super}}",
+      "mediaKey": "Las teclas multimedia son del reproductor",
+      "unsupported": "Esta tecla no es compatible",
+      "reserved": "La app ya usa este atajo",
+      "duplicate": "Ya se usa para \"{{action}}\""
+    }
+  },
+  "blocked": {
+    "title": "Bloqueados",
+    "empty": "Nadie",
+    "unblock": "Desbloquear"
+  },
+  "policy": {
+    "title": "Reglas y privacidad",
+    "forbidden": {
+      "spam": "Spam y publicidad",
+      "harassment": "Amenazas y acoso",
+      "doxxing": "Datos privados de otra persona",
+      "illegal": "Ilegal: material de abuso sexual infantil, drogas, extremismo"
+    },
+    "ladder": {
+      "delete": "El mensaje se elimina",
+      "repeat": "Si se repite en 30 días: ban de chats por 7 días",
+      "illegal": "Contenido ilegal: ban permanente de chats"
+    },
+    "keeps": "La música, las salas y tu cuenta se mantienen"
+  },
+  "privacy": {
+    "encrypted": "Los mensajes están cifrados en tránsito, en el servidor y en este ordenador",
+    "reports": "Ante una denuncia, la moderación automática revisa solo esos mensajes y un poco de contexto"
+  },
+  "keys": {
+    "title": "Claves de los chats",
+    "os": {
+      "mac": "Guardadas en el llavero de macOS",
+      "linux": "Guardadas en el almacén de contraseñas del sistema",
+      "windows": "Guardadas en el Administrador de credenciales de Windows"
+    },
+    "file": "Guardadas en un archivo privado de la carpeta de la app",
+    "reset": "Restablecer claves de los chats",
+    "resetHint": "Elimina los chats de este ordenador y crea claves nuevas. Tus chats vuelven desde el servidor."
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "title": "Chats",
+  "unavailable": "Les chats ne sont pas disponibles pour le moment",
+  "loadFailed": "Les paramètres n'ont pas chargé",
+  "retry": "Réessayer",
+  "whoCanWrite": {
+    "title": "Qui peut m'écrire",
+    "everyone": "Tout le monde",
+    "following": "Mes abonnements",
+    "nobody": "Personne",
+    "hint": {
+      "everyone": "Les messages arrivent aussitôt",
+      "following": "Les autres vont dans les demandes",
+      "nobody": "Vous seul pouvez lancer de nouveaux chats"
+    }
+  },
+  "visibility": {
+    "title": "Visibilité",
+    "presence": "Afficher ce que j'écoute",
+    "presenceHint": "Seuls les contacts le voient",
+    "receipts": "Accusés de lecture",
+    "typing": "Afficher quand j'écris"
+  },
+  "notify": {
+    "title": "Notifications",
+    "preview": "Contenu affiché",
+    "previews": {
+      "full": "Texte",
+      "name_only": "Nom seulement",
+      "hidden": "Rien"
+    },
+    "streamMode": "Nom seulement en direct",
+    "streamHint": "Pendant un stream OBS",
+    "sound": "Son"
+  },
+  "dock": {
+    "title": "Dock des chats",
+    "hotkey": "Afficher ou masquer",
+    "reset": "Réinitialiser",
+    "problem": {
+      "needsModifier": "Ajoutez Ctrl, Alt ou {{super}}",
+      "mediaKey": "Les touches multimédia appartiennent au lecteur",
+      "unsupported": "Cette touche n'est pas prise en charge",
+      "reserved": "L'app utilise déjà ce raccourci",
+      "duplicate": "Déjà utilisé pour « {{action}} »"
+    }
+  },
+  "blocked": {
+    "title": "Bloqués",
+    "empty": "Personne",
+    "unblock": "Débloquer"
+  },
+  "policy": {
+    "title": "Règles et confidentialité",
+    "forbidden": {
+      "spam": "Spam et publicités",
+      "harassment": "Menaces et harcèlement",
+      "doxxing": "Données privées d'autrui",
+      "illegal": "Illégal : contenus pédocriminels, drogues, extrémisme"
+    },
+    "ladder": {
+      "delete": "Le message est supprimé",
+      "repeat": "De nouveau sous 30 jours : interdiction de chat pendant 7 jours",
+      "illegal": "Contenu illégal : interdiction de chat définitive"
+    },
+    "keeps": "La musique, les salons et votre compte restent"
+  },
+  "privacy": {
+    "encrypted": "Les messages sont chiffrés pendant le transport, sur le serveur et sur cet ordinateur",
+    "reports": "En cas de signalement, la modération automatique vérifie seulement ces messages et un peu de contexte"
+  },
+  "keys": {
+    "title": "Clés des chats",
+    "os": {
+      "mac": "Conservées dans le trousseau macOS",
+      "linux": "Conservées dans le gestionnaire de mots de passe du système",
+      "windows": "Conservées dans le Gestionnaire d'identification Windows"
+    },
+    "file": "Conservées dans un fichier privé du dossier de l'app",
+    "reset": "Réinitialiser les clés des chats",
+    "resetHint": "Supprime les chats de cet ordinateur et crée de nouvelles clés. Vos chats reviennent depuis le serveur."
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "untitled": "Sala de {{name}}",
+  "titlePlaceholder": "Nombre de la sala",
+  "rename": "Renombrar",
+  "ephemeral": "El chat desaparece al terminar la sesión",
+  "copyInvite": "Copiar invitación",
+  "copied": "Copiado",
+  "access": {
+    "private": "Privada, se entra con código",
+    "public": "Abierta, cualquiera puede entrar",
+    "toPublic": "Abrir a todos",
+    "toPrivate": "Hacer privada"
+  },
+  "leave": "Salir de la sesión",
+  "end": "Terminar sesión",
+  "confirmLeave": "¿Salir?",
+  "confirmEnd": "End?",
+  "leaveHint": "Salir, {{name}} será el anfitrión",
+  "role": {
+    "moderator": "Moderador"
+  },
+  "menu": {
+    "mute": "Silenciar",
+    "minutes": "{{value}} min",
+    "unmute": "Dejar de silenciar",
+    "kick": "Expulsar",
+    "ban": "Ban",
+    "banConfirm": "¿Seguro que quieres banear?",
+    "makeModerator": "Hacer moderador",
+    "dropModerator": "Quitar moderador",
+    "moderatorsFull": "No quedan plazas de moderador"
+  },
+  "muted": {
+    "title": "Estás silenciado"
+  },
+  "handoff": {
+    "mine": "Ahora eres el anfitrión",
+    "other": "{{name}} es el anfitrión"
+  },
+  "exit": {
+    "ended": "Sesión terminada, chat eliminado",
+    "kicked": "Te han sacado de la sala",
+    "evicted": "Tu lugar en la sala fue ocupado",
+    "close": "Cerrar"
+  },
+  "quiet": {
+    "off": "El anfitrión desactivó el chat",
+    "failed": "El chat no se abrió",
+    "gone": "Chat no disponible",
+    "retry": "Reintentar"
+  },
+  "suggest": {
+    "button": "Sugerir una pista",
+    "short": "Pista",
+    "search": "Buscar una pista",
+    "by": "Sugerida por {{name}}",
+    "queue": "Cola",
+    "queued": "En cola",
+    "playing": "Reproduciendo",
+    "empty": "No se encontró nada",
+    "wait": "Espera {{value}} s"
+  },
+  "moderatorRow": "Permisos de moderador: {{name}}",
+  "moderatorOffRow": "Permisos de moderador retirados: {{name}}",
+  "toast": {
+    "youLead": "Ahora controlas la música",
+    "ended": "Sesión terminada, chat eliminado",
+    "kicked": "Te han sacado de la sala"
+  },
+  "errors": {
+    "banned": "Esta sala está cerrada para ti",
+    "muted": "Estás silenciado",
+    "slow_mode": "Espera un momento",
+    "unavailable": "No puedes hacer eso aquí",
+    "not_member": "Ya no estás en la sala",
+    "not_found": "Esa persona o sala ya no existe",
+    "busy": "El servidor está ocupado, inténtalo de nuevo",
+    "offline": "Sin conexión",
+    "disabled": "Los chats están desactivados ahora mismo",
+    "invalid": "No funcionó",
+    "room_star_required": "Requiere STAR",
+    "request_limit": "Demasiado seguido, espera un poco",
+    "generic": "Algo salió mal, inténtalo de nuevo"
+  },
+  "links": {
+    "off": "Los enlaces están desactivados",
+    "new": "Los enlaces se activan un minuto después de entrar"
+  },
+  "rules": {
+    "title": "Reglas del chat",
+    "chat": "Chat",
+    "links": "Enlaces",
+    "slow": "Modo lento",
+    "slowOff": "Off",
+    "seconds": "{{value}}s"
+  },
+  "perks": {
+    "tuning": "Sala",
+    "starHost": "Anfitrión con STAR",
+    "seats_one": "{{count}} miembro",
+    "seats_other": "{{count}} miembros",
+    "seats_many": "{{count}} miembros",
+    "seatsOf": "{{value}} of {{max}}",
+    "withStar": "{{count}} con STAR",
+    "paused": "Nuevas entradas en pausa",
+    "nobodyKicked": "No se expulsó a nadie",
+    "moderators": "Moderadores",
+    "cover": {
+      "title": "Portada",
+      "track": "Carátula de la pista",
+      "custom": "Portada propia",
+      "kind": {
+        "avatar": "Avatar",
+        "playlist": "Playlist",
+        "track": "Pista"
+      },
+      "accent": "Color",
+      "accentN": "Color {{value}}",
+      "apply": "Listo",
+      "reset": "Usar carátula de la pista",
+      "empty": "Aún no tienes carátulas propias",
+      "loadFailed": "No se cargaron las carátulas",
+      "retry": "Reintentar",
+      "needStar": "Las portadas requieren STAR",
+      "invalid": "Esta portada no sirvió",
+      "pickOther": "Otra",
+      "limited": "Demasiado seguido",
+      "wait": "In {{value}} s",
+      "failed": "No se guardó",
+      "loadMore": "Cargar el resto"
+    },
+    "images": {
+      "title": "Imágenes",
+      "members": "All",
+      "mods": "Moderadores",
+      "off": "Nadie",
+      "withStar": "Imágenes con STAR"
+    },
+    "moreMods": "{{value}} moderadores con STAR",
+    "starSoon": "STAR se activará en unos minutos",
+    "needsStar": "Requiere STAR"
+  }
+}

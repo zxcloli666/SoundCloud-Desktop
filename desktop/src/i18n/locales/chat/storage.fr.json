@@ -1,0 +1,142 @@
+{
+  "title": "Stockage",
+  "back": "Retour",
+  "retry": "Réessayer",
+  "retryIn_one": "Réessayer dans {{count}} s",
+  "retryIn_other": "Réessayer dans {{count}} s",
+  "retryIn_many": "Réessayer dans {{count}} s",
+  "cancel": "Annuler",
+  "close": "Fermer",
+  "ring": {
+    "of": "of {{quota}}",
+    "value": "{{used}} of {{quota}}"
+  },
+  "full": "Stockage plein",
+  "freeLeft": "{{size}} libres",
+  "facts": {
+    "files": "Images",
+    "uploading": "Envoi en cours"
+  },
+  "lapsed": "Les nouvelles images nécessitent STAR. Vous pouvez toujours voir et supprimer les anciennes.",
+  "chats": {
+    "title": "Par chat",
+    "goneChat": "Chat supprimé",
+    "someChat": "Chat",
+    "gone": "Le chat a disparu",
+    "more_one": "{{count}} de plus",
+    "more_other": "{{count}} de plus",
+    "more_many": "{{count}} de plus",
+    "less": "Afficher moins"
+  },
+  "files_one": "{{count}} image",
+  "files_other": "{{count}} images",
+  "files_many": "{{count}} images",
+  "cache": {
+    "title": "Cache sur cet appareil",
+    "desc": "Images déjà téléchargées, les vôtres et celles des autres",
+    "clear": "Vider le cache",
+    "freed": "{{size}} libérés",
+    "failed": "Taille inconnue"
+  },
+  "deleteAll": {
+    "title": "Supprimer toutes mes images",
+    "hint": "Supprimées pour tout le monde dans tous les chats",
+    "action": "Tout supprimer",
+    "warn": "Toutes vos images et tous les avatars de groupe disparaissent pour tout le monde dans tous les chats. Vous pouvez annuler pendant {{seconds}} s.",
+    "word": "DELETE",
+    "type": "Saisissez {{word}}",
+    "confirm": "Tout supprimer"
+  },
+  "errors": {
+    "read_limited": "Trop de requêtes. Patientez un instant.",
+    "request_limit": "Trop de requêtes. Patientez un instant.",
+    "offline": "Pas de connexion au serveur.",
+    "invalid": "Le serveur a refusé la requête.",
+    "quota_exceeded": "Espace insuffisant.",
+    "generic": "Une erreur s'est produite.",
+    "more": "Impossible d'en charger plus",
+    "title": "Le stockage n'a pas chargé",
+    "limitedTitle": "Trop fréquent"
+  },
+  "tile": {
+    "unavailable": "Image indisponible",
+    "kind": {
+      "avatar": "Avatar",
+      "backdrop": "Arrière-plan",
+      "image": "Image"
+    },
+    "unsent": "Non envoyé",
+    "label": "Image, {{size}}, {{date}}",
+    "chats_one": "dans {{count}} chat",
+    "chats_other": "dans {{count}} chats",
+    "chats_many": "dans {{count}} chats",
+    "failed": "Non chargé"
+  },
+  "order": {
+    "label": "Ordre",
+    "new": "Plus récentes",
+    "old": "Plus anciennes",
+    "big": "Plus lourdes"
+  },
+  "filter": {
+    "clear": "Retirer le filtre {{name}}"
+  },
+  "picked_one": "{{count}} sélectionnée",
+  "picked_other": "{{count}} sélectionnées",
+  "picked_many": "{{count}} sélectionnées",
+  "select": {
+    "all": "Tout sélectionner",
+    "clear": "Effacer la sélection"
+  },
+  "delete": {
+    "action": "Supprimer",
+    "some_one": "Supprimer {{count}}",
+    "some_other": "Supprimer {{count}}",
+    "some_many": "Supprimer {{count}}",
+    "title_one": "Supprimer {{count}} image ?",
+    "title_other": "Supprimer {{count}} images ?",
+    "title_many": "Supprimer {{count}} images ?",
+    "count_one": "image",
+    "count_other": "images",
+    "count_many": "images",
+    "size": "libérés",
+    "chats_one": "chat",
+    "chats_other": "chats",
+    "chats_many": "chats",
+    "warn_one": "L'image disparaît pour tout le monde dans chaque chat où elle se trouve.",
+    "warn_other": "Les images disparaissent pour tout le monde dans chaque chat où elles se trouvent.",
+    "warn_many": "Les images disparaissent pour tout le monde dans chaque chat où elles se trouvent.",
+    "confirm": "Supprimer pour tout le monde"
+  },
+  "undo": {
+    "deleted_one": "{{count}} image supprimée",
+    "deleted_other": "{{count}} images supprimées",
+    "deleted_many": "{{count}} images supprimées",
+    "freed": "{{size}} libérés",
+    "quota": "Annulation impossible : {{used}} sur {{quota}} utilisés. Libérez de l'espace.",
+    "action": "Annuler",
+    "missed_one": "{{restored}} restaurées, {{count}} est perdue définitivement",
+    "missed_other": "{{restored}} restaurées, {{count}} sont perdues définitivement",
+    "missed_many": "{{restored}} restaurées, {{count}} sont perdues définitivement",
+    "restored_one": "{{count}} image restaurée",
+    "restored_other": "{{count}} images restaurées",
+    "restored_many": "{{count}} images restaurées"
+  },
+  "empty": {
+    "title": "Aucune image",
+    "line": "Les images que vous envoyez dans les chats apparaissent ici.",
+    "chatTitle": "Aucune image de vous dans ce chat"
+  },
+  "star": {
+    "title": "Images dans les chats avec STAR",
+    "albums": "Albums jusqu'à 10 images",
+    "quota": "1 Go pour vos images",
+    "rooms": "Couvertures et arrière-plans de salon"
+  },
+  "entry": {
+    "title": "Stockage d'images",
+    "used": "{{used}} of {{quota}}",
+    "line": "Vos images dans tous les chats",
+    "open": "Ouvrir"
+  }
+}

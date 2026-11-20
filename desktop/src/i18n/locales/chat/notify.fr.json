@@ -1,0 +1,16 @@
+{
+  "newMessage": "Nouveau message",
+  "more": "+{{n}}",
+  "reply": "Répondre",
+  "replyPlaceholder": "Répondre",
+  "send": "Envoyer",
+  "openDock": "Vers le dock",
+  "mute1h": "Muet 1 h",
+  "close": "Fermer",
+  "system": {
+    "kicked": "Vous avez été retiré du salon",
+    "banned": "Vous avez été banni du salon",
+    "muted": "Vous avez été rendu muet",
+    "handoff": "Vous êtes maintenant l'hôte"
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "untitled": "Salon de {{name}}",
+  "titlePlaceholder": "Nom du salon",
+  "rename": "Renommer",
+  "ephemeral": "Le chat disparaît après la session",
+  "copyInvite": "Copier l'invitation",
+  "copied": "Copié",
+  "access": {
+    "private": "Privé, accès par code",
+    "public": "Ouvert, tout le monde peut rejoindre",
+    "toPublic": "Ouvrir à tous",
+    "toPrivate": "Rendre privé"
+  },
+  "leave": "Quitter la session",
+  "end": "Terminer la session",
+  "confirmLeave": "Quitter ?",
+  "confirmEnd": "End?",
+  "leaveHint": "Si vous partez, {{name}} devient l'hôte",
+  "role": {
+    "moderator": "Modérateur"
+  },
+  "menu": {
+    "mute": "Rendre muet",
+    "minutes": "{{value}} min",
+    "unmute": "Réactiver le son",
+    "kick": "Expulser",
+    "ban": "Ban",
+    "banConfirm": "Bannir vraiment ?",
+    "makeModerator": "Nommer modérateur",
+    "dropModerator": "Retirer le modérateur",
+    "moderatorsFull": "Plus de places de modérateur"
+  },
+  "muted": {
+    "title": "Vous êtes en sourdine"
+  },
+  "handoff": {
+    "mine": "Vous êtes maintenant l'hôte",
+    "other": "{{name}} est l'hôte"
+  },
+  "exit": {
+    "ended": "Session terminée, chat supprimé",
+    "kicked": "Vous avez été retiré du salon",
+    "evicted": "Votre place dans le salon a été prise",
+    "close": "Fermer"
+  },
+  "quiet": {
+    "off": "L'hôte a désactivé le chat",
+    "failed": "Le chat ne s'est pas ouvert",
+    "gone": "Chat indisponible",
+    "retry": "Réessayer"
+  },
+  "suggest": {
+    "button": "Suggérer un titre",
+    "short": "Titre",
+    "search": "Trouver un titre",
+    "by": "Suggéré par {{name}}",
+    "queue": "File d'attente",
+    "queued": "Dans la file",
+    "playing": "En lecture",
+    "empty": "Aucun résultat",
+    "wait": "Attendez {{value}} s"
+  },
+  "moderatorRow": "Droits de modérateur : {{name}}",
+  "moderatorOffRow": "Droits de modérateur retirés : {{name}}",
+  "toast": {
+    "youLead": "Vous contrôlez maintenant la musique",
+    "ended": "Session terminée, chat supprimé",
+    "kicked": "Vous avez été retiré du salon"
+  },
+  "errors": {
+    "banned": "Ce salon vous est fermé",
+    "muted": "Vous êtes en sourdine",
+    "slow_mode": "Patientez un instant",
+    "unavailable": "Vous ne pouvez pas faire cela ici",
+    "not_member": "Vous n'êtes plus dans le salon",
+    "not_found": "Cette personne ou ce salon a disparu",
+    "busy": "Serveur occupé, réessayez",
+    "offline": "Pas de connexion",
+    "disabled": "Les chats sont désactivés pour le moment",
+    "invalid": "Échec de l'action",
+    "room_star_required": "Nécessite STAR",
+    "request_limit": "Trop fréquent, patientez un peu",
+    "generic": "Une erreur s'est produite, réessayez"
+  },
+  "links": {
+    "off": "Liens désactivés",
+    "new": "Les liens se débloquent une minute après l'arrivée"
+  },
+  "rules": {
+    "title": "Règles du chat",
+    "chat": "Chat",
+    "links": "Liens",
+    "slow": "Mode lent",
+    "slowOff": "Off",
+    "seconds": "{{value}}s"
+  },
+  "perks": {
+    "tuning": "Salon",
+    "starHost": "Hôte STAR",
+    "seats_one": "{{count}} membre",
+    "seats_other": "{{count}} membres",
+    "seats_many": "{{count}} membres",
+    "seatsOf": "{{value}} of {{max}}",
+    "withStar": "{{count}} avec STAR",
+    "paused": "Nouvelles arrivées en pause",
+    "nobodyKicked": "Personne n'a été retiré",
+    "moderators": "Modérateurs",
+    "cover": {
+      "title": "Couverture",
+      "track": "Pochette du titre",
+      "custom": "Couverture perso",
+      "kind": {
+        "avatar": "Avatar",
+        "playlist": "Playlist",
+        "track": "Titre"
+      },
+      "accent": "Couleur",
+      "accentN": "Couleur {{value}}",
+      "apply": "Terminé",
+      "reset": "Utiliser la pochette du titre",
+      "empty": "Pas encore de visuel perso",
+      "loadFailed": "Le visuel n'a pas chargé",
+      "retry": "Réessayer",
+      "needStar": "Les couvertures sont incluses avec STAR",
+      "invalid": "Cette couverture ne convient pas",
+      "pickOther": "Autre",
+      "limited": "Trop fréquent",
+      "wait": "In {{value}} s",
+      "failed": "Non enregistré",
+      "loadMore": "Charger le reste"
+    },
+    "images": {
+      "title": "Images",
+      "members": "All",
+      "mods": "Modérateurs",
+      "off": "Personne",
+      "withStar": "Images avec STAR"
+    },
+    "moreMods": "{{value}} modérateurs avec STAR",
+    "starSoon": "STAR s'active dans quelques minutes",
+    "needsStar": "Nécessite STAR"
+  }
+}

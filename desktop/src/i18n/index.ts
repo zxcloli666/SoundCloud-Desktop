@@ -9,6 +9,8 @@ const localeLoaders = {
   tr: () => import('./locales/tr.json'),
   ko: () => import('./locales/ko.json'),
   pt: () => import('./locales/pt.json'),
+  es: () => import('./locales/es.json'),
+  fr: () => import('./locales/fr.json'),
 } as const;
 
 const voiceLoaders = {
@@ -17,6 +19,8 @@ const voiceLoaders = {
   tr: () => import('./locales/voice/tr.json'),
   ko: () => import('./locales/voice/ko.json'),
   pt: () => import('./locales/voice/pt.json'),
+  es: () => import('./locales/voice/es.json'),
+  fr: () => import('./locales/voice/fr.json'),
 } as const;
 
 type AppLanguage = keyof typeof localeLoaders;

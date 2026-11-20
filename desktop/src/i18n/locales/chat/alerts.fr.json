@@ -1,0 +1,20 @@
+{
+  "newMessage": "Nouveau message",
+  "kicked": "Vous avez été expulsé",
+  "removed": "Vous avez été retiré du chat",
+  "banned": "Vous avez été banni",
+  "muted": "Vous avez été rendu muet",
+  "host": "Vous êtes maintenant l'hôte",
+  "chat": "Chat",
+  "group": "Groupe",
+  "public": "Chat public",
+  "room": "Salon",
+  "track": "Titre : {{title}}",
+  "playlist": "Playlist : {{title}}",
+  "profile": "Profil : {{title}}",
+  "photo": "Photo",
+  "photos": "{{count}} photos",
+  "roomInvite": "Invitation à un salon",
+  "deviceTitle": "Nouvel appareil dans les chats",
+  "deviceBody": "{{device}}. C'était vous ?"
+}
