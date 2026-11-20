@@ -1,0 +1,173 @@
+{
+  "attach": {
+    "title": "Añadir imágenes",
+    "drop": "Suelta las imágenes para enviarlas",
+    "dropLocked": "Las imágenes requieren STAR",
+    "locked": "Las imágenes son una ventaja de STAR"
+  },
+  "star": {
+    "title": "Envía imágenes con STAR",
+    "desc": "Álbumes de hasta 10 imágenes y 1 GB de almacenamiento propio. Todos pueden verlos.",
+    "cta": "Get STAR"
+  },
+  "tray": {
+    "sending": "Enviando {{done}} de {{total}}",
+    "waiting": "Esperando conexión",
+    "resumed": "Envío reanudado",
+    "sent": "Enviado",
+    "retry": "Reintentar",
+    "cancel": "Cancelar",
+    "cancelAll": "Cancelar todo"
+  },
+  "bubble": {
+    "deleted": "Imagen eliminada",
+    "lost": "Imagen no disponible",
+    "loading": "Cargando",
+    "failed": "No se pudo cargar",
+    "retry": "Reintentar",
+    "open": "Abrir"
+  },
+  "gallery": {
+    "tab": "Imágenes",
+    "empty": "Aún no hay imágenes",
+    "emptyHint": "Las imágenes enviadas en este chat aparecerán aquí",
+    "failed": "No se pudieron cargar las imágenes",
+    "retry": "Reintentar",
+    "locked": "Las imágenes están desactivadas por ahora"
+  },
+  "viewer": {
+    "close": "Cerrar",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "save": "Guardar"
+  },
+  "errors": {
+    "generic": "No se pudo enviar la imagen",
+    "quota_exceeded": "Tu almacenamiento de imágenes está lleno",
+    "media_star_required": "Enviar imágenes requiere STAR",
+    "room_star_required": "Las imágenes en esta sala requieren un anfitrión con STAR",
+    "media_uploads_paused": "Las subidas de imágenes están en pausa por ahora",
+    "media_missing": "Se perdieron algunas imágenes, envíalas de nuevo",
+    "send_limited": "Demasiadas imágenes, espera un poco",
+    "not_member": "No estás en este chat",
+    "unavailable": "Aquí no se permiten imágenes",
+    "invalid": "Esta imagen no se puede enviar",
+    "offline": "Sin conexión con el servidor",
+    "busy": "El servidor está ocupado, inténtalo en un rato",
+    "not_ready": "La app aún está iniciando, inténtalo de nuevo",
+    "crypto": "No se pudo cifrar la imagen",
+    "store": "No se pudo guardar la imagen",
+    "request_limit": "Demasiadas solicitudes, espera un poco",
+    "read_limited": "Demasiadas solicitudes, espera un poco",
+    "disabled": "Las imágenes están desactivadas en el servidor",
+    "backdrop_cooldown": "Podrás cambiar el fondo un poco más tarde",
+    "send_paused": "El envío está en pausa",
+    "muted": "Por ahora no puedes escribir aquí",
+    "slow_mode": "Modo lento, espera un poco"
+  },
+  "room": {
+    "capacity": "{{count}} miembros",
+    "capacityStar": "{{count}} con STAR",
+    "cover": "Portada de la sala",
+    "coverPick": "Elegir portada",
+    "coverTrack": "Carátula de la pista",
+    "coverClear": "Quitar portada",
+    "coverLocked": "Las portadas requieren un anfitrión con STAR",
+    "images": "Imágenes en el chat",
+    "imagesMembers": "Miembros",
+    "imagesMods": "Moderadores",
+    "imagesOff": "Nadie",
+    "imagesLocked": "Las imágenes requieren un anfitrión con STAR"
+  },
+  "album": {
+    "count_one": "{{count}} imagen",
+    "count_other": "{{count}} imágenes",
+    "count_many": "{{count}} imágenes"
+  },
+  "compose": {
+    "attach": "Imágenes",
+    "preparing": "Preparando",
+    "uploading": "Subiendo",
+    "ready": "Listo",
+    "failed": "Error",
+    "remove": "Quitar",
+    "removeAll": "Quitar álbum",
+    "retry": "Reintentar",
+    "add": "Más",
+    "full": "Álbum lleno",
+    "count": "{{count}}/{{max}}",
+    "sendAlbum": "Enviar álbum",
+    "waiting": "Esperando",
+    "albumRemoved": "Álbum quitado",
+    "undo": "Deshacer"
+  },
+  "skipped": {
+    "title_one": "{{count}} archivo omitido",
+    "title_other": "{{count}} archivos omitidos",
+    "title_many": "{{count}} archivos omitidos",
+    "type": "no es una imagen",
+    "invalid": "demasiado grande o dañado",
+    "full": "no cupo en el álbum",
+    "dismiss": "Ocultar"
+  },
+  "gate": {
+    "pausedTitle": "Imágenes en pausa",
+    "pausedDesc": "Las subidas volverán pronto. El texto se envía igual.",
+    "roomHostTitle": "Se necesita un anfitrión con STAR",
+    "roomHostDesc": "Las imágenes en esta sala se activan cuando el anfitrión tiene STAR.",
+    "roomHostSelf": "Las imágenes en tu sala se activan con STAR.",
+    "roomModsTitle": "Solo anfitrión y moderadores",
+    "roomModsDesc": "En esta sala solo el anfitrión y los moderadores envían imágenes.",
+    "roomOffTitle": "Imágenes desactivadas",
+    "roomOffDesc": "El anfitrión desactivó las imágenes en esta sala.",
+    "roomOffSelf": "Activa las imágenes en los ajustes de la sala."
+  },
+  "preview": {
+    "title": "Imágenes en chats",
+    "album": "Álbumes de hasta 10",
+    "albumHint": "Arrastra, pega o {{key}}",
+    "quota": "1 GB de tus imágenes",
+    "quotaHint": "Todos pueden verlas",
+    "covers": "Portadas de sala",
+    "coversHint": "Tu sala tiene su propia portada",
+    "caption": "Nuestra noche"
+  },
+  "drop": {
+    "title": "Suelta para añadir",
+    "hint": "Las imágenes irán al álbum sobre el campo de texto",
+    "full": "El álbum está lleno",
+    "fullHint": "Envíalo o quita algunas",
+    "locked": "Las imágenes requieren STAR",
+    "lockedHint": "Suelta para ver qué obtienes",
+    "closed": "Aquí las imágenes están desactivadas",
+    "notImages": "Solo imágenes",
+    "notImagesHint": "PNG, JPEG, WebP or GIF",
+    "elsewhere": "Suelta las imágenes en un chat abierto",
+    "notAudio": "Las imágenes no se añaden a Mis archivos"
+  },
+  "rows": {
+    "title": "Enviando",
+    "image": "Imagen",
+    "avatar": "Foto del grupo",
+    "queued": "En cola",
+    "done": "Listo",
+    "collapse": "Contraer",
+    "expand": "Detalles",
+    "storage": "Almacenamiento",
+    "star": "Get STAR",
+    "allDone": "Todo enviado",
+    "failedCount_one": "{{count}} error",
+    "failedCount_other": "{{count}} errores",
+    "failedCount_many": "{{count}} errores"
+  },
+  "avatar": {
+    "set": "Poner foto",
+    "change": "Cambiar foto",
+    "clear": "Quitar foto",
+    "uploading": "Subiendo foto",
+    "failed": "No se subió la foto",
+    "title": "Foto del grupo"
+  }
+}

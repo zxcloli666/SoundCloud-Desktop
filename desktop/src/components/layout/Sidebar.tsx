@@ -29,6 +29,7 @@ const languages = [
   { code: 'tr', label: 'Türkçe' },
   { code: 'ko', label: '한국어' },
   { code: 'pt', label: 'Português' },
+  { code: 'es', label: 'Español' },
 ] as const;
 
 function CountBadge({ count, collapsed }: { count: number; collapsed: boolean }) {

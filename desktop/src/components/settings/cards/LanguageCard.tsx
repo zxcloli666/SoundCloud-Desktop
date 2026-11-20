@@ -11,6 +11,7 @@ const LANGUAGES = [
     {code: 'tr', label: 'Türkçe'},
     {code: 'ko', label: '한국어'},
     {code: 'pt', label: 'Português'},
+    {code: 'es', label: 'Español'},
 ] as const;
 
 export function LanguageCard() {

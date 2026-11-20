@@ -1,0 +1,142 @@
+{
+  "title": "Almacenamiento",
+  "back": "Atrás",
+  "retry": "Reintentar",
+  "retryIn_one": "Reintentar en {{count}} s",
+  "retryIn_other": "Reintentar en {{count}} s",
+  "retryIn_many": "Reintentar en {{count}} s",
+  "cancel": "Cancelar",
+  "close": "Cerrar",
+  "ring": {
+    "of": "of {{quota}}",
+    "value": "{{used}} of {{quota}}"
+  },
+  "full": "El almacenamiento está lleno",
+  "freeLeft": "{{size}} libres",
+  "facts": {
+    "files": "Imágenes",
+    "uploading": "Subiendo"
+  },
+  "lapsed": "Las imágenes nuevas requieren STAR. Aún puedes ver y eliminar las antiguas.",
+  "chats": {
+    "title": "Por chat",
+    "goneChat": "Chat eliminado",
+    "someChat": "Chat",
+    "gone": "El chat ya no existe",
+    "more_one": "{{count}} más",
+    "more_other": "{{count}} más",
+    "more_many": "{{count}} más",
+    "less": "Mostrar menos"
+  },
+  "files_one": "{{count}} imagen",
+  "files_other": "{{count}} imágenes",
+  "files_many": "{{count}} imágenes",
+  "cache": {
+    "title": "Caché en este dispositivo",
+    "desc": "Imágenes ya descargadas, tuyas y de otros",
+    "clear": "Borrar caché",
+    "freed": "Liberados {{size}}",
+    "failed": "Tamaño desconocido"
+  },
+  "deleteAll": {
+    "title": "Eliminar todas mis imágenes",
+    "hint": "Desaparecerán para todos en todos los chats",
+    "action": "Eliminar todas",
+    "warn": "Todas tus imágenes y avatares de grupo desaparecerán para todos en todos los chats. Puedes deshacerlo durante {{seconds}} s.",
+    "word": "DELETE",
+    "type": "Escribe {{word}}",
+    "confirm": "Eliminar todas"
+  },
+  "errors": {
+    "read_limited": "Demasiadas solicitudes. Espera un momento.",
+    "request_limit": "Demasiadas solicitudes. Espera un momento.",
+    "offline": "Sin conexión con el servidor.",
+    "invalid": "El servidor rechazó la solicitud.",
+    "quota_exceeded": "No hay espacio suficiente.",
+    "generic": "Algo salió mal.",
+    "more": "No se pudo cargar más",
+    "title": "No se cargó el almacenamiento",
+    "limitedTitle": "Demasiado seguido"
+  },
+  "tile": {
+    "unavailable": "Imagen no disponible",
+    "kind": {
+      "avatar": "Avatar",
+      "backdrop": "Fondo",
+      "image": "Imagen"
+    },
+    "unsent": "Sin enviar",
+    "label": "Imagen, {{size}}, {{date}}",
+    "chats_one": "en {{count}} chat",
+    "chats_other": "en {{count}} chats",
+    "chats_many": "en {{count}} chats",
+    "failed": "No se cargó"
+  },
+  "order": {
+    "label": "Orden",
+    "new": "Más recientes",
+    "old": "Más antiguas",
+    "big": "Más grandes"
+  },
+  "filter": {
+    "clear": "Quitar filtro {{name}}"
+  },
+  "picked_one": "{{count}} seleccionada",
+  "picked_other": "{{count}} seleccionadas",
+  "picked_many": "{{count}} seleccionadas",
+  "select": {
+    "all": "Seleccionar todo",
+    "clear": "Quitar selección"
+  },
+  "delete": {
+    "action": "Eliminar",
+    "some_one": "Eliminar {{count}}",
+    "some_other": "Eliminar {{count}}",
+    "some_many": "Eliminar {{count}}",
+    "title_one": "¿Eliminar {{count}} imagen?",
+    "title_other": "¿Eliminar {{count}} imágenes?",
+    "title_many": "¿Eliminar {{count}} imágenes?",
+    "count_one": "imagen",
+    "count_other": "imágenes",
+    "count_many": "imágenes",
+    "size": "se liberará",
+    "chats_one": "chat",
+    "chats_other": "chats",
+    "chats_many": "chats",
+    "warn_one": "La imagen desaparecerá para todos en todos los chats donde esté.",
+    "warn_other": "Las imágenes desaparecerán para todos en todos los chats donde estén.",
+    "warn_many": "Las imágenes desaparecerán para todos en todos los chats donde estén.",
+    "confirm": "Eliminar para todos"
+  },
+  "undo": {
+    "deleted_one": "{{count}} imagen eliminada",
+    "deleted_other": "{{count}} imágenes eliminadas",
+    "deleted_many": "{{count}} imágenes eliminadas",
+    "freed": "Liberados {{size}}",
+    "quota": "No se puede deshacer: usado {{used}} de {{quota}}. Libera espacio.",
+    "action": "Deshacer",
+    "missed_one": "Se restauraron {{restored}}, {{count}} se perdió para siempre",
+    "missed_other": "Se restauraron {{restored}}, {{count}} se perdieron para siempre",
+    "missed_many": "Se restauraron {{restored}}, {{count}} se perdieron para siempre",
+    "restored_one": "Se restauró {{count}} imagen",
+    "restored_other": "Se restauraron {{count}} imágenes",
+    "restored_many": "Se restauraron {{count}} imágenes"
+  },
+  "empty": {
+    "title": "No hay imágenes",
+    "line": "Aquí aparecerán las imágenes que envíes a los chats.",
+    "chatTitle": "No hay imágenes tuyas en este chat"
+  },
+  "star": {
+    "title": "Imágenes en chats con STAR",
+    "albums": "Álbumes de hasta 10 imágenes",
+    "quota": "1 GB para tus imágenes",
+    "rooms": "Portadas y fondos de sala"
+  },
+  "entry": {
+    "title": "Almacenamiento de imágenes",
+    "used": "{{used}} of {{quota}}",
+    "line": "Tus imágenes en todos los chats",
+    "open": "Abrir"
+  }
+}

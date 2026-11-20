@@ -13,7 +13,7 @@ type Phrases = Record<string, string[]>;
 type Query = { q: string; lang: string; want: string[] };
 
 const ROOT = new URL('..', import.meta.url).pathname;
-const LANGUAGES = ['en', 'ru', 'tr', 'ko', 'pt'];
+const LANGUAGES = ['en', 'ru', 'tr', 'ko', 'pt', 'es'];
 const MIN_PHRASES = 5;
 const MIN_HIT_AT_1 = 0.8;
 const MIN_HIT_AT_3 = 0.95;

@@ -1,0 +1,87 @@
+{
+  "title": "Fondo",
+  "none": "Sin fondo",
+  "photo": "Foto propia",
+  "photoIn": "Foto en {{time}}",
+  "stored": "Del almacenamiento",
+  "storedIn": "Almacenamiento en {{time}}",
+  "percent": "{{percent}}%",
+  "retry": "Reintentar",
+  "pickAgain": "Otra foto",
+  "pickStored": "Otra imagen",
+  "storage": "Almacenamiento",
+  "images": "Imágenes",
+  "storedEmpty": "Aún no hay nada que elegir",
+  "storedEmptyLine": "Aquí aparecerán las imágenes de tus chats en este dispositivo",
+  "linking": "Conectando",
+  "done": "Listo",
+  "cancel": "Cancelar",
+  "hide": "Ocultar fondo",
+  "show": "Mostrar fondo",
+  "clear": "Quitar fondo",
+  "chip": "Fondo {{percent}}%",
+  "chipFailed": "No se cargó el fondo",
+  "star": {
+    "room": {
+      "title": "Fondos de sala con STAR",
+      "body": "Fondos animados y tu propia foto para toda la sala"
+    },
+    "chat": {
+      "title": "Fondos de chat con STAR",
+      "body": "Fondos animados y tu propia foto, que verá todo el chat"
+    },
+    "public": {
+      "title": "Foto propia con STAR",
+      "body": "Los fondos predefinidos son gratis aquí"
+    }
+  },
+  "locked": {
+    "room": "Solo el anfitrión",
+    "direct": "Solo miembros",
+    "group": "Solo el propietario y los admins",
+    "self": "No disponible",
+    "public": "Solo el propietario y los moderadores",
+    "pending": "Cuando se acepte la solicitud"
+  },
+  "report": {
+    "entry": "Denunciar fondo",
+    "title": "Denuncia de fondo",
+    "comment": "Comentario, opcional",
+    "send": "Enviar",
+    "sent": "Denuncia enviada",
+    "changed": "El fondo ya cambió",
+    "failed": "No se envió"
+  },
+  "errors": {
+    "room_star_required": "Los fondos requieren STAR",
+    "media_star_required": "Las fotos requieren STAR",
+    "backdrop_star_required": "Los fondos requieren STAR",
+    "not_member": "Permisos insuficientes",
+    "invalid": "Este fondo no está disponible",
+    "media_missing": "La foto ya no está, súbela de nuevo",
+    "stored_gone": "La imagen ya no está, elige otra",
+    "backdrop_cooldown": "Foto propia de nuevo en {{time}}",
+    "request_limit": "Demasiado seguido",
+    "quota_exceeded": "El almacenamiento está lleno",
+    "media_uploads_paused": "Las subidas están en pausa",
+    "offline": "Sin conexión",
+    "generic": "Algo salió mal"
+  },
+  "presets": {
+    "aurora": "Aurora",
+    "vinyl": "Vinilo",
+    "sunset-clouds": "Atardecer",
+    "ocean-rays": "Mar profundo",
+    "dunes": "Dunas",
+    "misty-forest": "Bosque con niebla",
+    "snow-lamp": "Nieve",
+    "satin": "Satén",
+    "paper": "Papel",
+    "peach-clouds": "Melocotón",
+    "pastel-lake": "Lago",
+    "watercolor": "Acuarela",
+    "candy-sky": "Caramelo"
+  },
+  "dismiss": "Descartar",
+  "cancelUpload": "Cancelar subida"
+}

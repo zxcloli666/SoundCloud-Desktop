@@ -1,0 +1,51 @@
+{
+  "tile": {
+    "open": "Abrir imagen {{n}} de {{total}}",
+    "deleted": "Imagen eliminada",
+    "lost": "Imagen no disponible",
+    "lostRetry": "Imagen no disponible, haz clic para reintentar",
+    "failed": "No se cargó, haz clic para reintentar",
+    "retry": "Reintentar"
+  },
+  "upload": {
+    "sending": "Enviando {{done}} de {{total}}",
+    "waiting": "Esperando conexión",
+    "failed_one": "{{count}} imagen sin enviar",
+    "failed_other": "{{count}} imágenes sin enviar",
+    "failed_many": "{{count}} imágenes sin enviar",
+    "retry": "Reintentar",
+    "retryAll": "Reintentar todo",
+    "cancel": "Quitar del álbum",
+    "retryReason": "Reintentar: {{reason}}",
+    "discard": "Eliminar publicación",
+    "discardConfirm": "¿Eliminar para siempre?"
+  },
+  "viewer": {
+    "label": "Visor de imágenes",
+    "close": "Cerrar",
+    "prev": "Anterior",
+    "next": "Siguiente",
+    "zoomIn": "Acercar",
+    "zoomOut": "Alejar",
+    "zoomReset": "Ajustar a la pantalla",
+    "jump": "Ir al mensaje",
+    "counter": "{{n}} / {{total}}",
+    "loading": "Cargando",
+    "failed": "No se cargó el original",
+    "retry": "Reintentar",
+    "alt": "Imagen de {{name}}",
+    "altOf": "Imagen {{n}} de {{total}} de {{name}}"
+  },
+  "grid": {
+    "label": "Imágenes del chat",
+    "item": "{{name}}, {{date}}",
+    "loading": "Cargando imágenes",
+    "empty": "Aún no hay imágenes",
+    "emptyHint": "Los álbumes de este chat aparecerán aquí",
+    "failed": "No se pudieron cargar las imágenes",
+    "moreFailed": "No se pudo cargar más",
+    "retry": "Reintentar",
+    "older": "Buscar antes",
+    "itemState": "{{item}}. {{state}}"
+  }
+}

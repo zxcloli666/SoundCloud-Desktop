@@ -66,33 +66,40 @@ function keysInCode(areas: Set<string>): Set<string> {
 }
 
 const en = bundle('en');
-const pt = bundle('pt');
 const areas = new Set(Object.keys(en.chat as Tree));
+const LANGUAGES: Array<[string, string]> = [
+  ['pt', 'Portuguese'],
+  ['es', 'Spanish'],
+];
 
-test('every English chat string has a Portuguese one with all plural forms', () => {
-  const forms = pluralForms('pt');
-  const missing = [...new Set(leaves(en).map((key) => key.replace(PLURAL, '')))].filter(
-    (key) => !resolves(pt, key, forms),
-  );
-  assert.deepEqual(missing, []);
-});
+for (const [code, name] of LANGUAGES) {
+  const tree = bundle(code);
 
-test('every chat key used in code resolves in Portuguese and English', () => {
-  const keys = keysInCode(areas);
-  assert.ok(keys.size > 300, `only ${keys.size} keys found`);
-  const unresolved = [...keys].filter((key) => {
-    if (typeof lookup(en, key) === 'object') return false;
-    return !resolves(pt, key, pluralForms('pt')) || !resolves(en, key, pluralForms('en'));
+  test(`every English chat string has a ${name} one with all plural forms`, () => {
+    const forms = pluralForms(code);
+    const missing = [...new Set(leaves(en).map((key) => key.replace(PLURAL, '')))].filter(
+      (key) => !resolves(tree, key, forms),
+    );
+    assert.deepEqual(missing, []);
   });
-  assert.deepEqual(unresolved, []);
-});
 
-test('Portuguese keeps the placeholders of English', () => {
-  const broken = leaves(pt).filter((key) => {
-    const english = lookup(en, key) ?? lookup(en, key.replace(PLURAL, '_other'));
-    if (typeof english !== 'string') return true;
-    const names = (text: string) => [...text.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]).sort();
-    return names(english).join() !== names(lookup(pt, key) as string).join();
+  test(`every chat key used in code resolves in ${name} and English`, () => {
+    const keys = keysInCode(areas);
+    assert.ok(keys.size > 300, `only ${keys.size} keys found`);
+    const unresolved = [...keys].filter((key) => {
+      if (typeof lookup(en, key) === 'object') return false;
+      return !resolves(tree, key, pluralForms(code)) || !resolves(en, key, pluralForms('en'));
+    });
+    assert.deepEqual(unresolved, []);
   });
-  assert.deepEqual(broken, []);
-});
+
+  test(`${name} keeps the placeholders of English`, () => {
+    const broken = leaves(tree).filter((key) => {
+      const english = lookup(en, key) ?? lookup(en, key.replace(PLURAL, '_other'));
+      if (typeof english !== 'string') return true;
+      const names = (text: string) => [...text.matchAll(/\{\{(\w+)\}\}/g)].map((m) => m[1]).sort();
+      return names(english).join() !== names(lookup(tree, key) as string).join();
+    });
+    assert.deepEqual(broken, []);
+  });
+}
