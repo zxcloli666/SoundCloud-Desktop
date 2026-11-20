@@ -1,0 +1,173 @@
+{
+  "attach": {
+    "title": "Ajouter des images",
+    "drop": "Déposez des images pour les envoyer",
+    "dropLocked": "Les images nécessitent STAR",
+    "locked": "Les images sont un avantage STAR"
+  },
+  "star": {
+    "title": "Envoyez des images avec STAR",
+    "desc": "Albums jusqu'à 10 images et 1 Go de stockage perso. Tout le monde peut les voir.",
+    "cta": "Get STAR"
+  },
+  "tray": {
+    "sending": "Envoi {{done}} sur {{total}}",
+    "waiting": "En attente de connexion",
+    "resumed": "Envoi repris",
+    "sent": "Envoyé",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "cancelAll": "Tout annuler"
+  },
+  "bubble": {
+    "deleted": "Image supprimée",
+    "lost": "Image indisponible",
+    "loading": "Chargement",
+    "failed": "Chargement impossible",
+    "retry": "Réessayer",
+    "open": "Ouvrir"
+  },
+  "gallery": {
+    "tab": "Images",
+    "empty": "Aucune image pour l'instant",
+    "emptyHint": "Les images envoyées dans ce chat apparaîtront ici",
+    "failed": "Impossible de charger les images",
+    "retry": "Réessayer",
+    "locked": "Les images sont désactivées pour le moment"
+  },
+  "viewer": {
+    "close": "Fermer",
+    "prev": "Précédent",
+    "next": "Suivant",
+    "zoomIn": "Zoom avant",
+    "zoomOut": "Zoom arrière",
+    "save": "Enregistrer"
+  },
+  "errors": {
+    "generic": "Impossible d'envoyer l'image",
+    "quota_exceeded": "Votre stockage d'images est plein",
+    "media_star_required": "L'envoi d'images nécessite STAR",
+    "room_star_required": "Les images de ce salon nécessitent un hôte STAR",
+    "media_uploads_paused": "Les envois d'images sont en pause pour le moment",
+    "media_missing": "Certaines images ont été perdues, renvoyez-les",
+    "send_limited": "Trop d'images, patientez un peu",
+    "not_member": "Vous n'êtes pas dans ce chat",
+    "unavailable": "Les images ne sont pas autorisées ici",
+    "invalid": "Cette image ne peut pas être envoyée",
+    "offline": "Pas de connexion au serveur",
+    "busy": "Le serveur est occupé, réessayez bientôt",
+    "not_ready": "L'app démarre encore, réessayez",
+    "crypto": "Impossible de chiffrer l'image",
+    "store": "Impossible d'enregistrer l'image",
+    "request_limit": "Trop de requêtes, patientez un peu",
+    "read_limited": "Trop de requêtes, patientez un peu",
+    "disabled": "Les images sont désactivées sur le serveur",
+    "backdrop_cooldown": "Vous pourrez changer l'arrière-plan un peu plus tard",
+    "send_paused": "L'envoi est en pause",
+    "muted": "Vous ne pouvez pas publier ici pour le moment",
+    "slow_mode": "Mode lent, patientez un peu"
+  },
+  "room": {
+    "capacity": "{{count}} membres",
+    "capacityStar": "{{count}} avec STAR",
+    "cover": "Couverture du salon",
+    "coverPick": "Choisir une couverture",
+    "coverTrack": "Pochette du titre",
+    "coverClear": "Retirer la couverture",
+    "coverLocked": "Les couvertures nécessitent un hôte STAR",
+    "images": "Images dans le chat",
+    "imagesMembers": "Membres",
+    "imagesMods": "Modérateurs",
+    "imagesOff": "Personne",
+    "imagesLocked": "Les images nécessitent un hôte STAR"
+  },
+  "album": {
+    "count_one": "{{count}} image",
+    "count_other": "{{count}} images",
+    "count_many": "{{count}} images"
+  },
+  "compose": {
+    "attach": "Images",
+    "preparing": "Préparation",
+    "uploading": "Envoi en cours",
+    "ready": "Prêt",
+    "failed": "Échec",
+    "remove": "Retirer",
+    "removeAll": "Retirer l'album",
+    "retry": "Réessayer",
+    "add": "Plus",
+    "full": "Album complet",
+    "count": "{{count}}/{{max}}",
+    "sendAlbum": "Envoyer l'album",
+    "waiting": "En attente",
+    "albumRemoved": "Album retiré",
+    "undo": "Annuler"
+  },
+  "skipped": {
+    "title_one": "{{count}} fichier ignoré",
+    "title_other": "{{count}} fichiers ignorés",
+    "title_many": "{{count}} fichiers ignorés",
+    "type": "pas une image",
+    "invalid": "trop lourd ou corrompu",
+    "full": "n'a pas tenu dans l'album",
+    "dismiss": "Masquer"
+  },
+  "gate": {
+    "pausedTitle": "Images en pause",
+    "pausedDesc": "Les envois reprendront bientôt. Le texte part toujours.",
+    "roomHostTitle": "L'hôte doit avoir STAR",
+    "roomHostDesc": "Les images de ce salon s'activent quand l'hôte a STAR.",
+    "roomHostSelf": "Les images de votre salon s'activent avec STAR.",
+    "roomModsTitle": "Hôte et modérateurs seulement",
+    "roomModsDesc": "Dans ce salon, l'hôte et les modérateurs envoient les images.",
+    "roomOffTitle": "Images désactivées",
+    "roomOffDesc": "L'hôte a désactivé les images dans ce salon.",
+    "roomOffSelf": "Activez les images dans les paramètres du salon."
+  },
+  "preview": {
+    "title": "Images dans les chats",
+    "album": "Albums jusqu'à 10",
+    "albumHint": "Glissez, collez ou {{key}}",
+    "quota": "1 Go pour vos images",
+    "quotaHint": "Tout le monde peut les voir",
+    "covers": "Couvertures de salon",
+    "coversHint": "Votre salon a sa propre couverture",
+    "caption": "Notre soirée"
+  },
+  "drop": {
+    "title": "Déposez pour ajouter",
+    "hint": "Les images vont dans l'album au-dessus du champ de saisie",
+    "full": "L'album est complet",
+    "fullHint": "Envoyez-le ou retirez-en",
+    "locked": "Les images sont incluses avec STAR",
+    "lockedHint": "Relâchez pour voir ce que vous obtenez",
+    "closed": "Les images sont désactivées ici",
+    "notImages": "Images uniquement",
+    "notImagesHint": "PNG, JPEG, WebP or GIF",
+    "elsewhere": "Déposez les images sur un chat ouvert",
+    "notAudio": "Les images ne sont pas ajoutées à Mes fichiers"
+  },
+  "rows": {
+    "title": "Envoi",
+    "image": "Image",
+    "avatar": "Photo du groupe",
+    "queued": "En file",
+    "done": "Terminé",
+    "collapse": "Réduire",
+    "expand": "Détails",
+    "storage": "Stockage",
+    "star": "Get STAR",
+    "allDone": "Tout est envoyé",
+    "failedCount_one": "{{count}} échec",
+    "failedCount_other": "{{count}} échecs",
+    "failedCount_many": "{{count}} échecs"
+  },
+  "avatar": {
+    "set": "Définir la photo",
+    "change": "Changer la photo",
+    "clear": "Retirer la photo",
+    "uploading": "Envoi de la photo",
+    "failed": "Échec de l'envoi de la photo",
+    "title": "Photo du groupe"
+  }
+}

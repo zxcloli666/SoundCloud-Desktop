@@ -1,0 +1,322 @@
+{
+  "voice": {
+    "category": "Voix",
+    "assistant": "Loli",
+    "quote": "“{{text}}”",
+    "mic": {
+      "talk": "Parler",
+      "button": "Bouton vocal"
+    },
+    "hero": {
+      "state": {
+        "missing": "Aucun moteur",
+        "off": "Off",
+        "models": "Modèles requis",
+        "downloading": "Téléchargement",
+        "broken": "Modèle endommagé",
+        "ready": "Prêt",
+        "listening": "Écoute",
+        "thinking": "Réflexion",
+        "asking": "Question",
+        "speaking": "Parole",
+        "error": "Erreur"
+      },
+      "toggle": "Commande vocale",
+      "language": "Langue de la voix",
+      "example": "lance Billie Eilish",
+      "sayIt": "Parlez maintenant",
+      "typeLabel": "Saisir une commande",
+      "send": "Envoyer",
+      "orHold": "ou maintenez",
+      "orPress": "ou appuyez sur",
+      "turnOn": "Activer",
+      "turnOnSize": "Activer · {{size}}",
+      "modelsReady": "Modèles prêts",
+      "download": "Obtenir les modèles · {{size}}",
+      "repair": "Réparer · {{size}}",
+      "engineMissing": "Le moteur ne répond pas"
+    },
+    "hud": {
+      "listening": "Écoute",
+      "thinking": "Réflexion",
+      "stop": "Stop",
+      "cancel": "Annuler",
+      "undo": "Annuler",
+      "ask": "Lequel ?",
+      "answerByVoice": "Vous pouvez répondre à voix haute",
+      "notFound": "Introuvable",
+      "find": "Rechercher",
+      "hush": "Chut",
+      "downloading": "Voix : téléchargement des modèles",
+      "openModels": "Ouvrir les modèles",
+      "askOne": "C'est bien celui-ci ?"
+    },
+    "error": {
+      "mic_denied": "Pas d'accès au microphone",
+      "mic_busy": "Le microphone est occupé",
+      "mic_lost": "Microphone déconnecté",
+      "no_models": "Les modèles doivent être téléchargés",
+      "model_corrupt": "Un modèle est endommagé",
+      "not_star": "La voix est incluse dans STAR",
+      "network": "Catalogue inaccessible",
+      "asr_failed": "Je n'ai pas compris",
+      "tts_failed": "Impossible de dire la réponse",
+      "engine_missing": "Moteur vocal indisponible"
+    },
+    "fix": {
+      "privacy": "Autoriser",
+      "download": "Télécharger",
+      "retry": "Réessayer",
+      "pickMic": "Choisir un micro",
+      "pickVoice": "Choisir une voix",
+      "settings": "Réglages"
+    },
+    "activation": {
+      "title": "Comment m'appeler",
+      "hotkey": "Appuyer pour parler",
+      "hold": "Maintenir",
+      "tap": "Tap",
+      "headset": "Bouton du casque",
+      "gesture": {
+        "off": "Off",
+        "double": "2×",
+        "triple": "3×"
+      },
+      "headsetHow_one": "Appuyez {{count}} fois sur le bouton",
+      "headsetHow_other": "Appuyez {{count}} fois de suite sur le bouton",
+      "headsetHow_many": "Appuyez {{count}} fois de suite sur le bouton",
+      "test": "Tester",
+      "pressNow_one": "Appuyez {{count}} fois",
+      "pressNow_other": "Appuyez {{count}} fois maintenant",
+      "pressNow_many": "Appuyez {{count}} fois maintenant",
+      "stopTest": "Stop",
+      "headsetWorks": "Fonctionne",
+      "again": "Encore",
+      "wake": "Par le nom",
+      "names": "Répond à",
+      "needsEcho": "Sans annulation d'écho, la musique le déclenche",
+      "echoOn": "Activer",
+      "rarer": "Moins sensible",
+      "oftener": "Plus sensible",
+      "falseCount_one": "{{count}} fausse activation",
+      "falseCount_other": "{{count}} fausses activations",
+      "falseCount_many": "{{count}} fausses activations",
+      "lastDay": "dernières 24 h"
+    },
+    "mics": {
+      "title": "Microphones",
+      "mode": {
+        "chosen": "Choisi",
+        "where_i_speak": "Là où je parle",
+        "everywhere": "All"
+      },
+      "default": "Par défaut",
+      "bluetooth": "Bluetooth",
+      "btWarning": "Les écouteurs passent en qualité appel",
+      "none": "Aucun microphone trouvé",
+      "refresh": "Réanalyser",
+      "echo": "Annulation d'écho",
+      "echoMode": {
+        "auto": "Auto",
+        "on": "On",
+        "off": "Off"
+      }
+    },
+    "voice": {
+      "title": "Voix de réponse",
+      "preview": "Écouter : {{name}}",
+      "stopPreview": "Stop",
+      "sound": "Ton et rythme",
+      "speed": "Vitesse",
+      "pitch": "Hauteur",
+      "speakOn": "Parler sur",
+      "speakMode": {
+        "with_music": "Avec la musique",
+        "device": "Appareil",
+        "where_i_listen": "Où j'écoute"
+      },
+      "duck": "Musique sous la voix",
+      "duckLabel": "Volume de la musique",
+      "replies": "Répondre à voix haute"
+    },
+    "speak": {
+      "server": "Voix de nos serveurs",
+      "serverDesc": "Pour un ordinateur peu puissant : le modèle vocal n'est pas téléchargé, une réponse peut attendre dans une file"
+    },
+    "chat": {
+      "title": "Conversation",
+      "toggle": "Parler avec le personnage",
+      "toggleDesc": "Envoyé à notre serveur et au fournisseur du modèle : le texte de votre phrase, ce qui est en lecture et dans la file, et les faits dont elle se souvient. L'audio ne quitte jamais cet ordinateur.",
+      "memory": "Mémoire",
+      "memoryEmpty": "Dites « souviens-toi que… » et cela apparaît ici",
+      "memoryAdd": "Ajouter un fait",
+      "memoryClear": "Tout oublier",
+      "memoryClearYes": "Oui, tout oublier",
+      "memoryForget": "Oublier",
+      "memoryFull": "La mémoire est pleine",
+      "busy": "Trop de questions d'affilée, laissez-moi une minute",
+      "down": "Impossible de répondre pour le moment",
+      "lost": "La réponse n'est pas arrivée",
+      "tools": {
+        "pause": "Pause",
+        "resume": "Reprendre",
+        "next": "Titre suivant",
+        "previous": "Titre précédent",
+        "seek": "Aller à",
+        "volume": "Volume",
+        "like": "J'aime",
+        "shuffle": "Aléatoire",
+        "repeat": "Répéter",
+        "speed": "Vitesse de lecture",
+        "play_likes": "Mes j'aime",
+        "play_wave": "Ma wave",
+        "play_similar": "Similaires",
+        "undo": "Annuler",
+        "play": "Lecture",
+        "queue_add": "Ajouter à la file d'attente",
+        "search": "Rechercher",
+        "play_found": "Lecture",
+        "open_page": "Ouvrir la page",
+        "get_settings": "Paramètres",
+        "set_setting": "Modifier un paramètre",
+        "lyrics": "Paroles",
+        "queue_list": "File d'attente",
+        "queue_clear": "Vider la file d'attente",
+        "add_to_playlist": "Ajouter à une playlist",
+        "remember": "Retenir",
+        "forget": "Oublier"
+      }
+    },
+    "you": {
+      "title": "Vous et l'assistante",
+      "chatOn": "Activer la conversation",
+      "address": "Forme d'adresse",
+      "gender": {
+        "label": "Genre",
+        "male": "he",
+        "female": "elle"
+      },
+      "form": {
+        "label": "Registre",
+        "informal": "décontracté",
+        "formal": "formel",
+        "implied": "Selon le rôle"
+      },
+      "name": "Nom ou surnom",
+      "role": "Rôle",
+      "roles": {
+        "friend": "Ami",
+        "assistant": "Assistant",
+        "butler": "Majordome",
+        "mentor": "Mentor",
+        "own": "Personnalisé"
+      },
+      "own": "Qui dois-je être pour vous ?",
+      "clear": "Effacer",
+      "try": "Say hi",
+      "hello": "Hi!"
+    },
+    "voices": {
+      "loli": {
+        "name": "Loli"
+      },
+      "moriarty": {
+        "name": "Moriarty"
+      },
+      "af_heart": {
+        "name": "Heart"
+      },
+      "am_michael": {
+        "name": "Michael"
+      }
+    },
+    "tags": {
+      "cute": "mignonne",
+      "bright": "vive",
+      "deep": "grave",
+      "warm": "chaleureuse",
+      "clear": "claire"
+    },
+    "models": {
+      "title": "Modèles",
+      "onDisk": "{{size}} sur le disque",
+      "getAll": "Télécharger · {{size}}",
+      "get": "Télécharger {{name}}",
+      "delete": "Supprimer {{name}}",
+      "resume": "Reprendre",
+      "repair": "Télécharger à nouveau",
+      "optional": "facultatif",
+      "own": "le nôtre",
+      "none": "Liste des modèles indisponible",
+      "kind": {
+        "vad": "Détecteur de parole",
+        "asr": "Reconnaissance",
+        "tts": "Synthèse vocale",
+        "wake": "Mot d'activation",
+        "g2p": "Prononciation",
+        "llm": "Analyse intelligente",
+        "engine": "Moteur vocal"
+      },
+      "voice": "Voix : {{name}}",
+      "name": {
+        "qwen-codec": "Décodeur vocal"
+      }
+    },
+    "credits": {
+      "title": "Licences",
+      "open": "Ouvrir la source de {{name}}",
+      "group": {
+        "data": "Données intégrées à l'app",
+        "models": "Modèles",
+        "code": "Bibliothèques"
+      },
+      "use": {
+        "stress": "Accent tonique du russe et ё, données retravaillées",
+        "lexicon": "Prononciation anglaise",
+        "vad": "Détecteur de parole",
+        "asrRu": "Reconnaissance du russe",
+        "asrEn": "Reconnaissance de l'anglais",
+        "voiceEn": "Voix anglaises",
+        "voiceData": "Enregistrements derrière les voix Kokoro",
+        "voiceBase": "Base de nos voix",
+        "engine": "Moteur vocal",
+        "tensor": "Calculs au cœur du moteur vocal",
+        "runtime": "Exécute la reconnaissance et les voix",
+        "inference": "Exécute les modèles",
+        "echo": "Annulation d'écho",
+        "resample": "Conversion de fréquence d'échantillonnage",
+        "stretch": "Vitesse de la parole"
+      }
+    },
+    "history": {
+      "title": "Historique",
+      "empty": "Vos commandes apparaîtront ici",
+      "try": "Try it",
+      "clear": "Effacer",
+      "wrong": "Mal compris",
+      "markedWrong": "Erreur",
+      "more_one": "{{count}} de plus",
+      "more_other": "{{count}} de plus",
+      "more_many": "{{count}} de plus",
+      "less": "Afficher moins"
+    },
+    "locked": {
+      "badge": "STAR",
+      "title": "La musique qui écoute",
+      "sub": "Loli lance, passe et aime d'une seule phrase",
+      "example": {
+        "play": "Joue Billie Eilish",
+        "volume": "Volume 50",
+        "like": "J'aime"
+      },
+      "listen": "Écouter Loli",
+      "voices": "Voix"
+    },
+    "units": {
+      "b": "B",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

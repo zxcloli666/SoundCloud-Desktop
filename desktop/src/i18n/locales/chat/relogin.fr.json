@@ -1,0 +1,77 @@
+{
+  "unboundTitle": "Confirmez la connexion pour activer les chats",
+  "boundOtherTitle": "Confirmez à nouveau votre connexion",
+  "musicStays": "La musique reste connectée",
+  "confirm": "Confirmer la connexion",
+  "done": "Les chats sont activés",
+  "retry": "Réessayer",
+  "steps": {
+    "waiting": "En attente de l'autorisation SoundCloud",
+    "token": "Échange du code d'autorisation",
+    "extract": "Récupération de votre profil",
+    "finalizing": "Finalisation de la session"
+  },
+  "errors": {
+    "unreachable": "Serveur injoignable",
+    "unreachableDesc": "Le serveur ne répond pas. Vérifiez votre connexion ou réessayez dans un instant.",
+    "limited": "Connexion temporairement limitée",
+    "limitedDesc": "Le serveur limite les connexions pour le moment. Réessayez dans {{seconds}} s.",
+    "expired": "Connexion expirée",
+    "failed": "Échec de la connexion"
+  },
+  "keychain": {
+    "title": "Les chats ont besoin d'accéder à vos clés",
+    "mac": "Les clés de chiffrement des chats sont dans le trousseau macOS, et l'accès a été refusé. Appuyez sur Réessayer et choisissez Autoriser.",
+    "linux": "Les clés de chiffrement des chats sont dans le gestionnaire de mots de passe du système, et la fenêtre de déverrouillage a été fermée. Appuyez sur Réessayer et déverrouillez-le.",
+    "windows": "Les clés de chiffrement des chats sont dans le Gestionnaire d'identification Windows, et l'accès a été refusé. Appuyez sur Réessayer.",
+    "again": "L'accès a de nouveau été refusé. Les chats s'activent dès que vous l'autorisez.",
+    "failed": "Impossible de demander l'accès. Réessayez.",
+    "asking": "En attente du système",
+    "skip": "Se connecter sans les chats",
+    "unavailable": {
+      "title": "Clés des chats inaccessibles",
+      "mac": "Le trousseau macOS ne répond pas. Les chats réessaient d'eux-mêmes, et votre historique reste sur cet ordinateur.",
+      "linux": "Le gestionnaire de mots de passe du système ne répond pas. Lancez-le ou déverrouillez-le. Les chats réessaient d'eux-mêmes, et votre historique reste sur cet ordinateur.",
+      "windows": "Le Gestionnaire d'identification Windows ne répond pas. Les chats réessaient d'eux-mêmes, et votre historique reste sur cet ordinateur.",
+      "again": "Toujours pas de réponse. Les chats réessaient d'eux-mêmes.",
+      "asking": "Vérification des clés",
+      "file": "Le fichier de clés dans le dossier de l'app est illisible. Les chats réessaient d'eux-mêmes."
+    },
+    "reset": {
+      "open": "Mot de passe oublié ? Réinitialiser les clés des chats",
+      "openFile": "Réinitialiser les clés des chats",
+      "title": "Réinitialiser les clés des chats sur cet ordinateur ?",
+      "lost": "Les chats enregistrés sur cet ordinateur sont supprimés : messages, brouillons, messages non envoyés, photos en attente d'envoi et cache des photos.",
+      "back": "Vos chats restent sur le serveur. Une fois la connexion confirmée, les nouveaux messages arrivent aussitôt.",
+      "history": "Les anciens messages reviennent quand vous choisissez C'est moi sur un appareil utilisé depuis 3 jours ou plus, ou d'eux-mêmes après 3 jours.",
+      "hidden": "Les messages supprimés seulement pour vous peuvent réapparaître.",
+      "others": "Vos autres appareils afficheront Nouvelle connexion à vos chats. Choisissez C'est moi. Ce n'est pas moi déconnecte cet ordinateur de SoundCloud.",
+      "file": {
+        "mac": "Les nouvelles clés sont placées dans un fichier privé du dossier de l'app, pas dans le trousseau macOS.",
+        "linux": "Les nouvelles clés sont placées dans un fichier privé du dossier de l'app, pas dans le gestionnaire de mots de passe du système.",
+        "windows": "Les nouvelles clés sont placées dans un fichier privé du dossier de l'app, pas dans le Gestionnaire d'identification Windows."
+      },
+      "probe": "Si le Gestionnaire d'identification Windows échoue encore, les nouvelles clés sont placées dans un fichier privé du dossier de l'app.",
+      "os": {
+        "mac": "Les nouvelles clés retournent dans le trousseau macOS. S'il refuse, elles vont dans un fichier privé du dossier de l'app.",
+        "linux": "Les nouvelles clés retournent dans le gestionnaire de mots de passe du système. S'il refuse, elles vont dans un fichier privé du dossier de l'app.",
+        "windows": "Les nouvelles clés retournent dans le Gestionnaire d'identification Windows. En cas d'échec, elles vont dans un fichier privé du dossier de l'app."
+      },
+      "confirm": "Réinitialiser les clés",
+      "cancel": "Annuler",
+      "working": "Réinitialisation",
+      "failed": "Impossible d'effacer les données des chats sur cet ordinateur. Réessayez."
+    }
+  },
+  "limit": {
+    "title": "Trop de nouvelles connexions aujourd'hui",
+    "opens": "Les chats de cet ordinateur s'ouvrent d'ici {{time}}",
+    "trying": "Les chats réessaient d'eux-mêmes",
+    "cap": {
+      "title_one": "Les chats sont déjà ouverts sur {{count}} appareil, le maximum",
+      "title_other": "Les chats sont déjà ouverts sur {{count}} appareils, le maximum",
+      "title_many": "Les chats sont déjà ouverts sur {{count}} appareils, le maximum",
+      "remove": "Sur un autre appareil, retirez-en un que vous n'utilisez plus"
+    }
+  }
+}

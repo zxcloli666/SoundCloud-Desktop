@@ -70,6 +70,7 @@ const areas = new Set(Object.keys(en.chat as Tree));
 const LANGUAGES: Array<[string, string]> = [
   ['pt', 'Portuguese'],
   ['es', 'Spanish'],
+  ['fr', 'French'],
 ];
 
 for (const [code, name] of LANGUAGES) {

@@ -1,0 +1,112 @@
+{
+  "title": "Chat public",
+  "tagline": "Un salon pour tout le monde",
+  "online_one": "{{count}} en ligne",
+  "online_other": "{{count}} en ligne",
+  "online_many": "{{count}} en ligne",
+  "pinged": "Réponses et mentions",
+  "empty": "Personne n'a encore écrit. Dites bonjour",
+  "slow": {
+    "title": "Mode lent",
+    "off": "Off",
+    "seconds": "{{value}}s",
+    "minutes": "{{value}} min",
+    "wait_one": "Attendez {{count}} seconde",
+    "wait_other": "Attendez {{count}} secondes",
+    "wait_many": "Attendez {{count}} secondes"
+  },
+  "muted": {
+    "title": "Vous êtes en sourdine",
+    "until": "Jusqu'à {{time}}",
+    "rules": "Règles"
+  },
+  "newcomer": {
+    "title": "Limite pour les nouveaux",
+    "over": "Trop long pour un nouveau membre",
+    "left_one": "{{count}} caractère restant",
+    "left_other": "{{count}} caractères restants",
+    "left_many": "{{count}} caractères restants"
+  },
+  "banned": {
+    "title": "Vous êtes banni du chat public",
+    "hint": "Lecture et écriture fermées"
+  },
+  "gate": {
+    "restricted": "Le chat public vous est fermé pour le moment",
+    "off": "Le chat public est désactivé pour le moment",
+    "offHint": "Vos autres chats continuent de fonctionner",
+    "failed": "Impossible d'ouvrir le chat public"
+  },
+  "roles": {
+    "owner": "Propriétaire",
+    "moderator": "Modérateur"
+  },
+  "menu": {
+    "mute": "Muet {{duration}}",
+    "unmute": "Réactiver le son",
+    "ban": "Ban",
+    "unban": "Débannir",
+    "makeModerator": "Nommer modérateur",
+    "dropModerator": "Retirer le modérateur",
+    "log": "Journal de modération"
+  },
+  "dialog": {
+    "muteTitle": "Rendre {{name}} muet",
+    "banTitle": "Ban {{name}}",
+    "reason": "Motif (facultatif)",
+    "mute": "Rendre muet",
+    "ban": "Ban"
+  },
+  "duration": {
+    "hours_one": "{{count}} heure",
+    "hours_other": "{{count}} heures",
+    "hours_many": "{{count}} heures",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "minutes_many": "{{count}} min",
+    "seconds_one": "{{count}} s",
+    "seconds_other": "{{count}} s",
+    "seconds_many": "{{count}} s"
+  },
+  "toast": {
+    "muted": "{{name}} est muet jusqu'à {{time}}",
+    "unmuted": "{{name}} peut de nouveau écrire",
+    "banned": "{{name}} banni",
+    "unbanned": "{{name}} débanni",
+    "moderatorOn": "{{name}} est maintenant modérateur",
+    "moderatorOff": "{{name}} n'est plus modérateur",
+    "slow": "Mode lent : {{value}}",
+    "slowOff": "Mode lent désactivé"
+  },
+  "staff": {
+    "title": "Modérateurs",
+    "add": "Ajouter un modérateur",
+    "empty": "Aucun modérateur pour l'instant"
+  },
+  "log": {
+    "title": "Log",
+    "empty": "Aucune action pour l'instant",
+    "failed": "Impossible de charger le journal",
+    "more": "Afficher plus",
+    "mute": "{{by}} a rendu {{user}} muet pour {{duration}}",
+    "unmute": "{{by}} a réactivé le son de {{user}}",
+    "ban": "{{by}} a banni {{user}}",
+    "unban": "{{by}} a débanni {{user}}",
+    "delete": "{{by}} a supprimé un message de {{user}}",
+    "moderator_add": "{{by}} a nommé {{user}} modérateur",
+    "moderator_remove": "{{by}} a retiré {{user}} des modérateurs",
+    "slow_mode": "{{by}} a réglé le mode lent sur {{value}}",
+    "slowOff": "{{by}} a désactivé le mode lent",
+    "other": "{{by}}: {{action}}"
+  },
+  "errors": {
+    "not_member": "Vous ne pouvez pas faire cela à cette personne",
+    "not_found": "Rien à lever",
+    "invalid": "Échec de l'action",
+    "busy": "Le serveur est occupé, réessayez bientôt",
+    "offline": "Pas de connexion au serveur",
+    "disabled": "Le chat public est désactivé",
+    "send_limited": "Trop d'actions, patientez un peu",
+    "generic": "Une erreur s'est produite, réessayez"
+  }
+}

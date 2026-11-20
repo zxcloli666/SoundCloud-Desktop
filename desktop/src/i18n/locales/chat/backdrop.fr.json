@@ -1,0 +1,87 @@
+{
+  "title": "Arrière-plan",
+  "none": "Aucun arrière-plan",
+  "photo": "Photo perso",
+  "photoIn": "Photo dans {{time}}",
+  "stored": "Du stockage",
+  "storedIn": "Stockage dans {{time}}",
+  "percent": "{{percent}}%",
+  "retry": "Réessayer",
+  "pickAgain": "Autre photo",
+  "pickStored": "Autre image",
+  "storage": "Stockage",
+  "images": "Images",
+  "storedEmpty": "Rien à choisir pour l'instant",
+  "storedEmptyLine": "Les images de vos chats sur cet appareil apparaîtront ici",
+  "linking": "Connexion",
+  "done": "Terminé",
+  "cancel": "Annuler",
+  "hide": "Masquer l'arrière-plan",
+  "show": "Afficher l'arrière-plan",
+  "clear": "Effacer l'arrière-plan",
+  "chip": "Arrière-plan {{percent}} %",
+  "chipFailed": "Échec de l'arrière-plan",
+  "star": {
+    "room": {
+      "title": "Arrière-plans du salon avec STAR",
+      "body": "Arrière-plans animés et votre propre photo pour tout le salon"
+    },
+    "chat": {
+      "title": "Arrière-plans du chat avec STAR",
+      "body": "Arrière-plans animés et votre propre photo, visibles par tout le chat"
+    },
+    "public": {
+      "title": "Photo perso avec STAR",
+      "body": "Les préréglages sont gratuits ici"
+    }
+  },
+  "locked": {
+    "room": "Réservé à l'hôte",
+    "direct": "Réservé aux membres",
+    "group": "Réservé au propriétaire et aux admins",
+    "self": "Indisponible",
+    "public": "Réservé au propriétaire et aux modérateurs",
+    "pending": "Après acceptation de la demande"
+  },
+  "report": {
+    "entry": "Signaler l'arrière-plan",
+    "title": "Signaler l'arrière-plan",
+    "comment": "Commentaire, facultatif",
+    "send": "Envoyer",
+    "sent": "Signalement envoyé",
+    "changed": "L'arrière-plan a déjà changé",
+    "failed": "Non envoyé"
+  },
+  "errors": {
+    "room_star_required": "Les arrière-plans sont inclus avec STAR",
+    "media_star_required": "Les photos sont incluses avec STAR",
+    "backdrop_star_required": "Les arrière-plans sont inclus avec STAR",
+    "not_member": "Droits insuffisants",
+    "invalid": "Cet arrière-plan est indisponible",
+    "media_missing": "La photo a disparu, importez-la à nouveau",
+    "stored_gone": "L'image a disparu, choisissez-en une autre",
+    "backdrop_cooldown": "Photo perso de nouveau dans {{time}}",
+    "request_limit": "Trop fréquent",
+    "quota_exceeded": "Stockage plein",
+    "media_uploads_paused": "Importations en pause",
+    "offline": "Pas de connexion",
+    "generic": "Une erreur s'est produite"
+  },
+  "presets": {
+    "aurora": "Aurore",
+    "vinyl": "Vinyle",
+    "sunset-clouds": "Coucher de soleil",
+    "ocean-rays": "Mer profonde",
+    "dunes": "Dunes",
+    "misty-forest": "Forêt brumeuse",
+    "snow-lamp": "Neige",
+    "satin": "Satin",
+    "paper": "Papier",
+    "peach-clouds": "Pêche",
+    "pastel-lake": "Lac",
+    "watercolor": "Aquarelle",
+    "candy-sky": "Bonbon"
+  },
+  "dismiss": "Ignorer",
+  "cancelUpload": "Annuler l'envoi"
+}

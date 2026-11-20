@@ -1,0 +1,1401 @@
+{
+  "settings.language": [
+    "langue de l'appli",
+    "mettre en français",
+    "c'est en anglais",
+    "changer de langue",
+    "traduction",
+    "langue de l'interface",
+    "passer en russe"
+  ],
+  "settings.startup": [
+    "écran d'accueil",
+    "page qui s'ouvre en premier",
+    "ouvrir direct sur ma bibliothèque",
+    "ce qui s'affiche au lancement",
+    "onglet par défaut",
+    "première page"
+  ],
+  "settings.autostart": [
+    "ouvrir avec windows",
+    "lancer au démarrage du pc",
+    "démarrage automatique",
+    "démarrer avec le système",
+    "startup",
+    "ne pas avoir à l'ouvrir à chaque fois",
+    "programmes au démarrage"
+  ],
+  "settings.autostartMinimized": [
+    "ne pas afficher la fenêtre au démarrage",
+    "lancer en arrière-plan",
+    "ouvrir en caché",
+    "démarrer discrètement",
+    "démarrer dans la zone de notification",
+    "que ça ne gêne pas à l'allumage"
+  ],
+  "settings.closeButton": [
+    "je ferme avec la croix et la musique s'arrête",
+    "fermer en gardant la lecture",
+    "lecture en arrière-plan",
+    "quitter complètement",
+    "réduire dans la barre système",
+    "que fait la croix",
+    "la fenêtre se ferme mais ça joue"
+  ],
+  "hotkeys.title": [
+    "raccourcis clavier",
+    "changer de musique au clavier",
+    "contrôler la musique en jeu",
+    "sans faire alt tab",
+    "touches multimédia",
+    "hotkey",
+    "raccourci volume",
+    "contrôler sans ouvrir l'appli"
+  ],
+  "settings.updates": [
+    "nouvelle version",
+    "mettre à jour l'appli",
+    "quelle version j'ai",
+    "dernière version",
+    "update",
+    "chercher des mises à jour"
+  ],
+  "settings.diagnostics": [
+    "l'appli s'est fermée toute seule",
+    "pourquoi ça plante",
+    "journal d'erreurs",
+    "dossier des logs",
+    "erreurs de lecture",
+    "quelque chose est cassé",
+    "débogage"
+  ],
+  "diag.sendReports": [
+    "télémétrie",
+    "envoyer les erreurs aux développeurs",
+    "rapports anonymes",
+    "rapports de plantage",
+    "statistiques d'usage",
+    "pistage",
+    "arrêter d'envoyer des données",
+    "vie privée"
+  ],
+  "blocklist.cardTitle": [
+    "bloquer un artiste",
+    "liste noire",
+    "je déteste cet artiste",
+    "bannir un artiste",
+    "retirer un artiste des recommandations",
+    "ne jamais jouer cet artiste",
+    "bloquer un utilisateur",
+    "masquer un artiste"
+  ],
+  "keywordFilter.cardTitle": [
+    "filtre de mots",
+    "masquer des mots",
+    "cacher les titres par mot",
+    "mots interdits",
+    "pas de remix",
+    "exclure un genre",
+    "filtrer par titre",
+    "tags indésirables"
+  ],
+  "settings.notifications": [
+    "alertes",
+    "fenêtres popup",
+    "avertissements",
+    "couper les notifs",
+    "notifications système",
+    "push",
+    "alertes du bureau"
+  ],
+  "settings.showErrorToasts": [
+    "popups d'erreur",
+    "bulles rouges",
+    "erreurs agaçantes",
+    "masquer les erreurs réseau",
+    "message piste non chargée",
+    "désactiver les toasts",
+    "messages d'erreur",
+    "ne plus voir les erreurs"
+  ],
+  "settings.releaseNotifications": [
+    "alertes nouveautés",
+    "nouveaux titres des abonnements",
+    "l'artiste a posté",
+    "prévenir d'un nouvel album",
+    "ne pas rater les sorties",
+    "nouveautés de mes abonnements",
+    "dernières sorties"
+  ],
+  "settings.help": [
+    "aide",
+    "assistance",
+    "faq",
+    "contacter les développeurs",
+    "signaler un problème",
+    "j'ai besoin d'aide",
+    "où poser une question"
+  ],
+  "settings.helpErrors": [
+    "erreur 404",
+    "erreur 500",
+    "erreur 503",
+    "que veut dire l'erreur",
+    "codes d'erreur",
+    "pourquoi ça ne marche pas",
+    "erreurs http"
+  ],
+  "settings.helpNetCheck": [
+    "pas de connexion",
+    "diagnostic réseau",
+    "connexion bloquée",
+    "tester la connexion",
+    "pourquoi pas d'internet",
+    "test de ping",
+    "la connexion échoue"
+  ],
+  "diag.report": [
+    "rapport pour le support",
+    "envoyer un rapport",
+    "rapport de diagnostic",
+    "signaler un bug",
+    "envoyer les logs",
+    "prévenir les développeurs",
+    "rapport de bug"
+  ],
+  "settings.helpLog": [
+    "desktop.log",
+    "ouvrir le journal",
+    "logs de l'appli",
+    "joindre le log",
+    "où sont les logs",
+    "fichier de log",
+    "fichier d'erreurs"
+  ],
+  "settings.helpDiscord": [
+    "communauté",
+    "chat des utilisateurs",
+    "demander aux développeurs",
+    "infos sur les pannes",
+    "serveur d'aide",
+    "communauté discord",
+    "salon des développeurs",
+    "rejoindre discord"
+  ],
+  "settings.android": [
+    "android",
+    "iphone",
+    "ios",
+    "appli mobile",
+    "appli pour téléphone",
+    "télécharger pour mobile",
+    "apk",
+    "smartphone",
+    "tablette"
+  ],
+  "settings.support": [
+    "faire un don",
+    "soutenir le développeur",
+    "pourboire",
+    "sponsoriser",
+    "aider le projet",
+    "étoile github",
+    "offrir un café",
+    "contribuer"
+  ],
+  "settings.appearance": [
+    "apparence",
+    "design",
+    "personnalisation",
+    "skin",
+    "personnaliser",
+    "réinitialiser l'apparence",
+    "changer le look",
+    "style visuel"
+  ],
+  "settings.themePreset": [
+    "thème de couleurs",
+    "preset",
+    "néon",
+    "forêt",
+    "carmin",
+    "thème sombre",
+    "couleurs de l'appli",
+    "couleurs perso",
+    "skins"
+  ],
+  "settings.accentColor": [
+    "couleur des boutons",
+    "couleur principale",
+    "couleur de surbrillance",
+    "changer l'orange",
+    "couleur du curseur",
+    "couleur de l'interface",
+    "accent"
+  ],
+  "settings.scheme": [
+    "mode sombre",
+    "mode clair",
+    "thème blanc",
+    "mode nuit",
+    "suivre le système",
+    "fond blanc",
+    "jour ou nuit",
+    "sombre ou clair",
+    "darkmode"
+  ],
+  "settings.themesTitle": [
+    "télécharger un thème",
+    "catalogue de thèmes",
+    "thèmes de la communauté",
+    "boutique de thèmes",
+    "installer un thème",
+    "créer mon thème",
+    "mettre à jour les thèmes",
+    "plus de thèmes",
+    "nouveaux thèmes"
+  ],
+  "settings.uiScale": [
+    "texte trop petit",
+    "texte trop grand",
+    "interface plus grande",
+    "zoom",
+    "taille de l'interface",
+    "échelle de la fenêtre",
+    "ctrl plus",
+    "dpi",
+    "taille des boutons",
+    "écran 4k",
+    "taille du texte"
+  ],
+  "settings.coverTitle": [
+    "couleurs dynamiques",
+    "couleurs de la pochette",
+    "assortir à la musique",
+    "couleurs de l'album",
+    "couleur adaptative",
+    "material you",
+    "couleur selon la pochette"
+  ],
+  "settings.coverTint": [
+    "fond dégradé",
+    "fenêtre colorée selon la pochette",
+    "lueur ambiante",
+    "fenêtre teintée",
+    "fond de la pochette",
+    "halo doux",
+    "teinte"
+  ],
+  "settings.coverAccent": [
+    "boutons de la couleur de la pochette",
+    "accent dynamique",
+    "le curseur prend la couleur de la pochette",
+    "lecteur aux couleurs de la pochette",
+    "accent qui suit le titre",
+    "surbrillance tirée de la pochette"
+  ],
+  "settings.fontTitle": [
+    "police",
+    "changer la police",
+    "police perso",
+    "typographie",
+    "importer une police",
+    "difficile à lire",
+    "ttf",
+    "style du texte",
+    "lettres"
+  ],
+  "settings.backgroundImage": [
+    "fond d'écran",
+    "image de fond",
+    "fond personnalisé",
+    "wallpaper anime",
+    "wallhaven",
+    "mettre une photo",
+    "gif en fond",
+    "arrière-plan de l'appli",
+    "ma propre image en fond"
+  ],
+  "settings.bgDim": [
+    "fond trop lumineux",
+    "assombrir le fond",
+    "luminosité de l'image",
+    "texte illisible sur le fond",
+    "opacité du fond",
+    "atténuer"
+  ],
+  "settings.bgOpacity": [
+    "vignette",
+    "bords sombres",
+    "ombre sur les bords",
+    "coins plus sombres",
+    "cadre autour du fond",
+    "centre plus clair",
+    "assombrir les bords"
+  ],
+  "settings.bgBlur": [
+    "flouter le fond",
+    "fond flou",
+    "adoucir l'image",
+    "défocaliser",
+    "effet verre dépoli",
+    "netteté du fond"
+  ],
+  "settings.wpSlideshow": [
+    "faire tourner les fonds",
+    "changer le fond automatiquement",
+    "minuteur de fond",
+    "carrousel de fonds",
+    "plusieurs images à tour de rôle",
+    "diaporama de fonds",
+    "fonds aléatoires"
+  ],
+  "settings.wpSlideshowInterval": [
+    "à quelle fréquence le fond change",
+    "intervalle de changement",
+    "minuteur du fond",
+    "minutes ou heures",
+    "fréquence du fond",
+    "durée du diaporama"
+  ],
+  "settings.wpSlideshowOrder": [
+    "fonds aléatoires",
+    "dans l'ordre",
+    "mélanger les fonds",
+    "ordre des images",
+    "en boucle",
+    "aléatoire des fonds"
+  ],
+  "settings.layoutTitle": [
+    "ordre des blocs",
+    "masquer une section",
+    "retirer un bloc de l'accueil",
+    "glisser-déposer",
+    "barre latérale",
+    "menu de gauche",
+    "réorganiser les onglets",
+    "cacher un élément du menu",
+    "sections de la bibliothèque"
+  ],
+  "settings.layoutPinned": [
+    "épingler une playlist",
+    "playlists dans la barre latérale",
+    "désépingler",
+    "accès rapide playlist",
+    "épinglés",
+    "raccourcis de playlists"
+  ],
+  "settings.layoutRiverSections": [
+    "mix infini",
+    "sections de l'accueil",
+    "wave sur l'accueil",
+    "flux de recommandations",
+    "pépites",
+    "nouveautés à l'accueil",
+    "ce qui s'affiche à l'accueil",
+    "étagères",
+    "retirer les recommandations"
+  ],
+  "trayMenu.mini": [
+    "mini lecteur",
+    "petite fenêtre",
+    "lecteur compact",
+    "lecteur flottant",
+    "lecteur dans le coin",
+    "lecteur widget",
+    "transparence du mini lecteur",
+    "depuis la barre système"
+  ],
+  "settings.performance": [
+    "l'appli est lente",
+    "lag",
+    "ça freeze",
+    "pc faible",
+    "ça saccade",
+    "vieux pc",
+    "désactiver les animations",
+    "fps",
+    "le flou ralentit",
+    "effets",
+    "économie de batterie"
+  ],
+  "settings.softwareRendering": [
+    "écran noir",
+    "la fenêtre clignote",
+    "bugs graphiques",
+    "pilote gpu",
+    "désactiver le gpu",
+    "accélération matérielle",
+    "écran blanc",
+    "artefacts",
+    "la fenêtre scintille"
+  ],
+  "settings.customCssTitle": [
+    "css",
+    "styles",
+    "code perso",
+    "mods",
+    "userstyle",
+    "modifier le look par code",
+    "j'ai cassé l'interface",
+    "variables de couleur",
+    "hooks"
+  ],
+  "settings.customCssAssets": [
+    "images pour le css",
+    "importer une image dans les styles",
+    "url d'image en css",
+    "ressources pour le thème",
+    "fichiers perso pour le style",
+    "icônes en css"
+  ],
+  "settings.playback": [
+    "lecture",
+    "lecteur",
+    "son",
+    "comment la musique joue",
+    "réglages du lecteur",
+    "options audio",
+    "musique"
+  ],
+  "settings.floatingComments": [
+    "commentaires sur la forme d'onde",
+    "commentaires sur le titre",
+    "commentaires flottants",
+    "commentaires des auditeurs",
+    "masquer les commentaires",
+    "commentaires horodatés",
+    "commentaires dans le lecteur"
+  ],
+  "settings.lyricsVisualizer": [
+    "égaliseur derrière les paroles",
+    "animation de la musique",
+    "visualisation audio",
+    "onde derrière le texte",
+    "fft",
+    "spectre",
+    "onde qui danse",
+    "visualiseur",
+    "usage du gpu"
+  ],
+  "settings.lyricsHighlight": [
+    "karaoké",
+    "surligner le mot",
+    "surligner la ligne",
+    "paroles synchronisées",
+    "mot par mot",
+    "ligne entière",
+    "paroles"
+  ],
+  "settings.normalizeVolume": [
+    "le volume saute",
+    "titres à volume différent",
+    "égaliser le son",
+    "faible puis fort",
+    "même volume",
+    "normalisation du volume",
+    "lissage du volume",
+    "replaygain",
+    "titres trop faibles",
+    "titres trop forts"
+  ],
+  "settings.skipSilence": [
+    "silence au début du titre",
+    "supprimer les pauses",
+    "secondes vides",
+    "silence à la fin",
+    "sauter la partie calme",
+    "temps mort",
+    "silences"
+  ],
+  "settings.autoplay": [
+    "continuer après la file",
+    "lecture infinie",
+    "titres similaires ensuite",
+    "la file est finie",
+    "mode radio",
+    "wave après le titre",
+    "la musique s'arrête après le dernier titre",
+    "autoplay"
+  ],
+  "settings.altUploads": [
+    "titre indisponible",
+    "bloqué dans mon pays",
+    "titre grisé",
+    "remplacer le titre",
+    "doublon sur un autre compte",
+    "indisponible dans ma région",
+    "version alternative",
+    "morceau indisponible"
+  ],
+  "settings.streamQuality": [
+    "qualité du son",
+    "débit",
+    "hq",
+    "sq",
+    "uq",
+    "économiser les données",
+    "sans perte",
+    "meilleure qualité",
+    "le son est mauvais",
+    "consommation de données",
+    "flac"
+  ],
+  "settings.searchPlayback": [
+    "la recherche lance wave",
+    "lire depuis la recherche",
+    "ce qui joue après un titre trouvé",
+    "résultats dans l'ordre",
+    "musique similaire après la recherche",
+    "résultat suivant"
+  ],
+  "settings.crossfade": [
+    "fondu enchaîné",
+    "transition douce",
+    "chevaucher les titres",
+    "pas de blanc entre les morceaux",
+    "mix façon dj",
+    "fondu entre les morceaux",
+    "gapless",
+    "transition entre titres"
+  ],
+  "settings.skipStuck": [
+    "titre bloqué",
+    "le titre ne charge pas",
+    "la musique s'est arrêtée",
+    "bloqué sur le chargement",
+    "passer un titre cassé",
+    "chargement sans fin",
+    "le titre ne se lance pas",
+    "coincé"
+  ],
+  "settings.audioDevice": [
+    "casque",
+    "haut-parleurs",
+    "sortie audio",
+    "par où sort le son",
+    "périphérique de lecture",
+    "bluetooth",
+    "pas de son",
+    "choisir les enceintes",
+    "périphérique de sortie"
+  ],
+  "netCheck.title": [
+    "pas d'internet",
+    "impossible de se connecter",
+    "serveur bloqué",
+    "vérifier le réseau",
+    "le fournisseur bloque",
+    "diagnostic de connexion",
+    "vpn",
+    "dns",
+    "rien ne charge",
+    "cloudflare",
+    "ça ne marche pas sans vpn"
+  ],
+  "call.title": [
+    "p2p",
+    "pair à pair",
+    "réseau des utilisateurs",
+    "réseau de l'abonnement star",
+    "via d'autres utilisateurs",
+    "contourner les blocages",
+    "proxy",
+    "mesh",
+    "relais"
+  ],
+  "settings.discordRpc": [
+    "discord",
+    "rpc",
+    "statut discord",
+    "mon titre sur discord",
+    "rich presence",
+    "montrer à mes amis ce que j'écoute",
+    "activité discord",
+    "discord rpc"
+  ],
+  "settings.discordRpcMode": [
+    "quoi afficher sur discord",
+    "titre ou artiste",
+    "activité seulement",
+    "mode de statut",
+    "nom sur discord",
+    "format rpc",
+    "apparence sur le profil discord"
+  ],
+  "settings.discordRpcStatus": [
+    "écoute",
+    "ligne sous le pseudo",
+    "texte du statut",
+    "ce qui est écrit à côté du nom",
+    "nom de l'appli dans le statut",
+    "ligne de statut discord"
+  ],
+  "settings.discordRpcLyrics": [
+    "paroles sur discord",
+    "ligne de la chanson dans le statut",
+    "paroles dans le statut",
+    "texte sur discord",
+    "karaoké dans le profil",
+    "paroles synchronisées en rpc"
+  ],
+  "settings.discordRpcButton": [
+    "bouton sous le statut",
+    "lien du titre sur discord",
+    "bouton ouvrir le titre",
+    "bouton écouter",
+    "partager le titre dans le statut",
+    "bouton"
+  ],
+  "settings.scrobble": [
+    "scrobbling",
+    "scrobbler",
+    "last.fm",
+    "lastfm",
+    "listenbrainz",
+    "statistiques d'écoute",
+    "historique d'écoute",
+    "journal musical",
+    "compteur d'écoutes"
+  ],
+  "settings.scrobbleNowPlaying": [
+    "en écoute sur le profil",
+    "now playing",
+    "titre actuel sur last.fm",
+    "afficher le titre en cours",
+    "statut d'écoute en direct",
+    "afficher sur le profil"
+  ],
+  "settings.obs": [
+    "obs",
+    "stream",
+    "diffusion",
+    "twitch",
+    "overlay",
+    "widget de stream",
+    "ce qui joue en stream",
+    "streamlabs",
+    "streamer",
+    "widget now playing",
+    "musique en stream",
+    "titre en cours en live"
+  ],
+  "settings.obsOverlay": [
+    "source navigateur",
+    "widget obs",
+    "overlay de stream",
+    "animation du titre",
+    "aperçu du widget",
+    "overlay now playing"
+  ],
+  "settings.obsTheme": [
+    "apparence du widget",
+    "vinyle",
+    "carte",
+    "minimaliste",
+    "design de l'overlay",
+    "thème du widget",
+    "style de l'overlay",
+    "à quoi ressemble le widget"
+  ],
+  "settings.obsProgress": [
+    "barre de progression en stream",
+    "temps du titre dans le widget",
+    "temps écoulé",
+    "minuteur du titre",
+    "afficher le temps",
+    "barre de lecture"
+  ],
+  "settings.obsHidePaused": [
+    "masquer en pause",
+    "le widget disparaît",
+    "cacher l'overlay",
+    "ne pas afficher en silence",
+    "s'efface en pause",
+    "fondu"
+  ],
+  "settings.obsLink": [
+    "lien obs",
+    "url du widget",
+    "copier le lien",
+    "adresse de l'overlay",
+    "coller dans obs",
+    "lien localhost"
+  ],
+  "settings.obsApi": [
+    "json",
+    "api",
+    "api du titre en cours",
+    "bot de chat",
+    "nightbot",
+    "commande !song",
+    "bot twitch",
+    "récupérer le nom du titre",
+    "requête http",
+    "titre en texte"
+  ],
+  "settings.obsPort": [
+    "port occupé",
+    "changer de port",
+    "numéro de port",
+    "port",
+    "port du serveur du widget",
+    "conflit de ports"
+  ],
+  "settings.obsText": [
+    "txt",
+    "fichier texte",
+    "titre dans un fichier",
+    "écrire le titre dans un fichier",
+    "now playing txt",
+    "fichier pour obs",
+    "source texte",
+    "nom en texte pour le stream"
+  ],
+  "settings.obsTemplate": [
+    "modèle de texte",
+    "format de l'enregistrement",
+    "artiste et titre",
+    "comment formater la ligne",
+    "modèle du titre",
+    "modèle",
+    "tokens",
+    "ordre artiste titre",
+    "format de ligne"
+  ],
+  "settings.import": [
+    "transférer des playlists",
+    "importer depuis spotify",
+    "yandex music",
+    "déplacer ma musique",
+    "importer les likes",
+    "depuis youtube",
+    "playlist par lien",
+    "migrer",
+    "importer"
+  ],
+  "importer.sync.title": [
+    "mise à jour auto de l'import",
+    "synchro spotify",
+    "la playlist se met à jour toute seule",
+    "garder synchronisé",
+    "récupérer les nouveaux titres",
+    "rafraîchir l'import",
+    "synchro yandex"
+  ],
+  "importer.sync.ymConnected": [
+    "déconnecter yandex",
+    "se déconnecter de yandex music",
+    "dissocier le compte",
+    "jeton yandex",
+    "ym",
+    "reconnecter yandex",
+    "retirer yandex music"
+  ],
+  "chat.settings.whoCanWrite.title": [
+    "qui peut m'écrire",
+    "bloquer les messages",
+    "messages privés",
+    "spam dans le chat",
+    "seulement mes abonnements",
+    "fermer les mp",
+    "mp",
+    "que personne ne m'écrive",
+    "inconnus",
+    "des inconnus m'écrivent"
+  ],
+  "chat.settings.visibility.title": [
+    "confidentialité du chat",
+    "masquer l'activité",
+    "invisible",
+    "ce que voient les autres",
+    "visibilité",
+    "vie privée"
+  ],
+  "chat.settings.visibility.presence": [
+    "cacher ce que j'écoute",
+    "ne pas montrer mon titre",
+    "musique visible dans le chat",
+    "statut d'écoute",
+    "mes amis voient mon titre",
+    "qu'on ne me traque pas"
+  ],
+  "chat.settings.visibility.receipts": [
+    "vu",
+    "double coche",
+    "cacher que j'ai lu",
+    "deux coches",
+    "accusé de lecture",
+    "ils voient que j'ai lu",
+    "marque de lecture"
+  ],
+  "chat.settings.visibility.typing": [
+    "en train d'écrire",
+    "indicateur de saisie",
+    "cacher que j'écris",
+    "rédaction du message",
+    "ils me voient écrire",
+    "est en train d'écrire"
+  ],
+  "chat.settings.blocked.title": [
+    "bloquer un utilisateur du chat",
+    "liste noire du chat",
+    "débloquer",
+    "bannir un utilisateur",
+    "ban du chat",
+    "utilisateurs bloqués",
+    "bloquer dans le chat"
+  ],
+  "chat.settings.notify.title": [
+    "son des messages",
+    "push du chat",
+    "notifications de messages",
+    "aperçu du message",
+    "masquer le texte de la notif",
+    "alertes de mp",
+    "notif de qui a écrit"
+  ],
+  "chat.settings.notify.streamMode": [
+    "mode streamer",
+    "masquer les messages en stream",
+    "pas de texte à l'antenne",
+    "safe pour le stream",
+    "vie privée en direct",
+    "mode diffusion",
+    "notifs pendant obs"
+  ],
+  "chat.settings.notify.sound": [
+    "son de notification",
+    "bip de message",
+    "couper le son du chat",
+    "chat silencieux",
+    "tonalité de message",
+    "mettre le chat en sourdine",
+    "ding"
+  ],
+  "chat.settings.dock.title": [
+    "raccourci du chat",
+    "ouvrir le chat avec une touche",
+    "hotkey du chat",
+    "chat flottant",
+    "dock",
+    "fenêtre du chat",
+    "réduire le chat"
+  ],
+  "chat.devices.list.title": [
+    "mes appareils",
+    "où je suis connecté",
+    "sessions",
+    "me déconnecter sur un autre ordi",
+    "connexion inconnue",
+    "retirer un appareil",
+    "plusieurs appareils",
+    "terminer la session",
+    "piraté"
+  ],
+  "chat.settings.keys.title": [
+    "chiffrement",
+    "clés de chiffrement",
+    "messages perdus",
+    "réinitialiser les clés",
+    "l'historique du chat a disparu",
+    "e2e",
+    "impossible de lire les messages",
+    "trousseau",
+    "restaurer le chat"
+  ],
+  "chat.storage.entry.title": [
+    "images du chat",
+    "place prise par les photos",
+    "fichiers du chat",
+    "espace disque du chat",
+    "médias du chat",
+    "supprimer les photos du chat",
+    "pièces jointes",
+    "où sont stockées les photos du chat",
+    "images des conversations"
+  ],
+  "chat.settings.policy.title": [
+    "règles du chat",
+    "signaler",
+    "spam interdit",
+    "le chat est-il chiffré",
+    "modération",
+    "ce qui est interdit",
+    "pourquoi j'ai été banni",
+    "confidentialité",
+    "signaler un utilisateur"
+  ],
+  "forge.title": [
+    "conversion",
+    "m4a",
+    "ffmpeg",
+    "transcodage",
+    "forge",
+    "traitement des titres téléchargés",
+    "codec",
+    "compression audio",
+    "file de traitement",
+    "transcoder"
+  ],
+  "settings.cache": [
+    "cache",
+    "libérer de l'espace",
+    "vider la mémoire",
+    "prend trop de place",
+    "téléchargé",
+    "enregistrer les likes sur le disque",
+    "musique sans internet",
+    "écouter hors ligne",
+    "mode hors ligne",
+    "disque plein"
+  ],
+  "settings.audioCacheSize": [
+    "place prise par la musique",
+    "effacer l'audio",
+    "supprimer les titres du disque",
+    "taille de l'audio",
+    "cache des titres",
+    "vider la musique téléchargée"
+  ],
+  "settings.assetsCacheSize": [
+    "effacer les images",
+    "cache des pochettes",
+    "place prise par les pochettes",
+    "supprimer les avatars",
+    "assets",
+    "images sur le disque",
+    "taille du cache d'images"
+  ],
+  "settings.likedCacheSize": [
+    "likes sur le disque",
+    "taille des playlists hors ligne",
+    "titres enregistrés",
+    "cache protégé",
+    "effacer les likes",
+    "place prise par les likes",
+    "supprimer le hors ligne"
+  ],
+  "settings.audioCacheLimit": [
+    "limite du cache",
+    "limiter l'espace",
+    "max de gigaoctets",
+    "ne pas enregistrer les titres",
+    "ne pas mettre la musique en cache",
+    "suppression auto après lecture",
+    "cache illimité",
+    "taille du cache musique"
+  ],
+  "settings.imageCacheLimit": [
+    "limite d'images",
+    "limiter le cache des pochettes",
+    "max pour les images",
+    "nettoyage auto des images",
+    "limite des pochettes",
+    "taille du cache d'images"
+  ],
+  "settings.hoverPreload": [
+    "les titres se lancent plus vite",
+    "démarrage instantané",
+    "préchargement",
+    "charger à l'avance",
+    "survol et lecture",
+    "lancement rapide du titre",
+    "délai avant le départ"
+  ],
+  "settings.storageLocation": [
+    "autre disque",
+    "déplacer le cache",
+    "dossier de musique",
+    "passer sur d",
+    "où sont stockés les titres",
+    "changer de dossier",
+    "emplacement de stockage",
+    "ssd hdd",
+    "chemin du cache",
+    "disque externe"
+  ],
+  "settings.account": [
+    "se déconnecter",
+    "se connecter",
+    "changer de compte",
+    "login",
+    "quitter le compte",
+    "connexion par qr",
+    "autorisation",
+    "transférer la session",
+    "autre compte"
+  ],
+  "sync.title": [
+    "synchro des likes",
+    "les likes ne s'enregistrent pas",
+    "limites de soundcloud",
+    "les changements ne partent pas",
+    "429",
+    "file de synchro",
+    "limite de requêtes soundcloud",
+    "me reconnecter",
+    "sync",
+    "les actions ne passent pas"
+  ],
+  "voice.assistant": [
+    "assistant vocal",
+    "loli",
+    "assistante",
+    "taper une commande",
+    "aide vocale",
+    "assistant ia",
+    "genre siri"
+  ],
+  "voice.hero.language": [
+    "langue de reconnaissance vocale",
+    "langue de reconnaissance",
+    "dans quelle langue parler",
+    "elle ne comprend pas le français",
+    "commandes vocales en anglais",
+    "langue de dictée"
+  ],
+  "voice.hero.toggle": [
+    "commandes vocales",
+    "couper la voix",
+    "activer le contrôle vocal",
+    "contrôler la musique à la voix",
+    "désactiver l'assistant",
+    "commande par la parole"
+  ],
+  "voice.activation.title": [
+    "comment appeler loli",
+    "commencer à parler",
+    "activer l'assistant",
+    "façons de l'appeler",
+    "déclencheur vocal"
+  ],
+  "voice.activation.hotkey": [
+    "talkie-walkie",
+    "ptt",
+    "touche pour parler",
+    "maintenir pour parler",
+    "hotkey vocale",
+    "touche de dictée",
+    "appuyer et parler"
+  ],
+  "voice.activation.headset": [
+    "double appui sur les écouteurs",
+    "bouton des airpods",
+    "appeler depuis le casque",
+    "triple appui",
+    "bouton des écouteurs pour la voix",
+    "la touche média appelle l'assistant"
+  ],
+  "voice.activation.wake": [
+    "mot d'activation",
+    "dis loli",
+    "hotword",
+    "toujours à l'écoute",
+    "appeler par le nom",
+    "faux déclenchements",
+    "sensibilité de l'activation",
+    "s'active toute seule",
+    "mains libres",
+    "dis sound",
+    "mori",
+    "moriarty",
+    "appeler moriarty",
+    "sound joue"
+  ],
+  "voice.mics.title": [
+    "microphone",
+    "micro",
+    "choisir le micro",
+    "quel micro écoute",
+    "elle ne m'entend pas",
+    "périphérique d'entrée",
+    "le micro ne marche pas",
+    "accès au micro"
+  ],
+  "voice.mics.echo": [
+    "annulation d'écho",
+    "aec",
+    "elle entend la musique",
+    "elle s'entend elle-même",
+    "la musique déclenche l'assistant",
+    "le son fuit dans le micro"
+  ],
+  "voice.voice.title": [
+    "changer la voix",
+    "autre voix",
+    "choisir une voix",
+    "voix masculine",
+    "voix féminine",
+    "moriarty",
+    "voix tts",
+    "qui parle",
+    "personnage",
+    "écouter la voix en test"
+  ],
+  "voice.voice.sound": [
+    "vitesse de parole",
+    "elle parle trop vite",
+    "hauteur de la voix",
+    "parler plus lentement",
+    "débit de parole",
+    "voix plus aiguë"
+  ],
+  "voice.voice.speakOn": [
+    "périphérique de sortie de la voix",
+    "où sort la voix",
+    "réponses dans le casque",
+    "périphérique séparé pour la voix",
+    "voix sur un autre appareil",
+    "sortie des réponses"
+  ],
+  "voice.voice.duck": [
+    "baisser la musique quand elle parle",
+    "ducking",
+    "volume de la musique pendant qu'elle parle",
+    "la musique couvre la réponse",
+    "musique plus basse sous la voix",
+    "atténuer la musique"
+  ],
+  "voice.voice.replies": [
+    "réponses parlées",
+    "qu'elle arrête de parler",
+    "assistant muet",
+    "pas de réponses vocales",
+    "couper la voix de l'assistant",
+    "réponses en texte seulement",
+    "ne pas parler"
+  ],
+  "voice.speak.server": [
+    "voix dans le cloud",
+    "synthèse vocale sur le serveur",
+    "ne pas télécharger le modèle de voix",
+    "voix sans téléchargement",
+    "tts en ligne",
+    "génération de voix à distance"
+  ],
+  "voice.chat.title": [
+    "parler avec loli",
+    "discuter avec loli",
+    "chat ia",
+    "demander n'importe quoi",
+    "chatbot",
+    "llm",
+    "réseau de neurones",
+    "discussion libre"
+  ],
+  "voice.chat.toggle": [
+    "couper la discussion",
+    "désactiver l'ia",
+    "ce qui est envoyé au serveur",
+    "confidentialité de la voix",
+    "ma voix est-elle enregistrée",
+    "commandes seulement",
+    "réponses de l'ia"
+  ],
+  "voice.chat.memory": [
+    "ce qu'elle retient",
+    "retiens ça",
+    "tout oublier",
+    "mémoire de l'assistant",
+    "faits sur moi",
+    "effacer les souvenirs",
+    "vider sa mémoire",
+    "notes enregistrées"
+  ],
+  "voice.you.title": [
+    "personnaliser l'assistant",
+    "comment elle me parle",
+    "relation avec l'assistant",
+    "style de conversation",
+    "ce que nous sommes l'un pour l'autre",
+    "réglages de personnalité"
+  ],
+  "voice.you.address": [
+    "comment m'appeler",
+    "mon prénom",
+    "surnom",
+    "pronoms",
+    "il ou elle",
+    "tutoiement ou vouvoiement",
+    "m'appeler par mon prénom",
+    "forme polie"
+  ],
+  "voice.you.role": [
+    "rôle de l'assistant",
+    "majordome",
+    "amie",
+    "mentor",
+    "jeu de rôle",
+    "qui est l'assistant",
+    "rôle perso",
+    "qu'elle joue le rôle de"
+  ],
+  "voice.models.title": [
+    "modèles vocaux",
+    "télécharger la voix",
+    "modèles de parole",
+    "poids des modèles",
+    "supprimer les modèles vocaux",
+    "reconnaissance hors ligne",
+    "espace disque pour la voix",
+    "le téléchargement du modèle bloque",
+    "réparer les modèles"
+  ],
+  "voice.credits.title": [
+    "licences",
+    "licences des modèles",
+    "crédits",
+    "attribution",
+    "remerciements",
+    "tiers",
+    "open source",
+    "qui a fait les modèles",
+    "d'où viennent les données",
+    "wiktionary",
+    "cc by-sa"
+  ],
+  "voice.history.title": [
+    "historique vocal",
+    "historique des commandes",
+    "ce qu'elle a entendu",
+    "qu'est-ce que j'ai dit",
+    "mal compris",
+    "mal reconnu",
+    "annuler une commande vocale",
+    "effacer l'historique vocal"
+  ],
+  "elsewhere.equalizer": [
+    "égaliseur",
+    "eq",
+    "égaliseur audio",
+    "bandes de fréquences",
+    "régler les fréquences",
+    "préampli",
+    "preset d'égaliseur",
+    "régler le son pour casque",
+    "booster aigus et basses",
+    "importer un preset apo"
+  ],
+  "elsewhere.effects": [
+    "bass boost",
+    "plus de basses",
+    "booster les basses",
+    "reverb",
+    "audio 8d",
+    "8d",
+    "écho",
+    "effets sonores",
+    "nightcore",
+    "slowed and reverb",
+    "son de club"
+  ],
+  "elsewhere.speed": [
+    "vitesse de lecture",
+    "accélérer un titre",
+    "ralentir un titre",
+    "hauteur tonale",
+    "changer de tonalité",
+    "changer la vitesse du morceau",
+    "plus vite ou plus lent",
+    "nightcore",
+    "slowed",
+    "sped up"
+  ],
+  "elsewhere.shortcuts": [
+    "raccourcis clavier",
+    "liste des raccourcis",
+    "liste des hotkeys",
+    "fenêtre des raccourcis",
+    "quelles touches existent",
+    "antisèche des touches",
+    "quoi appuyer pour mettre en pause",
+    "toutes les touches de l'appli"
+  ],
+  "settings.video": [
+    "clip vidéo à la place de la pochette",
+    "pochette animée",
+    "artwork animé",
+    "désactiver la vidéo",
+    "la vidéo saccade",
+    "canvas",
+    "vidéo dans le lecteur"
+  ],
+  "settings.videoOrder": [
+    "quoi afficher en premier",
+    "priorité vidéo",
+    "clip ou boucle d'abord",
+    "réorganiser les vidéos",
+    "type de vidéo préféré"
+  ],
+  "settings.videoPlace": [
+    "vidéo en arrière-plan",
+    "vidéo derrière les paroles",
+    "vidéo plein écran en fond",
+    "vidéo dans la pochette",
+    "passer la vidéo en fond",
+    "où la vidéo joue"
+  ],
+  "settings.videoCoverOpacity": [
+    "opacité de la pochette",
+    "masquer la pochette sur la vidéo",
+    "pochette transparente",
+    "voir la vidéo derrière la pochette",
+    "estomper la pochette",
+    "la pochette cache la vidéo"
+  ],
+  "settings.videoClip": [
+    "clip vidéo",
+    "clip officiel",
+    "clip youtube",
+    "vidéoclip",
+    "mv"
+  ],
+  "settings.videoLoop": [
+    "vidéo en boucle",
+    "courte boucle",
+    "canvas de spotify",
+    "animation en boucle",
+    "clip qui se répète"
+  ],
+  "settings.videoGenerated": [
+    "vidéo ia",
+    "vidéo par réseau de neurones",
+    "généré par ia",
+    "fait par ia",
+    "visuels générés"
+  ],
+  "settings.videoCacheSize": [
+    "place prise par les clips",
+    "cache vidéo",
+    "effacer les vidéos",
+    "supprimer les clips téléchargés",
+    "stockage vidéo"
+  ],
+  "settings.videoCacheLimit": [
+    "limiter l'espace des clips",
+    "les vidéos prennent trop de place",
+    "taille du cache des clips",
+    "quota vidéo",
+    "limite de stockage vidéo"
+  ],
+  "elsewhere.voice": [
+    "bouton micro",
+    "micro dans le lecteur",
+    "où est le bouton vocal",
+    "icône de micro",
+    "appuyer et parler",
+    "bouton pour parler",
+    "commencer l'écoute"
+  ],
+  "mobileLink.title": [
+    "accès étendu",
+    "lier l'accès mobile",
+    "connecter l'appli android",
+    "compte de l'appli mobile",
+    "relier soundcloud",
+    "délier l'accès étendu",
+    "accès aux flux haute qualité",
+    "permissions supplémentaires soundcloud"
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "span": {
+    "d": "{{count}}d",
+    "h": "{{count}}h",
+    "m": "{{count}}m"
+  },
+  "seen": {
+    "now": "maintenant"
+  },
+  "tier": {
+    "direct": "direct",
+    "relay": "via une route de secours",
+    "pro": "via une seconde route de secours"
+  },
+  "version": "v{{version}}",
+  "alert": {
+    "title": "Nouvelle connexion à vos chats",
+    "confirm": "It's me",
+    "notMe": "Not me",
+    "queue": "+{{count}} de plus",
+    "unlocked": "Historique déverrouillé",
+    "opensIn": "Historique déverrouillé dans {{span}}",
+    "revoked": "Appareil déconnecté",
+    "revokedHint": "Si c'était vous, reconnectez-vous dessus",
+    "done": "Terminé"
+  },
+  "banner": {
+    "title": "Les anciens messages apparaissent dès que vous confirmez sur un autre appareil",
+    "alone": "Les anciens messages apparaissent dans {{span}}",
+    "orIn": "ou d'eux-mêmes dans {{span}}"
+  },
+  "list": {
+    "title": "Appareils",
+    "limit": "{{count}} of {{max}}",
+    "current": "cet appareil",
+    "waiting": "en attente de confirmation",
+    "revoked": "déconnecté",
+    "added": "Ajouté {{at}}",
+    "young": "Cet appareil est récent. Vous pourrez gérer les autres dans {{span}}",
+    "remove": "Retirer",
+    "removeSure": "Le retirer ?",
+    "logout": "Se déconnecter",
+    "logoutSure": "Se déconnecter des chats ?",
+    "lockedFor": "Disponible dans {{span}}",
+    "olderOnly": "Seul un appareil plus ancien peut confirmer",
+    "loadFailed": "Impossible de charger les appareils",
+    "retry": "Réessayer"
+  },
+  "errors": {
+    "too_young": "Cet appareil est trop récent pour cela",
+    "not_found": "Cet appareil est déjà déconnecté",
+    "offline": "Pas de connexion aux chats",
+    "busy": "Serveur occupé, réessayez dans une minute",
+    "device_revoked": "Cet appareil a été déconnecté des chats",
+    "disabled": "Les chats sont désactivés pour le moment",
+    "generic": "Échec, réessayez"
+  }
+}

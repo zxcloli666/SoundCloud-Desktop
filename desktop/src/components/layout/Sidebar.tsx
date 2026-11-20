@@ -30,6 +30,7 @@ const languages = [
   { code: 'ko', label: '한국어' },
   { code: 'pt', label: 'Português' },
   { code: 'es', label: 'Español' },
+  { code: 'fr', label: 'Français' },
 ] as const;
 
 function CountBadge({ count, collapsed }: { count: number; collapsed: boolean }) {

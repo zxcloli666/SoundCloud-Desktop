@@ -1,0 +1,200 @@
+{
+  "saved": "Messages enregistrés",
+  "untitled": "Chat sans titre",
+  "someone": "Membre",
+  "back": "Retour",
+  "cancel": "Annuler",
+  "retry": "Réessayer",
+  "loadFailed": "Impossible d'ouvrir le chat",
+  "toBottom": "Aller au dernier message",
+  "notMember": "Vous n'êtes plus dans ce chat",
+  "members_one": "{{count}} membre",
+  "members_other": "{{count}} membres",
+  "members_many": "{{count}} membres",
+  "unread_one": "{{count}} nouveau message",
+  "unread_other": "{{count}} nouveaux messages",
+  "unread_many": "{{count}} nouveaux messages",
+  "day": {
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
+  },
+  "empty": {
+    "chat": "Lancez la conversation avec un premier message",
+    "saved": "Gardez ici notes et titres"
+  },
+  "typing": {
+    "one": "écrit",
+    "named": "{{name}} écrit",
+    "many_one": "{{count}} écrivent",
+    "many_other": "{{count}} écrivent",
+    "many_many": "{{count}} écrivent"
+  },
+  "menu": {
+    "info": "Infos",
+    "more": "Plus",
+    "mute": "Muet",
+    "unmute": "Réactiver le son"
+  },
+  "timer": {
+    "title": "Messages éphémères"
+  },
+  "ttl": {
+    "off": "Off",
+    "3600": "1 heure",
+    "86400": "1 jour",
+    "604800": "1 semaine",
+    "custom": "{{hours}} h",
+    "short": {
+      "3600": "1h",
+      "86400": "1d",
+      "604800": "1w"
+    }
+  },
+  "system": {
+    "ttlOn": "Messages éphémères : {{ttl}}",
+    "ttlOff": "Les messages éphémères sont désactivés",
+    "created": "Chat créé",
+    "joined": "{{name}} a rejoint",
+    "left": "{{name}} est parti",
+    "added": "{{name}} a été ajouté",
+    "removed": "{{name}} a été retiré",
+    "kicked": "{{name}} a été expulsé",
+    "banned": "{{name}} a été banni",
+    "muted": "{{name}} a été rendu muet",
+    "mutedUntil": "{{name}} est muet jusqu'à {{time}}",
+    "renamed": "Nouveau nom : {{name}}",
+    "handoff": "{{name}} est maintenant l'hôte",
+    "track": "En lecture : {{name}}",
+    "roleOwner": "{{name}} est maintenant le propriétaire",
+    "roleAdmin": "{{name}} est maintenant admin",
+    "roleMember": "{{name}} n'est plus admin",
+    "other": "Chat mis à jour"
+  },
+  "bubble": {
+    "deleted": "Message supprimé",
+    "locked": "S'ouvre après confirmation de cet appareil",
+    "unknown": "Mettez l'app à jour pour voir ce message",
+    "system": "Événement",
+    "edited": "Modifié",
+    "forwarded": "Transféré de {{name}}",
+    "blocked": "Message d'un utilisateur bloqué",
+    "spoiler": "Afficher le texte masqué",
+    "expiresIn": "Disparaît dans {{time}}"
+  },
+  "tick": {
+    "pending": "Envoi",
+    "sent": "Envoyé",
+    "delivered": "Distribué",
+    "read": "Lu",
+    "failed": "Non envoyé"
+  },
+  "actions": {
+    "reply": "Répondre",
+    "forward": "Transférer",
+    "copy": "Copier",
+    "edit": "Modifier",
+    "pin": "Pin",
+    "unpin": "Désépingler",
+    "delete": "Supprimer",
+    "discard": "Annuler l'envoi",
+    "report": "Signaler",
+    "retry": "Renvoyer",
+    "more": "Plus",
+    "react": "Réagir",
+    "quickReact": "J'adore",
+    "otherEmoji": "Autre emoji",
+    "profile": "Profil"
+  },
+  "reply": {
+    "missing": "Message",
+    "gone": "Message introuvable"
+  },
+  "pinned": {
+    "one": "Épinglé",
+    "many": "Épinglé {{index}} sur {{total}}",
+    "unloaded": "Message épinglé"
+  },
+  "history": {
+    "locked": "Les anciens messages apparaissent après confirmation de cet appareil depuis un autre"
+  },
+  "composer": {
+    "placeholder": "Message",
+    "paused": "L'envoi est en pause pour le moment",
+    "send": "Envoyer",
+    "save": "Enregistrer",
+    "editing": "Modification",
+    "cancel": "Annuler",
+    "emoji": "Emoji",
+    "emojiHint": "Emoji : {{keys}}",
+    "nowPlaying": "En lecture : {{title}}",
+    "nothingPlaying": "Rien n'est en lecture",
+    "removeAttachment": "Retirer"
+  },
+  "delete": {
+    "title": "Supprimer le message ?",
+    "everyone": "Pour tout le monde",
+    "me": "Pour moi seulement"
+  },
+  "report": {
+    "title": "Signaler",
+    "reasons": {
+      "spam": "Spam ou publicités",
+      "harassment": "Menaces ou harcèlement",
+      "doxxing": "Données privées d'autrui",
+      "illegal": "Contenu illégal",
+      "other": "Autre chose"
+    },
+    "comment": "Commentaire, si vous le souhaitez",
+    "policy": "Une règle enfreinte supprime le message. Une récidive sous 30 jours ferme les chats pendant 7 jours, un contenu illégal les ferme définitivement. La musique et votre compte restent.",
+    "privacy": "Les messages sont chiffrés pendant le transport, sur le serveur et sur cet ordinateur. Un signalement n'envoie que ces messages et un peu de contexte à la modération automatique.",
+    "send": "Envoyer le signalement",
+    "sent": "Signalement envoyé"
+  },
+  "link": {
+    "title": "Ouvrir ce lien ?",
+    "open": "Ouvrir"
+  },
+  "info": {
+    "close": "Fermer",
+    "notifications": "Notifications",
+    "tracks": "Titres",
+    "membersTab": "Membres",
+    "noTracks": "Les titres partagés dans ce chat apparaîtront ici",
+    "tracksFailed": "Impossible de charger les titres",
+    "owner": "Propriétaire",
+    "admin": "Admin",
+    "you": "You",
+    "makeAdmin": "Nommer admin",
+    "removeAdmin": "Retirer l'admin",
+    "removeMember": "Retirer du chat",
+    "addMembers": "Ajouter des membres",
+    "addPicked": "Add ({{n}})",
+    "inviteLink": "Lien d'invitation",
+    "inviteCopy": "Copier le lien",
+    "inviteRevoke": "Révoquer le lien",
+    "add": "Add"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite, réessayez",
+    "muted": "Vous ne pouvez pas écrire ici pour le moment",
+    "mutedUntil": "Vous pourrez écrire à nouveau à {{time}}",
+    "slowMode_one": "Mode lent : attendez {{count}} seconde",
+    "slowMode_other": "Mode lent : attendez {{count}} secondes",
+    "slowMode_many": "Mode lent : attendez {{count}} secondes",
+    "not_member": "Vous n'êtes pas dans ce chat",
+    "send_paused": "L'envoi est en pause pour le moment",
+    "send_limited": "Trop de messages, patientez un peu",
+    "request_limit": "Trop de nouveaux chats aujourd'hui",
+    "busy": "Le serveur est occupé, réessayez bientôt",
+    "offline": "Pas de connexion au serveur",
+    "unavailable": "Cette personne est indisponible",
+    "disabled": "Les chats sont désactivés",
+    "keychain_denied": "Pas d'accès aux clés des chats. Ouvrez les chats et appuyez sur Réessayer",
+    "too_young": "Cet appareil est trop récent pour cela",
+    "not_found": "Message introuvable",
+    "invalid": "Le message n'a pas passé la vérification"
+  },
+  "invite": {
+    "join": "Rejoindre le groupe"
+  }
+}
