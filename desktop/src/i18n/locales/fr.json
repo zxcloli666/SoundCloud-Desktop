@@ -3056,5 +3056,11 @@
     "momentReaction": "Réaction à ce moment",
     "momentReactionIdle": "Lisez le titre pour réagir",
     "momentMark": "Réactions à {{time}} : {{count}}"
+  },
+  "selection": {
+    "select": "Sélectionner",
+    "deselect": "Désélectionner",
+    "shuffle": "Lire la sélection au hasard",
+    "clear": "Effacer la sélection"
   }
 }

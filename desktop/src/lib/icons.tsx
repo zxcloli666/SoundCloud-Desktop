@@ -73,6 +73,7 @@ import {
   LifeBuoy as _LifeBuoy,
   Link as _Link,
   Link2 as _Link2,
+  ListChecks as _ListChecks,
   ListEnd as _ListEnd,
   ListMusic as _ListMusic,
   ListPlus as _ListPlus,
@@ -241,6 +242,7 @@ export const Instagram = memo(({ size, className }: { size?: number; className?:
 export const LayoutDashboard = memo(_LayoutDashboard);
 export const Library = memo(_Library);
 export const LinkIcon = memo(_Link);
+export const ListChecks = memo(_ListChecks);
 export const ListEnd = memo(_ListEnd);
 export const ListMusic = memo(_ListMusic);
 export const ListStart = memo(_ListStart);

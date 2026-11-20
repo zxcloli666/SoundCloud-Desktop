@@ -8,6 +8,7 @@ import {recordClusterFeedback, setUrnCluster, useClusterFeedback} from '../../li
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useAutoHide} from '../../lib/useAutoHide';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
+import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from './AddToPlaylistDialog';
@@ -40,6 +41,7 @@ export const TrackCard = React.memo(
       togglePlayRaw();
     }, [clusterId, track.urn, togglePlayRaw]);
     const onContextMenu = useTrackContextMenu(track);
+    const pick = useRowPick(track);
     const artwork = art(track.artwork_url, 't300x300');
     const artistDisplay = useArtistDisplay(track);
     const displayTitle = useDisplayTitle(track);
@@ -53,6 +55,7 @@ export const TrackCard = React.memo(
         onMouseEnter={() => preloadTrack(track)}
         onMouseLeave={cancelPreload}
         onContextMenu={onContextMenu}
+        {...pick}
         style={{ contain: 'layout paint style' }}
       >
         {/* Artwork */}

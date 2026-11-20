@@ -3056,5 +3056,11 @@
     "momentReaction": "Reacción en este momento",
     "momentReactionIdle": "Reproduce la pista para reaccionar",
     "momentMark": "Reacciones en {{time}}: {{count}}"
+  },
+  "selection": {
+    "select": "Seleccionar",
+    "deselect": "Deseleccionar",
+    "shuffle": "Mezclar seleccionadas",
+    "clear": "Borrar selección"
   }
 }

@@ -14,6 +14,7 @@ import {
   Heart,
   ImageIcon,
   LinkIcon,
+  ListChecks,
   ListEnd,
   ListPlus,
   ListStart,
@@ -41,6 +42,7 @@ import { useAppMode } from '../../../stores/app-status';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { usePlayerStore } from '../../../stores/player';
 import { useSearchPrefsStore } from '../../../stores/searchPrefs';
+import { useTrackPicked, useTrackSelection } from '../../../stores/trackSelection';
 import { type TrackMenuTarget, useTrackMenuStore } from '../../../stores/trackMenu';
 import { SuperHeart } from '../superlike/SuperHeart';
 import { MenuItem, MenuSeparator } from './MenuItem';
@@ -64,6 +66,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
   const artistPath = getArtistTarget(track);
   const order = online ? orderOf(target.scope, liked, superliked) : null;
   const chat = useChatStore(selectChatEnabled);
+  const picked = useTrackPicked(track.urn);
 
   const run = (action: () => void) => () => {
     useTrackMenuStore.getState().close();
@@ -122,6 +125,20 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             icon={<ListX size={15} />}
             label={t('trackMenu.removeFromQueue')}
             onSelect={run(removeFromQueue)}
+          />
+        ),
+      ],
+    ],
+    [
+      'select',
+      [
+        playable && (
+          <MenuItem
+            key="select"
+            active={picked}
+            icon={<ListChecks size={15} />}
+            label={picked ? t('selection.deselect') : t('selection.select')}
+            onSelect={run(() => useTrackSelection.getState().toggle(track))}
           />
         ),
       ],

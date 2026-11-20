@@ -3022,5 +3022,11 @@
     "momentReaction": "Bu ana tepki ver",
     "momentReactionIdle": "Tepki vermek için parçayı çal",
     "momentMark": "{{time}} anındaki tepkiler: {{count}}"
+  },
+  "selection": {
+    "select": "Seç",
+    "deselect": "Seçimi kaldır",
+    "shuffle": "Seçilenleri karıştır",
+    "clear": "Seçimi temizle"
   }
 }

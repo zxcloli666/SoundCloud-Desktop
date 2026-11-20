@@ -2990,5 +2990,11 @@
     "momentReaction": "Reaction at this moment",
     "momentReactionIdle": "Play the track to react",
     "momentMark": "Reactions at {{time}}: {{count}}"
+  },
+  "selection": {
+    "select": "Select",
+    "deselect": "Deselect",
+    "shuffle": "Shuffle selected",
+    "clear": "Clear selection"
   }
 }

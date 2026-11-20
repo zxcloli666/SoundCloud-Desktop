@@ -3090,5 +3090,11 @@
     "momentReaction": "Реакция на этот момент",
     "momentReactionIdle": "Включи трек, чтобы поставить реакцию",
     "momentMark": "Реакции на {{time}}: {{count}}"
+  },
+  "selection": {
+    "select": "Выбрать",
+    "deselect": "Снять выбор",
+    "shuffle": "Перемешать выбранные",
+    "clear": "Сбросить выбор"
   }
 }

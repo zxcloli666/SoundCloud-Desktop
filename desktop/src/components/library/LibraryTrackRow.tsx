@@ -4,6 +4,7 @@ import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14,} from '../../lib/icons';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
+import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
@@ -31,12 +32,14 @@ export const LibraryTrackRow = React.memo(
     const { t } = useTranslation();
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
+    const pick = useRowPick(track);
 
     const cover = art(track.artwork_url, 't200x200');
 
     return (
       <div
         onContextMenu={onContextMenu}
+        {...pick}
         className={`@container group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis
             ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
