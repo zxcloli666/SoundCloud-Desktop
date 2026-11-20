@@ -51,6 +51,17 @@ export const pointers: SettingsEntry[] = [
     trigger: 'player-tuning',
   },
   {
+    id: 'elsewhere.sleep',
+    kind: 'pointer',
+    category: '',
+    card: '',
+    title: ['sleep.title'],
+    desc: [],
+    keys: ['sleep.endOfTrack', 'sleep.cancel'],
+    place: PLAYER,
+    trigger: 'player-sleep',
+  },
+  {
     id: 'elsewhere.shortcuts',
     kind: 'pointer',
     category: '',

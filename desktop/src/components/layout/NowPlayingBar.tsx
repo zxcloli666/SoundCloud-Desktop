@@ -80,6 +80,7 @@ import {UploadKindDot} from '../music/UploadKindDot';
 import {TogetherButton} from '../together/TogetherButton';
 import {NowPlayingNameCard} from './NowPlayingNameCard';
 import {sidebarWidth} from './SidebarChrome';
+import {SleepTimerButton} from './SleepTimerButton';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
@@ -1166,6 +1167,7 @@ export const NowPlayingBar = React.memo(
                 <VoiceMicButton className={(active) => btnClass(active, 'sm')} />
                 <TogetherButton />
                 <span className="npb-extra">
+                  <SleepTimerButton className={(active) => btnClass(active, 'sm')} />
                   <TuningBtn />
                   <EqBtn />
                   <EffectsBtn className={(active) => btnClass(active, 'sm')} />

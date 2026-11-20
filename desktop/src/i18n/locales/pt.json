@@ -2675,6 +2675,12 @@
     "hintOn": "Aplicado toda vez que esta faixa tocar",
     "noTrack": "Toque uma faixa para lembrar o som dela"
   },
+  "sleep": {
+    "title": "Temporizador",
+    "minutes": "{{count}} min",
+    "endOfTrack": "Fim da faixa",
+    "cancel": "Cancelar timer"
+  },
   "trackMenu": {
     "menuLabel": "Ações da faixa",
     "downloadCover": "Baixar capa",

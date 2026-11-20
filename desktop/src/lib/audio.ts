@@ -90,6 +90,17 @@ let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+const trackEndListeners = new Set<() => void>();
+
+export function subscribeTrackEnd(listener: () => void): () => void {
+  trackEndListeners.add(listener);
+  return () => trackEndListeners.delete(listener);
+}
+
+function markEnded(urn: string) {
+  lastEndedUrn = urn;
+  for (const listener of trackEndListeners) listener();
+}
 let pendingCrossfadeMs = 0;
 let crossfadeGen = -1;
 let crossfadeCheckedGen = -1;
@@ -924,7 +935,7 @@ function maybeStartCrossfade() {
     if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
     if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
     recordFullPlay(currentUrn, true);
-    lastEndedUrn = currentUrn;
+    markEnded(currentUrn);
     pendingCrossfadeMs = lengthSec * 1000;
     currentUrn = null;
     usePlayerStore.getState().next();
@@ -975,7 +986,7 @@ listen<boolean | null>('audio:ended', (event) => {
   if (!silentTail && maybeHealEarlyEnd()) return;
   if (currentUrn) {
     recordFullPlay(currentUrn, silentTail);
-    lastEndedUrn = currentUrn;
+    markEnded(currentUrn);
   }
   hasTrack = false;
   handleTrackEnd();

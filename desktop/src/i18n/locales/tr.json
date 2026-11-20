@@ -2598,6 +2598,12 @@
     "hintOn": "Bu parça her çaldığında uygulanır",
     "noTrack": "Sesini hatırlamak için bir parça çal"
   },
+  "sleep": {
+    "title": "Uyku zamanlayıcı",
+    "minutes": "{{count}} dk",
+    "endOfTrack": "Parça sonu",
+    "cancel": "Zamanlayıcıyı iptal et"
+  },
   "trackMenu": {
     "menuLabel": "Parça işlemleri",
     "downloadCover": "Kapağı indir",

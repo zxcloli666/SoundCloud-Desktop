@@ -2534,6 +2534,12 @@
     "hintOn": "이 트랙을 재생할 때마다 적용돼요",
     "noTrack": "트랙을 재생하면 사운드 설정을 기억할 수 있어요"
   },
+  "sleep": {
+    "title": "수면 타이머",
+    "minutes": "{{count}}분",
+    "endOfTrack": "트랙 끝",
+    "cancel": "타이머 취소"
+  },
   "trackMenu": {
     "menuLabel": "트랙 작업",
     "downloadCover": "커버 저장",

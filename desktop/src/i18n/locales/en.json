@@ -2715,6 +2715,12 @@
     "hintOn": "Applied every time this track plays",
     "noTrack": "Play a track to remember its sound"
   },
+  "sleep": {
+    "title": "Sleep timer",
+    "minutes": "{{count}} min",
+    "endOfTrack": "End of track",
+    "cancel": "Cancel timer"
+  },
   "trackMenu": {
     "menuLabel": "Track actions",
     "downloadCover": "Download cover",

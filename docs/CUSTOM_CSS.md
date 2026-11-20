@@ -53,6 +53,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
 | `[data-ui="player-tuning"]` | Speed and pitch button in the player |
+| `[data-ui="player-sleep"]` | Sleep timer button in the player |
 | `[data-ui="player-eq"]` | Equalizer button in the player |
 | `[data-ui="player-effects"]` | Effects button in the player (reverb, 8D, bass boost) |
 | `[data-ui="progress"]` | Progress bar |
