@@ -156,6 +156,7 @@ export interface SettingsState {
   obsTxtPath: string;
   obsTemplate: string;
   soundwaveLanguages: string[];
+  soundwaveGenres: string[];
   soundwaveMode: 'similar' | 'diverse';
   soundwaveHideLiked: boolean;
   soundwaveHideListened: boolean;
@@ -256,6 +257,7 @@ export interface SettingsState {
   setObsTxtPath: (path: string) => void;
   setObsTemplate: (template: string) => void;
   setSoundwaveLanguages: (langs: string[]) => void;
+  setSoundwaveGenres: (genres: string[]) => void;
   setSoundwaveMode: (mode: 'similar' | 'diverse') => void;
   setSoundwaveHideLiked: (v: boolean) => void;
   setSoundwaveHideListened: (v: boolean) => void;
@@ -358,6 +360,7 @@ const DEFAULTS = {
   obsTxtPath: '',
   obsTemplate: '{artist} - {title}',
   soundwaveLanguages: [] as string[],
+  soundwaveGenres: [] as string[],
   soundwaveMode: 'similar' as 'similar' | 'diverse',
   soundwaveHideLiked: false,
   soundwaveHideListened: true,
@@ -543,6 +546,7 @@ export const useSettingsStore = create<SettingsState>()(
       setObsTxtPath: (obsTxtPath) => set({ obsTxtPath }),
       setObsTemplate: (obsTemplate) => set({ obsTemplate }),
       setSoundwaveLanguages: (soundwaveLanguages) => set({ soundwaveLanguages }),
+      setSoundwaveGenres: (soundwaveGenres) => set({ soundwaveGenres }),
       setSoundwaveMode: (soundwaveMode) => set({ soundwaveMode }),
       setSoundwaveHideLiked: (soundwaveHideLiked) => set({ soundwaveHideLiked }),
       setSoundwaveHideListened: (soundwaveHideListened) => set({ soundwaveHideListened }),
@@ -708,6 +712,7 @@ export const useSettingsStore = create<SettingsState>()(
         obsTxtPath: s.obsTxtPath,
         obsTemplate: s.obsTemplate,
         soundwaveLanguages: s.soundwaveLanguages,
+        soundwaveGenres: s.soundwaveGenres,
         soundwaveMode: s.soundwaveMode,
         soundwaveHideLiked: s.soundwaveHideLiked,
         soundwaveHideListened: s.soundwaveHideListened,

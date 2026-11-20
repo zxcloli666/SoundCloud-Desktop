@@ -4,6 +4,7 @@ import {playWhite14, RefreshCw} from '../../../lib/icons';
 import {usePerfMode} from '../../../lib/perf';
 import type {Track} from '../../../stores/player';
 import {usePlayerStore} from '../../../stores/player';
+import {GenreFilter} from '../../music/soundwave/genre-filter';
 import {HideLikedToggle} from '../../music/soundwave/hide-liked-toggle';
 import {HideListenedToggle} from '../../music/soundwave/hide-listened-toggle';
 import {LanguageFilter} from '../../music/soundwave/language-filter';
@@ -44,6 +45,8 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
   onHideLiked,
   languages,
   onLanguages,
+  genres,
+  onGenres,
   spinning,
   onRefresh,
   onPlayWave,
@@ -58,6 +61,8 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
   onHideLiked: (v: boolean) => void;
   languages: string[];
   onLanguages: (langs: string[]) => void;
+  genres: string[];
+  onGenres: (genres: string[]) => void;
   spinning: boolean;
   onRefresh: () => void;
   onPlayWave: () => void;
@@ -156,6 +161,7 @@ export const EstuaryDeck = React.memo(function EstuaryDeck({
           <span className="h-6 w-px bg-ink/[0.07]" />
           <HideListenedToggle value={hideListened} onChange={onHideListened} />
           <HideLikedToggle value={hideLiked} onChange={onHideLiked} />
+          <GenreFilter selected={genres} onChange={onGenres} />
           <LanguageFilter selected={languages} onChange={onLanguages} />
           <button
             type="button"

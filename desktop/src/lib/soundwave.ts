@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Track } from '../stores/player';
+import { useSettingsStore } from '../stores/settings';
 import { api } from './api';
 import { tasteWritesLanded } from './events';
 import { withoutHidden } from './feed-filter';
@@ -27,6 +28,10 @@ const MAX_TRACK_IDS = 100;
 function normLanguages(langs: string[] | undefined): string | undefined {
   if (!langs || langs.length === 0) return undefined;
   return [...langs].sort().join(',');
+}
+
+function chosenGenres(): string | undefined {
+  return normLanguages(useSettingsStore.getState().soundwaveGenres);
 }
 
 export async function fetchTracksByUrns(urns: string[]): Promise<Track[]> {
@@ -92,6 +97,8 @@ export async function fetchSmartWave(opts: {
   if (opts.cursor) qs.set('cursor', opts.cursor);
   const languages = normLanguages(opts.languages);
   if (languages) qs.set('languages', languages);
+  const genres = chosenGenres();
+  if (genres) qs.set('genres', genres);
   // Бэк дефолтит hide_listened=ON; шлём явный флаг только когда он задан.
   if (opts.hideListened !== undefined) qs.set('hide_listened', opts.hideListened ? '1' : '0');
 
@@ -116,6 +123,7 @@ export function useSmartWave(opts: {
 }) {
   const enabled = opts.enabled !== false && (opts.seedKind === 'user' || !!opts.seedId);
   const languages = normLanguages(opts.languages);
+  const genres = useSettingsStore((s) => normLanguages(s.soundwaveGenres));
 
   return useQuery<SmartWaveBatch>({
     queryKey: [
@@ -123,6 +131,7 @@ export function useSmartWave(opts: {
       opts.seedKind,
       opts.seedId ?? 'self',
       languages ?? 'all',
+      genres ?? 'any',
       opts.limit ?? 20,
       opts.hideListened ?? 'default',
     ],
@@ -155,7 +164,8 @@ export function useWaveBoard(opts?: {
   hideListened?: boolean;
 }) {
   const enabled = opts?.enabled !== false;
-  const langKey = normLanguages(opts?.languages) ?? 'all';
+  const genreKey = useSettingsStore((s) => normLanguages(s.soundwaveGenres)) ?? 'any';
+  const langKey = `${normLanguages(opts?.languages) ?? 'all'}|${genreKey}`;
   const hideListened = opts?.hideListened;
   const languagesRef = useRef(opts?.languages);
   languagesRef.current = opts?.languages;

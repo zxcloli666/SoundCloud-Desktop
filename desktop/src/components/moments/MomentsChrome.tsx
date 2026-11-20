@@ -5,6 +5,7 @@ import { GalleryVerticalEnd, RefreshCw } from '../../lib/icons';
 import { useAnyMomentPlaying } from '../../lib/moments/channel';
 import { usePerfMode } from '../../lib/perf';
 import { useSettingsStore } from '../../stores/settings';
+import { GenreFilter } from '../music/soundwave/genre-filter';
 import { HideListenedToggle } from '../music/soundwave/hide-listened-toggle';
 import { LanguageFilter } from '../music/soundwave/language-filter';
 import { Atmosphere } from '../search/Atmosphere';
@@ -35,6 +36,8 @@ export const MomentsTopBar = React.memo(function MomentsTopBar() {
   const live = useAnyMomentPlaying();
   const languages = useSettingsStore((s) => s.soundwaveLanguages);
   const setLanguages = useSettingsStore((s) => s.setSoundwaveLanguages);
+  const genres = useSettingsStore((s) => s.soundwaveGenres);
+  const setGenres = useSettingsStore((s) => s.setSoundwaveGenres);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const setHideListened = useSettingsStore((s) => s.setSoundwaveHideListened);
 
@@ -55,6 +58,7 @@ export const MomentsTopBar = React.memo(function MomentsTopBar() {
       </div>
       <div className="flex items-center gap-2" data-no-drag>
         <HideListenedToggle value={hideListened} onChange={setHideListened} />
+        <GenreFilter selected={genres} onChange={setGenres} />
         <LanguageFilter selected={languages} onChange={setLanguages} />
       </div>
     </header>

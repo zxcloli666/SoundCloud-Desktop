@@ -827,6 +827,8 @@
     "refresh": "Yenile",
     "languages": "Diller",
     "allLanguages": "Tüm diller",
+    "genres": "Türler",
+    "allGenres": "Tüm türler",
     "langShort": "dil",
     "clear": "Temizle",
     "idleTitle": "Başlat ve dalgaya bin",
