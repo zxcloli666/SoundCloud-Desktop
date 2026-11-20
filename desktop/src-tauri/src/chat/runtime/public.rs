@@ -5,6 +5,7 @@ use std::time::Duration;
 use tokio::sync::Notify;
 
 use super::Runtime;
+use crate::network::offline;
 
 const REFRESH: Duration = Duration::from_secs(30);
 const RETRY: Duration = Duration::from_secs(5);
@@ -43,6 +44,7 @@ impl Runtime {
     async fn run_public_watch(&self) {
         let mut active = false;
         loop {
+            offline::online().await;
             let want = self.public.wanted() && self.signals.visible() && self.core().is_some();
             if !want && !active {
                 self.public.changed.notified().await;

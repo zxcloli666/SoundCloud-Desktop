@@ -13,6 +13,7 @@ use crate::chat::keychain::ResetPlan;
 use crate::chat::media_cache::MediaCache;
 use crate::chat::state::ChatState;
 use crate::chat::upload::UPLOADS_DIR;
+use crate::network::offline;
 
 use super::bringup::Halt;
 use super::local::{Core, remove_database, remove_dir, wipe_store};
@@ -167,6 +168,7 @@ impl Runtime {
     pub(super) async fn run(self: Arc<Self>) {
         let mut failures = 0;
         loop {
+            self.wait_online().await;
             let generation = self.signals.generation();
             let halt = match self.bring_up(&mut failures).await {
                 Ok(core) => {
@@ -176,6 +178,13 @@ impl Runtime {
                 Err(halt) => halt,
             };
             self.settle(halt, generation).await;
+        }
+    }
+
+    async fn wait_online(&self) {
+        if offline::on() {
+            self.status.update(|status| status.online = false);
+            offline::online().await;
         }
     }
 
