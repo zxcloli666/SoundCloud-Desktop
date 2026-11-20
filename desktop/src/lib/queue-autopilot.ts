@@ -148,6 +148,7 @@ async function fetchWaveContinuation(seed: Track): Promise<Track[]> {
       seedKind: 'track',
       seedId: seedUrn,
       limit: 20,
+      languages: useSettingsStore.getState().soundwaveLanguages,
       hideListened: useSettingsStore.getState().soundwaveHideListened,
     });
     return batch.tracks;
