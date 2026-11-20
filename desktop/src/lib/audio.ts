@@ -44,7 +44,6 @@ import {isBelow} from './playback-quality';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
 import {recordEvent, recordSeek} from './events';
-import {art} from './formatters';
 import {playbackServersDown} from './host-status';
 import {trackUrn} from './ids';
 import {
@@ -1126,8 +1125,13 @@ useSettingsStore.subscribe((state, prev) => {
 
 /* ── Native Media Controls (souvlaki: MPRIS/SMTC) ───────────── */
 
+function mediaControlsCover(url: string | null | undefined): string | undefined {
+  if (!url?.startsWith('https://')) return undefined;
+  return url.replace('-large', '-t500x500');
+}
+
 function updateMetadata(track: Track, durationSecs?: number) {
-  const coverUrl = art(track.artwork_url, 't500x500') || undefined;
+  const coverUrl = mediaControlsCover(track.artwork_url);
   const display = getArtistDisplay(track);
   const title = getDisplayTitle(track);
   invoke('audio_set_metadata', {

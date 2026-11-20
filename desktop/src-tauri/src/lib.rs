@@ -272,6 +272,9 @@ pub fn run() {
             tauri::WindowEvent::Resized(size) if window.label() == "main" => {
                 app::visibility::follow_minimize(window, size);
             }
+            tauri::WindowEvent::Focused(true) if window.label() == "main" => {
+                app::visibility::restore_focused_main(window);
+            }
             tauri::WindowEvent::DragDrop(tauri::DragDropEvent::Drop { paths, .. }) => {
                 chat::upload::dropped(window.app_handle(), paths);
             }
