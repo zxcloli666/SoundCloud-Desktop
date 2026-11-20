@@ -5,9 +5,11 @@ import {Link, useNavigate} from 'react-router-dom';
 import {api} from '../../lib/api';
 import {art} from '../../lib/formatters';
 import {type HistoryEntry, useHistory, useInfiniteScroll} from '../../lib/hooks';
-import {ChartNoAxesColumn, Loader2, Music, playWhite14} from '../../lib/icons';
+import {ChartNoAxesColumn, Clock, Loader2, Music, playWhite14} from '../../lib/icons';
 import {openTrackMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
+import {ColumnHandle} from '../music/columns/ColumnHandle';
+import {useColumnWidth} from '../music/columns/TrackColumns';
 import {LikeButton} from '../music/LikeButton';
 import {VirtualList} from '../ui/VirtualList';
 import {formatHistoryDate, historyEntryToTrack} from './history-utils';
@@ -19,6 +21,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
     const play = usePlayerStore((s) => s.play);
     const queryClient = useQueryClient();
     const historyQuery = useHistory();
+    const timeWidth = useColumnWidth('time');
     const {entries, isLoading} = historyQuery;
     const sentinelRef = useInfiniteScroll(
         !!historyQuery.hasNextPage,
@@ -76,6 +79,15 @@ export const HistoryTab = React.memo(function HistoryTab() {
                     <Loader2 size={32} className="animate-spin text-ink-20"/>
                 </div>
             ) : rows.length > 0 ? (
+                <>
+                <div className="mb-1 flex h-7 items-center gap-4 px-4 select-none">
+                    <div className="flex-1"/>
+                    <div className="w-8 shrink-0"/>
+                    <div className="relative flex shrink-0 items-center justify-end text-ink-30" style={{width: timeWidth}}>
+                        <ColumnHandle id="time" width={timeWidth}/>
+                        <Clock size={12}/>
+                    </div>
+                </div>
                 <VirtualList
                     items={rows}
                     rowHeight={60}
@@ -145,7 +157,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
 
                                 <LikeButton track={historyEntryToTrack(row.entry)}/>
 
-                                <span className="text-[11px] text-ink-20 tabular-nums shrink-0">
+                                <span className="text-[11px] text-ink-20 tabular-nums shrink-0 text-right" style={{width: timeWidth}}>
                   {new Date(row.entry.playedAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -155,6 +167,7 @@ export const HistoryTab = React.memo(function HistoryTab() {
                         )
                     }
                 />
+                </>
             ) : (
                 <div className="py-20 text-center text-ink-20">{t('library.historyEmpty')}</div>
             )}

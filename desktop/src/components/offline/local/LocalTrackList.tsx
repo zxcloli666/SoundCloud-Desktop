@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next';
 import { VirtualList } from '../../ui/VirtualList';
 import { LOCAL_ROW_HEIGHT, LocalRowClone, LocalTrackRow, SortableLocalRow } from './LocalTrackRow';
 import type { LocalRow } from './lib';
+import { HeadCell } from '../../music/columns/HeadCell';
+import { useColumnVars } from '../../music/columns/useColumnVars';
 
 interface LocalTrackListProps {
   rows: LocalRow[];
@@ -33,6 +35,7 @@ export const LocalTrackList = React.memo(function LocalTrackList({
   onReorder,
 }: LocalTrackListProps) {
   const { t } = useTranslation();
+  const vars = useColumnVars();
   const [activeId, setActiveId] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
   const ids = useMemo(() => rows.map((r) => r.id), [rows]);
@@ -62,13 +65,16 @@ export const LocalTrackList = React.memo(function LocalTrackList({
   );
 
   return (
-    <section className="overflow-hidden rounded-[18px] border border-ink/[0.07] bg-[rgb(var(--ink)/0.015)]">
-      <div className="grid h-8 grid-cols-[28px_minmax(0,1fr)_88px_64px] items-center gap-3 border-b border-ink/[0.07] bg-ink/[0.015] pl-2 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-30 md:grid-cols-[28px_minmax(0,1fr)_auto_88px_64px]">
+    <section
+      className="overflow-hidden rounded-[18px] border border-ink/[0.07] bg-[rgb(var(--ink)/0.015)]"
+      style={vars}
+    >
+      <div className="grid h-8 grid-cols-[28px_minmax(0,1fr)_var(--col-size,88px)_var(--col-time,64px)] items-center gap-3 border-b border-ink/[0.07] bg-ink/[0.015] pl-2 pr-4 font-mono text-[9px] font-semibold uppercase tracking-[0.18em] text-ink-30 md:grid-cols-[28px_minmax(0,1fr)_auto_var(--col-size,88px)_var(--col-time,64px)]">
         <span className="text-center">№</span>
         <span>{t('offline.listTrack')}</span>
         <span className="hidden text-right md:block">{t('local.listFormat')}</span>
-        <span className="text-right">{t('offline.listWeight')}</span>
-        <span className="text-right">{t('offline.listTime')}</span>
+        <HeadCell id="size">{t('offline.listWeight')}</HeadCell>
+        <HeadCell id="time">{t('offline.listTime')}</HeadCell>
       </div>
       {sortable ? (
         <DndContext

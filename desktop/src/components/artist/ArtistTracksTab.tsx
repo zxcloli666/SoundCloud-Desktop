@@ -6,10 +6,12 @@ import {Calendar, ListMusic, Loader2, Music} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
+import {TrackColumns} from '../music/columns/TrackColumns';
 import {TrackStatusBadges} from '../music/TrackStatusBadges';
 import {VirtualList} from '../ui/VirtualList';
 import {ThemedTrackRow} from '../user/ThemedTrackRow';
 import type {TracksSort} from './types';
+import {useThemedShape} from '../user/useThemedShape';
 import {useArtistTracks} from './useArtistData';
 
 export type TracksView = 'list' | 'years';
@@ -97,6 +99,7 @@ function ArtistTracksTabImpl({
     yearsView ? 200 : 80,
   );
   const tracks = query.data ?? [];
+  const shape = useThemedShape(tracks[0]?.user?.urn);
   const { available, wanted } = useMemo(() => partition(tracks), [tracks]);
   const yearBuckets = useMemo(
     () => (view === 'years' ? groupByYear(available) : []),
@@ -165,16 +168,18 @@ function ArtistTracksTabImpl({
       )}
 
       {view === 'list' && available.length > 0 && (
-        <VirtualList
-          items={available}
-          rowHeight={ROW_HEIGHT}
-          overscan={8}
-          className="flex flex-col gap-1"
-          getItemKey={(track) => track.urn}
-          renderItem={(track, i) => (
-            <ThemedTrackRow track={track} index={i} queue={available} aura={aura} />
-          )}
-        />
+        <TrackColumns shape={shape}>
+          <VirtualList
+            items={available}
+            rowHeight={ROW_HEIGHT}
+            overscan={8}
+            className="flex flex-col gap-1"
+            getItemKey={(track) => track.urn}
+            renderItem={(track, i) => (
+              <ThemedTrackRow track={track} index={i} queue={available} aura={aura} />
+            )}
+          />
+        </TrackColumns>
       )}
 
       {view === 'years' && yearBuckets.length > 0 && (
@@ -220,6 +225,7 @@ function ArtistTracksTabImpl({
 const YearBlock = memo(
   ({ bucket, queue, aura }: { bucket: YearBucket; queue: Track[]; aura: Aura }) => {
     const { t } = useTranslation();
+    const shape = useThemedShape(bucket.items[0]?.user?.urn);
     const total = bucket.items.reduce((acc, x) => acc + (x.duration ?? 0), 0);
     return (
       <div className="flex flex-col @4xl:flex-row @4xl:gap-8 gap-3">
@@ -246,10 +252,14 @@ const YearBlock = memo(
         </div>
 
         {/* Tracks of the year */}
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          {bucket.items.map((track, i) => (
-            <ThemedTrackRow key={track.urn} track={track} index={i} queue={queue} aura={aura} />
-          ))}
+        <div className="flex-1 min-w-0">
+          <TrackColumns shape={shape} header={false}>
+            <div className="flex flex-col gap-1">
+              {bucket.items.map((track, i) => (
+                <ThemedTrackRow key={track.urn} track={track} index={i} queue={queue} aura={aura} />
+              ))}
+            </div>
+          </TrackColumns>
         </div>
       </div>
     );

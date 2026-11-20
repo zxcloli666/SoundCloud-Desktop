@@ -7,6 +7,7 @@ import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {useTrackColumns} from '../music/columns/TrackColumns';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
 import {AlbumLinkButton} from '../music/AlbumLinkButton';
 import {LikeButton} from '../music/LikeButton';
@@ -32,6 +33,7 @@ export const LibraryTrackRow = React.memo(
     const { t } = useTranslation();
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
+    const columns = useTrackColumns();
     const pick = useRowPick(track);
 
     const cover = art(track.artwork_url, 't200x200');
@@ -86,36 +88,17 @@ export const LibraryTrackRow = React.memo(
           className="flex flex-col justify-center"
         />
 
-        <LikeButton track={track} />
-        <SaveOfflineRowButton track={track} />
+        {columns.badges && (
+          <div className="flex shrink-0">
+            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+          </div>
+        )}
 
-        <AddToPlaylistDialog trackUrns={[track.urn]}>
-          <button
-            type="button"
-            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
-            title={t('playlist.addToPlaylist')}
+        {columns.plays > 0 && (
+          <span
+            className="flex shrink-0 items-center gap-1.5 text-[11px] text-ink-30 tabular-nums"
+            style={{ width: columns.plays }}
           >
-            <ListPlus size={16} />
-          </button>
-        </AddToPlaylistDialog>
-
-        <AlbumLinkButton
-          track={track}
-          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
-        />
-
-        <PlayNextButton
-          track={track}
-          size={16}
-          className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
-        />
-
-        <div className="hidden @lg:flex shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-        </div>
-
-        <div className="hidden @3xl:flex items-center gap-4 shrink-0 pr-4">
-          <span className="text-[11px] text-ink-30 tabular-nums flex items-center gap-1.5 w-16">
             {track.playback_count != null && (
               <>
                 {headphones11}
@@ -123,10 +106,45 @@ export const LibraryTrackRow = React.memo(
               </>
             )}
           </span>
-          <span className="text-[11px] text-ink-30 tabular-nums flex items-center gap-1.5 w-14">
+        )}
+
+        {columns.likes > 0 && (
+          <span
+            className="flex shrink-0 items-center gap-1.5 text-[11px] text-ink-30 tabular-nums"
+            style={{ width: columns.likes }}
+          >
             {heart11}
             {fc(track.favoritings_count ?? track.likes_count)}
           </span>
+        )}
+
+        <div
+          className="flex shrink-0 items-center justify-end gap-0.5"
+          style={{ width: columns.actions }}
+        >
+          <LikeButton track={track} />
+          <SaveOfflineRowButton track={track} />
+
+          <AddToPlaylistDialog trackUrns={[track.urn]}>
+            <button
+              type="button"
+              className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
+              title={t('playlist.addToPlaylist')}
+            >
+              <ListPlus size={16} />
+            </button>
+          </AddToPlaylistDialog>
+
+          <AlbumLinkButton
+            track={track}
+            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
+          />
+
+          <PlayNextButton
+            track={track}
+            size={16}
+            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
+          />
         </div>
 
         <span className="text-[12px] text-ink-30 tabular-nums font-medium shrink-0 w-12 text-right">

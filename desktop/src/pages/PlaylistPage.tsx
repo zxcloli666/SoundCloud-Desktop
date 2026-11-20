@@ -539,7 +539,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       <Dialog.Root open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 bg-shade-60 backdrop-blur-sm z-50 animate-fade-in" />
-          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[380px] rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4">
+          <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[380px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-48px)] overflow-y-auto rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
                 <AlertCircle size={20} className="text-red-400" />

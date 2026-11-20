@@ -7,6 +7,7 @@ import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
+import {useTrackColumns} from '../music/columns/TrackColumns';
 import {LikeButton} from '../music/LikeButton';
 import {PlayNextButton} from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
@@ -30,6 +31,7 @@ function RowBody({
   isThisPlaying: boolean;
   togglePlay: () => void;
 }) {
+  const columns = useTrackColumns();
   const cover = art(track.artwork_url, 't200x200');
   const hue = track.genre ? genreColor(track.genre) : null;
 
@@ -86,12 +88,17 @@ function RowBody({
 
       <TrackTitleArtist track={track} highlight={isThis} size="sm" />
 
-      <div className="hidden @lg:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-      </div>
+      {columns.badges && (
+        <div className="flex shrink-0">
+          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+        </div>
+      )}
 
-      <div className="hidden @2xl:flex items-center gap-3 shrink-0">
-        <span className="text-[10px] text-ink-20 tabular-nums flex items-center gap-0.5 w-12">
+      {columns.plays > 0 && (
+        <span
+          className="flex shrink-0 items-center gap-0.5 text-[10px] text-ink-20 tabular-nums"
+          style={{ width: columns.plays }}
+        >
           {track.playback_count != null && (
             <>
               {headphones9}
@@ -99,7 +106,13 @@ function RowBody({
             </>
           )}
         </span>
-        <span className="text-[10px] text-ink-20 tabular-nums flex items-center gap-0.5 w-10">
+      )}
+
+      {columns.likes > 0 && (
+        <span
+          className="flex shrink-0 items-center gap-0.5 text-[10px] text-ink-20 tabular-nums"
+          style={{ width: columns.likes }}
+        >
           {(track.favoritings_count ?? track.likes_count) != null && (
             <>
               {heart9}
@@ -107,14 +120,19 @@ function RowBody({
             </>
           )}
         </span>
-      </div>
+      )}
 
-      <LikeButton track={track} />
-      <SaveOfflineRowButton track={track} />
-      <PlayNextButton
-        track={track}
-        className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-20 hover:text-ink-60 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
-      />
+      <div
+        className="flex shrink-0 items-center justify-end gap-0.5"
+        style={{ width: columns.actions }}
+      >
+        <LikeButton track={track} />
+        <SaveOfflineRowButton track={track} />
+        <PlayNextButton
+          track={track}
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-20 hover:text-ink-60 opacity-0 group-hover:opacity-100 transition-all duration-200 shrink-0"
+        />
+      </div>
 
       <span className="text-[11px] text-ink-25 tabular-nums font-medium shrink-0 w-10 text-right">
         {dur(track.duration)}

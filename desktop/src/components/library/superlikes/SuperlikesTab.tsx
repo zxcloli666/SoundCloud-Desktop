@@ -10,6 +10,7 @@ import { useAppMode } from '../../../stores/app-status';
 import { GripSpace } from '../../ui/SortableVirtualList';
 import { SyncNotice } from '../../ui/SyncNotice';
 import { VirtualList } from '../../ui/VirtualList';
+import { LIBRARY_GRIP_SHAPE, TrackColumns } from '../../music/columns/TrackColumns';
 import { LibraryTrackRow } from '../LibraryTrackRow';
 import { OrderableTracks } from '../OrderableTracks';
 import { SuperlikesEmpty } from './SuperlikesEmpty';
@@ -79,6 +80,7 @@ export const SuperlikesTab = React.memo(function SuperlikesTab({ filter }: { fil
   return (
     <div className="min-h-[400px]" data-menu-scope={filter ? undefined : SUPERLIKED_ORDER_SCOPE}>
       {hero}
+      <TrackColumns shape={LIBRARY_GRIP_SHAPE} header={filtered.length > 0}>
       {filtered.length > 0 && !filter && online ? (
         <OrderableTracks
           tracks={filtered}
@@ -109,6 +111,7 @@ export const SuperlikesTab = React.memo(function SuperlikesTab({ filter }: { fil
           {hasNextPage ? t('common.loading') : t('library.noMatches')}
         </div>
       )}
+      </TrackColumns>
       <div ref={sentinelRef} className="mt-4 flex h-12 items-center justify-center">
         {isFetchingNextPage && <Loader2 size={20} className="animate-spin text-ink-15" />}
       </div>

@@ -230,6 +230,7 @@ subscribeSuperliked(pushNp);
 
 useSettingsStore.subscribe((s, prev) => {
     if (s.miniPlayerOpacity !== prev.miniPlayerOpacity) void emit('tray:opacity', s.miniPlayerOpacity);
+    if (s.miniPlayerSolid !== prev.miniPlayerSolid) void emit('tray:solid', s.miniPlayerSolid);
 });
 
 // Like/dislike state lives in TanStack Query — re-push when the current track's

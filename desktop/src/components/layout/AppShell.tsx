@@ -131,7 +131,7 @@ const KeybindingsDialog = React.memo(
             </div>
 
             {/* Body */}
-            <div className="px-7 py-5 space-y-6 max-h-[60vh] overflow-y-auto">
+            <div className="px-7 py-5 space-y-6 max-h-[min(60vh,calc(100vh-190px))] overflow-y-auto">
               {groups.map((group) => (
                 <div key={group.id}>
                   <h3 className="text-[11px] font-bold text-ink-30 uppercase tracking-widest mb-3">

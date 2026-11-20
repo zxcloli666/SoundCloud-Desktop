@@ -6,7 +6,7 @@ import {
   miniPlayerStockOpacity,
   useSettingsStore,
 } from '../../../stores/settings';
-import { Card, RangeSlider } from '../primitives';
+import { Card, Divider, RangeSlider, Row, Toggle } from '../primitives';
 
 const CHECKER =
   'repeating-conic-gradient(rgb(var(--ink) / 0.16) 0 25%, rgb(var(--ink) / 0.04) 0 50%) 0 0 / 12px 12px';
@@ -16,6 +16,8 @@ export function MiniPlayerCard() {
   const opacity = useSettingsStore((s) => s.miniPlayerOpacity);
   const perfMode = useSettingsStore((s) => s.perfMode);
   const setOpacity = useSettingsStore((s) => s.setMiniPlayerOpacity);
+  const solid = useSettingsStore((s) => s.miniPlayerSolid);
+  const setSolid = useSettingsStore((s) => s.setMiniPlayerSolid);
   const trayAvailable = useTrayAvailable();
   if (!trayAvailable) return null;
 
@@ -28,15 +30,15 @@ export function MiniPlayerCard() {
       desc={t('settings.miniPlayerDesc')}
       icon={<PictureInPicture2 size={17} />}
     >
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-3">
         <div
           className="relative h-16 w-28 shrink-0 overflow-hidden rounded-xl border border-ink/[0.06]"
           style={{ background: CHECKER }}
           aria-hidden="true"
         >
           <div
-            className="absolute inset-2.5 rounded-[10px] border border-ink/15"
-            style={{ background: `rgb(var(--surface) / ${alpha})` }}
+            className={`absolute inset-2.5 rounded-[10px] ${solid ? '' : 'border border-ink/15'}`}
+            style={{ background: `rgb(var(--surface) / ${solid ? 1 : alpha})` }}
           />
           <div className="absolute inset-2.5 flex items-center gap-2 px-2">
             <span className="h-6 w-6 shrink-0 rounded-md bg-accent" />
@@ -46,7 +48,10 @@ export function MiniPlayerCard() {
             </span>
           </div>
         </div>
-        <div className="min-w-[180px] flex-1">
+        <div
+          className={`min-w-[180px] flex-1 transition-opacity duration-200 ${solid ? 'pointer-events-none opacity-40' : ''}`}
+          aria-disabled={solid}
+        >
           <div className="mb-2 flex items-center justify-between gap-3">
             <span className="text-[13.5px] font-medium text-ink-80">
               {t('settings.miniPlayerOpacity')}
@@ -62,6 +67,10 @@ export function MiniPlayerCard() {
           />
         </div>
       </div>
+      <Divider />
+      <Row title={t('settings.miniPlayerSolid')} desc={t('settings.miniPlayerSolidDesc')}>
+        <Toggle checked={solid} onChange={() => setSolid(!solid)} label={t('settings.miniPlayerSolid')} />
+      </Row>
     </Card>
   );
 }

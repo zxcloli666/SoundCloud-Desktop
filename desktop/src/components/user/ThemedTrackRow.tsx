@@ -26,6 +26,7 @@ import { PlayNextButton } from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
 import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
+import { useTrackColumns } from '../music/columns/TrackColumns';
 import { OwnerTrackMenu } from '../track/OwnerTrackMenu';
 
 interface ThemedTrackRowProps {
@@ -45,6 +46,7 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
   const playIcon = lightAura ? playBlack14 : playWhite14;
   const pauseIcon = lightAura ? pauseBlack14 : pauseWhite14;
     const pb = usePerfMode().blur(16);
+  const columns = useTrackColumns();
   const isOwner = useAuthStore((s) => !!s.user?.urn && s.user.urn === track.user?.urn);
 
   return (
@@ -134,28 +136,39 @@ function ThemedTrackRowImpl({ track, index, queue, aura }: ThemedTrackRowProps) 
 
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
-      <div className="hidden @lg:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-      </div>
+      {columns.badges && (
+        <div className="flex shrink-0">
+          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+        </div>
+      )}
 
-      <div className="hidden @3xl:flex items-center gap-5 shrink-0 pr-2 text-[11px] text-ink-35">
-        <span className="inline-flex items-center gap-1.5 tabular-nums w-16">
+      {columns.plays > 0 && (
+        <span
+          className="inline-flex shrink-0 items-center gap-1.5 text-[11px] tabular-nums text-ink-35"
+          style={{ width: columns.plays }}
+        >
           {track.playback_count != null && (
             <>
               {headphones11} {fc(track.playback_count)}
             </>
           )}
         </span>
-        <span className="inline-flex items-center gap-1.5 tabular-nums w-14">
+      )}
+
+      {columns.likes > 0 && (
+        <span
+          className="inline-flex shrink-0 items-center gap-1.5 text-[11px] tabular-nums text-ink-35"
+          style={{ width: columns.likes }}
+        >
           {(track.favoritings_count ?? track.likes_count) != null && (
             <>
               {heart11} {fc(track.favoritings_count ?? track.likes_count)}
             </>
           )}
         </span>
-      </div>
+      )}
 
-      <div className="flex items-center gap-0.5 shrink-0">
+      <div className="flex shrink-0 items-center justify-end gap-0.5" style={{ width: columns.actions }}>
         <LikeButton track={track} />
         <SaveOfflineRowButton track={track} />
         <AddToPlaylistDialog trackUrns={[track.urn]}>

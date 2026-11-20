@@ -396,6 +396,13 @@
     "étagères",
     "retirer les recommandations"
   ],
+  "settings.miniPlayerSolid": [
+    "cadre du mini lecteur",
+    "retirer la bordure du mini lecteur",
+    "mini lecteur plein",
+    "mini lecteur opaque",
+    "fond du mini lecteur"
+  ],
   "trayMenu.mini": [
     "mini lecteur",
     "petite fenêtre",

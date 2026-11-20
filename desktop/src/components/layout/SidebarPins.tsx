@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { art } from '../../lib/formatters';
-import { ListMusic, X } from '../../lib/icons';
+import { Heart, ListMusic, X } from '../../lib/icons';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
 import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
@@ -60,22 +60,42 @@ function PinnedRow({
 
 export function SidebarPins({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation();
-  const { pinnedPlaylists, pinnedArtists, unpinPlaylist, unpinArtist, reorderPinned } =
-    useSettingsStore(
-      useShallow((s) => ({
-        pinnedPlaylists: s.pinnedPlaylists,
-        pinnedArtists: s.pinnedArtists,
-        unpinPlaylist: s.unpinPlaylist,
-        unpinArtist: s.unpinArtist,
-        reorderPinned: s.reorderPinnedPlaylists,
-      })),
-    );
+  const {
+    pinnedLikes,
+    setPinnedLikes,
+    pinnedPlaylists,
+    pinnedArtists,
+    unpinPlaylist,
+    unpinArtist,
+    reorderPinned,
+  } = useSettingsStore(
+    useShallow((s) => ({
+      pinnedLikes: s.pinnedLikes,
+      setPinnedLikes: s.setPinnedLikes,
+      pinnedPlaylists: s.pinnedPlaylists,
+      pinnedArtists: s.pinnedArtists,
+      unpinPlaylist: s.unpinPlaylist,
+      unpinArtist: s.unpinArtist,
+      reorderPinned: s.reorderPinnedPlaylists,
+    })),
+  );
   const pinnedUrns = pinnedPlaylists.map((p) => p.urn);
   const movePinned = (from: string, to: string) =>
     reorderPinned(arrayMove(pinnedUrns, pinnedUrns.indexOf(from), pinnedUrns.indexOf(to)));
 
   return (
     <div data-ui="sidebar-pins" className="contents">
+      {pinnedLikes && (
+        <PinnedRow
+          to="/library/likes"
+          title={t('library.likedTracks')}
+          collapsed={collapsed}
+          unpinLabel={t('sidebar.unpinLikes')}
+          onUnpin={() => setPinnedLikes(false)}
+          icon={<Heart size={17} strokeWidth={1.9} />}
+        />
+      )}
+
       <SortableStack ids={pinnedUrns} onMove={movePinned}>
         {pinnedPlaylists.map((playlist) => {
           const artwork = art(playlist.artworkUrl, 'small');

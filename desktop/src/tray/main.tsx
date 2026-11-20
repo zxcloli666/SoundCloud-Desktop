@@ -27,10 +27,15 @@ function applyCardOpacity(opacity: number | null) {
     root.setProperty('--tp-card-fill', String(Math.max(0, (alpha - stock) / (1 - stock))));
 }
 
+function applySolid(solid: boolean) {
+    document.documentElement.toggleAttribute('data-tp-solid', solid);
+}
+
 async function applyTheme(safe = false) {
     const settings = useSettingsStore.getState();
     applyPerfMode(settings.perfMode);
     applyCardOpacity(settings.miniPlayerOpacity);
+    applySolid(settings.miniPlayerSolid);
     const hash = activeLook(useThemesStore.getState())?.hash ?? null;
     if (!(await applyLook(safe))) return;
     if (hash === brokenHash) {
@@ -91,6 +96,7 @@ async function bootstrap() {
     setupVisibilityGate();
     setupFocusGate();
     void listen<number | null>('tray:opacity', (e) => applyCardOpacity(e.payload));
+    void listen<boolean>('tray:solid', (e) => applySolid(e.payload));
 
     // Re-pick theme/language changes made in the main window each time the popover re-shows
     // (separate store instance — it only reads the shared on-disk state on demand).

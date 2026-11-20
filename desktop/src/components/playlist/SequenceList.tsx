@@ -7,6 +7,7 @@ import type {Track} from '../../stores/player';
 import {SortableVirtualList} from '../ui/SortableVirtualList';
 import {VirtualList} from '../ui/VirtualList';
 import {SequenceFilter} from './SequenceFilter';
+import {SEQUENCE_REMOVE_SHAPE, SEQUENCE_SHAPE, SEQUENCE_SORTABLE_SHAPE, TrackColumns} from '../music/columns/TrackColumns';
 import {SequenceRow, SequenceRowOverlay, SortableSequenceRow} from './SequenceRow';
 
 const PANEL = {
@@ -139,6 +140,7 @@ export const SequenceList = React.memo(function SequenceList({
           </p>
         </div>
       ) : reorderable && onRemove && !filtering ? (
+        <TrackColumns shape={SEQUENCE_SORTABLE_SHAPE}>
         <SortableVirtualList
           items={tracks}
           getId={urnOf}
@@ -159,7 +161,9 @@ export const SequenceList = React.memo(function SequenceList({
             <SequenceRowOverlay track={track} index={i} queue={getQueue} />
           )}
         />
+        </TrackColumns>
       ) : (
+        <TrackColumns shape={onRemove ? SEQUENCE_REMOVE_SHAPE : SEQUENCE_SHAPE}>
         <VirtualList
           items={visible}
           rowHeight={68}
@@ -176,6 +180,7 @@ export const SequenceList = React.memo(function SequenceList({
             />
           )}
         />
+        </TrackColumns>
       )}
       {sentinel}
       {notice && <div className="py-6">{notice}</div>}
