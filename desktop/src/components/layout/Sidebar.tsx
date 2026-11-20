@@ -15,6 +15,7 @@ import { ChatNavBadge } from '../chat/shell/ChatNavBadge';
 import { SuperHeart } from '../music/superlike/SuperHeart';
 import { Avatar } from '../ui/Avatar';
 import { type IconCmp, NAV_ITEMS } from './nav-items';
+import { OfflineToggle } from './OfflineToggle';
 import {
   ACTIVE,
   IconBox,
@@ -242,6 +243,8 @@ export const Sidebar = React.memo(() => {
             {currentLang.label}
           </Label>
         </button>
+
+        <OfflineToggle collapsed={collapsed} />
 
         <NavItem
           to="/settings"

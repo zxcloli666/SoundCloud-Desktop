@@ -933,6 +933,8 @@
     "netNoInternet": "internet yok",
     "netServerDown": "sunucuya ulaşılamıyor",
     "tryOnline": "Tekrar dene",
+    "goOffline": "Çevrimdışı ol",
+    "goOnline": "Çevrimiçi ol",
     "failedCount": "{{count}} başarısız",
     "forgeTitle": "Demirhane",
     "forgeSub": "hat A → B",
@@ -1564,7 +1566,9 @@
     "videoNoCodec": "H.264 yok",
     "videoCacheSize": "Video",
     "videoCacheLimit": "Video önbellek limiti",
-    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir"
+    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir",
+    "offlineMode": "Çevrimdışı mod",
+    "offlineModeDesc": "Uygulama internete çıkmaz. İndirilenler ve dosyaların çalmaya devam eder; scrobble ve sohbetler bekler."
   },
   "effects": {
     "title": "Efektler",

@@ -535,6 +535,13 @@
     "sound card",
     "kulaklık takınca"
   ],
+  "settings.offlineMode": [
+    "internetsiz kullan",
+    "uçak modu",
+    "ağa hiç çıkma",
+    "trafiği kes",
+    "sunucuya bağlanma"
+  ],
   "netCheck.title": [
     "bağlanamıyor",
     "internet yok diyor",

@@ -886,6 +886,8 @@
     "netNoInternet": "no internet",
     "netServerDown": "server unreachable",
     "tryOnline": "Try online again",
+    "goOffline": "Go offline",
+    "goOnline": "Go online",
     "failedCount": "{{count}} failed",
     "forgeTitle": "Forge",
     "forgeSub": "conveyor A → B",
@@ -1512,7 +1514,9 @@
     "videoNoCodec": "No H.264",
     "videoCacheSize": "Video",
     "videoCacheLimit": "Video cache limit",
-    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first"
+    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first",
+    "offlineMode": "Offline mode",
+    "offlineModeDesc": "The app stays off the internet. Downloads and your files keep playing; scrobbles and chats wait."
   },
   "effects": {
     "title": "Effects",

@@ -24,6 +24,7 @@ import {LayoutCard} from './cards/LayoutCard';
 import {MiniPlayerCard} from './cards/MiniPlayerCard';
 import {NetCheckCard} from './cards/NetCheckCard';
 import {NotificationsCard} from './cards/NotificationsCard';
+import {OfflineModeCard} from './cards/OfflineModeCard';
 import {ObsCard} from './cards/obs/ObsCard';
 import {PerformanceCard} from './cards/PerformanceCard';
 import {PlaybackCard} from './cards/PlaybackCard';
@@ -125,6 +126,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         icon: <Cloud size={17}/>,
         Body: () => (
             <>
+                <OfflineModeCard/>
                 <NetCheckCard/>
                 <CallProxySection/>
             </>

@@ -587,6 +587,13 @@
     "choisir les enceintes",
     "périphérique de sortie"
   ],
+  "settings.offlineMode": [
+    "utiliser sans internet",
+    "mode avion",
+    "bloquer le réseau",
+    "économiser les données",
+    "ne pas se connecter au serveur"
+  ],
   "netCheck.title": [
     "pas d'internet",
     "impossible de se connecter",
@@ -954,7 +961,6 @@
     "enregistrer les likes sur le disque",
     "musique sans internet",
     "écouter hors ligne",
-    "mode hors ligne",
     "disque plein"
   ],
   "settings.audioCacheSize": [
