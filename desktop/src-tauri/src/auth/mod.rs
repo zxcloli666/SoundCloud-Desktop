@@ -138,7 +138,7 @@ fn write_state(path: &Path, state: &AuthState) -> std::io::Result<()> {
 
 fn gate_effects(app: &AppHandle, premium: bool) {
     if let Some(audio) = app.try_state::<crate::audio::AudioState>() {
-        audio.effects.set_premium(premium);
+        audio.sound.lock().unwrap().effects.set_premium(premium);
     }
     crate::voice::star_changed(app, premium);
 }

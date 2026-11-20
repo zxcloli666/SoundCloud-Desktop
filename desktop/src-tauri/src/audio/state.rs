@@ -1,18 +1,18 @@
-use std::sync::atomic::{AtomicBool, AtomicU32, AtomicU64};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::atomic::{AtomicBool, AtomicU64};
+use std::sync::{Arc, Mutex};
 
 use rodio::mixer::Mixer;
 use rodio::Player;
 
 use crate::audio::analyser::AnalyserBuffer;
 use crate::audio::crossfade::CrossfadeState;
-use crate::audio::effects::EffectsParams;
 use crate::audio::master::Master;
 use crate::audio::preview::PreviewState;
 use crate::audio::output::{spawn_output_thread, OutputHandles};
 use crate::audio::silence::SilenceState;
+use crate::audio::sound::Sound;
 use crate::audio::types::{
-    AudioThreadCmd, EqParams, FloatingCommentEvent, LyricsTimingLine, MediaCmd,
+    AudioThreadCmd, FloatingCommentEvent, LyricsTimingLine, MediaCmd,
 };
 use crate::rt::AppHandle;
 
@@ -29,13 +29,11 @@ pub struct CommentsTimelineState {
 pub struct AudioState {
     pub player: Mutex<Option<Player>>,
     pub mixer: Arc<Mutex<Mixer>>,
-    pub eq_params: Arc<RwLock<EqParams>>,
-    pub effects: Arc<EffectsParams>,
+    pub sound: Mutex<Sound>,
     pub normalization_enabled: AtomicBool,
     pub normalization_gain: Mutex<f32>,
     pub volume: Mutex<f32>,
     pub playback_rate: Mutex<f32>,
-    pub pitch_ratio: Arc<AtomicU32>,
     /// Source-time position integrator `(source_anchor, output_anchor)` in seconds.
     /// rodio's get_pos() is wall-clock (output) time; source time is integrated as
     /// `source_anchor + (get_pos() - output_anchor) * rate`. The anchor is re-based on
@@ -92,13 +90,11 @@ pub fn init(app: &AppHandle) -> AudioState {
     AudioState {
         player: Mutex::new(None),
         mixer: shared_mixer,
-        eq_params: Arc::new(RwLock::new(EqParams::default())),
-        effects: Arc::new(EffectsParams::new()),
+        sound: Mutex::new(Sound::new()),
         normalization_enabled: AtomicBool::new(true),
         normalization_gain: Mutex::new(1.0),
         volume: Mutex::new(0.25),
         playback_rate: Mutex::new(1.0),
-        pitch_ratio: Arc::new(AtomicU32::new(1.0f32.to_bits())),
         pos_anchor: Mutex::new((0.0, 0.0)),
         has_track: AtomicBool::new(false),
         ended_notified: AtomicBool::new(false),

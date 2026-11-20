@@ -74,7 +74,7 @@ pub async fn play(request: PreviewRequest, state: State<'_, AudioState>) -> Resu
     .map_err(|e| format!("preview read task failed: {e}"))??;
 
     let mixer = state.mixer.lock().unwrap().clone();
-    let eq_params = state.eq_params.clone();
+    let eq_params = state.sound.lock().unwrap().eq.clone();
     let target = (request.volume as f32).clamp(0.0, 2.0);
     let fade_in_ms = request.fade_in_ms.max(request.crossfade_ms);
     let initial = if fade_in_ms > 0 { MIN_STEP } else { target };

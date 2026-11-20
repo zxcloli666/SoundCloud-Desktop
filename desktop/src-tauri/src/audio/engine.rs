@@ -9,6 +9,7 @@ use crate::audio::crossfade;
 use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
 use crate::audio::eq_curve;
 use crate::audio::silence;
+use crate::audio::sound::Sound;
 use crate::audio::state::AudioState;
 use crate::audio::types::{AudioLoadResult, MediaCmd, STALL_SUPPRESS_MS};
 use crate::diag::trace;
@@ -186,6 +187,7 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
     };
 
     let mixer = state.mixer.lock().unwrap().clone();
+    let sound = state.sound.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
     let normalization_gain = *state.normalization_gain.lock().unwrap();
@@ -199,10 +201,10 @@ pub fn reload_current_track(state: &AudioState) -> Result<(), String> {
             1.0
         },
         true,
-        state.eq_params.clone(),
+        sound.eq,
         state.analyser_buffer.clone(),
-        state.pitch_ratio.clone(),
-        state.effects.clone(),
+        sound.pitch,
+        sound.effects,
     )?;
     // Apply speed BEFORE seeking so try_seek's argument is interpreted under the speed
     // factor: try_seek(source/rate) lands the decoder at the original source position.
@@ -259,6 +261,10 @@ pub async fn load_file(
         normalization_cache_key.as_deref(),
     );
     let mixer = state.mixer.lock().unwrap().clone();
+    let sound = match crossfade_length {
+        Some(_) => Sound::new(),
+        None => state.sound.lock().unwrap().clone(),
+    };
     let vol = match crossfade_length {
         Some(_) => 0.0,
         None => *state.volume.lock().unwrap(),
@@ -272,13 +278,18 @@ pub async fn load_file(
         normalization_cache_dir,
         normalization_cache_key,
         start_paused,
-        state.eq_params.clone(),
+        sound.eq.clone(),
         state.analyser_buffer.clone(),
-        state.pitch_ratio.clone(),
-        state.effects.clone(),
+        sound.pitch.clone(),
+        sound.effects.clone(),
     )
     .await?;
 
+    if crossfade_length.is_some() {
+        let mut current = state.sound.lock().unwrap();
+        sound.copy_from(&current);
+        *current = sound;
+    }
     let previous =
         commit_loaded_track(&state, bytes, new_player, normalization_gain, silence_cache, vol);
     match (previous, crossfade_length) {
@@ -415,6 +426,7 @@ async fn load_with_retries(
         normalization_cache_key.as_deref(),
     );
     let mixer = state.mixer.lock().unwrap().clone();
+    let sound = state.sound.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
     let (bytes, new_player, duration_secs, normalization_gain) = build_player_from_bytes(
@@ -425,10 +437,10 @@ async fn load_with_retries(
         normalization_cache_dir,
         normalization_cache_key,
         start_paused,
-        state.eq_params.clone(),
+        sound.eq,
         state.analyser_buffer.clone(),
-        state.pitch_ratio.clone(),
-        state.effects.clone(),
+        sound.pitch,
+        sound.effects,
     )
     .await?;
 
@@ -518,6 +530,7 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     };
 
     let mixer = state.mixer.lock().unwrap().clone();
+    let sound = state.sound.lock().unwrap().clone();
     let vol = *state.volume.lock().unwrap();
     let normalization_enabled = state.normalization_enabled.load(Ordering::Relaxed);
     let normalization_gain = *state.normalization_gain.lock().unwrap();
@@ -531,10 +544,10 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
             1.0
         },
         true,
-        state.eq_params.clone(),
+        sound.eq,
         state.analyser_buffer.clone(),
-        state.pitch_ratio.clone(),
-        state.effects.clone(),
+        sound.pitch,
+        sound.effects,
     )?;
     new_player.set_speed(rate as f32);
     if position > 0.0 {
@@ -594,7 +607,12 @@ pub fn set_playback_rate(rate: f64, state: State<'_, AudioState>) {
 
 pub fn set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
     let value = ratio.clamp(0.25, 4.0) as f32;
-    state.pitch_ratio.store(value.to_bits(), Ordering::Relaxed);
+    state
+        .sound
+        .lock()
+        .unwrap()
+        .pitch
+        .store(value.to_bits(), Ordering::Relaxed);
 }
 
 pub fn get_position(state: State<'_, AudioState>) -> f64 {
@@ -620,7 +638,7 @@ pub fn set_ab_loop(a: Option<f64>, b: Option<f64>, state: State<'_, AudioState>)
 pub fn set_eq(enabled: bool, gains: &[f64], preamp: Option<f64>, state: State<'_, AudioState>) {
     let gains = eq_curve::band_gains(gains);
     let preamp = eq_curve::resolve_preamp(&gains, preamp);
-    if let Ok(mut params) = state.eq_params.write() {
+    if let Ok(mut params) = state.sound.lock().unwrap().eq.write() {
         params.enabled = enabled;
         params.gains = gains;
         params.preamp = preamp;

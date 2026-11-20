@@ -224,6 +224,9 @@ pub fn run() {
                 auth::SessionStore::init(data_dir.clone(), auth_http_client, rt_handle.clone());
             let premium = auth_state.premium_at_start();
             app.state::<audio::AudioState>()
+                .sound
+                .lock()
+                .unwrap()
                 .effects
                 .set_premium(premium);
             app.manage(auth_state);
