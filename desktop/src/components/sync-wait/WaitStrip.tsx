@@ -1,5 +1,6 @@
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { CollectionSyncInfo } from '../../lib/collection-sync';
 import { Loader2 } from '../../lib/icons';
 import { usePremium } from '../../lib/premium-cache';
 import type { WaitKind } from '../../lib/sync-wait';
@@ -10,18 +11,19 @@ import { StarMark } from './StarMark';
 import { SHAPE_OF, type WaitScope } from './scope';
 import { useLongWait } from './useLongWait';
 import { WaitClock } from './WaitClock';
+import { WaitProgress } from './WaitProgress';
 import './sync-wait.css';
 
 export const WaitStrip = memo(function WaitStrip({
   kind,
-  since,
+  info,
   scope,
   icon,
   title,
   lead = true,
 }: {
   kind: WaitKind;
-  since: number;
+  info: CollectionSyncInfo;
   scope: WaitScope;
   icon: ReactNode;
   title: string;
@@ -29,7 +31,7 @@ export const WaitStrip = memo(function WaitStrip({
 }) {
   const { t } = useTranslation();
   const premium = usePremium();
-  const { long, from } = useLongWait(kind, since);
+  const { long, from } = useLongWait(kind, info.waitingSince);
   const lane = lead && long && !(premium && kind === 'stalled');
 
   return (
@@ -58,8 +60,11 @@ export const WaitStrip = memo(function WaitStrip({
         <h3 className="truncate text-[15px] font-bold tracking-tight text-ink-90">{title}</h3>
         <span className="flex shrink-0 items-center gap-1.5 text-ink-35">
           <Loader2 size={12} className="animate-spin" />
-          {long && <WaitClock since={from} className="font-mono text-[12px] tabular-nums" />}
+          {long && !info.wait && (
+            <WaitClock since={from} className="font-mono text-[12px] tabular-nums" />
+          )}
         </span>
+        <WaitProgress wait={info.wait} at={info.waitAt} synced={info.syncedItems} />
       </div>
       {lane && (
         <div className="sync-wait-rise flex min-w-[240px] flex-1 items-center justify-end gap-3">

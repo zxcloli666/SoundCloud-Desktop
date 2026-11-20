@@ -2961,5 +2961,14 @@
     "deselect": "선택 해제",
     "shuffle": "선택 항목 셔플",
     "clear": "선택 지우기"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "빠른 줄",
+      "queue": "대기열"
+    },
+    "ahead_one": "앞에 {{count}}",
+    "ahead_other": "앞에 {{count}}",
+    "saved": "저장됨"
   }
 }

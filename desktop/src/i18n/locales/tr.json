@@ -3054,5 +3054,14 @@
     "deselect": "Seçimi kaldır",
     "shuffle": "Seçilenleri karıştır",
     "clear": "Seçimi temizle"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Hızlı hat",
+      "queue": "Sırada"
+    },
+    "ahead_one": "{{count}} önde",
+    "ahead_other": "{{count}} önde",
+    "saved": "Alındı"
   }
 }

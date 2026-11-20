@@ -3,6 +3,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from './api';
 import { waitAnchor } from './sync-wait';
 
+export interface SyncWait {
+  lane: 'read' | 'queue';
+  ahead: number;
+  etaSeconds: number;
+}
+
 export interface CollectionSync {
   status: string;
   conflictCode?: string | null;
@@ -10,6 +16,8 @@ export interface CollectionSync {
   retryAfterSeconds?: number;
   queuedSince?: string | null;
   errorCode?: string | null;
+  wait?: SyncWait | null;
+  syncedItems?: number | null;
 }
 
 export type CollectionSyncState = 'complete' | 'syncing' | 'stalled' | 'refused';
@@ -20,6 +28,9 @@ export interface CollectionSyncInfo {
   queuedSince: string | null;
   waitingSince: number;
   retryAt: number;
+  wait: SyncWait | null;
+  waitAt: number;
+  syncedItems: number | null;
 }
 
 interface SyncedPage {
@@ -64,6 +75,8 @@ export function useCollectionSync(
   const retryAfterSeconds = head?.sync?.retryAfterSeconds ?? 0;
   const queuedSince = head?.sync?.queuedSince ?? null;
   const errorCode = head?.sync?.errorCode ?? null;
+  const wait = head?.sync?.wait ?? null;
+  const syncedItems = head?.sync?.syncedItems ?? null;
   const hasItems = (head?.collection.length ?? 0) > 0;
   const waiting = isWaiting(head?.sync);
   const stalledFrom = queuedSince ? Date.parse(queuedSince) + STALLED_QUEUE_MS : Number.NaN;
@@ -99,6 +112,8 @@ export function useCollectionSync(
           (latest.sync?.conflictCode ?? null) !== conflictCode ||
           (latest.sync?.lastCompletedAt ?? null) !== lastCompletedAt ||
           (latest.sync?.errorCode ?? null) !== errorCode ||
+          (latest.sync?.syncedItems ?? null) !== syncedItems ||
+          (latest.sync?.wait?.lane ?? null) !== (wait?.lane ?? null) ||
           latest.collection.length > 0 !== hasItems);
       if (moved) {
         await qc.invalidateQueries(
@@ -122,6 +137,8 @@ export function useCollectionSync(
     conflictCode,
     lastCompletedAt,
     errorCode,
+    syncedItems,
+    wait?.lane,
     retryAfterSeconds,
     hasItems,
     updatedAt,
@@ -159,7 +176,16 @@ export function useCollectionSync(
         : 'syncing';
   const waitingSince = waitAnchor(probeUrl, head ? state : null, queuedSince, Date.now());
   return useMemo(
-    () => ({ state, errorCode, queuedSince, waitingSince, retryAt }),
-    [state, errorCode, queuedSince, waitingSince, retryAt],
+    () => ({
+      state,
+      errorCode,
+      queuedSince,
+      waitingSince,
+      retryAt,
+      wait,
+      waitAt: updatedAt,
+      syncedItems,
+    }),
+    [state, errorCode, queuedSince, waitingSince, retryAt, wait, updatedAt, syncedItems],
   );
 }

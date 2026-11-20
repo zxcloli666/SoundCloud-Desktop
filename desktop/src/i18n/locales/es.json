@@ -3088,5 +3088,14 @@
     "deselect": "Deseleccionar",
     "shuffle": "Mezclar seleccionadas",
     "clear": "Borrar selección"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Vía rápida",
+      "queue": "En cola"
+    },
+    "ahead_one": "{{count}} delante",
+    "ahead_other": "{{count}} delante",
+    "saved": "Guardado"
   }
 }

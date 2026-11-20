@@ -2,10 +2,12 @@ import { memo, useLayoutEffect, useRef } from 'react';
 import { clockText } from '../../lib/sync-wait';
 
 export const WaitClock = memo(function WaitClock({
-  since,
+  since = 0,
+  until,
   className,
 }: {
-  since: number;
+  since?: number;
+  until?: number;
   className?: string;
 }) {
   const ref = useRef<HTMLSpanElement>(null);
@@ -15,7 +17,7 @@ export const WaitClock = memo(function WaitClock({
     if (!node) return;
     let timer: ReturnType<typeof setInterval> | undefined;
     const paint = () => {
-      node.textContent = clockText(Date.now() - since);
+      node.textContent = clockText(until === undefined ? Date.now() - since : until - Date.now());
     };
     const follow = () => {
       clearInterval(timer);
@@ -30,7 +32,7 @@ export const WaitClock = memo(function WaitClock({
       clearInterval(timer);
       document.removeEventListener('visibilitychange', follow);
     };
-  }, [since]);
+  }, [since, until]);
 
   return <span ref={ref} className={className} />;
 });

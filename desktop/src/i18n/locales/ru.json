@@ -3122,5 +3122,16 @@
     "deselect": "Снять выбор",
     "shuffle": "Перемешать выбранные",
     "clear": "Сбросить выбор"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Быстрая",
+      "queue": "В очереди"
+    },
+    "saved": "Загружено",
+    "ahead_one": "{{count}} впереди",
+    "ahead_few": "{{count}} впереди",
+    "ahead_many": "{{count}} впереди",
+    "ahead_other": "{{count}} впереди"
   }
 }

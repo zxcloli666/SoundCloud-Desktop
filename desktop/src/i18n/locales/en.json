@@ -3022,5 +3022,14 @@
     "deselect": "Deselect",
     "shuffle": "Shuffle selected",
     "clear": "Clear selection"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Fast lane",
+      "queue": "In queue"
+    },
+    "ahead_one": "{{count}} ahead",
+    "ahead_other": "{{count}} ahead",
+    "saved": "Saved"
   }
 }

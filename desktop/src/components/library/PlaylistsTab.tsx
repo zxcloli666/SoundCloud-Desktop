@@ -96,7 +96,7 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
                 ) : mineWait ? (
                     <WaitStrip
                         kind={mineWait}
-                        since={myPlaylistsQuery.syncInfo.waitingSince}
+                        info={myPlaylistsQuery.syncInfo}
                         scope="playlists"
                         icon={<ListMusic size={16}/>}
                         title={t('library.yourPlaylists')}
@@ -110,7 +110,7 @@ export const PlaylistsTab = React.memo(function PlaylistsTab({filter}: { filter:
                 ) : likedWait ? (
                     <WaitStrip
                         kind={likedWait}
-                        since={likedPlaylistsQuery.syncInfo.waitingSince}
+                        info={likedPlaylistsQuery.syncInfo}
                         scope="playlists"
                         icon={<Bookmark size={16}/>}
                         title={t('library.likedPlaylists')}
