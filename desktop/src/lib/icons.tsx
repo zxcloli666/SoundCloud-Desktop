@@ -29,6 +29,7 @@ import {
   ChevronUp as _ChevronUp,
   CircleCheck as _CircleCheck,
   ClipboardCopy as _ClipboardCopy,
+  ClipboardPaste as _ClipboardPaste,
   Clapperboard as _Clapperboard,
   Clock as _Clock,
   Cloud as _Cloud,
@@ -194,6 +195,7 @@ export const Wifi = memo(_Wifi);
 export const WifiOff = memo(_WifiOff);
 export const Check = memo(_Check);
 export const ClipboardCopy = memo(_ClipboardCopy);
+export const ClipboardPaste = memo(_ClipboardPaste);
 export const Download = memo(_Download);
 export const ChevronDown = memo(_ChevronDown);
 export const ChevronLeft = memo(_ChevronLeft);

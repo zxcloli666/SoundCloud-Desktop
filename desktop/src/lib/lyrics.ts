@@ -1,6 +1,14 @@
+import { pendingOwnLyrics } from '../stores/own-lyrics';
 import { ApiError, api } from './api';
 
-export type LyricsSource = 'lrclib' | 'musixmatch' | 'genius' | 'netease' | 'self_gen' | 'none';
+export type LyricsSource =
+  | 'lrclib'
+  | 'musixmatch'
+  | 'genius'
+  | 'netease'
+  | 'self_gen'
+  | 'user'
+  | 'none';
 
 export type LyricsStatus = 'found' | 'pending' | 'none';
 
@@ -13,11 +21,21 @@ export interface LyricsResult {
   status: LyricsStatus;
   plain: string | null;
   synced: LyricLine[] | null;
+  lrc: string | null;
   source: LyricsSource;
   language: string | null;
+  own: boolean;
+  lrclibId: number | null;
+  unsynced: boolean;
 }
 
-interface BackendLyricsResponse {
+export interface OwnLyricsInput {
+  plainText?: string;
+  syncedLrc?: string;
+  lrclibId?: number;
+}
+
+export interface BackendLyricsResponse {
   scTrackId: string;
   syncedLrc: string | null;
   plainText: string | null;
@@ -25,6 +43,8 @@ interface BackendLyricsResponse {
   language: string | null;
   languageConfidence: number | null;
   status: LyricsStatus;
+  own?: boolean;
+  lrclibId?: number;
 }
 
 const LRC_TIME_TAG = /^\[(\d{1,3}):(\d{2})(?:[.:](\d{1,3}))?\]/;
@@ -48,43 +68,54 @@ export function parseLRC(lrc: string): LyricLine[] {
   return lines.sort((a, b) => a.time - b.time);
 }
 
-function toResult(data: BackendLyricsResponse | null): LyricsResult | null {
+export function toResult(
+  data: BackendLyricsResponse | null,
+  unsynced = false,
+): LyricsResult | null {
   if (!data) return null;
   const synced = data.syncedLrc ? parseLRC(data.syncedLrc) : [];
   return {
     status: data.status,
     plain: data.plainText,
     synced: synced.some((line) => line.text) ? synced : null,
+    lrc: data.syncedLrc,
     source: data.source,
     language: data.language,
+    own: data.own === true,
+    lrclibId: data.lrclibId ?? null,
+    unsynced,
   };
 }
 
-/** Load lyrics by track URN/id. Backend resolves artist/title itself and writes to cache. */
+export function localOwnResult(
+  scTrackId: string,
+  input: OwnLyricsInput,
+  unsynced = true,
+): LyricsResult | null {
+  return toResult(
+    {
+      scTrackId,
+      syncedLrc: input.syncedLrc ?? null,
+      plainText: input.plainText ?? null,
+      source: input.lrclibId ? 'lrclib' : 'user',
+      language: null,
+      languageConfidence: null,
+      status: 'found',
+      own: true,
+      lrclibId: input.lrclibId,
+    },
+    unsynced,
+  );
+}
+
 export async function getLyricsByTrack(scTrackId: string): Promise<LyricsResult | null> {
+  const waiting = pendingOwnLyrics(scTrackId);
+  if (waiting) return localOwnResult(scTrackId, waiting.input);
   const data = await api<BackendLyricsResponse>(`/lyrics/${encodeURIComponent(scTrackId)}`, {
     silentStatuses: [404],
   }).catch((error: unknown) => {
     if (error instanceof ApiError && error.status === 404) return null;
     throw error;
   });
-  return toResult(data);
-}
-
-/** Manual search — preview only. Backend does NOT read or write cache. */
-export async function searchLyricsManual(
-  artist: string,
-  title: string,
-  durationMs?: number,
-): Promise<LyricsResult | null> {
-  const params = new URLSearchParams({ artist, title });
-  if (durationMs && Number.isFinite(durationMs) && durationMs > 0) {
-    params.set('duration', String(Math.round(durationMs)));
-  }
-  const data = await api<BackendLyricsResponse>(
-    `/lyrics/search?${params}`,
-    undefined,
-    180_000,
-  ).catch(() => null);
   return toResult(data);
 }

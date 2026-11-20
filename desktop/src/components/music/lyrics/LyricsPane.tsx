@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, MicVocal, Search } from '../../../lib/icons';
+import { ClipboardPaste, Loader2, MicVocal, RotateCcw, Search } from '../../../lib/icons';
 import { isLocalUrn } from '../../../lib/local-library';
-import { getLyricsByTrack, searchLyricsManual } from '../../../lib/lyrics';
-import { getTrackDisplay } from '../../../lib/track-display';
+import { getLyricsByTrack } from '../../../lib/lyrics';
 import type { Track } from '../../../stores/player';
+import { type AttachTab, LyricsAttach } from './LyricsAttach';
+import { LyricsBar } from './LyricsBar';
 import { OffsetSyncedLyrics } from './LyricsOffsetControl';
-import { LyricsSourceBadge, PlainLyrics } from './SyncedLyrics';
+import { PlainLyrics } from './SyncedLyrics';
 
 const PENDING_POLL_FAST_MS = 3_000;
 const PENDING_POLL_SLOW_MS = 10_000;
@@ -19,114 +20,66 @@ function pendingPollDelay(waitedMs: number): number | false {
   return waitedMs < PENDING_FAST_WINDOW_MS ? PENDING_POLL_FAST_MS : PENDING_POLL_SLOW_MS;
 }
 
-const ManualSearchPanel = React.memo(
-  ({
-    initialArtist,
-    initialTitle,
-    onCancel,
-    onSubmit,
-  }: {
-    initialArtist: string;
-    initialTitle: string;
-    onCancel: () => void;
-    onSubmit: (artist: string, title: string) => void;
-  }) => {
-    const { t } = useTranslation();
-    const [artist, setArtist] = useState(initialArtist);
-    const [title, setTitle] = useState(initialTitle);
-
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 animate-fade-in-up">
-        <h3 className="text-ink-80 font-bold mb-2">{t('track.manualSearch')}</h3>
-        <input
-          value={artist}
-          onChange={(e) => setArtist(e.target.value)}
-          placeholder="Artist"
-          autoFocus
-          className="w-full max-w-[280px] bg-ink/10 px-4 py-2.5 rounded-xl text-ink text-[14px] outline-none border border-transparent focus:border-ink/20 placeholder:text-ink-30"
-        />
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && artist.trim() && title.trim()) {
-              onSubmit(artist.trim(), title.trim());
-            }
-          }}
-          className="w-full max-w-[280px] bg-ink/10 px-4 py-2.5 rounded-xl text-ink text-[14px] outline-none border border-transparent focus:border-ink/20 placeholder:text-ink-30"
-        />
-        <div className="flex gap-3 mt-4">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-5 py-2 rounded-full text-[13px] font-medium text-ink-50 hover:text-ink hover:bg-ink/10 transition-colors cursor-pointer"
-          >
-            {t('common.back')}
-          </button>
-          <button
-            type="button"
-            disabled={!artist.trim() || !title.trim()}
-            onClick={() => onSubmit(artist.trim(), title.trim())}
-            className="px-6 py-2 rounded-full text-[13px] font-bold bg-ink/20 hover:bg-ink/30 text-ink transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {t('track.search')}
-          </button>
-        </div>
-      </div>
-    );
-  },
-);
+const primaryButton =
+  'h-9 px-4 flex items-center gap-1.5 rounded-full text-[13px] font-semibold bg-accent text-accent-contrast hover:bg-accent-hover transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
+const quietButton =
+  'h-9 px-4 flex items-center gap-1.5 rounded-full text-[13px] font-semibold text-ink-60 bg-ink/[0.06] hover:bg-ink/[0.12] hover:text-ink transition-colors cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-accent/60';
 
 const LyricsMessage = ({
   title,
   hint,
-  onSearch,
+  onAttach,
   onRetry,
 }: {
   title: string;
   hint: string;
-  onSearch: () => void;
+  onAttach?: (tab: AttachTab) => void;
   onRetry?: () => void;
 }) => {
   const { t } = useTranslation();
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 text-center relative">
-      <button
-        type="button"
-        onClick={onSearch}
-        aria-label={t('track.manualSearch')}
-        className="absolute right-3 top-3 w-8 h-8 flex items-center justify-center rounded-full text-ink-30 hover:text-ink-70 hover:bg-ink/10 transition-colors cursor-pointer"
-      >
-        <Search size={14} />
-      </button>
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 px-12 text-center">
       <MicVocal size={40} className="text-ink-6" />
       <p className="text-[15px] text-ink-30 font-medium">{title}</p>
-      <p className="text-[12px] text-ink-15 leading-relaxed max-w-[300px]">{hint}</p>
-      {onRetry && (
-        <button
-          type="button"
-          onClick={onRetry}
-          className="px-5 py-2 rounded-full text-[13px] font-medium text-ink-50 hover:text-ink hover:bg-ink/10 transition-colors cursor-pointer"
-        >
-          {t('common.retry')}
-        </button>
-      )}
+      {hint && <p className="text-[12px] text-ink-15 leading-relaxed max-w-[300px]">{hint}</p>}
+      <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+        {onRetry && (
+          <button type="button" onClick={onRetry} className={primaryButton}>
+            <RotateCcw size={14} />
+            {t('common.retry')}
+          </button>
+        )}
+        {onAttach && (
+          <button
+            type="button"
+            onClick={() => onAttach('find')}
+            className={onRetry ? quietButton : primaryButton}
+          >
+            <Search size={14} />
+            {t('lyricsOwn.find')}
+          </button>
+        )}
+        {onAttach && (
+          <button type="button" onClick={() => onAttach('paste')} className={quietButton}>
+            <ClipboardPaste size={14} />
+            {t('lyricsOwn.paste')}
+          </button>
+        )}
+      </div>
     </div>
   );
 };
 
 export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   const { t } = useTranslation();
-  const [isEditing, setIsEditing] = useState(false);
-  const [manualQuery, setManualQuery] = useState<{ artist: string; title: string } | null>(null);
+  const [attach, setAttach] = useState<AttachTab | null>(null);
   const [pollStartedAt, setPollStartedAt] = useState(() => Date.now());
+  const local = isLocalUrn(track.urn);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset only on track switch
   useEffect(() => {
-    setManualQuery(null);
-    setIsEditing(false);
+    setAttach(null);
     setPollStartedAt(Date.now());
   }, [track.urn]);
 
@@ -137,15 +90,8 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     isError,
     refetch,
   } = useQuery({
-    queryKey: manualQuery
-      ? ['lyrics', 'search', manualQuery.artist, manualQuery.title, track.duration]
-      : ['lyrics', 'track', track.urn],
-    queryFn: () =>
-      manualQuery
-        ? searchLyricsManual(manualQuery.artist, manualQuery.title, track.duration)
-        : isLocalUrn(track.urn)
-          ? Promise.resolve(null)
-          : getLyricsByTrack(track.urn),
+    queryKey: ['lyrics', 'track', track.urn],
+    queryFn: () => (local ? Promise.resolve(null) : getLyricsByTrack(track.urn)),
     staleTime: (query) => (query.state.data?.status === 'pending' ? 0 : Number.POSITIVE_INFINITY),
     refetchInterval: (query) =>
       query.state.data?.status === 'pending' && query.state.status !== 'error'
@@ -154,6 +100,8 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     retry: 1,
   });
 
+  const close = useCallback(() => setAttach(null), []);
+  const onAttach = local ? undefined : setAttach;
   const pending = lyrics?.status === 'pending';
   const polling = pending && !isError && pendingPollDelay(dataUpdatedAt - pollStartedAt) !== false;
 
@@ -162,49 +110,30 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
     void refetch();
   };
 
-  const startSearch = () => {
-    const display = getTrackDisplay(track);
-    setIsEditing(true);
-    if (!manualQuery) {
-      setManualQuery(
-        (prev) =>
-          prev ?? { artist: display.artistLine || track.user.username, title: display.title },
-      );
-    }
-  };
+  const edit = () => setAttach(lyrics?.own && !lyrics.lrclibId ? 'paste' : 'find');
 
-  if (isEditing) {
-    const display = getTrackDisplay(track);
-    const initialArtist = manualQuery?.artist || display.artistLine || track.user.username;
-    const initialTitle = manualQuery?.title || display.title;
+  if (attach) {
     return (
-      <ManualSearchPanel
-        initialArtist={initialArtist}
-        initialTitle={initialTitle}
-        onCancel={() => setIsEditing(false)}
-        onSubmit={(artist, title) => {
-          setManualQuery({ artist, title });
-          setIsEditing(false);
-        }}
+      <LyricsAttach
+        track={track}
+        lyrics={lyrics ?? null}
+        tab={attach}
+        onTab={setAttach}
+        onClose={close}
       />
     );
   }
 
   if (lyrics?.synced && lyrics.synced.length > 0) {
     return (
-      <OffsetSyncedLyrics
-        urn={track.urn}
-        lines={lyrics.synced}
-        source={lyrics.source}
-        onSearch={startSearch}
-      />
+      <OffsetSyncedLyrics urn={track.urn} lines={lyrics.synced} lyrics={lyrics} onEdit={edit} />
     );
   }
 
   if (lyrics?.plain) {
     return (
       <>
-        <LyricsSourceBadge source={lyrics.source} onSearch={startSearch} />
+        <LyricsBar urn={track.urn} lyrics={lyrics} onEdit={edit} />
         <PlainLyrics text={lyrics.plain} />
       </>
     );
@@ -224,7 +153,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
       <LyricsMessage
         title={t('track.lyricsLoadError')}
         hint={t('track.lyricsLoadErrorHint')}
-        onSearch={startSearch}
+        onAttach={onAttach}
         onRetry={retry}
       />
     );
@@ -235,7 +164,7 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
       <LyricsMessage
         title={t('track.lyricsPending')}
         hint={t('track.lyricsPendingHint')}
-        onSearch={startSearch}
+        onAttach={onAttach}
         onRetry={retry}
       />
     );
@@ -244,8 +173,8 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
   return (
     <LyricsMessage
       title={t('track.lyricsNotFound')}
-      hint={t('track.lyricsNotFoundHint')}
-      onSearch={startSearch}
+      hint={local ? '' : t('track.lyricsNotFoundHint')}
+      onAttach={onAttach}
     />
   );
 });

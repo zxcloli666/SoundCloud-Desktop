@@ -102,6 +102,9 @@
           "path": "$APPDATA/sc-lyrics-offset.json"
         },
         {
+          "path": "$APPDATA/sc-own-lyrics.json"
+        },
+        {
           "path": "$APPDATA/sc-player.json"
         },
         {

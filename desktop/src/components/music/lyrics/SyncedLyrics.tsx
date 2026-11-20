@@ -1,23 +1,12 @@
 import {invoke} from '@tauri-apps/api/core';
 import {listen} from '@tauri-apps/api/event';
 import React, {useEffect, useMemo, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
 import {getCurrentTime, seek} from '../../../lib/audio';
-import {Search} from '../../../lib/icons';
-import type {LyricLine, LyricsSource} from '../../../lib/lyrics';
+import type {LyricLine} from '../../../lib/lyrics';
 import {usePerfMode} from '../../../lib/perf';
 import {subscribeVideoOpaque, videoOpaqueIn} from '../../../lib/video-element';
 import {usePlayerStore} from '../../../stores/player';
 import {useSettingsStore} from '../../../stores/settings';
-
-const SOURCE_LABELS: Record<LyricsSource, string> = {
-    lrclib: 'LRCLib',
-    musixmatch: 'Musixmatch',
-    genius: 'Genius',
-    netease: 'NetEase',
-    self_gen: 'AI',
-    none: '',
-};
 
 const PAUSE_MARKER = '♪♪♪';
 const PAUSE_GAP_THRESHOLD = 4.5; // seconds — when to insert ♪♪♪
@@ -385,38 +374,6 @@ export const PlainLyrics = React.memo(({text}: { text: string }) => (
         </div>
     </div>
 ));
-
-export const LyricsSourceBadge = React.memo(
-    ({source, onSearch, children}: {
-        source: LyricsSource;
-        onSearch: () => void;
-        children?: React.ReactNode
-    }) => {
-        const {t} = useTranslation();
-        const label = source === 'self_gen' ? t('track.selfGenerated') : SOURCE_LABELS[source];
-        return (
-            <div className="flex items-center justify-between px-12 pt-3 pb-0">
-                {label ? (
-                    <span
-                        className="text-[10px] font-semibold text-ink-20 bg-ink/[0.04] px-2 py-0.5 rounded-full border border-ink/[0.06]">
-            {label}
-          </span>
-                ) : (
-                    <span/>
-                )}
-                {children}
-                <button
-                    type="button"
-                    onClick={onSearch}
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-ink-30 hover:text-ink-70 hover:bg-ink/10 transition-colors cursor-pointer"
-                    aria-label={t('track.manualSearch')}
-                >
-                    <Search size={14}/>
-                </button>
-            </div>
-        );
-    },
-);
 
 function offScreen(): boolean {
     return document.visibilityState === 'hidden' || videoOpaqueIn() === 'player-view';

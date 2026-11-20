@@ -87,6 +87,7 @@ function startDeferredRuntime() {
       m.probePerfMode();
     });
     void import('./lib/host-status').then((m) => m.initHostStatus());
+    void import('./lib/own-lyrics').then((m) => m.startOwnLyricsSync());
     void import('./lib/storage-location').then((m) => m.warnIfStorageUnavailable());
   });
 }
