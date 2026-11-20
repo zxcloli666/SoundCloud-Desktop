@@ -443,7 +443,22 @@
     "findClear": "Borrar",
     "findCount": "{{count}} of {{total}}",
     "findNoMatches": "Nada en esta playlist coincide con «{{query}}»",
-    "findLoading": "Cargando toda la playlist…"
+    "findLoading": "Cargando toda la playlist…",
+    "cover": {
+      "change": "Cambiar portada",
+      "title": "Portada de la playlist",
+      "replace": "Reemplazar",
+      "pickAnother": "Elegir otra",
+      "zoom": "Zoom",
+      "crop": "Recorte",
+      "sending": "Enviando",
+      "syncing": "Sincronizando",
+      "tooSmall": "Imagen muy pequeña",
+      "tooLarge": "Imagen muy grande",
+      "unsupported": "Formato no compatible",
+      "unreadable": "Imagen ilegible",
+      "notSaved": "No guardado"
+    }
   },
   "user": {
     "followers": "Seguidores",

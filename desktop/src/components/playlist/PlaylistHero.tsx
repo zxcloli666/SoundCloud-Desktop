@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useRef} from 'react';
 import {useTranslation} from 'react-i18next';
 import {dateFormatted, durLong} from '../../lib/formatters';
 import type {Playlist} from '../../lib/hooks';
@@ -8,7 +8,7 @@ import {releaseKindOf} from '../../lib/playlist-kind';
 import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
-import {CrateStack} from './CrateStack';
+import {PlaylistCover} from './cover/PlaylistCover';
 import {CuratorCard} from './CuratorCard';
 import {PlaylistActions} from './PlaylistActions';
 import type {PlaylistAura} from './usePlaylistAura';
@@ -74,6 +74,8 @@ export const PlaylistHero = React.memo(function PlaylistHero({
     onRemoveDuplicates: (indices: Set<number>) => void;
 }) {
     const {t} = useTranslation();
+    const coverInput = useRef<HTMLInputElement>(null);
+    const changeCover = useCallback(() => coverInput.current?.click(), []);
     const kl = kindLabelKey(releaseKindOf(playlist) ?? playlist.kind);
     const hasGenres = aura.topGenres.length > 0;
 
@@ -90,12 +92,14 @@ export const PlaylistHero = React.memo(function PlaylistHero({
     return (
         <GlassHeroPanel hasStar={false} aura={aura.aura} className="@container">
             <div data-ui="playlist-hero" className="p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start">
-                <CrateStack
+                <PlaylistCover
                     playlist={playlist}
                     tracks={tracks}
                     isPlaying={isPlaying}
                     trackCount={trackCount}
                     onPlay={onPlayAll}
+                    isOwner={isOwner}
+                    inputRef={coverInput}
                 />
 
                 <div className="flex-1 min-w-0 w-full flex flex-col gap-5 text-center @min-[740px]:text-left">
@@ -175,6 +179,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                             onShuffle={onShuffle}
                             onTogglePin={onTogglePin}
                             onEdit={onEdit}
+                            onChangeCover={changeCover}
                             onDelete={onDelete}
                             canArrange={canArrange}
                             onArrange={onArrange}

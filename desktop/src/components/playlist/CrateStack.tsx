@@ -25,12 +25,14 @@ export const CrateStack = React.memo(function CrateStack({
                                                              isPlaying,
                                                              trackCount,
                                                              onPlay,
+                                                             cover = null,
                                                          }: {
     playlist: Playlist;
     tracks: Track[];
     isPlaying: boolean;
     trackCount: number;
     onPlay: () => void;
+    cover?: string | null;
 }) {
     const perf = usePerfMode();
     const max = perf.mode === 'light' ? 1 : perf.mode === 'medium' ? 3 : 5;
@@ -44,13 +46,14 @@ export const CrateStack = React.memo(function CrateStack({
                 urls.push(u);
             }
         };
+        push(cover);
         push(art(playlist.artwork_url, 't200x200'));
         for (const tr of tracks) {
             if (urls.length >= max) break;
             push(art(tr.artwork_url, 't200x200'));
         }
         return urls.slice(0, max);
-    }, [playlist.artwork_url, tracks, max]);
+    }, [cover, playlist.artwork_url, tracks, max]);
 
     return (
         <button

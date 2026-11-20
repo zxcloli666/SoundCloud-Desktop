@@ -443,7 +443,22 @@
     "findClear": "Очистить",
     "findCount": "{{count}} из {{total}}",
     "findNoMatches": "В этом плейлисте ничего не нашлось по «{{query}}»",
-    "findLoading": "Загружаем весь плейлист…"
+    "findLoading": "Загружаем весь плейлист…",
+    "cover": {
+      "change": "Сменить обложку",
+      "title": "Обложка плейлиста",
+      "replace": "Заменить",
+      "pickAnother": "Выбрать другую",
+      "zoom": "Масштаб",
+      "crop": "Кадр",
+      "sending": "Отправляем",
+      "syncing": "Синхронизация",
+      "tooSmall": "Слишком маленькая",
+      "tooLarge": "Слишком большая",
+      "unsupported": "Формат не подходит",
+      "unreadable": "Не читается",
+      "notSaved": "Не сохранено"
+    }
   },
   "user": {
     "followers": "Подписчики",

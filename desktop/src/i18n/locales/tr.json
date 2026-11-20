@@ -467,7 +467,22 @@
     "findClear": "Temizle",
     "findCount": "{{count}} / {{total}}",
     "findNoMatches": "Bu çalma listesinde “{{query}}” ile eşleşen bir şey yok",
-    "findLoading": "Çalma listesinin tamamı yükleniyor…"
+    "findLoading": "Çalma listesinin tamamı yükleniyor…",
+    "cover": {
+      "change": "Kapağı değiştir",
+      "title": "Çalma listesi kapağı",
+      "replace": "Değiştir",
+      "pickAnother": "Başka seç",
+      "zoom": "Yakınlaştır",
+      "crop": "Kırp",
+      "sending": "Gönderiliyor",
+      "syncing": "Eşitleniyor",
+      "tooSmall": "Görsel çok küçük",
+      "tooLarge": "Görsel çok büyük",
+      "unsupported": "Desteklenmeyen biçim",
+      "unreadable": "Görsel okunamadı",
+      "notSaved": "Kaydedilmedi"
+    }
   },
   "user": {
     "followers": "Takipçiler",

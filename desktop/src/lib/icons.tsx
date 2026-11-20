@@ -32,6 +32,7 @@ import {
   Clapperboard as _Clapperboard,
   Clock as _Clock,
   Cloud as _Cloud,
+  CloudUpload as _CloudUpload,
   Compass as _Compass,
   Copy as _Copy,
   CornerDownRight as _CornerDownRight,
@@ -64,6 +65,7 @@ import {
   Heart as _Heart,
   Home as _Home,
   Image as _Image,
+  ImagePlus as _ImagePlus,
   Images as _Images,
   Info as _Info,
   Keyboard as _Keyboard,
@@ -144,6 +146,8 @@ import {
   WifiOff as _WifiOff,
   X as _X,
   Zap as _Zap,
+  ZoomIn as _ZoomIn,
+  ZoomOut as _ZoomOut,
 } from 'lucide-react';
 import { memo } from 'react';
 import { siInstagram, siVk, siX, siYoutube } from 'simple-icons';
@@ -213,6 +217,7 @@ export const BookOpen = memo(_BookOpen);
 export const Bookmark = memo(_Bookmark);
 export const Braces = memo(_Braces);
 export const Cloud = memo(_Cloud);
+export const CloudUpload = memo(_CloudUpload);
 export const Compass = memo(_Compass);
 export const Copy = memo(_Copy);
 export const Database = memo(_Database);
@@ -231,6 +236,7 @@ export const Headphones = memo(_Headphones);
 export const Heart = memo(_Heart);
 export const Home = memo(_Home);
 export const ImageIcon = memo(_Image);
+export const ImagePlus = memo(_ImagePlus);
 export const Images = memo(_Images);
 export const Info = memo(_Info);
 export const Keyboard = memo(_Keyboard);
@@ -303,6 +309,8 @@ export const Volume2 = memo(_Volume2);
 export const VolumeX = memo(_VolumeX);
 export const X = memo(_X);
 export const Zap = memo(_Zap);
+export const ZoomIn = memo(_ZoomIn);
+export const ZoomOut = memo(_ZoomOut);
 export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
 export const AudioLines = memo(_AudioLines);

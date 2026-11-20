@@ -112,6 +112,10 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="artist-hero"]` | Top block of an artist page |
 | `[data-ui="album-hero"]` | Top block of an album page |
 | `[data-ui="playlist-hero"]` | Top block of a playlist page |
+| `[data-ui="playlist-cover-change"]` | Change cover button on your own playlist cover |
+| `[data-ui="playlist-cover-state"]` | Cover upload badge. `[data-state]` is `sending`, `syncing` or `failed` |
+| `[data-ui="playlist-cover-editor"]` | Cover crop window |
+| `[data-ui="playlist-cover-crop"]` | Square frame you drag and zoom in that window |
 | `[data-ui="user-hero"]` | Top block of a profile page |
 | `[data-ui="user-banner"]` | Profile banner above that block |
 | `[data-ui="user-banner-glow"]` | Blurred banner behind the whole block |

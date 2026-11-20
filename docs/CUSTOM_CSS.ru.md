@@ -112,6 +112,10 @@
 | `[data-ui="artist-hero"]` | Верхний блок страницы артиста |
 | `[data-ui="album-hero"]` | Верхний блок страницы альбома |
 | `[data-ui="playlist-hero"]` | Верхний блок страницы плейлиста |
+| `[data-ui="playlist-cover-change"]` | Кнопка смены обложки на своём плейлисте |
+| `[data-ui="playlist-cover-state"]` | Значок загрузки обложки. `[data-state]`: `sending`, `syncing` или `failed` |
+| `[data-ui="playlist-cover-editor"]` | Окно кадрирования обложки |
+| `[data-ui="playlist-cover-crop"]` | Квадратная рамка в этом окне, её двигают и масштабируют |
 | `[data-ui="user-hero"]` | Верхний блок профиля |
 | `[data-ui="user-banner"]` | Баннер профиля над этим блоком |
 | `[data-ui="user-banner-glow"]` | Размытый баннер под всем блоком |
