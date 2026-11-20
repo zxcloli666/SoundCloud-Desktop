@@ -9,6 +9,13 @@ import { useVolumeDrag } from './useVolumeDrag';
 
 const VOLUME_TICKS = VOLUME_SNAP_POINTS.filter((point) => point < VOLUME_MAX);
 
+function stepVolumeOnWheel(e: React.WheelEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  const { volume, setVolume } = usePlayerStore.getState();
+  setVolume(clampVolume(volume + ((e.deltaY || e.deltaX) < 0 ? 1 : -1)));
+}
+
 const VolumeTip = React.memo(
   ({ volume, fine, vertical }: { volume: number; fine: boolean; vertical: boolean }) => {
     const { t } = useTranslation();
@@ -42,8 +49,8 @@ export const VolumeSlider = React.memo(
     orientation?: 'horizontal' | 'vertical';
   }) => {
     const { t } = useTranslation();
-    const { volume, setVolume, resetVolume } = usePlayerStore(
-      useShallow((s) => ({ volume: s.volume, setVolume: s.setVolume, resetVolume: s.resetVolume })),
+    const { volume, resetVolume } = usePlayerStore(
+      useShallow((s) => ({ volume: s.volume, resetVolume: s.resetVolume })),
     );
     const vertical = orientation === 'vertical';
     const { rootRef, dragging, fine, onValueChange, rootHandlers } = useVolumeDrag(vertical);
@@ -76,11 +83,7 @@ export const VolumeSlider = React.memo(
               e.preventDefault();
             }
           }}
-          onWheel={(e) => {
-            e.preventDefault();
-            const delta = e.deltaY || e.deltaX;
-            setVolume(clampVolume(volume + (delta < 0 ? 1 : -1)));
-          }}
+          onWheel={stepVolumeOnWheel}
         >
           <Slider.Track
             className={`relative grow rounded-full bg-ink/[0.08] transition-all duration-150 ${
@@ -135,6 +138,7 @@ export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'defa
     <button
       type="button"
       onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
+      onWheel={stepVolumeOnWheel}
       className={`${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-ink/[0.04] ${
         volume === 0 ? 'text-accent' : 'text-ink-40 hover:text-ink-70'
       }`}
@@ -167,7 +171,7 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
 });
 
 export const VolumeFlyout = React.memo(() => (
-  <div className="npb-vol">
+  <div className="npb-vol" onWheel={stepVolumeOnWheel}>
     <ControlVolumeBtn size="sm" />
     <div className="npb-vol-pop">
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-ink/[0.10] bg-surface/96 px-2 py-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))]">
