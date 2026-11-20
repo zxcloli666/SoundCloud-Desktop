@@ -8,6 +8,7 @@ import {fc} from '../../lib/formatters';
 import {fetchAllPlaylistTracks, type Playlist} from '../../lib/hooks';
 import {
     Check,
+    Copy,
     Heart,
     LinkIcon,
     MapPin,
@@ -24,6 +25,7 @@ import {ShareButton} from '../chat/share/ShareButton';
 import {SaveCollectionMenu} from '../collection-save/SaveCollectionMenu';
 import {SharingToggle} from '../music/SharingToggle';
 import {ArrangeMenu} from './ArrangeMenu';
+import {DuplicatesDialog} from './DuplicatesDialog';
 
 const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
                                                                 playlistUrn,
@@ -133,6 +135,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                                                                        onDelete,
                                                                        canArrange,
                                                                        onArrange,
+                                                                       onRemoveDuplicates,
                                                                    }: {
     playlist: Playlist;
     isOwner: boolean;
@@ -147,8 +150,11 @@ export const PlaylistActions = React.memo(function PlaylistActions({
     onDelete: () => void;
     canArrange: boolean;
     onArrange: (mode: ArrangeMode) => void;
+    onRemoveDuplicates: (indices: Set<number>) => void;
 }) {
     const {t} = useTranslation();
+    const [dupesOpen, setDupesOpen] = useState(false);
+    const dupesLabel = canArrange ? t('playlist.dupes') : t('playlist.dupesWait');
     const playlistUrn = playlist.urn;
     const collect = useCallback(() => fetchAllPlaylistTracks(playlistUrn), [playlistUrn]);
     const coverSource = tracks.length > 0 ? tracks : playlist.tracks;
@@ -244,6 +250,22 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                             <Pencil size={15}/>
                         </button>
                         <ArrangeMenu disabled={!canArrange} onArrange={onArrange}/>
+                        <button
+                            type="button"
+                            disabled={!canArrange}
+                            onClick={() => setDupesOpen(true)}
+                            title={dupesLabel}
+                            aria-label={dupesLabel}
+                            className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-55 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer disabled:cursor-not-allowed disabled:opacity-35"
+                        >
+                            <Copy size={15}/>
+                        </button>
+                        <DuplicatesDialog
+                            open={dupesOpen}
+                            onOpenChange={setDupesOpen}
+                            tracks={tracks}
+                            onRemove={onRemoveDuplicates}
+                        />
                         <SharingToggle kind="playlist" urn={playlist.urn} sharing={playlist.sharing}/>
                         <button
                             type="button"

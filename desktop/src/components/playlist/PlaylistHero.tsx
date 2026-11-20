@@ -54,6 +54,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                                                                  canArrange,
                                                                  delivery,
                                                                  onArrange,
+                                                                 onRemoveDuplicates,
                                                              }: {
     playlist: Playlist;
     tracks: Track[];
@@ -70,6 +71,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
     canArrange: boolean;
     delivery: PlaylistDelivery | null;
     onArrange: (mode: ArrangeMode) => void;
+    onRemoveDuplicates: (indices: Set<number>) => void;
 }) {
     const {t} = useTranslation();
     const kl = kindLabelKey(releaseKindOf(playlist) ?? playlist.kind);
@@ -176,6 +178,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
                             onDelete={onDelete}
                             canArrange={canArrange}
                             onArrange={onArrange}
+                            onRemoveDuplicates={onRemoveDuplicates}
                         />
                     </div>
 
