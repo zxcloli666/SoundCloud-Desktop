@@ -2599,6 +2599,7 @@
   },
   "trackMenu": {
     "menuLabel": "Parça işlemleri",
+    "downloadCover": "Kapağı indir",
     "playNext": "Sıradaki olarak çal",
     "playLast": "Kuyruğun sonuna ekle",
     "removeFromQueue": "Kuyruktan kaldır",

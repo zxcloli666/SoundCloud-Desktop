@@ -2676,6 +2676,7 @@
   },
   "trackMenu": {
     "menuLabel": "Ações da faixa",
+    "downloadCover": "Baixar capa",
     "playNext": "Tocar em seguida",
     "playLast": "Adicionar ao fim da fila",
     "removeFromQueue": "Remover da fila",

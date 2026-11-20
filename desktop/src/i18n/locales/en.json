@@ -2716,6 +2716,7 @@
   },
   "trackMenu": {
     "menuLabel": "Track actions",
+    "downloadCover": "Download cover",
     "playNext": "Play next",
     "playLast": "Add to end of queue",
     "removeFromQueue": "Remove from queue",

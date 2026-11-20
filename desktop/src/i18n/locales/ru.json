@@ -2799,6 +2799,7 @@
   },
   "trackMenu": {
     "menuLabel": "Действия с треком",
+    "downloadCover": "Скачать обложку",
     "playNext": "Играть следующим",
     "playLast": "Добавить в конец очереди",
     "removeFromQueue": "Убрать из очереди",

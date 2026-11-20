@@ -2535,6 +2535,7 @@
   },
   "trackMenu": {
     "menuLabel": "트랙 작업",
+    "downloadCover": "커버 저장",
     "playNext": "다음에 재생",
     "playLast": "대기열 끝에 추가",
     "removeFromQueue": "대기열에서 제거",

@@ -12,6 +12,7 @@ import {
   Download,
   GalleryVerticalEnd,
   Heart,
+  ImageIcon,
   LinkIcon,
   ListEnd,
   ListPlus,
@@ -25,13 +26,14 @@ import { useLiked } from '../../../lib/likes';
 import { LIKED_ORDER_SCOPE, likesOrder } from '../../../lib/likes-order';
 import { isLocalUrn } from '../../../lib/local-library';
 import { toggleSuperlike } from '../../../lib/superlike-actions';
-import { SUPERLIKED_ORDER_SCOPE, superlikesOrder } from '../../../lib/superlikes-order';
 import { useSuperliked } from '../../../lib/superlikes';
+import { SUPERLIKED_ORDER_SCOPE, superlikesOrder } from '../../../lib/superlikes-order';
 import {
   copyTrackLabel,
   copyTrackLink,
   playTrackLast,
   playTrackNext,
+  saveTrackCover,
   saveTrackFile,
 } from '../../../lib/track-actions';
 import { getArtistDisplay, getArtistTarget } from '../../../lib/track-display';
@@ -81,6 +83,14 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
       toast.success(t('track.downloaded'));
     } catch (e: unknown) {
       if (e instanceof Error && e.message === 'cancelled') return;
+      toast.error(String(e));
+    }
+  };
+
+  const downloadCover = async () => {
+    try {
+      await saveTrackCover(track);
+    } catch (e: unknown) {
       toast.error(String(e));
     }
   };
@@ -151,6 +161,14 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             icon={<Download size={15} />}
             label={t('trackMenu.download')}
             onSelect={run(() => void download())}
+          />
+        ),
+        remote && track.artwork_url && (
+          <MenuItem
+            key="cover"
+            icon={<ImageIcon size={15} />}
+            label={t('trackMenu.downloadCover')}
+            onSelect={run(() => void downloadCover())}
           />
         ),
       ],

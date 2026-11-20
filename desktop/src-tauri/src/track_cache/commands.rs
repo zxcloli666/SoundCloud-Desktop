@@ -185,6 +185,15 @@ pub async fn track_export(
 }
 
 #[tauri::command]
+pub async fn track_cover_save(
+    urls: Vec<String>,
+    dest_path: String,
+    state: State<'_, TrackCacheState>,
+) -> Result<(), String> {
+    state.save_cover(&urls, Path::new(&dest_path)).await
+}
+
+#[tauri::command]
 pub async fn track_export_to_dir(
     request: EnsureCachedRequest,
     dir: String,
