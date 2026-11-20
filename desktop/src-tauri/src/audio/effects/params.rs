@@ -66,6 +66,21 @@ impl EffectsParams {
         self.premium.store(premium, Ordering::Relaxed);
     }
 
+    pub fn copy_from(&self, other: &EffectsParams) {
+        self.premium
+            .store(other.premium.load(Ordering::Relaxed), Ordering::Relaxed);
+        for (slot, value) in [
+            (&self.reverb, &other.reverb),
+            (&self.room, &other.room),
+            (&self.eight_d_hz, &other.eight_d_hz),
+            (&self.bass_db, &other.bass_db),
+        ] {
+            slot.store(value.load(Ordering::Relaxed), Ordering::Relaxed);
+        }
+        self.eight_d
+            .store(other.eight_d.load(Ordering::Relaxed), Ordering::Relaxed);
+    }
+
     pub fn set(&self, settings: Settings) {
         store(&self.reverb, settings.reverb, 0.0, 1.0);
         store(&self.room, settings.room, 0.0, 1.0);

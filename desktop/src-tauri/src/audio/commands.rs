@@ -117,7 +117,7 @@ pub fn audio_set_pitch_ratio(ratio: f64, state: State<'_, AudioState>) {
 
 #[tauri::command]
 pub fn audio_set_effects(settings: Settings, state: State<'_, AudioState>) {
-    state.effects.set(settings);
+    state.sound.lock().unwrap().effects.set(settings);
 }
 
 #[tauri::command]

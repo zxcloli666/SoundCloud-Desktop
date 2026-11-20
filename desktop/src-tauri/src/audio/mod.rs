@@ -16,6 +16,7 @@ mod output;
 mod pitch;
 mod preview;
 mod silence;
+mod sound;
 mod sink;
 mod state;
 mod tick;
