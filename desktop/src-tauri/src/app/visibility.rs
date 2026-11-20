@@ -7,6 +7,7 @@ use crate::rt::{AppHandle, Rt, WebviewWindow};
 
 static PAGES_HIDDEN: AtomicBool = AtomicBool::new(false);
 static MAIN_MINIMIZED: AtomicBool = AtomicBool::new(false);
+static MAIN_PAGE_HIDDEN: AtomicBool = AtomicBool::new(false);
 const WATCH_INTERVAL: Duration = Duration::from_secs(1);
 
 pub fn pages_hidden() -> bool {
@@ -24,14 +25,31 @@ pub fn start_watch(app: &AppHandle) {
                     window.is_visible().unwrap_or(true) && !window.is_minimized().unwrap_or(false)
                 });
                 PAGES_HIDDEN.store(!shown, Ordering::Relaxed);
+                restore_stuck_main(&app);
             }
         })
         .expect("failed to spawn page-visibility thread");
 }
 
+fn restore_stuck_main(app: &AppHandle) {
+    if !MAIN_PAGE_HIDDEN.load(Ordering::Relaxed) {
+        return;
+    }
+    let Some(window) = app.get_webview_window("main") else {
+        return;
+    };
+    if window.is_visible().unwrap_or(false) && !window.is_minimized().unwrap_or(true) {
+        MAIN_MINIMIZED.store(false, Ordering::Relaxed);
+        set_page_visible(&window, true);
+    }
+}
+
 pub fn set_page_visible(window: &WebviewWindow, visible: bool) {
     if visible {
         PAGES_HIDDEN.store(false, Ordering::Relaxed);
+    }
+    if window.label() == "main" {
+        MAIN_PAGE_HIDDEN.store(!visible && cfg!(windows), Ordering::Relaxed);
     }
     if !cfg!(windows) {
         return;
@@ -54,6 +72,13 @@ pub fn follow_minimize(window: &tauri::Window<Rt>, size: &PhysicalSize<u32>) {
     let minimized = size.width == 0 && size.height == 0;
     if MAIN_MINIMIZED.swap(minimized, Ordering::Relaxed) != minimized {
         set_window_page_visible(window, !minimized);
+    }
+}
+
+pub fn restore_focused_main(window: &tauri::Window<Rt>) {
+    if MAIN_PAGE_HIDDEN.load(Ordering::Relaxed) && !window.is_minimized().unwrap_or(true) {
+        MAIN_MINIMIZED.store(false, Ordering::Relaxed);
+        set_window_page_visible(window, true);
     }
 }
 
