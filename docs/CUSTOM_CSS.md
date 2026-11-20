@@ -35,6 +35,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
+| `[data-ui="back-to-top"]` | Floating back-to-top button over the page area |
 | `[data-ui="page"]` | A page. `data-page` names it: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |
 | `[data-ui="modal"]` | Dialog window |
 | `[data-ui="context-menu"]` | Right-click menu |
@@ -52,6 +53,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
 | `[data-ui="player-tuning"]` | Speed and pitch button in the player |
+| `[data-ui="player-sleep"]` | Sleep timer button in the player |
 | `[data-ui="player-eq"]` | Equalizer button in the player |
 | `[data-ui="player-effects"]` | Effects button in the player (reverb, 8D, bass boost) |
 | `[data-ui="progress"]` | Progress bar |

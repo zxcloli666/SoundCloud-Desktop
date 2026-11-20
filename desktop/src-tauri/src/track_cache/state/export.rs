@@ -109,6 +109,17 @@ impl TrackCacheState {
         Some(bytes.to_vec())
     }
 
+    pub async fn save_cover(&self, urls: &[String], dest: &Path) -> Result<(), String> {
+        for url in urls {
+            if let Some(bytes) = self.fetch_cover(url).await {
+                return tokio::fs::write(dest, bytes)
+                    .await
+                    .map_err(|e| format!("Write failed: {e}"));
+            }
+        }
+        Err("Cover is unavailable".into())
+    }
+
     pub async fn mp3_export_supported(&self) -> bool {
         let Some(ffmpeg) = self.ffmpeg() else {
             return false;

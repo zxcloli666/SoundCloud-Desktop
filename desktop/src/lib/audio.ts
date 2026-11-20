@@ -89,6 +89,22 @@ let acceptedShortFile = false;
 let downloadProgress: number | null = null;
 let loadGen = 0;
 let lastEndedUrn: string | null = null;
+const trackEndListeners = new Set<() => void>();
+let trackEndHeld = false;
+
+export function holdTrackEnd(held: boolean) {
+  trackEndHeld = held;
+}
+
+export function subscribeTrackEnd(listener: () => void): () => void {
+  trackEndListeners.add(listener);
+  return () => trackEndListeners.delete(listener);
+}
+
+function markEnded(urn: string) {
+  lastEndedUrn = urn;
+  for (const listener of trackEndListeners) listener();
+}
 let pendingCrossfadeMs = 0;
 let crossfadeGen = -1;
 let crossfadeCheckedGen = -1;
@@ -912,7 +928,7 @@ function canCrossfade(): boolean {
 
 function maybeStartCrossfade() {
   const lengthSec = useSettingsStore.getState().crossfadeSec;
-  if (lengthSec <= 0 || !hasTrack || !currentUrn || crossfadeCheckedGen === loadGen) return;
+  if (trackEndHeld || lengthSec <= 0 || !hasTrack || !currentUrn || crossfadeCheckedGen === loadGen) return;
   const duration = cachedDuration > 0 ? cachedDuration : fallbackDuration;
   if (duration <= lengthSec * 2 || cachedTime < duration - lengthSec - CROSSFADE_LEAD_SEC) return;
   crossfadeCheckedGen = loadGen;
@@ -923,7 +939,7 @@ function maybeStartCrossfade() {
     if (!info?.path || gen !== loadGen || !hasTrack || !currentUrn) return;
     if (!canCrossfade() || upcomingTrack()?.urn !== next.urn) return;
     recordFullPlay(currentUrn, true);
-    lastEndedUrn = currentUrn;
+    markEnded(currentUrn);
     pendingCrossfadeMs = lengthSec * 1000;
     currentUrn = null;
     usePlayerStore.getState().next();
@@ -972,11 +988,13 @@ listen<boolean | null>('audio:ended', (event) => {
   if (isCrossfadeLoading()) return;
   const silentTail = event.payload === true;
   if (!silentTail && maybeHealEarlyEnd()) return;
+  const held = trackEndHeld;
   if (currentUrn) {
     recordFullPlay(currentUrn, silentTail);
-    lastEndedUrn = currentUrn;
+    markEnded(currentUrn);
   }
   hasTrack = false;
+  if (held) return;
   handleTrackEnd();
 });
 

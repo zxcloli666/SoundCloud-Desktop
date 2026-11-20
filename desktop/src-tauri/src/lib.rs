@@ -424,6 +424,7 @@ pub fn run() {
             track_cache::track_upgrade_cached,
             track_cache::track_export,
             track_cache::track_export_to_dir,
+            track_cache::track_cover_save,
             track_cache::track_export_mp3_supported,
             track_cache::track_save_offline,
             track_cache::track_is_cached,

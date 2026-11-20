@@ -1763,6 +1763,7 @@
     }
   },
   "common": {
+    "backToTop": "Back to top",
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry",
@@ -2714,8 +2715,15 @@
     "hintOn": "Applied every time this track plays",
     "noTrack": "Play a track to remember its sound"
   },
+  "sleep": {
+    "title": "Sleep timer",
+    "minutes": "{{count}} min",
+    "endOfTrack": "End of track",
+    "cancel": "Cancel timer"
+  },
   "trackMenu": {
     "menuLabel": "Track actions",
+    "downloadCover": "Download cover",
     "playNext": "Play next",
     "playLast": "Add to end of queue",
     "removeFromQueue": "Remove from queue",

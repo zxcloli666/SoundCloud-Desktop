@@ -1149,6 +1149,14 @@
     "ton değiştir",
     "hızlı yavaş"
   ],
+  "elsewhere.sleep": [
+    "uyku modu",
+    "müziği kapat zamanlayıcı",
+    "şarkı bitince durdur",
+    "otomatik duraklat",
+    "geceleri müzik",
+    "kapanma süresi"
+  ],
   "elsewhere.shortcuts": [
     "klavye kısayolları",
     "kısayol listesi",

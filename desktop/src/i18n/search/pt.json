@@ -1137,6 +1137,14 @@
     "mudar o tom",
     "mais rápido mais lento"
   ],
+  "elsewhere.sleep": [
+    "modo soneca",
+    "desligar música depois",
+    "parar após a faixa",
+    "pausa automática",
+    "dormir com música",
+    "cronômetro de música"
+  ],
   "elsewhere.shortcuts": [
     "atalhos de teclado",
     "lista de atalhos",

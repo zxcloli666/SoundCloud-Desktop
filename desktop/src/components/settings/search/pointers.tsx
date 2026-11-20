@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { AudioLines, Keyboard, SlidersHorizontal, Waves } from '../../../lib/icons';
+import { AudioLines, Keyboard, Moon, SlidersHorizontal, Waves } from '../../../lib/icons';
 import type { SettingsResult } from '../../../lib/settings-search/useSettingsSearch';
 import { useShortcutsStore } from '../../../stores/shortcuts';
 import { Mic } from '../../voice/icons';
@@ -10,6 +10,7 @@ export const POINTER_ICONS: Record<string, ReactNode> = {
   'elsewhere.equalizer': <AudioLines size={SIZE} />,
   'elsewhere.effects': <Waves size={SIZE} />,
   'elsewhere.speed': <SlidersHorizontal size={SIZE} />,
+  'elsewhere.sleep': <Moon size={SIZE} />,
   'elsewhere.shortcuts': <Keyboard size={SIZE} />,
   'elsewhere.voice': <Mic size={SIZE} />,
 };

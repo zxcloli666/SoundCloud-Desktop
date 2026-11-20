@@ -1791,6 +1791,7 @@
     }
   },
   "common": {
+    "backToTop": "Haut de page",
     "loading": "Chargement...",
     "error": "Une erreur s'est produite",
     "retry": "Réessayer",
@@ -2769,8 +2770,15 @@
     "hintOn": "Appliqué à chaque lecture de ce titre",
     "noTrack": "Lisez un titre pour mémoriser son son"
   },
+  "sleep": {
+    "title": "Minuteur de sommeil",
+    "minutes": "{{count}} min",
+    "endOfTrack": "Fin du titre",
+    "cancel": "Annuler le minuteur"
+  },
   "trackMenu": {
     "menuLabel": "Actions du titre",
+    "downloadCover": "Télécharger la pochette",
     "playNext": "Lire ensuite",
     "playLast": "Ajouter à la fin de la file d'attente",
     "removeFromQueue": "Retirer de la file d'attente",

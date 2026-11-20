@@ -35,6 +35,7 @@
 | `[data-ui="star-card"]` | Карточка STAR в левом меню |
 | `[data-ui="profile"]` | Ваш профиль внизу левого меню |
 | `[data-ui="main"]` | Прокручиваемая область страниц |
+| `[data-ui="back-to-top"]` | Плавающая кнопка «наверх» над областью страниц |
 | `[data-ui="page"]` | Страница. Её имя в `data-page`: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |
 | `[data-ui="modal"]` | Диалоговое окно |
 | `[data-ui="context-menu"]` | Контекстное меню |
@@ -52,6 +53,7 @@
 | `[data-ui="player-rating"]` | Чип рейтинга трека (A, C, F) в плеере |
 | `[data-ui="play-button"]` | Пуск и пауза |
 | `[data-ui="player-tuning"]` | Кнопка скорости и питча в плеере |
+| `[data-ui="player-sleep"]` | Кнопка таймера сна в плеере |
 | `[data-ui="player-eq"]` | Кнопка эквалайзера в плеере |
 | `[data-ui="player-effects"]` | Кнопка эффектов в плеере (реверб, 8D, бас) |
 | `[data-ui="progress"]` | Полоса прогресса |

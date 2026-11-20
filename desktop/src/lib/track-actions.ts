@@ -2,6 +2,8 @@ import { toast } from 'sonner';
 import i18n from '../i18n';
 import { type Track, usePlayerStore } from '../stores/player';
 import { downloadTrack } from './cache';
+import { trackedInvoke as invoke } from './diagnostics';
+import { sanitizeFilename } from './filename';
 import { cleanPermalink } from './permalink';
 import { getTrackDisplay } from './track-display';
 
@@ -56,4 +58,23 @@ export function saveTrackFile(track: Track) {
     durationMs: track.duration,
     storageQuality: track._scd_meta?.storage_quality,
   });
+}
+
+export async function saveTrackCover(track: Track) {
+  const artwork = track.artwork_url;
+  if (!artwork) return;
+  const display = getTrackDisplay(track);
+  const extension = artwork.match(/\.(\w+)(?:\?|$)/)?.[1] ?? 'jpg';
+  const name = sanitizeFilename(`${display.artistLine || track.user.username} - ${display.title}`);
+  const { save } = await import('@tauri-apps/plugin-dialog');
+  const dest = await save({
+    defaultPath: `${name}.${extension}`,
+    filters: [{ name: 'Image', extensions: [extension] }],
+  });
+  if (!dest) return;
+  await invoke('track_cover_save', {
+    urls: [artwork.replace('-large', '-original'), artwork.replace('-large', '-t500x500')],
+    destPath: dest,
+  });
+  toast.success(i18n.t('track.downloaded'));
 }

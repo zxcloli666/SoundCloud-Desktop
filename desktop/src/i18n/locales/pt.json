@@ -1673,6 +1673,7 @@
     }
   },
   "common": {
+    "backToTop": "Voltar ao topo",
     "loading": "Carregando...",
     "error": "Algo deu errado",
     "retry": "Tentar de novo",
@@ -2674,8 +2675,15 @@
     "hintOn": "Aplicado toda vez que esta faixa tocar",
     "noTrack": "Toque uma faixa para lembrar o som dela"
   },
+  "sleep": {
+    "title": "Temporizador",
+    "minutes": "{{count}} min",
+    "endOfTrack": "Fim da faixa",
+    "cancel": "Cancelar timer"
+  },
   "trackMenu": {
     "menuLabel": "Ações da faixa",
+    "downloadCover": "Baixar capa",
     "playNext": "Tocar em seguida",
     "playLast": "Adicionar ao fim da fila",
     "removeFromQueue": "Remover da fila",

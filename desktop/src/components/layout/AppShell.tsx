@@ -9,6 +9,7 @@ import {customCssHotkeyLabel} from '../../lib/custom-css';
 import {useDesktopWallpaper} from '../../lib/desktop-wallpaper';
 import {art} from '../../lib/formatters';
 import {usePerfMode} from '../../lib/perf';
+import {BackToTop} from './BackToTop';
 import {isMac} from '../../lib/platform';
 import {useWallpaperRotation} from '../../lib/wallpaper-rotation';
 import {toggleWindowFullscreen} from '../../lib/window';
@@ -487,6 +488,7 @@ export const AppShell = React.memo(() => {
             <StableOutlet />
           </main>
           <ChatDock />
+          <BackToTop target={mainRef} />
         </div>
         <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       </div>

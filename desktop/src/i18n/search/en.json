@@ -1329,6 +1329,16 @@
     "slowed",
     "sped up"
   ],
+  "elsewhere.sleep": [
+    "sleep timer",
+    "turn off music after",
+    "stop playing in 30 minutes",
+    "fall asleep to music",
+    "auto pause",
+    "night mode timer",
+    "shut off after the track",
+    "music timer"
+  ],
   "elsewhere.shortcuts": [
     "keyboard shortcuts",
     "shortcut list",
