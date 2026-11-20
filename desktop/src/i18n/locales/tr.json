@@ -2276,7 +2276,10 @@
     "availability": "{{indexed}}/{{total}} mevcut",
     "verified": "Doğrulandı",
     "noTracks": "Henüz dizinlenmiş parça yok",
-    "comingSoon": "Yakında"
+    "comingSoon": "Yakında",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saveHint": "SoundCloud kitaplığına kaydet"
   },
   "contextMenu": {
     "mute": "Sesi kapat",

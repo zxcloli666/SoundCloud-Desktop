@@ -2187,7 +2187,10 @@
     "availability": "{{total}}곡 중 {{indexed}}곡 이용 가능",
     "verified": "인증됨",
     "noTracks": "아직 인덱싱된 트랙이 없어요",
-    "comingSoon": "곧 공개"
+    "comingSoon": "곧 공개",
+    "save": "저장",
+    "saved": "저장됨",
+    "saveHint": "SoundCloud 라이브러리에 저장"
   },
   "discover": {
     "title": "둘러보기",

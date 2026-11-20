@@ -2390,7 +2390,10 @@
     "availability": "{{indexed}}/{{total}} disponibles",
     "verified": "Verificado",
     "noTracks": "Aún no hay pistas indexadas",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "saveHint": "Guardar en tu biblioteca de SoundCloud"
   },
   "discover": {
     "title": "Descubrir",

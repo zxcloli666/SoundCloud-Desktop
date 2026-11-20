@@ -2352,7 +2352,10 @@
     "availability": "{{indexed}}/{{total}} available",
     "verified": "Verified",
     "noTracks": "No tracks indexed yet",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "save": "Save",
+    "saved": "Saved",
+    "saveHint": "Save to your SoundCloud library"
   },
   "discover": {
     "title": "Discover",

@@ -2407,7 +2407,10 @@
     "availability": "{{indexed}}/{{total}} доступно",
     "verified": "Проверено",
     "noTracks": "Пока нет проиндексированных треков",
-    "comingSoon": "Скоро"
+    "comingSoon": "Скоро",
+    "save": "Сохранить",
+    "saved": "Сохранён",
+    "saveHint": "Сохранить в библиотеку SoundCloud"
   },
   "discover": {
     "title": "Каталог",

@@ -27,7 +27,7 @@ import {SharingToggle} from '../music/SharingToggle';
 import {ArrangeMenu} from './ArrangeMenu';
 import {DuplicatesDialog} from './DuplicatesDialog';
 
-const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
+export const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
                                                                 playlistUrn,
                                                                 count,
                                                             }: {
@@ -73,7 +73,8 @@ const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
         <button
             type="button"
             onClick={toggle}
-            title={t('track.likes')}
+            title={count === undefined ? t('album.saveHint') : t('track.likes')}
+            aria-pressed={liked}
             className={`inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold tabular-nums transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer border active:scale-[0.96] ${
                 liked
                     ? 'bg-accent/15 text-accent border-accent/30 shadow-[0_0_18px_var(--color-accent-glow)]'
@@ -81,7 +82,7 @@ const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
             }`}
         >
             <Heart size={15} fill={liked ? 'currentColor' : 'none'}/>
-            <span>{fc(localCount)}</span>
+            <span>{count === undefined ? (liked ? t('album.saved') : t('album.save')) : fc(localCount)}</span>
         </button>
     );
 });

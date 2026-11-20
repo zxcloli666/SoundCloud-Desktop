@@ -14,6 +14,7 @@ export interface AlbumDetail {
   release_year?: number;
   cover_url?: string;
   confidence: number;
+  sc_playlist_urn?: string;
   primary_artist?: AlbumArtist;
   artists: AlbumArtist[];
   tracks: Track[];

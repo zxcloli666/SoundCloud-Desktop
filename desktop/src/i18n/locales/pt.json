@@ -2277,7 +2277,10 @@
     "availability": "{{indexed}}/{{total}} disponíveis",
     "verified": "Verificado",
     "noTracks": "Nenhuma faixa indexada ainda",
-    "comingSoon": "Em breve"
+    "comingSoon": "Em breve",
+    "save": "Salvar",
+    "saved": "Salvo",
+    "saveHint": "Salvar na biblioteca do SoundCloud"
   },
   "discover": {
     "title": "Descobrir",
