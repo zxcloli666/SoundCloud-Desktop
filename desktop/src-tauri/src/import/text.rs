@@ -1,16 +1,40 @@
 use super::failure::{Failure, SOURCE_EMPTY};
 use super::model::{ExtList, ExtTrack};
+use super::vk_text;
 
 const DASHES: [char; 3] = ['-', '\u{2013}', '\u{2014}'];
 
-pub fn parse(text: &str) -> Result<ExtList, Failure> {
+#[derive(serde::Serialize)]
+pub struct TextPreview {
+    pub count: usize,
+    pub vk: bool,
+}
+
+pub fn preview(text: &str) -> TextPreview {
+    match vk_text::parse(text) {
+        Some(tracks) => TextPreview {
+            count: tracks.len(),
+            vk: true,
+        },
+        None => TextPreview {
+            count: plain(text).len(),
+            vk: false,
+        },
+    }
+}
+
+fn plain(text: &str) -> Vec<ExtTrack> {
     let tracks: Vec<ExtTrack> = text
         .lines()
         .map(strip_numbering)
         .filter(|line| !line.is_empty())
         .filter_map(split_line)
         .collect();
-    let tracks = drop_header(tracks);
+    drop_header(tracks)
+}
+
+pub fn parse(text: &str) -> Result<ExtList, Failure> {
+    let tracks = vk_text::parse(text).unwrap_or_else(|| plain(text));
     if tracks.is_empty() {
         return Err(Failure::new(SOURCE_EMPTY, "no lines"));
     }
@@ -31,7 +55,7 @@ fn drop_header(mut tracks: Vec<ExtTrack>) -> Vec<ExtTrack> {
     tracks
 }
 
-fn strip_numbering(line: &str) -> &str {
+pub(super) fn strip_numbering(line: &str) -> &str {
     let line = line
         .trim()
         .trim_start_matches(['\u{2022}', '*'])
@@ -49,7 +73,7 @@ fn strip_numbering(line: &str) -> &str {
     }
 }
 
-fn split_line(line: &str) -> Option<ExtTrack> {
+pub(super) fn split_line(line: &str) -> Option<ExtTrack> {
     let (artist, title) = split_tab(line)
         .or_else(|| split_dash(line))
         .or_else(|| split_csv(line))

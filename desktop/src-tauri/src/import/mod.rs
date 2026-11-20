@@ -12,6 +12,7 @@ mod sync_plan;
 mod sync_store;
 mod spotify;
 mod text;
+mod vk_text;
 mod ym;
 mod ym_link;
 mod youtube;

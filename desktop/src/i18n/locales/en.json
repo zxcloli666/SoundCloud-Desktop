@@ -1611,6 +1611,7 @@
     "linkPlaceholder": "Paste a Spotify, YouTube or Yandex Music link...",
     "unknownLink": "Link not recognized",
     "textPlaceholder": "Artist - Title\nArtist - Title\n...",
+    "vkHint": "VK playlist: select the tracks, copy, paste",
     "namePlaceholder": "Playlist name",
     "defaultTitle": "Imported",
     "start": "Start import",

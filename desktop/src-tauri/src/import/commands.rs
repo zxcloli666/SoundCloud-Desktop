@@ -8,6 +8,7 @@ use super::failure::Failure;
 use super::request::Request;
 use super::run::{build_client, run};
 use super::source::detect;
+use super::text::{TextPreview, preview};
 use super::ym::{Ym, YmLibrary, clean_token};
 
 static CANCEL_FLAG: std::sync::LazyLock<Arc<AtomicBool>> =
@@ -43,6 +44,11 @@ pub fn import_stop() {
 #[tauri::command]
 pub fn import_detect(input: String) -> Option<&'static str> {
     detect(&input).map(|source| source.label())
+}
+
+#[tauri::command]
+pub fn import_text_preview(text: String) -> TextPreview {
+    preview(&text)
 }
 
 #[tauri::command]

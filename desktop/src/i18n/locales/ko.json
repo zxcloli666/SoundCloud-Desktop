@@ -2742,6 +2742,7 @@
     "linkPlaceholder": "Spotify, YouTube 또는 Yandex Music 링크를 붙여넣으세요...",
     "unknownLink": "인식할 수 없는 링크입니다",
     "textPlaceholder": "아티스트 - 제목\n아티스트 - 제목\n...",
+    "vkHint": "VK 플레이리스트: 곡을 선택해 복사 후 붙여넣기",
     "namePlaceholder": "플레이리스트 이름",
     "defaultTitle": "가져옴",
     "start": "가져오기 시작",
