@@ -32,7 +32,7 @@ const SHELVES: Record<ArchiveShelf, { label: string; onPlay?: () => void; to?: s
     onPlay: armSuperlikesContinuation,
     to: '/library/superlikes',
   },
-  likes: { label: 'library.likedTracks', onPlay: armLikesContinuation },
+  likes: { label: 'library.likedTracks', onPlay: armLikesContinuation, to: '/library/likes' },
   recommended: { label: 'home.recommended' },
 };
 
