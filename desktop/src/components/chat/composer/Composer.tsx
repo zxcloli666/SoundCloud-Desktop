@@ -337,7 +337,7 @@ export const Composer = memo(function Composer({ conversationId }: { conversatio
               )}
               disabled={paused}
               style={{ outline: 'none' }}
-              className="max-h-[168px] min-h-[36px] flex-1 resize-none overflow-y-hidden bg-transparent px-2 py-[8px] text-[13.5px] leading-5 text-ink-92 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed"
+              className="max-h-[168px] min-h-[36px] flex-1 resize-none overflow-x-hidden overflow-y-hidden bg-transparent px-2 py-[8px] text-[13.5px] leading-5 text-ink-92 outline-none placeholder:text-ink-30 disabled:cursor-not-allowed"
             />
             {limited && !editing && <NewcomerRing text={rich.text} bodyMax={newcomer.bodyMax} />}
             <EmojiButton onFocusInput={() => inputRef.current?.focus()} />
