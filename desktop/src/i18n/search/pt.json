@@ -1217,5 +1217,13 @@
     "tamanho do cache de clipes",
     "cota de vídeo",
     "video storage limit"
+  ],
+  "mobileLink.title": [
+    "acesso estendido",
+    "conectar acesso",
+    "conta do app do celular",
+    "reconectar soundcloud",
+    "desconectar acesso",
+    "permissões extras"
   ]
 }

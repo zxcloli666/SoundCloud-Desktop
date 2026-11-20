@@ -1,6 +1,8 @@
 import { memo } from 'react';
 import {useTranslation} from 'react-i18next';
-import type { TrackScdMeta } from '../../stores/player';
+import {pickVideo} from '../../lib/video-pick';
+import type { TrackScdMeta, TrackVideo } from '../../stores/player';
+import {useSettingsStore} from '../../stores/settings';
 
 type Variant = 'inline' | 'overlay';
 
@@ -8,6 +10,7 @@ interface Props {
   meta?: TrackScdMeta;
   variant?: Variant;
   showIndex?: boolean;
+  videos?: TrackVideo[];
 }
 
 /**
@@ -21,6 +24,10 @@ export function sameScdMeta(a?: TrackScdMeta, b?: TrackScdMeta): boolean {
         a?.storage_quality === b?.storage_quality &&
         a?.index_state === b?.index_state
     );
+}
+
+export function sameVideos(a?: TrackVideo[], b?: TrackVideo[]): boolean {
+    return a === b || (a ?? []).map((v) => v.kind).join() === (b ?? []).map((v) => v.kind).join();
 }
 
 export type Tier = 'analyzed' | 'cached' | 'pending' | 'tooLong' | 'failed';
@@ -95,8 +102,17 @@ export function tierTitleKey(tier: Tier, meta: TrackScdMeta): string {
     return `track.status.${tier}${stored === 'uq' ? 'Uq' : stored === 'hq' ? 'Hq' : ''}`;
 }
 
-function TrackStatusBadgesInner({ meta, variant = 'inline', showIndex = true }: Props) {
+const VIDEO_TITLE_KEYS = {
+    clip: 'track.status.videoClip',
+    loop: 'track.status.videoLoop',
+    generated: 'track.status.videoGenerated',
+} as const;
+
+function TrackStatusBadgesInner({ meta, variant = 'inline', showIndex = true, videos }: Props) {
     const {t} = useTranslation();
+    const videoEnabled = useSettingsStore((s) => s.videoEnabled);
+    const order = useSettingsStore((s) => s.videoOrder);
+    const off = useSettingsStore((s) => s.videoOff);
   if (!meta) return null;
     const tier = tierOf(meta, showIndex);
     if (!tier) return null;
@@ -104,13 +120,16 @@ function TrackStatusBadgesInner({ meta, variant = 'inline', showIndex = true }: 
     const {letter, inline, overlay} = TIERS[tier];
     const tone = variant === 'overlay' ? overlay : inline;
     const stored = storedQuality(meta, tier);
+    const video = videoEnabled ? pickVideo(videos, {order, off}, new Set()) : null;
+    const base = t(tierTitleKey(tier, meta));
+    const title = video ? `${base} · ${t('track.status.video', {kind: t(VIDEO_TITLE_KEYS[video.kind])})}` : base;
     const hq = stored === 'hq' || stored === 'uq';
 
   return (
       <span
           data-scheme={variant === 'overlay' ? 'dark' : undefined}
-          title={t(tierTitleKey(tier, meta))}
-          className={`relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-[6px] text-[10px] font-bold leading-none ring-1 ring-inset select-none ${tone}`}
+          title={title}
+          className={`relative inline-flex items-center justify-center w-[18px] h-[18px] rounded-[6px] text-[10px] font-bold leading-none ${video ? 'ring-[1.5px] ring-current!' : 'ring-1'} ring-inset select-none ${tone}`}
       >
       {letter}
           {hq ? (

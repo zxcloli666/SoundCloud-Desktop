@@ -101,6 +101,8 @@ SoundCloud заблокирован Роскомнадзором — веб-ве
 
 Требования: Windows 10 (1809+) или Windows 11
 
+Подпись файлов: [Code signing policy](#code-signing-policy)
+
 Нужен Microsoft Edge WebView2 Runtime. Установщики (~220 МБ) несут его внутри и ставят без загрузки из сети, такую загрузку антивирусы принимают за угрозу. Portable (~43 МБ) его не несёт: если WebView2 нет или Windows урезанная, поставь [Evergreen Standalone Installer](https://developer.microsoft.com/microsoft-edge/webview2/) от имени администратора. Сам Edge не нужен.
 
 ### Linux
@@ -306,6 +308,19 @@ npx biome check src/     # линтинг
 <p align="center">
 <img src="https://zxcloli666.github.io/download-history/zxcloli666_SoundCloud-Desktop.svg" alt="Download History" />
 </p>
+
+---
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- Committers and reviewers: [zxcloli666](https://github.com/zxcloli666)
+- Approvers: [zxcloli666](https://github.com/zxcloli666)
+
+Windows-сборки (установщики и portable) подписываются в GitHub Actions этого репозитория ([auto-build.yml](.github/workflows/auto-build.yml)). Каждый запрос на подпись одобряется вручную.
+
+Privacy policy: [getsoundcloud.app/privacy](https://getsoundcloud.app/privacy)
 
 ---
 

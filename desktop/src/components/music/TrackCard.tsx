@@ -15,7 +15,7 @@ import {AlbumLinkButton} from './AlbumLinkButton';
 import {ArtistNameLinks} from './ArtistNameLinks';
 import {LikeButton} from './LikeButton';
 import {PlayNextButton} from './PlayNextButton';
-import {TrackStatusBadges} from './TrackStatusBadges';
+import {sameVideos, TrackStatusBadges} from './TrackStatusBadges';
 import {UploadKindDot} from './UploadKindDot';
 
 interface TrackCardProps {
@@ -102,7 +102,7 @@ export const TrackCard = React.memo(
 
           {/* Cache / analysis badges — bottom left */}
           <div className="absolute bottom-2 left-2 flex">
-            <TrackStatusBadges meta={track._scd_meta} variant="overlay" />
+            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} variant="overlay" />
           </div>
 
           {/* Like button — top left */}
@@ -181,5 +181,6 @@ export const TrackCard = React.memo(
     prev.track.enrichment === next.track.enrichment &&
     prev.track._scd_meta?.storage_state === next.track._scd_meta?.storage_state &&
     prev.track._scd_meta?.storage_quality === next.track._scd_meta?.storage_quality &&
-    prev.track._scd_meta?.index_state === next.track._scd_meta?.index_state,
+    prev.track._scd_meta?.index_state === next.track._scd_meta?.index_state &&
+    sameVideos(prev.track.videos, next.track.videos),
 );

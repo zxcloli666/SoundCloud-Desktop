@@ -5,6 +5,7 @@ import {ago, art, durLong} from '../../../lib/formatters';
 import {type Comment, useTrackComments} from '../../../lib/hooks';
 import {Loader2, MessageCircle} from '../../../lib/icons';
 import {usePerfMode} from '../../../lib/perf';
+import {subscribeVideoOpaque, videoOpaqueIn} from '../../../lib/video-element';
 
 const TimedCommentCard = React.memo(
     ({
@@ -111,7 +112,7 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
 
         let id = 0;
         const applyVisibility = () => {
-            const hidden = document.visibilityState === 'hidden';
+            const hidden = document.visibilityState === 'hidden' || videoOpaqueIn() === 'player-view';
             if (hidden) {
                 if (id) {
                     window.clearInterval(id);
@@ -125,9 +126,11 @@ export const TimedCommentsRail = React.memo(({trackUrn}: { trackUrn: string }) =
 
         applyVisibility();
         document.addEventListener('visibilitychange', applyVisibility);
+        const unsubVideo = subscribeVideoOpaque(applyVisibility);
         return () => {
             if (id) window.clearInterval(id);
             document.removeEventListener('visibilitychange', applyVisibility);
+            unsubVideo();
         };
     }, [timedComments]);
 

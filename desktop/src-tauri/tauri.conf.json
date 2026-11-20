@@ -38,6 +38,13 @@
       "dangerousDisableAssetCspModification": ["style-src"]
     }
   },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["sc"]
+      }
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",

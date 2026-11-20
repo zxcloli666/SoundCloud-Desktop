@@ -39,6 +39,7 @@ export const LyricsBackdrop = React.memo(
 
         return (
             <div
+                data-ui="lyrics-backdrop"
                 className="absolute inset-0 pointer-events-none"
                 style={{contain: 'strict', transform: 'translateZ(0)'}}
             >

@@ -18,6 +18,7 @@ import {useSettingsStore} from '../../stores/settings';
 import {useShortcutsStore} from '../../stores/shortcuts';
 import {ChatDock} from '../chat/shell/ChatDock';
 import {ImportHost} from '../import/ImportHost';
+import {MobileLinkHost} from '../mobile-link/MobileLinkHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
@@ -471,28 +472,31 @@ export const AppShell = React.memo(() => {
 
   return (
     <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
-      <WallpaperRotator />
       <ReleaseWatch />
-      <CustomBackground />
-      <CoverTint />
-      <AmbientGlow />
-      <Titlebar />
-      <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
-        <Sidebar />
+      <div className="under-lyrics contents">
+        <WallpaperRotator />
+        <CustomBackground />
+        <CoverTint />
+        <AmbientGlow />
+        <Titlebar />
+        <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
+          <Sidebar />
           {/* pb clears the floating now-playing dock, which overlays (doesn't push) content */}
           <main ref={mainRef} data-ui="main" className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
-          <ScrollReset target={mainRef} />
-          <StableOutlet />
-        </main>
-        <ChatDock />
+            <ScrollReset target={mainRef} />
+            <StableOutlet />
+          </main>
+          <ChatDock />
+        </div>
+        <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       </div>
-      <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
       <AddToPlaylistHost />
       <SuperlikeLimitHost />
       <StarMomentsHost />
       <UploadTrackDialog />
       <ImportHost />
       <VoiceHost />
+      <MobileLinkHost />
       {queueOpen && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />

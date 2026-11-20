@@ -1,4 +1,4 @@
-import {memo} from 'react';
+import {memo, type ReactNode} from 'react';
 import {type Aura, auraRgba} from '../../lib/aura';
 import {Disc3} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
@@ -10,6 +10,7 @@ interface AlbumCoverArtifactProps {
   aura: Aura;
     /** Rotate the ring. Defaults to true (idle spin); pass `isPlaying` to spin only on playback. */
     spinning?: boolean;
+    children?: ReactNode;
 }
 
 function AlbumCoverArtifactImpl({
@@ -18,6 +19,7 @@ function AlbumCoverArtifactImpl({
                                     hasStar,
                                     aura,
                                     spinning = true,
+                                    children,
                                 }: AlbumCoverArtifactProps) {
     const {idleAnim} = usePerfMode();
   return (
@@ -72,6 +74,8 @@ function AlbumCoverArtifactImpl({
             <Disc3 size={72} className="text-ink-15" />
           </div>
         )}
+
+        {children}
 
         <div
           className="absolute inset-x-0 top-0 h-1/2 pointer-events-none"

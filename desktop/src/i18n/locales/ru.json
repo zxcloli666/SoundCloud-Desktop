@@ -253,7 +253,11 @@
       "cachedUq": "В кэше (UQ)",
       "pending": "Обрабатывается",
       "tooLong": "Слишком длинный — не кэшируется",
-      "failed": "Ошибка обработки"
+      "failed": "Ошибка обработки",
+      "video": "есть видео: {{kind}}",
+      "videoClip": "клип",
+      "videoLoop": "петля",
+      "videoGenerated": "AI"
     },
     "notFoundOnSc": "не найдено на SoundCloud",
     "wantedHint": "Трек известен, но ещё не залит на SC",
@@ -3018,5 +3022,65 @@
     "failed": "Не загрузился",
     "pause": "Пауза",
     "play": "Играть"
+  },
+  "mobileLink": {
+    "title": "Расширенный доступ SoundCloud",
+    "state": {
+      "off": "Не подключён",
+      "active": "Активен",
+      "relink": "Войти заново",
+      "waiting": "Ждём SoundCloud"
+    },
+    "link": "Подключить",
+    "unlink": "Отключить",
+    "relink": "Переподключить",
+    "dialogTitle": "Подключение доступа",
+    "dialogDesc": "Подтвердите вход на странице SoundCloud в браузере.",
+    "account": "Аккаунт",
+    "step": {
+      "browser": "Браузер",
+      "code": "Код",
+      "done": "Готово"
+    },
+    "phase": {
+      "starting": "Готовим",
+      "waiting": "Ждём браузер",
+      "received": "Код получен",
+      "completed": "Подключено",
+      "mismatch": "Другой аккаунт",
+      "failed": "Не вышло",
+      "expired": "Время вышло"
+    },
+    "hint": {
+      "mismatch": "Войдите в браузере как {{username}}.",
+      "browser": "Браузер не открылся.",
+      "minutes_one": "Осталась {{count}} минута",
+      "minutes_few": "Осталось {{count}} минуты",
+      "minutes_many": "Осталось {{count}} минут",
+      "minutes_other": "Осталось {{count}} минуты"
+    },
+    "openAgain": "Открыть снова",
+    "retry": "Повторить",
+    "done": "Готово",
+    "paste": {
+      "toggle": "Вставить адрес",
+      "apply": "Применить",
+      "invalid": "Это не адрес sc://auth"
+    },
+    "show": "Показать"
+  },
+  "mobileActions": {
+    "link": "Привязать",
+    "relink": "Привязать заново",
+    "linkNeeded": "Нужна привязка аккаунта SoundCloud",
+    "relinkNeeded": "Нужно заново привязать аккаунт SoundCloud",
+    "commentLike": "Нравится",
+    "commentUnlike": "Убрать лайк",
+    "commentDelete": "Удалить комментарий",
+    "deleted": "Удалено",
+    "undo": "Вернуть",
+    "momentReaction": "Реакция на этот момент",
+    "momentReactionIdle": "Включи трек, чтобы поставить реакцию",
+    "momentMark": "Реакции на {{time}}: {{count}}"
   }
 }

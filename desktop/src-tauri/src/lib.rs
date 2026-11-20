@@ -50,6 +50,7 @@ pub fn run() {
                 app::visibility::show_main(app);
             }
         }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_http::init())
@@ -86,6 +87,7 @@ pub fn run() {
             app::autostart::reveal_main_window(app);
             app::autostart::refresh_entry(app);
             app::updater::register(app);
+            app::deep_link::attach(app.handle());
 
             let cache_dir = app
                 .path()
@@ -328,6 +330,8 @@ pub fn run() {
             app::updater::updater_install,
             app::diagnostics::diagnostics_reveal_log,
             app::launch_flags::custom_css_suppressed,
+            app::deep_link::deep_link_parse,
+            app::deep_link::deep_link_take_pending,
             app::themes::theme_file_store,
             app::themes::theme_files_gc,
             app::themes::sentinel::theme_alive,

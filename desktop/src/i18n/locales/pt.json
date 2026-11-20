@@ -253,7 +253,11 @@
       "cachedUq": "Em cache (UQ)",
       "pending": "Processando",
       "tooLong": "Longa demais, fora do cache",
-      "failed": "Falha no processamento"
+      "failed": "Falha no processamento",
+      "video": "tem vídeo: {{kind}}",
+      "videoClip": "clipe",
+      "videoLoop": "loop",
+      "videoGenerated": "AI"
     },
     "notFoundOnSc": "não encontrada no SoundCloud",
     "wantedHint": "A faixa é conhecida, mas ainda não foi enviada",
@@ -3035,5 +3039,64 @@
     "failed": "Falha ao carregar",
     "pause": "Pausar",
     "play": "Tocar"
+  },
+  "mobileLink": {
+    "title": "Acesso estendido do SoundCloud",
+    "state": {
+      "off": "Não conectado",
+      "active": "Ativo",
+      "relink": "Entrar de novo",
+      "waiting": "Aguardando SoundCloud"
+    },
+    "link": "Conectar",
+    "unlink": "Desconectar",
+    "relink": "Reconectar",
+    "dialogTitle": "Conectar acesso estendido",
+    "dialogDesc": "Aprove na página do próprio SoundCloud, no navegador.",
+    "account": "Conta",
+    "step": {
+      "browser": "Navegador",
+      "code": "Código",
+      "done": "Pronto"
+    },
+    "phase": {
+      "starting": "Preparando",
+      "waiting": "Aguardando navegador",
+      "received": "Código recebido",
+      "completed": "Conectado",
+      "mismatch": "Outra conta",
+      "failed": "Falhou",
+      "expired": "Tempo esgotado"
+    },
+    "hint": {
+      "mismatch": "Entre no navegador como {{username}}.",
+      "browser": "O navegador não abriu.",
+      "minutes_one": "Resta {{count}} minuto",
+      "minutes_many": "Restam {{count}} minutos",
+      "minutes_other": "Restam {{count}} minutos"
+    },
+    "openAgain": "Abrir de novo",
+    "retry": "Tentar de novo",
+    "done": "Pronto",
+    "paste": {
+      "toggle": "Colar endereço",
+      "apply": "Aplicar",
+      "invalid": "Não é um endereço sc://auth"
+    },
+    "show": "Mostrar"
+  },
+  "mobileActions": {
+    "link": "Vincular",
+    "relink": "Vincular de novo",
+    "linkNeeded": "Vincule sua conta do SoundCloud para isso",
+    "relinkNeeded": "Vincule sua conta do SoundCloud de novo",
+    "commentLike": "Curtir",
+    "commentUnlike": "Remover curtida",
+    "commentDelete": "Excluir comentário",
+    "deleted": "Excluído",
+    "undo": "Desfazer",
+    "momentReaction": "Reação neste momento",
+    "momentReactionIdle": "Toque a faixa para reagir",
+    "momentMark": "Reações em {{time}}: {{count}}"
   }
 }

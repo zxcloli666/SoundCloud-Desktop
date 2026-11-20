@@ -292,7 +292,11 @@
       "cachedUq": "Önbellekte (UQ)",
       "pending": "İşleniyor",
       "tooLong": "Çok uzun — önbelleğe alınmaz",
-      "failed": "İşleme başarısız"
+      "failed": "İşleme başarısız",
+      "video": "video var: {{kind}}",
+      "videoClip": "klip",
+      "videoLoop": "döngü",
+      "videoGenerated": "AI"
     },
     "notFoundOnSc": "SoundCloud'da bulunamadı",
     "wantedHint": "Şarkı biliniyor ama henüz yüklenmedi",
@@ -2952,5 +2956,63 @@
     "failed": "Yüklenemedi",
     "pause": "Duraklat",
     "play": "Oynat"
+  },
+  "mobileLink": {
+    "title": "SoundCloud genişletilmiş erişim",
+    "state": {
+      "off": "Bağlı değil",
+      "active": "Etkin",
+      "relink": "Yeniden giriş",
+      "waiting": "SoundCloud bekleniyor"
+    },
+    "link": "Bağla",
+    "unlink": "Bağlantıyı kes",
+    "relink": "Yeniden bağla",
+    "dialogTitle": "Genişletilmiş erişimi bağla",
+    "dialogDesc": "Tarayıcıda SoundCloud'un kendi sayfasında onaylayın.",
+    "account": "Hesap",
+    "step": {
+      "browser": "Tarayıcı",
+      "code": "Kod",
+      "done": "Bitti"
+    },
+    "phase": {
+      "starting": "Hazırlanıyor",
+      "waiting": "Tarayıcı bekleniyor",
+      "received": "Kod alındı",
+      "completed": "Bağlandı",
+      "mismatch": "Yanlış hesap",
+      "failed": "Başarısız",
+      "expired": "Süre doldu"
+    },
+    "hint": {
+      "mismatch": "Tarayıcıda {{username}} olarak giriş yapın.",
+      "browser": "Tarayıcı açılmadı.",
+      "minutes_one": "{{count}} dakika kaldı",
+      "minutes_other": "{{count}} dakika kaldı"
+    },
+    "openAgain": "Yeniden aç",
+    "retry": "Tekrar dene",
+    "done": "Bitti",
+    "paste": {
+      "toggle": "Adres yapıştır",
+      "apply": "Uygula",
+      "invalid": "sc://auth adresi değil"
+    },
+    "show": "Göster"
+  },
+  "mobileActions": {
+    "link": "Bağla",
+    "relink": "Yeniden bağla",
+    "linkNeeded": "Bunun için SoundCloud hesabını bağlamalısın",
+    "relinkNeeded": "SoundCloud hesabını yeniden bağlamalısın",
+    "commentLike": "Beğen",
+    "commentUnlike": "Beğeniyi kaldır",
+    "commentDelete": "Yorumu sil",
+    "deleted": "Silindi",
+    "undo": "Geri al",
+    "momentReaction": "Bu ana tepki ver",
+    "momentReactionIdle": "Tepki vermek için parçayı çal",
+    "momentMark": "{{time}} anındaki tepkiler: {{count}}"
   }
 }

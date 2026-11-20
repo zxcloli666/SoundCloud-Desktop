@@ -199,6 +199,12 @@ jobs:
           CARGO_TARGET_DIR: ${{ github.workspace }}/desktop/src-tauri/target
         run: cargo test
 
+      - name: Deep link
+        working-directory: utils/sc-deep-link
+        env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/desktop/src-tauri/target
+        run: cargo test
+
       - name: Other volume
         if: runner.os == 'Windows'
         env:

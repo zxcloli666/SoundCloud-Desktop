@@ -1,8 +1,11 @@
 import { listen } from '@tauri-apps/api/event';
 import { useAuthStore } from '../stores/auth';
 import { useAuthRecoveryStore } from '../stores/auth-recovery';
+import { cancelPendingDeletes } from '../stores/comment-delete';
 import { setSessionId } from './api';
+import { forgetCommentLikes } from './comment-likes';
 import { trackedInvoke as invoke } from './diagnostics';
+import { forgetMoments } from './moment-reactions';
 import { setIsPremium } from './premium-cache';
 import { queryClient } from './query-client';
 
@@ -27,6 +30,9 @@ export function applyAuthFromServer(token: string | null, premium?: boolean): vo
     setIsPremium(false);
     useAuthStore.setState({ hasSession: false, isAuthenticated: false, user: null });
     queryClient.clear();
+    forgetCommentLikes();
+    forgetMoments();
+    cancelPendingDeletes();
     useAuthRecoveryStore.getState().reset();
   }
 }

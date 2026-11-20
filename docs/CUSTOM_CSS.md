@@ -60,8 +60,10 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="queue"]` | Queue panel |
 | `[data-ui="queue-item"]` | A track in the queue |
 | `[data-ui="lyrics"]` | Full-screen lyrics |
+| `[data-ui="lyrics-backdrop"]` | Blurred background of the full screen player |
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
-| `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view` or `moments` |
+| `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view`, `moments` or `room` (track page cover) |
+| `html[data-video-opaque]` | Set while the video fully covers its place (same values as `data-place`); what it covers is hidden |
 | `[data-ui="lyrics-video-toggle"]` | Video on/off button in full screen |
 | `[data-ui="waveform"]` | Waveform |
 
@@ -110,9 +112,14 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="user-banner"]` | Profile banner above that block |
 | `[data-ui="user-banner-glow"]` | Blurred banner behind the whole block |
 | `[data-ui="track-hero"]` | Top block of a track page |
+| `[data-ui="track-cover-video"]` | Video layer inside the track page cover, fades out when the track stops being current |
 | `[data-ui="discover-hero"]` | Top block of Discover |
 | `[data-ui="comments"]` | Comments list |
 | `[data-ui="comment"]` | A comment |
+| `[data-ui="comment-like"]` | Comment like button |
+| `[data-ui="comment-delete"]` | Comment delete button |
+| `[data-ui="moment-reaction"]` | Reaction button in the track actions |
+| `[data-ui="moment-reaction-mark"]` | Reaction mark on the waveform |
 | `[data-ui="search-tabs"]` | Search mode tabs |
 | `[data-ui="search-strip"]` | Row with the search mode tabs and the view switch |
 | `[data-ui="search-view"]` | Covers / Moments switch in search |
@@ -139,6 +146,13 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-nav"]` | Section list in Settings |
 | `[data-ui="settings-nav-item"]` | A section in that list |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="mobile-access-badge"]` | Extended access status in Settings; `data-state` is `off`, `active` or `relink` |
+| `[data-ui="mobile-link"]` | Extended access link dialog; `data-phase` is `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` or `expired` |
+| `[data-ui="mobile-link-account"]` | Account being linked, in that dialog |
+| `[data-ui="mobile-link-steps"]` | Browser, code, done steps in that dialog |
+| `[data-ui="mobile-link-status"]` | Status block in that dialog; `data-tone` is `busy`, `ok`, `warn` or `bad` |
+| `[data-ui="mobile-link-paste"]` | Paste-the-address fallback in that dialog |
+| `[data-ui="mobile-link-island"]` | Pill at the bottom while a link waits for SoundCloud |
 | `[data-ui="settings-search"]` | Search field at the top of the Settings section list |
 | `[data-ui="settings-search-result"]` | Search result row, `[data-active]` is `true` on the lit one |
 | `[data-ui="settings-search-results"]` | Results list in Settings search |

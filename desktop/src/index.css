@@ -105,6 +105,28 @@
     animation-play-state: paused !important;
 }
 
+:is(
+    [data-ui="app"]:has(> [data-ui="lyrics"][data-settled]) > .under-lyrics,
+    [data-video-opaque="player-background"] [data-ui="lyrics-backdrop"],
+    [data-video-opaque="player-cover"] :has(> [data-place="player-cover"] > video) > img,
+    [data-video-opaque="player-view"] [data-ui="lyrics"] > *,
+    [data-video-opaque="moments"] :has(> [data-place="moments"] > video) > img,
+    [data-video-opaque="room"] :has(> [data-ui="track-cover-video"]:not([data-leaving]) > [data-place="room"] > video) > img
+) {
+    visibility: hidden;
+    content-visibility: hidden;
+
+    &,
+    & * {
+        animation-play-state: paused !important;
+    }
+}
+
+[data-video-opaque="player-view"] :has(> * > * > [data-place="player-view"]) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
 [data-app-idle="1"] [style*="infinite"],
 [data-app-idle="1"] .skeleton-shimmer,
 [data-app-idle="1"] .soundwave-bar,

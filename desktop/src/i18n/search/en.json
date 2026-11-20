@@ -1414,5 +1414,15 @@
     "press and speak",
     "talk button",
     "start listening"
+  ],
+  "mobileLink.title": [
+    "extended access",
+    "link mobile access",
+    "connect android app",
+    "phone app account",
+    "relink soundcloud",
+    "unlink extended access",
+    "high quality streams access",
+    "extra soundcloud permissions"
   ]
 }

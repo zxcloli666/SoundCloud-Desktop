@@ -194,6 +194,7 @@ export const TrackPage = React.memo(function TrackPage() {
                 <div className="grid grid-cols-1 @min-[740px]:grid-cols-[1fr_340px] gap-6 @min-[740px]:gap-8 items-start">
                     <RoomVoices
                         trackUrn={track.urn}
+                        trackOwned={isOwner}
                         durationMs={track.duration}
                         commentCount={track.comment_count}
                         comments={comments}

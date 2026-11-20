@@ -60,8 +60,10 @@
 | `[data-ui="queue"]` | Панель очереди |
 | `[data-ui="queue-item"]` | Трек в очереди |
 | `[data-ui="lyrics"]` | Полноэкранный текст песни |
+| `[data-ui="lyrics-backdrop"]` | Размытый фон полноэкранного плеера |
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |
-| `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view` или `moments` |
+| `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view`, `moments` или `room` (обложка страницы трека) |
+| `html[data-video-opaque]` | Стоит, пока видео целиком закрывает своё место (значения как у `data-place`); то, что под ним, скрыто |
 | `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере |
 | `[data-ui="waveform"]` | Волна трека |
 
@@ -110,9 +112,14 @@
 | `[data-ui="user-banner"]` | Баннер профиля над этим блоком |
 | `[data-ui="user-banner-glow"]` | Размытый баннер под всем блоком |
 | `[data-ui="track-hero"]` | Верхний блок страницы трека |
+| `[data-ui="track-cover-video"]` | Слой видео в обложке страницы трека, гаснет, когда трек перестаёт быть текущим |
 | `[data-ui="discover-hero"]` | Верхний блок Обзора |
 | `[data-ui="comments"]` | Список комментариев |
 | `[data-ui="comment"]` | Комментарий |
+| `[data-ui="comment-like"]` | Кнопка лайка комментария |
+| `[data-ui="comment-delete"]` | Кнопка удаления комментария |
+| `[data-ui="moment-reaction"]` | Кнопка реакции в действиях трека |
+| `[data-ui="moment-reaction-mark"]` | Метка реакции на волне |
 | `[data-ui="search-tabs"]` | Вкладки режимов поиска |
 | `[data-ui="search-strip"]` | Строка с вкладками режимов поиска и переключателем вида |
 | `[data-ui="search-view"]` | Переключатель Обложки / Моменты в поиске |
@@ -139,6 +146,13 @@
 | `[data-ui="settings-nav"]` | Список разделов в Настройках |
 | `[data-ui="settings-nav-item"]` | Раздел в этом списке |
 | `[data-ui="settings-row"]` | Строка настройки |
+| `[data-ui="mobile-access-badge"]` | Статус расширенного доступа в настройках; `data-state`: `off`, `active` или `relink` |
+| `[data-ui="mobile-link"]` | Окно подключения расширенного доступа; `data-phase`: `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` или `expired` |
+| `[data-ui="mobile-link-account"]` | Подключаемый аккаунт в этом окне |
+| `[data-ui="mobile-link-steps"]` | Шаги «браузер, код, готово» в этом окне |
+| `[data-ui="mobile-link-status"]` | Блок статуса в этом окне; `data-tone`: `busy`, `ok`, `warn` или `bad` |
+| `[data-ui="mobile-link-paste"]` | Запасное поле «вставить адрес» в этом окне |
+| `[data-ui="mobile-link-island"]` | Плашка внизу, пока подключение ждёт SoundCloud |
 | `[data-ui="settings-search"]` | Поле поиска над списком разделов Настроек |
 | `[data-ui="settings-search-result"]` | Строка результата поиска, `[data-active]` равен `true` у подсвеченной |
 | `[data-ui="settings-search-results"]` | Список результатов поиска в Настройках |

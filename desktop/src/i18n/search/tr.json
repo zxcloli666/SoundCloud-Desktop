@@ -1229,5 +1229,13 @@
     "klip önbellek boyutu",
     "video kotası",
     "video storage limit"
+  ],
+  "mobileLink.title": [
+    "genişletilmiş erişim",
+    "erişimi bağla",
+    "telefon uygulaması hesabı",
+    "yeniden bağla",
+    "bağlantıyı kes",
+    "ek izinler"
   ]
 }
