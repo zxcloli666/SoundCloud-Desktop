@@ -56,6 +56,7 @@ import {
 } from './load-watchdog';
 import { forgetDownloadSource, noteDownloadSource, type RaceHandle, raceWithCopy } from './load-race';
 import {localTrackPath, markLocalMissing, noteLocalDuration} from './local-import';
+import {createListenedMeter} from './listened';
 import {isLocalUrn} from './local-library';
 import {notifyError} from './notify';
 import {rememberTracks} from './offline-index';
@@ -112,6 +113,12 @@ let roomCrossfade = false;
 let startGate: ((urn: string) => Promise<number | null>) | null = null;
 let pendingStart: {urn: string; at: number} | null = null;
 const listeners = new Set<() => void>();
+const listened = createListenedMeter((id, ms) => {
+  api(`/history/${id}/listened`, {
+    method: 'POST',
+    body: JSON.stringify({listenedMs: ms}),
+  }).catch(() => {});
+});
 const seekListeners = new Set<(seconds: number) => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
@@ -129,8 +136,11 @@ if (typeof document !== 'undefined') {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       for (const l of listeners) l();
+    } else {
+      listened.snapshot();
     }
   });
+  window.addEventListener('pagehide', () => listened.snapshot());
 }
 
 export function subscribe(listener: () => void): () => void {
@@ -491,6 +501,7 @@ async function playLocalFile(track: Track, gen: number, resumeAt: number) {
 
 async function loadTrack(track: Track, resumeAt = 0) {
   const gen = ++loadGen;
+  listened.flush();
   const isNewTrack = currentUrn !== track.urn;
   const crossfadeMs = pendingCrossfadeMs;
   pendingCrossfadeMs = 0;
@@ -798,7 +809,7 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
   // Record to listening history (fire-and-forget), skip on repeat-one (same track looping)
   const historyUrn = trackUrn(historyTrack?.urn);
   if (historyUrn && historyTrack?.title && usePlayerStore.getState().repeat !== 'one') {
-    api('/history', {
+    const recorded = api<{id?: string} | null>('/history', {
       method: 'POST',
       body: JSON.stringify({
         scTrackId: historyUrn,
@@ -808,7 +819,10 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
         artworkUrl: historyTrack.artwork_url || null,
         duration: historyTrack.duration || 0,
       }),
-    }).catch(() => {});
+    })
+      .then((row) => row?.id ?? null)
+      .catch(() => null);
+    listened.begin(recorded);
   }
 
   if (startGate) {
@@ -951,6 +965,13 @@ listen<number>('audio:tick', (event) => {
   if (isCrossfadeLoading()) return;
   cachedTime = event.payload;
   tickAt = performance.now();
+  const player = usePlayerStore.getState();
+  listened.tick(
+    cachedTime,
+    tickAt,
+    player.playbackRate,
+    player.isPlaying && hasTrack && downloadProgress === null,
+  );
   if (cachedDuration <= 0) cachedDuration = fallbackDuration;
   notify();
   maybeStartCrossfade();
@@ -987,6 +1008,7 @@ function recordFullPlay(urn: string, complete: boolean) {
 listen<boolean | null>('audio:ended', (event) => {
   if (isCrossfadeLoading()) return;
   const silentTail = event.payload === true;
+  listened.flush();
   if (!silentTail && maybeHealEarlyEnd()) return;
   const held = trackEndHeld;
   if (currentUrn) {
