@@ -141,6 +141,7 @@ export interface SettingsState {
   discordRpcMode: DiscordRpcMode;
   discordRpcStatus: DiscordRpcStatus;
   discordRpcShowButton: boolean;
+  discordRpcHidePaused: boolean;
   discordRpcLyrics: boolean;
   scrobbleEnabled: boolean;
   scrobbleNowPlaying: boolean;
@@ -240,6 +241,7 @@ export interface SettingsState {
   setDiscordRpcMode: (mode: DiscordRpcMode) => void;
   setDiscordRpcStatus: (status: DiscordRpcStatus) => void;
   setDiscordRpcShowButton: (show: boolean) => void;
+  setDiscordRpcHidePaused: (hide: boolean) => void;
   setDiscordRpcLyrics: (enabled: boolean) => void;
   setScrobbleEnabled: (enabled: boolean) => void;
   setScrobbleNowPlaying: (enabled: boolean) => void;
@@ -341,6 +343,7 @@ const DEFAULTS = {
   discordRpcMode: 'track' as DiscordRpcMode,
   discordRpcStatus: 'track' as DiscordRpcStatus,
   discordRpcShowButton: true,
+  discordRpcHidePaused: false,
   discordRpcLyrics: false,
   scrobbleEnabled: true,
   scrobbleNowPlaying: true,
@@ -525,6 +528,7 @@ export const useSettingsStore = create<SettingsState>()(
       setDiscordRpcMode: (discordRpcMode) => set({ discordRpcMode }),
       setDiscordRpcStatus: (discordRpcStatus) => set({ discordRpcStatus }),
       setDiscordRpcShowButton: (discordRpcShowButton) => set({ discordRpcShowButton }),
+      setDiscordRpcHidePaused: (discordRpcHidePaused) => set({ discordRpcHidePaused }),
       setDiscordRpcLyrics: (discordRpcLyrics) => set({ discordRpcLyrics }),
       setScrobbleEnabled: (scrobbleEnabled) => set({ scrobbleEnabled }),
       setScrobbleNowPlaying: (scrobbleNowPlaying) => set({ scrobbleNowPlaying }),
@@ -689,6 +693,7 @@ export const useSettingsStore = create<SettingsState>()(
         discordRpcMode: s.discordRpcMode,
         discordRpcStatus: s.discordRpcStatus,
         discordRpcShowButton: s.discordRpcShowButton,
+        discordRpcHidePaused: s.discordRpcHidePaused,
         discordRpcLyrics: s.discordRpcLyrics,
         scrobbleEnabled: s.scrobbleEnabled,
         scrobbleNowPlaying: s.scrobbleNowPlaying,

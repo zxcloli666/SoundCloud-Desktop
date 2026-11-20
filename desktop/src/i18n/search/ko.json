@@ -566,6 +566,13 @@
     "lyrics discord",
     "한 줄씩 가사"
   ],
+  "settings.discordRpcHidePaused": [
+    "일시정지 시 디스코드 숨기기",
+    "일시정지하면 상태 제거",
+    "멈춘 곡이 프로필에 남음",
+    "재생 안 할 때 표시 안 함",
+    "디스코드 상태 지우기"
+  ],
   "settings.discordRpcButton": [
     "디스코드 버튼",
     "링크 버튼",

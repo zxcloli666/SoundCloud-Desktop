@@ -646,6 +646,13 @@
     "karaoke en el perfil",
     "letra sincronizada en rpc"
   ],
+  "settings.discordRpcHidePaused": [
+    "ocultar discord en pausa",
+    "quitar estado al pausar",
+    "borrar presencia en pausa",
+    "pista en pausa en el perfil",
+    "no mostrar si no suena"
+  ],
   "settings.discordRpcButton": [
     "botón bajo el estado",
     "enlace de la pista en discord",

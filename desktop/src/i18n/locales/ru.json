@@ -1205,6 +1205,8 @@
     "discordRpcLyricsSample": "Здесь появится текущая строка песни",
     "discordRpcButton": "Кнопка SoundCloud",
     "discordRpcButtonDesc": "Показывать кнопку перехода к треку в SoundCloud",
+    "discordRpcHidePaused": "Скрывать на паузе",
+    "discordRpcHidePausedDesc": "Статус пропадает, пока музыка на паузе, и возвращается при воспроизведении",
     "scrobble": "Скробблинг",
     "scrobbleDesc": "Отправляйте прослушивания в Last.fm и ListenBrainz",
     "scrobbleLastfmTagline": "Музыкальный дневник с 2002 года",

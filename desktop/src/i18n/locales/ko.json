@@ -1166,6 +1166,8 @@
     "discordRpcLyricsSample": "노래의 현재 가사가 여기에 표시돼요",
     "discordRpcButton": "SoundCloud 버튼 표시",
     "discordRpcButtonDesc": "SoundCloud에서 트랙을 여는 버튼을 표시해요",
+    "discordRpcHidePaused": "일시정지 시 숨기기",
+    "discordRpcHidePausedDesc": "음악이 일시정지되면 상태가 사라지고 재생하면 다시 나타나요",
     "scrobble": "스크로블링",
     "scrobbleDesc": "듣는 음악을 Last.fm과 ListenBrainz에 전송해요",
     "scrobbleLastfmTagline": "2002년부터 이어진 나의 음악 일기",

@@ -646,6 +646,13 @@
     "karaoké dans le profil",
     "paroles synchronisées en rpc"
   ],
+  "settings.discordRpcHidePaused": [
+    "masquer discord en pause",
+    "retirer le statut en pause",
+    "effacer la présence en pause",
+    "titre en pause sur le profil",
+    "ne pas afficher à l'arrêt"
+  ],
   "settings.discordRpcButton": [
     "bouton sous le statut",
     "lien du titre sur discord",

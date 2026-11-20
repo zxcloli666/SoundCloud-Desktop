@@ -573,6 +573,13 @@
     "lyrics discord",
     "letra linha por linha"
   ],
+  "settings.discordRpcHidePaused": [
+    "ocultar discord na pausa",
+    "remover status ao pausar",
+    "limpar presença na pausa",
+    "faixa pausada no perfil",
+    "não mostrar quando não toca"
+  ],
   "settings.discordRpcButton": [
     "botão no discord",
     "botão de link",
