@@ -23,15 +23,22 @@ export async function fetchMoments(opts: {
   return { tracks: batch.tracks.filter(hasMoment), cursor: batch.cursor };
 }
 
-function teaserKey(languages: string[], hideListened: boolean) {
-  return ['moments', 'teaser', [...languages].sort().join(',') || 'all', hideListened];
+function teaserKey(languages: string[], genres: string[], hideListened: boolean) {
+  return [
+    'moments',
+    'teaser',
+    [...languages].sort().join(',') || 'all',
+    [...genres].sort().join(',') || 'any',
+    hideListened,
+  ];
 }
 
 export function useMomentsTeaser(enabled: boolean): Track[] {
   const languages = useSettingsStore((s) => s.soundwaveLanguages);
+  const genres = useSettingsStore((s) => s.soundwaveGenres);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const { data } = useQuery({
-    queryKey: teaserKey(languages, hideListened),
+    queryKey: teaserKey(languages, genres, hideListened),
     enabled,
     staleTime: TEASER_STALE_MS,
     queryFn: () => fetchMoments({ limit: TEASER_LIMIT, languages, hideListened }),
@@ -39,8 +46,12 @@ export function useMomentsTeaser(enabled: boolean): Track[] {
   return data?.tracks ?? EMPTY;
 }
 
-export function takeTeaser(languages: string[], hideListened: boolean): MomentsBatch | null {
-  const key = teaserKey(languages, hideListened);
+export function takeTeaser(
+  languages: string[],
+  genres: string[],
+  hideListened: boolean,
+): MomentsBatch | null {
+  const key = teaserKey(languages, genres, hideListened);
   const batch = queryClient.getQueryData<MomentsBatch>(key);
   if (!batch?.tracks.length) return null;
   queryClient.removeQueries({ queryKey: key, exact: true });

@@ -14,8 +14,10 @@ const BATCH = 8;
 
 export function useWaveSource(startUrn?: string): MomentsSource {
   const languages = useSettingsStore((s) => s.soundwaveLanguages);
+  const genres = useSettingsStore((s) => s.soundwaveGenres);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
   const langKey = [...languages].sort().join(',');
+  const genreKey = [...genres].sort().join(',');
 
   const [tracks, setTracks] = useState<Track[]>([]);
   const [status, setStatus] = useState<FeedStatus>('loading');
@@ -37,8 +39,8 @@ export function useWaveSource(startUrn?: string): MomentsSource {
     negatives: 0,
     positives: 0,
   });
-  const filterRef = useRef({ languages, hideListened });
-  filterRef.current = { languages, hideListened };
+  const filterRef = useRef({ languages, genres, hideListened });
+  filterRef.current = { languages, genres, hideListened };
 
   useEffect(() => followWave(tallyRef.current), []);
 
@@ -83,7 +85,7 @@ export function useWaveSource(startUrn?: string): MomentsSource {
     }
   }, []);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: langKey, hideListened and epoch restart the feed.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: langKey, genreKey, hideListened and epoch restart the feed.
   useEffect(() => {
     sessionRef.current += 1;
     cursorRef.current = '';
@@ -97,8 +99,14 @@ export function useWaveSource(startUrn?: string): MomentsSource {
     setTracks([]);
     setRound((r) => r + 1);
     setStatus('loading');
-    void loadMore(takeTeaser(filterRef.current.languages, filterRef.current.hideListened));
-  }, [langKey, hideListened, epoch, loadMore]);
+    void loadMore(
+      takeTeaser(
+        filterRef.current.languages,
+        filterRef.current.genres,
+        filterRef.current.hideListened,
+      ),
+    );
+  }, [langKey, genreKey, hideListened, epoch, loadMore]);
 
   const more = useCallback(() => void loadMore(), [loadMore]);
   const reload = useCallback(() => setEpoch((e) => e + 1), []);

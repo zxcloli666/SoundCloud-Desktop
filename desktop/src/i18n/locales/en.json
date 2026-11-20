@@ -783,6 +783,8 @@
     "refresh": "Refresh",
     "languages": "Languages",
     "allLanguages": "All languages",
+    "genres": "Genres",
+    "allGenres": "All genres",
     "langShort": "langs",
     "clear": "Clear",
     "idleTitle": "Press play to ride the wave",
