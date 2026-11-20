@@ -423,6 +423,15 @@
     "arrange_artist": "Par artiste, de A à Z",
     "arrange_duration": "Par durée, du plus court au plus long",
     "arranged": "Titres réorganisés",
+    "dupes": "Trouver les doublons",
+    "dupesWait": "Attendez le chargement de tous les titres pour chercher les doublons",
+    "dupesHint": "Titres présents plusieurs fois ; la première copie reste",
+    "dupesNone": "Aucun doublon",
+    "dupesKeep": "Garder",
+    "dupesSame": "Même titre musical",
+    "dupesSimilar": "Même nom",
+    "dupesRemove": "Retirer {{count}}",
+    "dupesRemoved": "Doublons retirés",
     "undo": "Annuler",
     "find": "Rechercher dans la playlist",
     "findClear": "Effacer",
@@ -3056,5 +3065,11 @@
     "momentReaction": "Réaction à ce moment",
     "momentReactionIdle": "Lisez le titre pour réagir",
     "momentMark": "Réactions à {{time}} : {{count}}"
+  },
+  "selection": {
+    "select": "Sélectionner",
+    "deselect": "Désélectionner",
+    "shuffle": "Lire la sélection au hasard",
+    "clear": "Effacer la sélection"
   }
 }

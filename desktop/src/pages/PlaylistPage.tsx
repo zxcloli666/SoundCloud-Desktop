@@ -226,6 +226,26 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     [commitOrder, localTracks, i18n.language],
   );
 
+  const handleRemoveDuplicates = useCallback(
+    (indices: Set<number>) => {
+      const previous = localTracks;
+      const next = localTracks.filter((_, i) => !indices.has(i));
+      setLocalTracks(next);
+      debouncedUpdate(next, () =>
+        toast.success(t('playlist.dupesRemoved'), {
+          action: {
+            label: t('playlist.undo'),
+            onClick: () => {
+              setLocalTracks(previous);
+              debouncedUpdate(previous, toastReordered);
+            },
+          },
+        }),
+      );
+    },
+    [localTracks, debouncedUpdate, toastReordered, t],
+  );
+
   const handleRemoveTrack = useCallback(
     (trackUrn: string) => {
       const index = localTracks.findIndex((tr) => tr.urn === trackUrn);
@@ -468,6 +488,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           onDelete={() => setShowDeleteConfirm(true)}
           canArrange={canArrange}
           onArrange={handleArrange}
+          onRemoveDuplicates={handleRemoveDuplicates}
           delivery={delivery}
         />
 

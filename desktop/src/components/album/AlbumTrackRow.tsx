@@ -5,6 +5,7 @@ import {art, dur} from '../../lib/formatters';
 import {ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
+import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
@@ -24,6 +25,7 @@ interface AlbumTrackRowProps {
 function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps) {
   const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
+  const pick = useRowPick(track);
   const cover = art(track.artwork_url, 't200x200');
   const lightAura = isLight(aura);
   const playIcon = lightAura ? playBlack14 : playWhite14;
@@ -33,6 +35,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
   return (
     <div
       onContextMenu={onContextMenu}
+      {...pick}
       className="@container group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
       style={{
         background: isThis

@@ -4,6 +4,7 @@ import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {headphones9, heart9, musicIcon12, pauseWhite12, playWhite12, Trash2,} from '../../lib/icons';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
+import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
@@ -162,12 +163,14 @@ export const SortableSequenceRow = React.memo(
   }) {
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
+    const pick = useRowPick(track);
     const sortable = useSortableRow(track.urn);
 
     return (
       <div
         ref={sortable.ref}
         onContextMenu={onContextMenu}
+        {...pick}
         style={sortable.style}
         className={`${ROW_BASE} ${activeCls(isThis)}`}
       >
@@ -240,8 +243,13 @@ export const SequenceRow = React.memo(
   }) {
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
+    const pick = useRowPick(track);
     return (
-      <div className={`${ROW_BASE} ${activeCls(isThis)}`} onContextMenu={onContextMenu}>
+      <div
+        className={`${ROW_BASE} ${activeCls(isThis)}`}
+        onContextMenu={onContextMenu}
+        {...pick}
+      >
         <RowBody
           track={track}
           index={index}

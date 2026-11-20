@@ -3,6 +3,7 @@ import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
 import {Headphones, musicIcon14, pauseBlack11, playBlack11} from '../../lib/icons';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
+import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
 import {LikeButton} from '../music/LikeButton';
@@ -14,6 +15,7 @@ export const RelatedRow = React.memo(
   function RelatedRow({ track, queue }: { track: Track; queue: Track[] | (() => Track[]) }) {
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
     const onContextMenu = useTrackContextMenu(track);
+    const pick = useRowPick(track);
     const cover = art(track.artwork_url, 't200x200');
 
     return (
@@ -24,6 +26,7 @@ export const RelatedRow = React.memo(
         onMouseEnter={() => preloadTrack(track)}
         onMouseLeave={cancelPreload}
         onContextMenu={onContextMenu}
+        {...pick}
       >
         <button
           type="button"

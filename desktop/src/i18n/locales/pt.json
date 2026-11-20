@@ -428,6 +428,15 @@
     "arrange_artist": "Por artista, de A a Z",
     "arrange_duration": "Por duração, da menor para a maior",
     "arranged": "Faixas reorganizadas",
+    "dupes": "Encontrar duplicadas",
+    "dupesWait": "Espere todas as faixas carregarem para achar duplicadas",
+    "dupesHint": "Faixas que aparecem mais de uma vez; a primeira cópia fica",
+    "dupesNone": "Sem duplicadas",
+    "dupesKeep": "Manter",
+    "dupesSame": "Mesma faixa",
+    "dupesSimilar": "Mesmo título",
+    "dupesRemove": "Remover {{count}}",
+    "dupesRemoved": "Duplicadas removidas",
     "undo": "Desfazer",
     "find": "Buscar na playlist",
     "findClear": "Limpar",
@@ -3106,5 +3115,11 @@
     "momentReaction": "Reação neste momento",
     "momentReactionIdle": "Toque a faixa para reagir",
     "momentMark": "Reações em {{time}}: {{count}}"
+  },
+  "selection": {
+    "select": "Selecionar",
+    "deselect": "Desmarcar",
+    "shuffle": "Aleatório nos selecionados",
+    "clear": "Limpar seleção"
   }
 }

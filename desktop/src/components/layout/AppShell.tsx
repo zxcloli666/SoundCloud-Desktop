@@ -22,6 +22,7 @@ import {ImportHost} from '../import/ImportHost';
 import {MobileLinkHost} from '../mobile-link/MobileLinkHost';
 import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
 import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
+import {SelectionBar} from '../music/selection/SelectionBar';
 import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
 import {DropImportOverlay} from '../offline/local/DropImportOverlay';
 import {StarMomentsHost} from '../star-moments/StarMomentsHost';
@@ -512,6 +513,7 @@ export const AppShell = React.memo(() => {
       <KeybindingsDialog open={kbOpen} onOpenChange={setKbOpen} />
       <DropImportOverlay />
       <TrackContextMenu />
+      <SelectionBar />
       <ContextMenuHost />
       <ThemeTryBar />
     </div>

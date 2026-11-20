@@ -413,6 +413,15 @@
     "arrange_artist": "아티스트순 (A → Z)",
     "arrange_duration": "재생 시간 짧은 순",
     "arranged": "트랙을 다시 정렬했어요",
+    "dupes": "중복 찾기",
+    "dupesWait": "중복을 찾으려면 모든 트랙이 로드될 때까지 기다리세요",
+    "dupesHint": "두 번 이상 나오는 트랙입니다. 첫 번째 사본은 유지됩니다",
+    "dupesNone": "중복 없음",
+    "dupesKeep": "유지",
+    "dupesSame": "같은 트랙",
+    "dupesSimilar": "같은 제목",
+    "dupesRemove": "{{count}}개 삭제",
+    "dupesRemoved": "중복 삭제됨",
     "undo": "실행 취소",
     "find": "재생 목록에서 찾기",
     "findClear": "지우기",
@@ -2929,5 +2938,11 @@
     "momentReaction": "이 순간에 반응",
     "momentReactionIdle": "트랙을 재생하면 반응할 수 있습니다",
     "momentMark": "{{time}}의 반응: {{count}}"
+  },
+  "selection": {
+    "select": "선택",
+    "deselect": "선택 해제",
+    "shuffle": "선택 항목 셔플",
+    "clear": "선택 지우기"
   }
 }
