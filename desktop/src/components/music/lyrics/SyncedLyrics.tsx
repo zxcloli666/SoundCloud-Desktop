@@ -19,7 +19,12 @@ function lineSpan(text: string): number {
     return text.length * SECONDS_PER_CHAR + LINE_SPAN_SLACK;
 }
 
-type DisplayLine = LyricLine & { pause?: boolean; duration?: number };
+type DisplayLine = LyricLine & {
+    pause?: boolean;
+    duration?: number;
+    heads?: number[];
+    total?: number;
+};
 
 function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
     const out: DisplayLine[] = [];
@@ -49,11 +54,35 @@ function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
                 duration: Math.max(0.5, cur.time - 0.1),
             });
         }
-        out.push(cur);
+        out.push(withHeads(cur));
         prev = cur;
         prevEnd = null;
     }
     return out;
+}
+
+function withHeads(line: LyricLine): DisplayLine {
+    if (!line.words) return line;
+    const animatedBefore = (at: number) => Array.from(line.text.slice(0, at)).filter(isAnimatedChar).length;
+    return {
+        ...line,
+        heads: line.words.map((word) => animatedBefore(word.at)),
+        total: animatedBefore(line.text.length),
+    };
+}
+
+function wordProgress(line: DisplayLine, t: number): number {
+    const {words, heads, end, total} = line;
+    if (!words || !heads || !total || end === undefined) return 0;
+    if (t >= end) return 1;
+    let k = words.length - 1;
+    while (k >= 0 && t < words[k].time) k--;
+    if (k < 0) return 0;
+    const from = words[k].time;
+    const to = words[k + 1]?.time ?? end;
+    const headTo = heads[k + 1] ?? total;
+    const frac = to > from ? clamp01((t - from) / (to - from)) : 1;
+    return (heads[k] + (headTo - heads[k]) * frac) / total;
 }
 
 function clamp01(v: number) {
@@ -238,6 +267,15 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             if (idx < 0 || idx >= linesRef.current.length) return;
             const cur = linesRef.current[idx];
             const next = linesRef.current[idx + 1];
+            if (cur.heads) {
+                const target = wordProgress(cur, getCurrentTime());
+                const prev = lineProgressRef.current;
+                const diff = target - prev;
+                const smoothed = diff < 0 && diff > -0.05 ? prev : diff < 0 ? target : prev + diff * (diff > 0.18 ? 0.7 : 0.45);
+                lineProgressRef.current = smoothed;
+                writeLineProgress(idx, smoothed);
+                return;
+            }
             const gap = (next?.time ?? cur.time + 2.6) - cur.time;
             const dur = Math.max(0.4, cur.pause ? gap : Math.min(gap, lineSpan(cur.text)));
             const target = clamp01((getCurrentTime() - cur.time) / dur);
