@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDebouncedValue } from '../components/discover/useDebouncedValue';
+import { scrollMainToTop } from '../components/layout/ScrollReset';
 import { Atmosphere } from '../components/search/Atmosphere';
 import { CatalogResults } from '../components/search/CatalogResults';
 import { LinkOpen } from '../components/search/LinkOpen';
@@ -31,6 +32,13 @@ export function Search() {
   const searching = !queryLink && !findSoundCloudLink(typed) && query.length >= MIN_SEARCH_QUERY;
   const moments = searching && view === 'moments';
   useViewHotkey(searching);
+
+  const shownQuery = useRef(query);
+  useEffect(() => {
+    if (shownQuery.current === query) return;
+    shownQuery.current = query;
+    scrollMainToTop();
+  }, [query]);
 
   useEffect(() => {
     wirePreviewGuards();
