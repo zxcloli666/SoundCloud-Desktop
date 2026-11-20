@@ -15,7 +15,15 @@ import { ChatNavBadge } from '../chat/shell/ChatNavBadge';
 import { SuperHeart } from '../music/superlike/SuperHeart';
 import { Avatar } from '../ui/Avatar';
 import { type IconCmp, NAV_ITEMS } from './nav-items';
-import { ACTIVE, IconBox, Label, ROW, sidebarWidth } from './SidebarChrome';
+import {
+  ACTIVE,
+  IconBox,
+  Label,
+  ROW,
+  sidebarWidth,
+  useNarrowWindow,
+  useSidebarCollapsed,
+} from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
 import { useOwnTenure } from '../../lib/star-tenure';
@@ -95,9 +103,10 @@ export const Sidebar = React.memo(() => {
   const { t, i18n } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const appMode = useAppMode();
-  const { collapsed, toggleSidebar, setLayout } = useSettingsStore(
+  const collapsed = useSidebarCollapsed();
+  const narrow = useNarrowWindow();
+  const { toggleSidebar, setLayout } = useSettingsStore(
     useShallow((s) => ({
-      collapsed: s.sidebarCollapsed,
       toggleSidebar: s.toggleSidebar,
       setLayout: s.setLayout,
     })),
@@ -123,7 +132,7 @@ export const Sidebar = React.memo(() => {
   return (
     <aside
       data-ui="sidebar"
-      className="shrink-0 flex flex-col h-full overflow-hidden border-r border-ink/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
+      className="shrink-0 flex flex-col h-full overflow-hidden [@media(max-height:560px)]:overflow-y-auto scrollbar-hide border-r border-ink/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
       style={{
         width: sidebarWidth(collapsed),
         transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
@@ -156,7 +165,7 @@ export const Sidebar = React.memo(() => {
         </SortableStack>
       </nav>
 
-      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 pt-4 pb-2 space-y-0.5">
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-2 space-y-0.5">
         <div className="relative h-5 mx-1 mb-0.5">
           <span
             className="absolute inset-x-0 top-1/2 h-px"
@@ -200,23 +209,25 @@ export const Sidebar = React.memo(() => {
           <StarCard collapsed={collapsed} />
         </div>
 
-        <button
-          type="button"
-          onClick={toggleSidebar}
-          title={collapsed ? t('nav.expand') : undefined}
-          className={btnCls}
-        >
-          <IconBox>
-            {collapsed ? (
-              <PanelLeftOpen size={17} strokeWidth={1.9} />
-            ) : (
-              <PanelLeftClose size={17} strokeWidth={1.9} />
-            )}
-          </IconBox>
-          <Label collapsed={collapsed} className="text-[12.5px] font-medium pr-3">
-            {t('nav.collapse')}
-          </Label>
-        </button>
+        {!narrow && (
+          <button
+            type="button"
+            onClick={toggleSidebar}
+            title={collapsed ? t('nav.expand') : undefined}
+            className={btnCls}
+          >
+            <IconBox>
+              {collapsed ? (
+                <PanelLeftOpen size={17} strokeWidth={1.9} />
+              ) : (
+                <PanelLeftClose size={17} strokeWidth={1.9} />
+              )}
+            </IconBox>
+            <Label collapsed={collapsed} className="text-[12.5px] font-medium pr-3">
+              {t('nav.collapse')}
+            </Label>
+          </button>
+        )}
 
         <button
           type="button"

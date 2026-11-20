@@ -15,7 +15,7 @@ import {
 } from '../../lib/icons';
 import { reloadApp } from '../../lib/reload';
 import { toggleWindowFullscreen } from '../../lib/window';
-import {useSettingsStore} from '../../stores/settings';
+import {useSidebarCollapsed} from './SidebarChrome';
 import {GlobalSearch} from './GlobalSearch';
 
 const navCls =
@@ -126,7 +126,7 @@ export const WindowControls = React.memo(() => {
 });
 
 export const Titlebar = React.memo(() => {
-    const collapsed = useSettingsStore((s) => s.sidebarCollapsed);
+    const collapsed = useSidebarCollapsed();
 
   return (
     <div

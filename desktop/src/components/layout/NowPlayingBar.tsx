@@ -79,7 +79,7 @@ import {RATING_CHIPS, tierOf, tierTitleKey} from '../music/TrackStatusBadges';
 import {UploadKindDot} from '../music/UploadKindDot';
 import {TogetherButton} from '../together/TogetherButton';
 import {NowPlayingNameCard} from './NowPlayingNameCard';
-import {sidebarWidth} from './SidebarChrome';
+import {sidebarWidth, useSidebarCollapsed} from './SidebarChrome';
 import {SleepTimerButton} from './SleepTimerButton';
 import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
 
@@ -1112,7 +1112,7 @@ export const NowPlayingBar = React.memo(
     const hidden = useDocHidden();
     const playingNow = isPlaying && !hidden;
     const loadProgress = useLoadProgress();
-    const sidebarCollapsed = useSettingsStore((s) => s.sidebarCollapsed);
+    const sidebarCollapsed = useSidebarCollapsed();
     const perf = usePerfMode();
     const right = useChatDockWidth();
     const left = sidebarWidth(sidebarCollapsed);

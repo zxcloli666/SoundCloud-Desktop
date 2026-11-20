@@ -36,7 +36,7 @@ export const DeleteTrackDialog = React.memo(function DeleteTrackDialog({
         <Dialog.Overlay className="fixed inset-0 bg-shade-60 backdrop-blur-sm z-50 animate-fade-in" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[400px] max-w-[calc(100vw-32px)] rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4"
+          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[400px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-48px)] overflow-y-auto rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
