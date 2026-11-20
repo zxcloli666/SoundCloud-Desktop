@@ -22,6 +22,17 @@
     "core:window:allow-scale-factor",
     "core:webview:allow-set-webview-zoom",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "x-apple.systempreferences:*"
+        },
+        {
+          "url": "ms-settings:*"
+        }
+      ]
+    },
     "dialog:default",
     "fs:allow-exists",
     "notification:allow-notify",
@@ -41,6 +52,7 @@
     "fs:allow-write-file",
     "fs:allow-write-text-file",
     "fs:allow-remove",
+    "fs:allow-rename",
     {
       "identifier": "fs:scope",
       "allow": [
@@ -99,6 +111,9 @@
           "path": "$APPDATA/sc-track-sound.json"
         },
         {
+          "path": "$APPDATA/sc-voice.json"
+        },
+        {
           "path": "$APPDATA/star-moments.json"
         },
         {
@@ -106,6 +121,9 @@
         },
         {
           "path": "$APPDATA/ym-import-pending.json"
+        },
+        {
+          "path": "$APPDATA/*.tmp"
         },
         {
           "path": "$APPDATA/css-assets"

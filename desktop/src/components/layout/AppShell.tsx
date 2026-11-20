@@ -37,6 +37,7 @@ import {Sidebar} from './Sidebar';
 import {ThemeTryBar} from './ThemeTryBar';
 import {Titlebar} from './Titlebar';
 import {ReleaseWatch} from '../releases/ReleaseWatch';
+import {VoiceHost} from '../voice/VoiceHost';
 
 const LyricsPanel = lazy(() =>
   import('../music/LyricsPanel').then((module) => ({ default: module.LyricsPanel })),
@@ -494,6 +495,7 @@ export const AppShell = React.memo(() => {
       <StarMomentsHost />
       <UploadTrackDialog />
       <ImportHost />
+      <VoiceHost />
       <MobileLinkHost />
       {queueOpen && (
         <Suspense fallback={null}>

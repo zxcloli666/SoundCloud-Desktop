@@ -66,17 +66,13 @@ impl Taker {
         known_total: Option<u64>,
         out: &mpsc::Sender<Result<Bytes, String>>,
     ) -> Result<(), String> {
-        let mut at = 0;
-        let mut total = known_total;
-        while total.is_none() {
-            let piece = self.span(at, SPAN, WAITING_TIMEOUT).await?;
-            at += piece.bytes.len() as u64;
-            total = piece.total;
-            if out.send(Ok(piece.bytes)).await.is_err() || piece.end {
-                return Ok(());
-            }
-        }
-        let total = total.unwrap_or(at);
+        let (at, total) = match known_total {
+            Some(total) => (0, total),
+            None => match self.as_it_comes(out).await? {
+                Some(sized) => sized,
+                None => return Ok(()),
+            },
+        };
         let spans = (at..total)
             .step_by(SPAN as usize)
             .map(|from| self.span(from, SPAN.min(total - from), READY_TIMEOUT));
@@ -87,6 +83,33 @@ impl Taker {
             }
         }
         Ok(())
+    }
+
+    async fn as_it_comes(
+        &self,
+        out: &mpsc::Sender<Result<Bytes, String>>,
+    ) -> Result<Option<(u64, u64)>, String> {
+        let mut at = 0;
+        let mut quiet_since = Instant::now();
+        loop {
+            let piece = self.piece(at, SPAN as usize, WAITING_TIMEOUT).await?;
+            at += piece.bytes.len() as u64;
+            if !piece.bytes.is_empty() {
+                quiet_since = Instant::now();
+                if out.send(Ok(piece.bytes)).await.is_err() {
+                    return Ok(None);
+                }
+            }
+            if piece.end {
+                return Ok(None);
+            }
+            if let Some(total) = piece.total {
+                return Ok(Some((at, total)));
+            }
+            if quiet_since.elapsed() >= QUIET_LIMIT {
+                return Err("pro: the origin went quiet".to_string());
+            }
+        }
     }
 
     async fn span(&self, from: u64, len: u64, timeout: Duration) -> Result<Piece, String> {

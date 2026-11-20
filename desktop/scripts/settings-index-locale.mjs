@@ -14,6 +14,7 @@ export function loadLocale(root, language) {
     const tree = JSON.parse(readFileSync(join(dir, 'chat', file), 'utf8'));
     flatten(tree, `chat.${match[1]}.`, leaves);
   }
+  flatten(JSON.parse(readFileSync(join(dir, 'voice', `${language}.json`), 'utf8')), '', leaves);
   return leaves;
 }
 

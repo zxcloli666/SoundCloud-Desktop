@@ -1,4 +1,4 @@
-const ACTIVITY_EVENTS = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'focus'] as const;
+export const ACTIVITY_EVENTS = ['pointerdown', 'pointermove', 'keydown', 'wheel', 'focus'] as const;
 
 export function onIdle(idleMs: number, callback: () => void): () => void {
   let timer: number | null = null;

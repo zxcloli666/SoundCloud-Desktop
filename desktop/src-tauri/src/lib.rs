@@ -15,6 +15,7 @@ mod shared;
 mod track_cache;
 mod upload;
 mod video_cache;
+mod voice;
 
 use std::sync::Arc;
 use std::time::Duration;
@@ -221,10 +222,18 @@ pub fn run() {
 
             let auth_state =
                 auth::SessionStore::init(data_dir.clone(), auth_http_client, rt_handle.clone());
+            let premium = auth_state.premium_at_start();
             app.state::<audio::AudioState>()
                 .effects
-                .set_premium(auth_state.premium_at_start());
+                .set_premium(premium);
             app.manage(auth_state);
+            voice::init(
+                app.handle(),
+                &data_dir,
+                &cache_dir,
+                rt_handle.clone(),
+                premium,
+            );
 
             chat::start(app.handle(), rt_handle.clone(), &data_dir);
 
@@ -296,7 +305,26 @@ pub fn run() {
             app::render_mode::render_mode_get,
             app::render_mode::render_mode_set,
             app::render_mode::render_mode_restart,
+            app::store_files::store_flush,
             app::hotkeys::hotkeys_apply,
+            voice::commands::voice_status,
+            voice::commands::voice_apply,
+            voice::commands::voice_start,
+            voice::commands::voice_stop,
+            voice::commands::voice_cancel,
+            voice::commands::voice_text,
+            voice::commands::voice_answer,
+            voice::commands::voice_done,
+            voice::commands::voice_reread,
+            voice::commands::voice_chat,
+            voice::commands::voice_chat_cancel,
+            voice::commands::voice_resolve,
+            voice::commands::voice_devices,
+            voice::commands::voice_meter,
+            voice::commands::voice_models,
+            voice::commands::voice_model_get,
+            voice::commands::voice_model_delete,
+            voice::commands::voice_preview,
             app::hotkeys::hotkeys_backend,
             app::updater::updater_info,
             app::updater::updater_install,
@@ -545,7 +573,10 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app, event| match event {
-            tauri::RunEvent::Exit => app::themes::sentinel::clear_applying(app),
+            tauri::RunEvent::Exit => {
+                app::themes::sentinel::clear_applying(app);
+                voice::quit(app);
+            }
             #[cfg(target_os = "macos")]
             tauri::RunEvent::Reopen { .. } => app::visibility::show_main(app),
             _ => {}

@@ -1125,5 +1125,40 @@
   "want": [
    "chat.settings.visibility.receipts"
   ]
+ },
+ {
+  "q": "обращайся ко мне на вы",
+  "lang": "ru",
+  "want": [
+   "voice.you.address"
+  ]
+ },
+ {
+  "q": "пусть зовёт меня по нику",
+  "lang": "ru",
+  "want": [
+   "voice.you.address"
+  ]
+ },
+ {
+  "q": "сделать ассистента дворецким",
+  "lang": "ru",
+  "want": [
+   "voice.you.role"
+  ]
+ },
+ {
+  "q": "call me by my nickname",
+  "lang": "en",
+  "want": [
+   "voice.you.address"
+  ]
+ },
+ {
+  "q": "make her act like my mentor",
+  "lang": "en",
+  "want": [
+   "voice.you.role"
+  ]
  }
 ]

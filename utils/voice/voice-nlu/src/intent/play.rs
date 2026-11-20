@@ -1,0 +1,349 @@
+use super::ctx::{Ctx, Detected};
+use crate::kin;
+use crate::lexicon::*;
+use crate::types::Intent;
+
+pub struct Verb {
+    pub idx: usize,
+    pub strong: bool,
+    pub front: bool,
+}
+
+fn rambling(c: &Ctx) -> Option<Verb> {
+    let limit = c.len().min(10);
+    let someone_else = |at: usize| REPORT.contains(&c.w[at]) || kin::called(&c.w, at);
+    (1..limit)
+        .find(|&i| IMPERATIVES.contains(&c.w[i]) && !(0..i).any(someone_else))
+        .map(|idx| Verb {
+            idx,
+            strong: true,
+            front: true,
+        })
+}
+
+pub fn find_verb(c: &Ctx) -> Option<Verb> {
+    for (list, strong) in [(PLAY_STRONG, true), (PLAY_WEAK, false)] {
+        for i in 0..c.len() {
+            if !list.contains(&c.w[i]) {
+                continue;
+            }
+            let wished = !strong && wished_by_me(c, i);
+            if !strong && !wished && c.w[..i].iter().any(|w| SUBJECTS.contains(w)) {
+                continue;
+            }
+            if c.only_pre(0..i) || wished {
+                return Some(Verb {
+                    idx: i,
+                    strong,
+                    front: true,
+                });
+            }
+            if i > 0 && c.only_pre(i + 1..c.len()) {
+                return Some(Verb {
+                    idx: i,
+                    strong,
+                    front: false,
+                });
+            }
+        }
+    }
+    rambling(c)
+}
+
+fn wished_by_me(c: &Ctx, verb: usize) -> bool {
+    let clause = matches!(c.at(verb + 1), "чтобы" | "чтоб" | "шоб");
+    verb == 1 && c.w[0] == "я" && c.w[1] == "хочу" && !clause
+}
+
+fn is_kind(w: &str) -> bool {
+    KIND_TRACK.contains(&w)
+        || KIND_TRACK_PLURAL.contains(&w)
+        || KIND_ALBUM.contains(&w)
+        || KIND_PLAYLIST.contains(&w)
+        || KIND_ARTIST.contains(&w)
+}
+
+pub fn forced(c: &Ctx) -> bool {
+    let Some(v) = find_verb(c) else { return false };
+    if !v.strong || !v.front || super::seek::restarts(c) {
+        return false;
+    }
+    let Some(k) = (v.idx + 1..c.len()).find(|&i| is_kind(c.w[i])) else {
+        return false;
+    };
+    let after: Vec<&str> = c.w[k + 1..]
+        .iter()
+        .copied()
+        .filter(|w| !PRE.contains(w) && !GREETINGS.contains(w) && *w != "again" || addresses(w))
+        .collect();
+    if after.is_empty() {
+        return false;
+    }
+    if after
+        .iter()
+        .all(|w| crate::lexicon::stem(NEXT_STRONG, w) || crate::lexicon::stem(PREV_STRONG, w))
+    {
+        return false;
+    }
+    if after
+        .iter()
+        .any(|w| crate::lexicon::stem(&["избранн", "любим", "лайк"], w))
+    {
+        return false;
+    }
+    if after.first() == Some(&"на")
+        && after
+            .iter()
+            .any(|w| crate::lexicon::stem(&["пауз", "повтор", "repeat"], w))
+    {
+        return false;
+    }
+    true
+}
+
+const WEAK_ENTITY: &[&str] = &[
+    "хочу",
+    "хотел",
+    "хотела",
+    "хочется",
+    "го",
+    "дай",
+    "бы",
+    "хотелось",
+];
+
+fn entity_tokens(c: &Ctx, used: &[usize]) -> usize {
+    (0..c.len())
+        .filter(|i| !used.contains(i))
+        .filter(|&i| {
+            let w = c.w[i];
+            let weak_after = WEAK_ENTITY.contains(&w) && i > 0;
+            (weak_after || !PRE.contains(&w))
+                && !GREETINGS.contains(&w)
+                && !GENERIC.contains(&w)
+                && !is_kind(w)
+                && !WAVE_NEEDS_VERB.contains(&w)
+                && !RESUME_FILL.contains(&w)
+                && !MINE.contains(&w)
+                && !TRANSPORT_VERBS.contains(&w)
+                && w != "-"
+        })
+        .count()
+}
+
+pub fn content(c: &Ctx) -> Option<Detected> {
+    let verb = find_verb(c);
+    let mut used: Vec<usize> = verb.iter().map(|v| v.idx).collect();
+    if let Some(v) = &verb {
+        if v.front {
+            used.extend(0..v.idx);
+        }
+    }
+    let has_verb = verb.is_some();
+
+    let likes_word = c.pos(LIKES).or_else(|| c.pos_stem(&["избранн", "любим"]));
+    let plural = c.pos(LIKES_PLURAL);
+    let mine = c.has(MINE);
+    let mine_things = mine
+        && (plural.is_some()
+            || c.has(KIND_TRACK_PLURAL)
+            || c.has(&["треки", "песни", "музыку", "музыка", "tracks", "songs"]));
+    let saving = c.has(&[
+        "добавь",
+        "добавить",
+        "сохрани",
+        "save",
+        "удали",
+        "убери",
+        "сними",
+    ]);
+    let refused = c
+        .pos(&["не"])
+        .is_some_and(|not| likes_word.or(plural) > Some(not));
+    if !saving
+        && !refused
+        && !asks_to_look(c)
+        && (likes_word.is_some()
+            || mine_things
+            || (plural.is_some() && has_verb && c.w[plural.unwrap()] != "лайк"))
+    {
+        let mut u = used.clone();
+        u.extend(likes_word);
+        u.extend(plural);
+        if entity_tokens(c, &u) == 0 {
+            return Some(Detected::new(Intent::PlayLikes, u));
+        }
+    }
+
+    if has_verb && mine {
+        let mut u = used.clone();
+        u.extend(c.all(MINE));
+        if entity_tokens(c, &u) == 0 {
+            return Some(Detected::new(Intent::PlayLikes, u));
+        }
+    }
+
+    if let Some(w) = c.pos(WAVE) {
+        let mut u = used.clone();
+        u.push(w);
+        u.extend(c.all(&["меня"]));
+        if entity_tokens(c, &u) == 0 {
+            return Some(Detected::new(Intent::PlayWave, u));
+        }
+    }
+
+    let wished = c.pos(SIMILAR_WISHED).filter(|_| has_verb);
+    let similar_word = c
+        .pos(SIMILAR)
+        .filter(|&i| !SUCH.contains(&c.w[i]) || asks_for_such(c, i))
+        .or(wished);
+    let like_this = c.has(&["like"]) && c.has(&["this", "that"]) && (has_verb || c.has(&["more"]));
+    if (similar_word.is_some() || like_this) && (has_verb || c.len() <= 4) {
+        let mut u = used.clone();
+        u.extend(similar_word);
+        for (i, w) in c.w.iter().enumerate() {
+            if matches!(
+                *w,
+                "на" | "like"
+                    | "to"
+                    | "что"
+                    | "чтонибудь"
+                    | "чтото"
+                    | "same"
+                    | "этому"
+                    | "это"
+                    | "духе"
+                    | "в"
+                    | "таком"
+                    | "же"
+                    | "more"
+            ) {
+                u.push(i);
+            }
+        }
+        return Some(Detected::new(Intent::PlaySimilar, u));
+    }
+
+    if !has_verb && anything_of_a_kind(c) {
+        return Some(Detected::new(Intent::PlayWave, (0..c.len()).collect()));
+    }
+    if has_verb {
+        if let Some(w) = c.pos(WAVE_NEEDS_VERB) {
+            let mut u = used.clone();
+            u.push(w);
+            u.extend(manner(c));
+            if entity_tokens(c, &u) == 0 {
+                return Some(Detected::new(Intent::PlayWave, u));
+            }
+        }
+    }
+    None
+}
+
+pub fn asks_to_look(c: &Ctx) -> bool {
+    let led_to = |at: usize| {
+        let next = |by: usize| c.w.get(at + by).copied();
+        match c.w[at] {
+            "go" => next(1) == Some("to"),
+            "take" => next(1) == Some("me") && next(2) == Some("to"),
+            _ => false,
+        }
+    };
+    (c.has(LOOK) || (0..c.len()).any(led_to)) && find_verb(c).is_none()
+}
+
+fn anything_of_a_kind(c: &Ctx) -> bool {
+    let anything = |w: &&str| matches!(*w, "чтонибудь" | "чтото");
+    let which = |w: &&str| WAVE_NEEDS_VERB.contains(w) && !anything(w);
+    let new = |w: &&str| matches!(*w, "новое" | "новенькое" | "свежее");
+    let asked = c.w[0] == "чтонибудь" || c.w[0] == "чтото" && c.w[1..].iter().all(new);
+    (2..=3).contains(&c.len()) && asked && c.w[1..].iter().all(which)
+}
+
+fn asks_for_such(c: &Ctx, at: usize) -> bool {
+    let before = c.w[..at].iter().rev().find(|w| **w != "бы");
+    let wondering = before.is_some_and(|w| WONDERING.contains(w));
+    c.at(at + 1) != "себе" && !wondering && (find_verb(c).is_some() || c.has(SUCH_COMPANY))
+}
+
+fn manner(c: &Ctx) -> Vec<usize> {
+    (1..c.len())
+        .filter(|&i| WAVE_MANNER.contains(&[c.w[i - 1], c.w[i]]))
+        .flat_map(|i| [i - 1, i])
+        .collect()
+}
+
+fn denied(c: &Ctx, used: &[usize]) -> bool {
+    let first = (0..c.len())
+        .filter(|i| !used.contains(i))
+        .map(|i| c.w[i])
+        .find(|w| {
+            !PRE.contains(w) && !GENERIC.contains(w) && !TRANSPORT_VERBS.contains(w) && !is_kind(w)
+        });
+    first.is_some_and(|w| DENY.contains(&w))
+}
+
+pub fn detect(c: &Ctx, forced: bool) -> Detected {
+    let Some(v) = find_verb(c) else {
+        return Detected::none();
+    };
+    let mut used = vec![v.idx];
+    if v.front {
+        used.extend(0..v.idx);
+    }
+    if denied(c, &used) {
+        return Detected::blocked();
+    }
+    if forced {
+        return Detected::new(Intent::Play, used);
+    }
+    let strays = entity_tokens(c, &used);
+    if strays == 0 {
+        if !v.strong && c.len() == 1 {
+            return if GO_AHEAD.contains(&c.w[0]) {
+                Detected::new(Intent::Resume, used)
+            } else {
+                Detected::none()
+            };
+        }
+        let only_kinds =
+            c.w.iter()
+                .enumerate()
+                .any(|(i, w)| !used.contains(&i) && is_kind(w));
+        let greeted = v.strong && c.w[v.idx + 1..].iter().any(|w| GREETINGS.contains(w));
+        if only_kinds && !greeted {
+            let mut d = Detected::new(Intent::PlayWave, used);
+            if named_after_kind(c, &v) {
+                d.intent = Intent::Play;
+                d.weak = !v.strong;
+            }
+            return d;
+        }
+        if v.strong {
+            return Detected::new(Intent::Resume, used);
+        }
+        return Detected::none();
+    }
+    if !v.strong && strays > 6 {
+        return Detected::none();
+    }
+    let mut d = Detected::new(Intent::Play, used);
+    d.weak = !v.strong;
+    d
+}
+
+fn named_after_kind(c: &Ctx, v: &Verb) -> bool {
+    let Some(k) = (0..v.idx).find(|&i| is_kind(c.w[i])) else {
+        return false;
+    };
+    let names = |w: &&str| is_kind(w) || addresses(w) || goes_on(w);
+    !v.front && c.only_pre(0..k) && c.w[k + 1..v.idx].iter().any(names)
+}
+
+fn addresses(w: &str) -> bool {
+    matches!(w, "брат" | "братан" | "бро")
+}
+
+fn goes_on(w: &str) -> bool {
+    RESUME_FILL.contains(&w) && !PRE.contains(&w)
+}

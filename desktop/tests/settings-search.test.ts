@@ -185,7 +185,7 @@ test('engine: interpolation is stripped', () => {
 
 function evaluate(file: string) {
   const queries = readJson<Query[]>(`tests/settings-search/${file}`);
-  const started = performance.now();
+  const started = process.cpuUsage();
   const indexes = new Map<string, ReturnType<typeof buildSearchIndex>>();
   const misses: string[] = [];
   const perLanguage = new Map<string, number[]>();
@@ -212,10 +212,11 @@ function evaluate(file: string) {
     }
   }
 
-  const total = performance.now() - started;
+  const spent = process.cpuUsage(started);
+  const total = (spent.user + spent.system) / 1000;
   console.log(
     `${file}: hit@1 ${first}/${queries.length}, hit@3 ${third}/${queries.length}, ` +
-      `${(total / queries.length).toFixed(1)} ms per query, ${total.toFixed(0)} ms total`,
+      `${(total / queries.length).toFixed(1)} ms per query, ${total.toFixed(0)} ms of cpu`,
   );
   for (const [lang, [count, one, three]] of perLanguage) {
     console.log(`  ${lang}: hit@1 ${one}/${count}, hit@3 ${three}/${count}`);
@@ -225,7 +226,7 @@ function evaluate(file: string) {
 
   assert.ok(first / queries.length >= MIN_HIT_AT_1, `hit@1 ${first}/${queries.length}`);
   assert.ok(third / queries.length >= MIN_HIT_AT_3, `hit@3 ${third}/${queries.length}`);
-  assert.ok(total < BUDGET_MS, `${total} ms over budget`);
+  assert.ok(total < BUDGET_MS, `${total} ms of cpu over budget`);
 }
 
 test('eval: queries.json', () => evaluate('queries.json'));

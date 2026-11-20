@@ -7,6 +7,7 @@ use rodio::Player;
 use crate::audio::analyser::AnalyserBuffer;
 use crate::audio::crossfade::CrossfadeState;
 use crate::audio::effects::EffectsParams;
+use crate::audio::master::Master;
 use crate::audio::preview::PreviewState;
 use crate::audio::output::{spawn_output_thread, OutputHandles};
 use crate::audio::silence::SilenceState;
@@ -64,6 +65,7 @@ pub struct AudioState {
     pub analyser_buffer: Arc<AnalyserBuffer>,
     pub preview: Mutex<PreviewState>,
     pub crossfade: Mutex<CrossfadeState>,
+    pub master: Arc<Master>,
 }
 
 pub fn init(app: &AppHandle) -> AudioState {
@@ -72,6 +74,7 @@ pub fn init(app: &AppHandle) -> AudioState {
     let reconnected_flag = Arc::new(AtomicBool::new(false));
     let follow_default_output = Arc::new(AtomicBool::new(true));
     let active_output = Arc::new(Mutex::new(None));
+    let master = Master::new();
 
     let shared_mixer = spawn_output_thread(
         OutputHandles {
@@ -81,6 +84,7 @@ pub fn init(app: &AppHandle) -> AudioState {
             reconnected: reconnected_flag.clone(),
             follow_default_output: follow_default_output.clone(),
             active_output: active_output.clone(),
+            master: master.clone(),
         },
         cmd_rx,
     );
@@ -116,5 +120,6 @@ pub fn init(app: &AppHandle) -> AudioState {
         analyser_buffer: AnalyserBuffer::new(),
         preview: Mutex::new(PreviewState::default()),
         crossfade: Mutex::new(CrossfadeState::default()),
+        master,
     }
 }

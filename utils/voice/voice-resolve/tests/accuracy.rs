@@ -1,0 +1,599 @@
+use std::cell::RefCell;
+use std::collections::BTreeMap;
+use voice_nlu::{Intent, Kind, Names, Variant, fold};
+use voice_resolve::{
+    Bare, Boosts, Catalog, Decision, Entity, FixtureCatalog, Lookup, Outcome, Phrase, interpret,
+    understand,
+};
+
+struct Row {
+    phrase: String,
+    intent: String,
+    kind: String,
+    entity: String,
+    number: String,
+    category: String,
+    alt: String,
+    mode: String,
+}
+
+impl Row {
+    fn runs_with(&self, bare: Bare) -> bool {
+        match self.mode.as_str() {
+            "off" => bare == Bare::Popular,
+            "on" => bare == Bare::Certain,
+            _ => true,
+        }
+    }
+}
+
+fn rows(text: &str) -> Vec<Row> {
+    text.lines()
+        .skip(1)
+        .filter(|l| !l.trim().is_empty())
+        .map(|l| {
+            let c: Vec<&str> = l.split('\t').collect();
+            let col = |i: usize| c.get(i).copied().unwrap_or("").trim().to_string();
+            Row {
+                phrase: col(0),
+                intent: col(1),
+                kind: col(2),
+                entity: col(3),
+                number: col(4),
+                category: col(5),
+                alt: col(6),
+                mode: col(7),
+            }
+        })
+        .collect()
+}
+
+struct Set {
+    name: &'static str,
+    rows: Vec<Row>,
+}
+
+fn sets() -> Vec<Set> {
+    vec![
+        Set {
+            name: "blind",
+            rows: rows(include_str!("data/phrases.tsv")),
+        },
+        Set {
+            name: "dev",
+            rows: [
+                include_str!("data/phrases_dev.tsv"),
+                include_str!("data/phrases_dev2.tsv"),
+                include_str!("data/phrases_dev3.tsv"),
+            ]
+            .iter()
+            .flat_map(|t| rows(t))
+            .collect(),
+        },
+        Set {
+            name: "fresh_r1",
+            rows: rows(include_str!("data/phrases_fresh_r1.tsv")),
+        },
+        Set {
+            name: "fresh_r1b",
+            rows: rows(include_str!("data/phrases_fresh_r1b.tsv")),
+        },
+        Set {
+            name: "skeptic_r1",
+            rows: rows(include_str!("data/phrases_skeptic_r1.tsv")),
+        },
+        Set {
+            name: "skeptic_r1_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r1_pass.tsv")),
+        },
+        Set {
+            name: "fresh_r2",
+            rows: rows(include_str!("data/phrases_fresh_r2.tsv")),
+        },
+        Set {
+            name: "skeptic_r2",
+            rows: rows(include_str!("data/phrases_skeptic_r2.tsv")),
+        },
+        Set {
+            name: "skeptic_r2_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r2_pass.tsv")),
+        },
+    ]
+    .into_iter()
+    .chain(sets_for_both_modes())
+    .collect()
+}
+
+fn sets_for_both_modes() -> Vec<Set> {
+    vec![
+        Set {
+            name: "skeptic_r3_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r3_pass.tsv")),
+        },
+        Set {
+            name: "skeptic_r3b_pass",
+            rows: rows(include_str!("data/phrases_skeptic_r3b_pass.tsv")),
+        },
+    ]
+}
+
+const VOICE: [&str; 3] = ["Loli", "Лоля", "롤리"];
+
+#[derive(Default, Clone)]
+struct Stat {
+    rows: usize,
+    intent_ok: usize,
+    entity_rows: usize,
+    entity_ok: usize,
+    asks: usize,
+    false_acts: usize,
+}
+
+impl Stat {
+    fn add(&mut self, o: &Stat) {
+        self.rows += o.rows;
+        self.intent_ok += o.intent_ok;
+        self.entity_rows += o.entity_rows;
+        self.entity_ok += o.entity_ok;
+        self.asks += o.asks;
+        self.false_acts += o.false_acts;
+    }
+}
+
+fn top_entity(o: &Outcome) -> Option<&voice_resolve::Entity> {
+    match o.decision.as_ref()? {
+        Decision::Act { pick } => Some(&pick.entity),
+        Decision::Ask { first, .. } => Some(&first.entity),
+        Decision::NotFound => None,
+    }
+}
+
+fn joined(os: &[Outcome]) -> String {
+    os.iter()
+        .map(|o| o.intent.name())
+        .collect::<Vec<_>>()
+        .join("+")
+}
+
+fn alts<'a>(r: &'a Row, key: &str) -> Vec<&'a str> {
+    r.alt
+        .split(';')
+        .filter_map(|a| a.strip_prefix(key))
+        .collect()
+}
+
+fn alt_intents(r: &Row) -> Vec<&str> {
+    r.alt
+        .split(';')
+        .map(|a| a.strip_prefix("intent=").unwrap_or(a))
+        .filter(|a| !a.is_empty() && !a.contains(':') && *a != "ask")
+        .collect()
+}
+
+fn intent_ok(r: &Row, os: &[Outcome]) -> bool {
+    let got = joined(os);
+    if got != r.intent && !alt_intents(r).contains(&got.as_str()) {
+        return false;
+    }
+    r.number.is_empty()
+        || os
+            .iter()
+            .any(|o| o.parsed.number.map(|n| n.to_string()) == Some(r.number.clone()))
+}
+
+fn entity_matches(e: &voice_resolve::Entity, kind: &str, want: &str) -> bool {
+    (e.name == want || e.label() == want) && (kind.is_empty() || e.kind.name() == kind)
+}
+
+fn entity_ok(r: &Row, os: &[Outcome]) -> bool {
+    let wants: Vec<&str> = r.entity.split('+').collect();
+    let kinds: Vec<&str> = r.kind.split('+').collect();
+    let slots: Vec<usize> = if wants.len() > 1 {
+        (0..os.len()).collect()
+    } else {
+        os.iter()
+            .position(|o| o.intent.needs_entity())
+            .into_iter()
+            .collect()
+    };
+    if slots.is_empty() || (wants.len() > 1 && wants.len() != os.len()) {
+        return false;
+    }
+    slots.iter().enumerate().all(|(n, &i)| {
+        let Some(e) = top_entity(&os[i]) else {
+            return false;
+        };
+        let want = wants.get(n).copied().unwrap_or("");
+        let kind = kinds.get(n).or(kinds.first()).copied().unwrap_or("");
+        if entity_matches(e, kind, want) {
+            return true;
+        }
+        alts(r, "")
+            .iter()
+            .filter_map(|a| a.split_once(':'))
+            .any(|(k, v)| entity_matches(e, k, v))
+    })
+}
+
+fn run(
+    name: &str,
+    data: &[Row],
+    catalog: &dyn Catalog,
+    bare: Bare,
+) -> (BTreeMap<String, Stat>, Vec<String>) {
+    let mut stats: BTreeMap<String, Stat> = BTreeMap::new();
+    let mut failures = Vec::new();
+    let names = Names::new(&VOICE);
+    for r in data.iter().filter(|r| r.runs_with(bare)) {
+        let os = interpret(&r.phrase, catalog, &Boosts::none(), bare, &names);
+        let s = stats.entry(r.category.clone()).or_default();
+        s.rows += 1;
+        let i_ok = intent_ok(r, &os);
+        if i_ok {
+            s.intent_ok += 1;
+        }
+        let mut e_ok = true;
+        if !r.entity.is_empty() {
+            s.entity_rows += 1;
+            e_ok = i_ok && entity_ok(r, &os);
+            if e_ok {
+                s.entity_ok += 1;
+            }
+            if os
+                .iter()
+                .any(|o| matches!(o.decision, Some(Decision::Ask { .. })))
+            {
+                s.asks += 1;
+            }
+        }
+        let mut false_act = false;
+        if r.intent == "none"
+            && os.iter().any(|o| o.acts())
+            && !alt_intents(r).contains(&joined(&os).as_str())
+        {
+            s.false_acts += 1;
+            false_act = true;
+        }
+        if !i_ok || !e_ok || false_act {
+            let got: Vec<String> = os
+                .iter()
+                .map(|o| {
+                    format!(
+                        "{}/{:?}/{}",
+                        o.intent.name(),
+                        o.parsed.number,
+                        top_entity(o).map(|e| e.label()).unwrap_or_default()
+                    )
+                })
+                .collect();
+            failures.push(format!(
+                "{} [{}] {:?} want {}/{}/{}/{} got {} norm={:?}",
+                name,
+                r.category,
+                r.phrase,
+                r.intent,
+                r.kind,
+                r.entity,
+                r.number,
+                got.join(" + "),
+                os.first().map(|o| o.parsed.normalized.clone())
+            ));
+        }
+    }
+    (stats, failures)
+}
+
+fn pct(a: usize, b: usize) -> f64 {
+    if b == 0 {
+        100.0
+    } else {
+        a as f64 * 100.0 / b as f64
+    }
+}
+
+fn line(name: &str, s: &Stat) -> String {
+    format!(
+        "{:<16}{:>6}{:>10.1}{:>10.1}{:>7}{:>8}\n",
+        name,
+        s.rows,
+        pct(s.intent_ok, s.rows),
+        pct(s.entity_ok, s.entity_rows),
+        s.asks,
+        s.false_acts
+    )
+}
+
+fn report(stats: &BTreeMap<String, Stat>) -> String {
+    let mut out = format!(
+        "{:<16}{:>6}{:>10}{:>10}{:>7}{:>8}\n",
+        "category", "rows", "intent%", "entity%", "asks", "falseact"
+    );
+    let mut total = Stat::default();
+    for (cat, s) in stats {
+        out.push_str(&line(cat, s));
+        total.add(s);
+    }
+    out.push_str(&line("TOTAL", &total));
+    out
+}
+
+fn check(label: &str, stats: &BTreeMap<String, Stat>) -> Vec<String> {
+    let mut bad = Vec::new();
+    let mut total = Stat::default();
+    for (cat, s) in stats {
+        total.add(s);
+        if pct(s.intent_ok, s.rows) < 95.0 {
+            bad.push(format!(
+                "{label}/{cat}: intent {:.1}% < 95",
+                pct(s.intent_ok, s.rows)
+            ));
+        }
+        if s.entity_rows > 0 && pct(s.entity_ok, s.entity_rows) < 90.0 {
+            bad.push(format!(
+                "{label}/{cat}: entity {:.1}% < 90",
+                pct(s.entity_ok, s.entity_rows)
+            ));
+        }
+        if s.false_acts > 0 {
+            bad.push(format!("{label}/{cat}: {} false acts", s.false_acts));
+        }
+    }
+    if pct(total.intent_ok, total.rows) < 98.0 {
+        bad.push(format!(
+            "{label}: overall intent {:.1}% < 98",
+            pct(total.intent_ok, total.rows)
+        ));
+    }
+    if pct(total.entity_ok, total.entity_rows) < 95.0 {
+        bad.push(format!(
+            "{label}: overall entity {:.1}% < 95",
+            pct(total.entity_ok, total.entity_rows)
+        ));
+    }
+    bad
+}
+
+fn merge(into: &mut BTreeMap<String, Stat>, from: &BTreeMap<String, Stat>) {
+    for (k, v) in from {
+        into.entry(k.clone()).or_default().add(v);
+    }
+}
+
+#[test]
+fn targets_with_aliases() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let mut union = BTreeMap::new();
+    let mut bad = Vec::new();
+    let mut failures = Vec::new();
+    for set in sets() {
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Popular);
+        println!("set {}\n{}", set.name, report(&stats));
+        bad.extend(check(set.name, &stats));
+        merge(&mut union, &stats);
+        failures.extend(f);
+    }
+    println!("all sets\n{}", report(&union));
+    for f in &failures {
+        println!("{f}");
+    }
+    bad.extend(check("all", &union));
+    assert!(bad.is_empty(), "under target: {bad:#?}");
+}
+
+#[test]
+fn targets_with_the_chat_on() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let mut union = BTreeMap::new();
+    let mut bad = Vec::new();
+    let mut failures = Vec::new();
+    for set in sets_for_both_modes() {
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Certain);
+        println!("chat on, set {}\n{}", set.name, report(&stats));
+        bad.extend(check(set.name, &stats));
+        merge(&mut union, &stats);
+        failures.extend(f);
+    }
+    for f in &failures {
+        println!("chat on, {f}");
+    }
+    bad.extend(check("all", &union));
+    assert!(bad.is_empty(), "under target: {bad:#?}");
+}
+
+const WELL_KNOWN: u64 = 1_800_000;
+
+struct EndsEarly<'a> {
+    rows: &'a FixtureCatalog,
+}
+
+impl Catalog for EndsEarly<'_> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity> {
+        let lookup = Lookup {
+            variants: variants.to_vec(),
+            kinds: kinds.to_vec(),
+        };
+        let texts = lookup.texts();
+        let Some(name) = texts.first() else {
+            return Vec::new();
+        };
+        let asked = |text: &str| -> Vec<Variant> {
+            let said = variants.iter().filter(|v| !v.fallback);
+            said.filter(|v| v.text.trim() == text).cloned().collect()
+        };
+        let known = lookup.known();
+        let exact = |e: &Entity| {
+            let whole = match &e.artist {
+                Some(artist) => format!("{} {artist}", e.name),
+                None => e.name.clone(),
+            };
+            fold(&whole) == fold(name) && (known || e.popularity >= WELL_KNOWN)
+        };
+        let named = self.rows.candidates(&asked(name), kinds);
+        if !named.iter().any(exact) {
+            return self.rows.candidates(variants, kinds);
+        }
+        let artist = |e: &Entity| e.kind == Kind::Artist;
+        let only_artists = known && named.iter().any(|e| artist(e) && exact(e));
+        let mut found: Vec<Entity> = named
+            .into_iter()
+            .filter(|e| !only_artists || artist(e))
+            .collect();
+        for text in lookup.fuller() {
+            for e in self.rows.candidates(&asked(&text), kinds) {
+                if !found.iter().any(|known| known.id == e.id) {
+                    found.push(e);
+                }
+            }
+        }
+        found
+    }
+}
+
+#[test]
+fn targets_when_a_lookup_ends_at_a_name_found_exactly() {
+    let rows = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let catalog = EndsEarly { rows: &rows };
+    let mut union = BTreeMap::new();
+    let mut failures = Vec::new();
+    for set in sets() {
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Popular);
+        merge(&mut union, &stats);
+        failures.extend(f);
+    }
+    println!("ends early, all sets\n{}", report(&union));
+    for f in &failures {
+        println!("ends early, {f}");
+    }
+    let bad = check("all", &union);
+    assert!(bad.is_empty(), "under target: {bad:#?}");
+}
+
+#[test]
+fn targets_without_catalog_aliases() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), false);
+    let mut union = BTreeMap::new();
+    let mut failures = Vec::new();
+    for set in sets() {
+        let (stats, f) = run(set.name, &set.rows, &catalog, Bare::Popular);
+        merge(&mut union, &stats);
+        failures.extend(f);
+    }
+    println!("without catalog aliases, all sets\n{}", report(&union));
+    for f in &failures {
+        println!("{f}");
+    }
+    let mut total = Stat::default();
+    for s in union.values() {
+        total.add(s);
+    }
+    let entity = pct(total.entity_ok, total.entity_rows);
+    assert!(entity >= 97.0, "entity {entity:.1}% < 97");
+}
+
+fn named_alone(o: &Outcome) -> bool {
+    o.parsed.intent == Intent::None && o.intent == Intent::Play
+}
+
+fn asked(o: &Outcome) -> bool {
+    matches!(o.decision, Some(Decision::Ask { .. }))
+}
+
+fn unsure(o: &Outcome) -> bool {
+    let found = matches!(o.decision, None | Some(Decision::Act { .. }));
+    !found && o.intent != Intent::PlaySimilar
+}
+
+fn understood(os: &[Outcome]) -> Vec<String> {
+    os.iter()
+        .map(|o| format!("{:?} {:?} {:?}", o.intent, o.parsed, o.decision))
+        .collect()
+}
+
+#[test]
+fn leaving_names_said_alone_and_unsure_names_to_the_listener_changes_nothing_else() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let mut union = BTreeMap::new();
+    let mut left = Vec::new();
+    let names = Names::new(&VOICE);
+    for set in sets() {
+        let (stats, _) = run(set.name, &set.rows, &catalog, Bare::Certain);
+        merge(&mut union, &stats);
+        for row in &set.rows {
+            let read = |bare| interpret(&row.phrase, &catalog, &Boosts::none(), bare, &names);
+            let popular = read(Bare::Popular);
+            let certain = read(Bare::Certain);
+            for o in certain.iter().filter(|o| named_alone(o)) {
+                assert!(o.acts(), "{} plays {:?}", row.phrase, o.decision);
+            }
+            for o in &popular {
+                assert!(o.candidates.is_empty(), "{}", row.phrase);
+            }
+            if let [only] = certain.as_slice() {
+                assert!(!unsure(only), "{} has {:?}", row.phrase, only.decision);
+            }
+            let unsure_alone = matches!(popular.as_slice(), [only] if unsure(only));
+            if let ([was], [now]) = (popular.as_slice(), certain.as_slice())
+                && unsure(was)
+            {
+                assert_eq!(now.intent, Intent::None, "{}", row.phrase);
+                assert!(!asked(was) || !now.candidates.is_empty(), "{}", row.phrase);
+            }
+            if understood(&popular) == understood(&certain) {
+                continue;
+            }
+            let differs = unsure_alone || popular.iter().any(named_alone);
+            assert!(differs, "{}", row.phrase);
+            left.push(format!("{} [{}] {:?}", set.name, row.category, row.phrase));
+        }
+    }
+    println!(
+        "names said alone and unsure names are left to the listener, all sets\n{}",
+        report(&union)
+    );
+    println!("{} phrases are understood differently", left.len());
+    for phrase in &left {
+        println!("{phrase}");
+    }
+}
+
+struct Watched<'a> {
+    rows: &'a FixtureCatalog,
+    made: RefCell<Vec<Lookup>>,
+}
+
+impl Catalog for Watched<'_> {
+    fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity> {
+        self.made.borrow_mut().push(Lookup {
+            variants: variants.to_vec(),
+            kinds: kinds.to_vec(),
+        });
+        self.rows.candidates(variants, kinds)
+    }
+}
+
+#[test]
+fn every_lookup_of_a_phrase_is_known_before_any_is_made() {
+    let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
+    let names = Names::new(&VOICE);
+    let (mut phrases, mut known, mut made, mut most) = (0, 0, 0, 0);
+    for set in sets() {
+        for row in &set.rows {
+            let phrase = Phrase::read(&row.phrase, &names);
+            let ahead = phrase.lookups();
+            let watched = Watched {
+                rows: &catalog,
+                made: RefCell::default(),
+            };
+            understand(&phrase, &watched, &Boosts::none(), Bare::Certain);
+            let asked = watched.made.into_inner();
+            for lookup in &asked {
+                assert!(ahead.contains(lookup), "{} looks up more", row.phrase);
+            }
+            phrases += 1;
+            known += ahead.len();
+            made += asked.len();
+            most = most.max(ahead.len());
+        }
+    }
+    println!("{phrases} phrases: {made} lookups made, {known} known ahead, at most {most}");
+}

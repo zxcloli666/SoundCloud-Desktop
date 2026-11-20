@@ -1,0 +1,114 @@
+phrase	intent	kind	entity	number	category
+включить скриптонит	play	artist	Скриптонит		plain
+включите скриптонита	play	artist	Скриптонит		plain
+хочу услышать скриптонита	play	artist	Скриптонит		plain
+включи-ка мне скриптонита	play	artist	Скриптонит		plain
+поставь-ка кино	play	artist	Кино		plain
+дай кино	play	artist	Кино		plain
+дай послушать нирвану	play	artist	Nirvana		plain
+можно кино пожалуйста	play	artist	Кино		plain
+ВКЛЮЧИ СКРИПТОНИТА	play	artist	Скриптонит		plain
+Включи The Weeknd	play	artist	The Weeknd		plain
+поставь мне что-нибудь из кино	play	artist	Кино		plain
+включи что-нибудь от билли айлиш	play	artist	Billie Eilish		plain
+сыграй мне что нибудь из ленинграда	play	artist	Ленинград		plain
+включи ддт	play	artist	ДДТ		plain
+поставь лсп	play	artist	ЛСП		plain
+включи песни Билли Айлиш	play	artist	Billie Eilish		plain
+включи Земфиру Хочу	play	track	Земфира - Хочу		plain
+Притон	play	track	Скриптонит - Притон		plain
+Скриптонит	play	artist	Скриптонит		plain
+The Weeknd Starboy	play	track	The Weeknd - Starboy		plain
+моргенштерн кадиллак	play	track	Моргенштерн - Cadillac		plain
+поставь кадиллак	play	track	Моргенштерн - Cadillac		plain
+мокрые кроссы	play	track	Тима Белорусских - Мокрые кроссы		plain
+включи мокрые кроссы тимы белорусских	play	track	Тима Белорусских - Мокрые кроссы		plain
+лейла джа халиб	play	track	Jah Khalib - Лейла		plain
+включи берегу	play	track	Макс Барских - Берегу		plain
+перемотай на начало	seek_to			0	plain
+включи звук на максимум	volume_set			100	plain
+сделай звук на 70	volume_set			70	plain
+выключи звук совсем	mute				plain
+поставь на паузу эту песню	pause				plain
+останови эту песню	stop				plain
+выруби музыку	stop				plain
+выключи плеер	stop				plain
+запусти заново	seek_to			0	plain
+поиграй что-нибудь	play_wave				plain
+поставь рекомендации	play_wave				plain
+заведи мою волну	play_wave				plain
+запусти радио	play_wave				plain
+включи любимые песни	play_likes				plain
+поставь лайкнутое	play_likes				plain
+включи песни из избранного	play_likes				plain
+покажи что ты умеешь	help				plain
+повтори	repeat_one				plain
+шафл	shuffle_on				plain
+лайк	like				plain
+дизлайк	unlike				plain
+запомни эту песню	like				plain
+включи песни моргенштерна	play	artist	Моргенштерн		morphology
+поставь песни егора крида	play	artist	Егор Крид		morphology
+включи песни доры	play	artist	Дора		morphology
+включи песни мота	play	artist	Мот		morphology
+включи песни фейса	play	artist	Face		morphology
+включи песни зиверт	play	artist	Zivert		morphology
+включи песни монеточки	play	artist	Монеточка		morphology
+включи песни литл биг	play	artist	Little Big		morphology
+включи песни квин	play	artist	Queen		morphology
+поставь песни кендрика ламара	play	artist	Kendrick Lamar		morphology
+поставь песни канье веста	play	artist	Kanye West		morphology
+поставь песни джастина бибера	play	artist	Justin Bieber		morphology
+включи песни линкин парка	play	artist	Linkin Park		morphology
+поставь песни колдплея	play	artist	Coldplay		morphology
+включи песни эминема	play	artist	Eminem		morphology
+включи песни рианны	play	artist	Rihanna		morphology
+поставь песни ариан грандэ	play	artist	Ariana Grande		morphology
+включи линкин парк ин зе энд	play	track	Linkin Park - In the End		translit
+включи нирвану смелс лайк тин спирит	play	track	Nirvana - Smells Like Teen Spirit		translit
+поставь куин богемиан рапсодию	play	track	Queen - Bohemian Rhapsody		translit
+включи лана дель рей саммертайм сэднесс	play	track	Lana Del Rey - Summertime Sadness		translit
+включи бруно марса аптаун фанк	play	track	Bruno Mars - Uptown Funk		translit
+включи эда ширана перфект	play	track	Ed Sheeran - Perfect		translit
+включи дуа липу левитейтинг	play	track	Dua Lipa - Levitating		translit
+включи колдплей вива ла вида	play	track	Coldplay - Viva la Vida		translit
+включи рамштайн зонне	play	track	Rammstein - Sonne		translit
+включи рамштайн дю хаст	play	track	Rammstein - Du Hast		translit
+включи эминема рэп год	play	track	Eminem - Rap God		translit
+включи рианну амбрелла	play	track	Rihanna - Umbrella		translit
+включи пост малона серклз	play	track	Post Malone - Circles		translit
+включи тейлор свифт бланк спейс	play	track	Taylor Swift - Blank Space		translit
+включи трэвис скотт	play	artist	Travis Scott		translit
+включи доджа кэт	play	artist	Doja Cat		translit
+включи уикэнд	play	artist	The Weeknd		translit
+включи мотыльки	play	artist	Мотыльки		translit
+поставь будильник	none				negative
+включи лампу	none				negative
+поставь фильм	none				negative
+включи ютуб	none				negative
+включи навигатор	none				negative
+включи телек	none				negative
+выключи телевизор	none				negative
+останови видео	none				negative
+включи вай фай	none				negative
+включи блютуз	none				negative
+выключи телефон	none				negative
+включи экран	none				negative
+что делать	none				negative
+где ты	none				negative
+кто там	none				negative
+сколько мне лет	none				negative
+мне скучно	none				negative
+расскажи сказку	none				negative
+спой песню	none				negative
+сыграй со мной в шахматы	none				negative
+как приготовить пасту	none				negative
+слушай я устал	none				negative
+вчера был концерт кино	none				negative
+мой любимый исполнитель скриптонит	none				negative
+она слушает земфиру	none				negative
+играет музыка за стеной	none				negative
+громко работает телевизор	none				negative
+убавь температуру	none				negative
+сделай чай	none				negative
+сделай потише телевизор	none				negative

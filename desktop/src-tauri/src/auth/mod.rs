@@ -140,6 +140,7 @@ fn gate_effects(app: &AppHandle, premium: bool) {
     if let Some(audio) = app.try_state::<crate::audio::AudioState>() {
         audio.effects.set_premium(premium);
     }
+    crate::voice::star_changed(app, premium);
 }
 
 #[tauri::command]

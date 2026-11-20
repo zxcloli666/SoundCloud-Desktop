@@ -1,0 +1,23 @@
+[package]
+name = "voice-tts"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[features]
+default = ["static"]
+static = ["sherpa-onnx/static"]
+shared = ["sherpa-onnx/shared"]
+
+[dependencies]
+sherpa-onnx = { version = "=2.0.1", default-features = false }
+voice-g2p = { path = "../voice-g2p" }
+
+[dev-dependencies]
+hound = "3"
+
+[[example]]
+name = "kokoro"
+
+[[example]]
+name = "russian_ipa"

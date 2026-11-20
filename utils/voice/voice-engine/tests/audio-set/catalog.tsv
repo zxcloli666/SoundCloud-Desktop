@@ -1,0 +1,23 @@
+kind	name	artist	popularity	aliases
+artist	Кино		9000000	
+artist	Баста		3600000	басту
+artist	Скриптонит		6500000	scriptonite
+artist	Земфира		5000000	
+artist	Сплин		4000000	
+artist	Ленинград		7000000	
+artist	Король и Шут		6000000	
+artist	Miyagi & Эндшпиль		8000000	
+artist	Psychosis		300000	психосиз
+artist	Queen		9000000	
+artist	Eminem		9000000	
+artist	Drake		9000000	
+artist	Dua Lipa		8000000	
+artist	Rammstein		7000000	
+artist	Linkin Park		9000000	
+artist	Coldplay		8000000	
+artist	The Weeknd		9000000	
+artist	Metallica		8000000	
+track	Хочу	Земфира	3000000	
+track	Цепи	Скриптонит	3000000	
+track	In the End	Linkin Park	9000000	
+track	Lose Yourself	Eminem	9000000	

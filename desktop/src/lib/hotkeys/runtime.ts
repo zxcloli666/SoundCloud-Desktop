@@ -43,6 +43,7 @@ export function syncGlobalHotkeys() {
     try {
       const outcomes = await invoke<HotkeyOutcome[]>('hotkeys_apply', {
         bindings: desiredBindings(),
+        suspended,
       });
       if (suspended) return;
       const statuses: HotkeyRuntimeState['statuses'] = {};

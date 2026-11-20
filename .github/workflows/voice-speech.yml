@@ -1,0 +1,81 @@
+name: Voice speech
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'utils/voice/voice-models/manifest.json'
+      - 'utils/voice/voice-models/fetch.sh'
+      - 'utils/voice/voice-qwen/**'
+      - '.github/workflows/voice-speech.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: voice-speech-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  models:
+    name: voice and codec
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Voice and codec from the storage, once for every platform
+        run: utils/voice/voice-models/fetch.sh models qwen-codec qwen-loli
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: voice-models
+          path: models/
+          retention-days: 1
+          compression-level: 0
+          if-no-files-found: error
+
+  speak:
+    needs: models
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-aarch64
+            runner: macos-latest
+          - platform: macos-x86_64
+            runner: macos-15-intel
+          - platform: linux-x86_64
+            runner: ubuntu-22.04
+          - platform: linux-aarch64
+            runner: ubuntu-22.04-arm
+          - platform: windows-x86_64
+            runner: windows-latest
+    name: ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: voice-models
+          path: models
+
+      - name: Engine from the storage
+        shell: bash
+        run: utils/voice/voice-models/fetch.sh models qwen-engine-${{ matrix.platform }}
+
+      - name: Rust
+        shell: bash
+        run: bash scripts/ci-toolchain.sh
+
+      - name: Speak
+        shell: bash
+        working-directory: utils/voice
+        env:
+          SCD_QWEN: ${{ github.workspace }}/models/qwen-engine-${{ matrix.platform }}/scd-qwen
+          SCD_QWEN_TALKER: ${{ github.workspace }}/models/qwen-loli/qwen-talker-1.7b-loli-Q4_K_M.gguf
+          SCD_QWEN_CODEC: ${{ github.workspace }}/models/qwen-codec/qwen-tokenizer-12hz-Q8_0.gguf
+        run: |
+          cargo test -p voice-qwen --test fallback
+          cargo test -p voice-qwen --test engine -- --nocapture --test-threads 1 2>&1 | tee speak.log
+          grep -oE '(starts on|runs on|speech engine left) .*' speak.log >> "$GITHUB_STEP_SUMMARY" || true

@@ -1,0 +1,356 @@
+phrase	intent	kind	entity	number	category	alt
+включискриптонита	play	artist	Скриптонит		asr	
+вклю земфиру	play	artist	Земфира		asr	
+сле дующий	next				asr	
+следующую песн	next				asr	
+сделай по громче	volume_up				asr	
+сделай по тише	volume_down				asr	
+по громче	volume_up				asr	
+сделай громко	volume_up				asr	
+сделай тихо	volume_down				asr	
+пере мотай вперёд	seek_forward				asr	
+на зад	previous				asr	
+включи трег притон	play	track	Скриптонит - Притон		asr	
+плей лист для сна	play	playlist	Для сна		asr	
+включи плей лист русский рок	play	playlist	Русский рок		asr	
+включи хотлайн блин	play	track	Drake - Hotline Bling		asr	
+включи шнурова	play	artist	Ленинград		morphology	
+включи паузу	pause				ambiguous	
+включи хочу мота	play	track	Мот - Хочу		ambiguous	
+включи группа крови альбом	play	album	Кино - Группа крови		ambiguous	
+включи группу крови	play	track	Кино - Группа крови		ambiguous	
+включи моргану	play	artist	Моргана		ambiguous	
+включи ленинградку	play	artist	Ленинградка		ambiguous	
+включи сансару бастарда	play	track	Бастард - Сансара		ambiguous	
+включи стоп	stop				command_name	pause
+включи лайк	like				command_name	
+включи музыку для вечеринки	play	playlist	Вечеринка		plain	
+запихни в очередь кадиллак	queue_add	track	Моргенштерн - Cadillac		plain	
+включи металлику	none				false_act	
+включи скорпионс	none				false_act	
+включи звуки природы	none				false_act	play_wave
+я вчера включил басту а она такая выключи	none				false_act	
+давай потом включим кино посмотрим	none				false_act	
+ну давай включи ещё раз эту херню	none				false_act	
+лайк за лайк	none				false_act	
+кадиллак кадиллак	none				false_act	
+не лайкай это	none				negative	
+не-не оставь	none				negative	
+не этот трек	next				negative	
+не эту песню	next				negative	
+не хочу эту песню	next				negative	
+не так громко	volume_down				negative	
+не так тихо	volume_up				negative	
+не надо так громко	volume_down				negative	
+не хочу больше музыки	stop				negative	pause
+не нужно музыки	stop				negative	pause
+не то включила	undo				negative	next
+нет верни	undo				negative	previous
+нет оставь как было	undo				negative	
+нет не скриптонита а басту	play	artist	Баста		negative	
+включи коржа нет стоп земфиру	play	artist	Земфира		correction	
+включи монеточку блин нет моргенштерна	play	artist	Моргенштерн		correction	
+включи скриптонита точнее басту	play	artist	Баста		correction	
+включи басту вернее коржа	play	artist	Макс Корж		correction	
+включи кино ой то есть сплин	play	artist	Сплин		correction	
+включи лесника ой нет куклу колдуна	play	track	Король и Шут - Кукла колдуна		correction	
+включи лесника а не куклу колдуна	play	track	Король и Шут - Лесник		correction	
+поставь погромче ой тише	volume_down				correction	
+сделай громче нет наоборот тише	volume_down				correction	
+следующий ой нет предыдущий	previous				correction	
+следующий хотя нет предыдущий	previous				correction	
+громкость на тридцать нет на сорок	volume_set			40	correction	
+громкость на тридцать ой на сорок	volume_set			40	correction	
+следующий а нет оставь	none				correction	
+включи цоя ну то есть кино	play	artist	Кино		correction	
+включи земфиру нет подожди лучше монеточку	play	artist	Монеточка		correction	
+включи басту а хотя давай лучше скриптонита	play	artist	Скриптонит		correction	
+включи скриптонита или нет давай коржа	play	artist	Макс Корж		correction	
+включи бас ту басту	play	artist	Баста		correction	
+сле следующий	next				correction	
+погро погромче	volume_up				correction	
+включи притон скриптонита нет не притон а цепи	play	track	Скриптонит - Цепи		correction	
+включи альбом ой нет песню группа крови	play	track	Кино - Группа крови		correction	
+громкость на пятьдесят а нет на шестьдесят	volume_set			60	correction	
+включи земфиру нет монеточку нет всё таки земфиру	play	artist	Земфира		correction	
+поставь на паузу а нет дальше	next				correction	
+включи басту а потом скриптонита	play+queue_add	artist	Баста+Скриптонит		two_part	
+включи мои лайки вперемешку	play_likes+shuffle_on				two_part	shuffle_on+play_likes
+включи лайки в случайном порядке	play_likes+shuffle_on				two_part	shuffle_on+play_likes
+сделай погромче перемешай и включи следующий	volume_up+shuffle_on+next				two_part	
+лайк следующий громче	like+next+volume_up				two_part	
+включи басту перемешай и сделай погромче	play+shuffle_on+volume_up	artist	Баста		two_part	
+включи кукушку цоя а потом группу крови	play+queue_add	track	Кино - Кукушка+Кино - Группа крови		two_part	
+что это за песня лайкни её	now_playing+like				two_part	
+выключи повтор и перемешивание	repeat_off+shuffle_off				two_part	
+включи земфиру потом монеточку потом коржа	play+queue_add+queue_add	artist	Земфира+Монеточка+Макс Корж		two_part	
+включи басту только сначала сделай потише	volume_down+play	artist	Баста		two_part	play+volume_down
+включи басту и скриптонита	play+queue_add	artist	Баста+Скриптонит		two_part	
+включи король и шут и кино	play+queue_add	artist	Король и Шут+Кино		two_part	
+включи кино и звери	play+queue_add	artist	Кино+Звери		two_part	
+выключи звук а потом включи обратно	mute+unmute				two_part	
+перемешай мои лайки	play_likes+shuffle_on				two_part	shuffle_on+play_likes
+поставь цепи на повтор	play+repeat_one	track	Скриптонит - Цепи		two_part	
+сделай погромче а то не слышно	volume_up				two_part	
+следующий этот уже надоел	next				two_part	
+сделай тише ребёнок спит	volume_down				two_part	
+включи скриптонита я его давно не слушал	play	artist	Скриптонит		two_part	
+включи басту она мне нравится	play	artist	Баста		two_part	
+включи коржа мне грустно	play	artist	Макс Корж		two_part	
+погромче люблю эту песню	volume_up				two_part	volume_up+like
+лайкни но не переключай	like				two_part	
+пауза курьер пришёл	pause				two_part	
+включи кино только не группу крови	play	artist	Кино		two_part	
+стоп хватит на сегодня	stop				two_part	pause
+лайкни клёвый трек	like				two_part	
+включи земфиру давно хотела	play	artist	Земфира		two_part	
+тут слишком тихо	volume_up				indirect	
+ничего не слышно	volume_up				indirect	
+плохо слышно	volume_up				indirect	
+еле слышно	volume_up				indirect	
+как-то тихо играет	volume_up				indirect	
+слишком громко	volume_down				indirect	
+уши закладывает	volume_down				indirect	
+оглохнуть можно	volume_down				indirect	
+соседи стучат	volume_down				indirect	
+очень громко	volume_down				indirect	
+громковато	volume_down				indirect	
+тихо как-то	volume_up				indirect	
+опять эта песня	next				indirect	
+уже сто раз слышал	next				indirect	
+фу что это	next				indirect	
+обожаю этот трек	like				indirect	
+добавь в мои треки	like				indirect	
+больше не хочу это слышать	next				indirect	unlike
+разлюбила эту песню	unlike				indirect	
+а что сейчас играет вообще	now_playing				indirect	
+чей это трек	now_playing				indirect	
+а это кто	now_playing				indirect	
+напомни название песни	now_playing				indirect	
+а что ты вообще умеешь делать	help				indirect	
+мне звонят	pause				indirect	
+у меня звонок	pause				indirect	
+подожди секунду	pause				indirect	
+погоди	pause				indirect	
+минутку	pause				indirect	
+с самого начала	seek_to			0	indirect	
+давай что-нибудь повеселее	play_wave				indirect	
+что-нибудь в этом стиле	play_similar				indirect	
+хочу свои лайки	play_likes				indirect	
+включи то что я лайкал	play_likes				indirect	
+на твой вкус	play_wave				indirect	
+тишина	pause				indirect	mute
+я ухожу выключи	stop				indirect	pause
+пора спать выключай	stop				indirect	pause
+давай ещё раз эту песню	seek_to			0	indirect	repeat_one
+сделаешь потише	volume_down				indirect	
+переключишь	next				indirect	
+подкрути громкость	volume_up				slang	
+подкрути звук повыше	volume_up				slang	
+плейни басту	play	artist	Баста		slang	
+плейни	resume				slang	
+залайкай	like				slang	
+отлайкай	unlike				slang	
+перетасуй	shuffle_on				slang	
+врубай рандомно	shuffle_on				slang	
+вырубай шарманку	stop				slang	pause
+харэ	stop				slang	pause
+хорош	stop				slang	pause
+репитни	repeat_one				slang	
+мутни	mute				slang	
+размуть	unmute				slang	
+накинь громкости	volume_up				slang	
+скинь громкость	volume_down				slang	
+убавь децл	volume_down				slang	
+погнали	resume				slang	play_wave
+поехали	resume				slang	play_wave
+музончик включи	play_wave				slang	
+поставь трек на репит	repeat_one				slang	
+мотани вперёд	seek_forward				slang	
+мотани назад	seek_backward				slang	
+отмотай чутка	seek_backward				slang	
+перемотай чуток	seek_forward				slang	
+верни трек	previous				slang	
+взад	previous				slang	seek_backward
+увімкни басту	play	artist	Баста		slang	
+ввімкни скриптоніта	play	artist	Скриптонит		slang	
+вимкни	stop				slang	pause
+вимкни музику	stop				slang	pause
+наступна пісня	next				slang	
+наступний трек	next				slang	
+попередня пісня	previous				slang	
+гучніше	volume_up				slang	
+тихіше	volume_down				slang	
+зроби гучніше	volume_up				slang	
+зроби тихіше будь ласка	volume_down				slang	
+пауза будь ласка	pause				slang	
+постав на паузу будь ласка	pause				slang	
+далі	next				slang	
+давай далі	next				slang	
+що грає	now_playing				slang	
+ну шо там дальше	next				slang	
+уключы басту	play	artist	Баста		slang	
+наступная	next				slang	
+гучней	volume_up				slang	
+цішэй	volume_down				slang	
+давай громчей	volume_up				slang	
+шоб громче было	volume_up				slang	
+сделай гучнее	volume_up				slang	
+стартуй музыку	play_wave				slang	resume
+ёпт пауза	pause				filler	
+нахрен выключи	stop				filler	pause
+да ёб твою мать сделай тише	volume_down				filler	
+пиздец как громко	volume_down				filler	
+охренеть как тихо	volume_up				filler	
+ёлки палки дальше	next				filler	
+блин блинский пауза	pause				filler	
+зараза сделай потише	volume_down				filler	
+твою ж дивизию громче	volume_up				filler	
+ну ёмаё следующий	next				filler	
+эээ ну следующий наверное	next				filler	
+будь добра поставь на паузу	pause				filler	
+если тебе не сложно сделай потише пожалуйста	volume_down				filler	
+будь так любезна переключи на следующую песню	next				filler	
+я бы хотела послушать что-нибудь новое	play_wave				filler	
+можно попросить тебя перемотать на начало	seek_to			0	filler	
+извини а можно следующий трек	next				filler	
+знаешь что давай перемешаем	shuffle_on				filler	
+мне бы хотелось чтобы ты включила монеточку	play	artist	Монеточка		filler	
+будь любезна поставь на повтор	repeat_one				filler	
+если можно погромче чуть-чуть	volume_up				filler	
+а давай ты включишь мне мои лайки	play_likes				filler	
+хочу попросить включить русский рок	play	playlist	Русский рок		filler	
+включи песенку про кукушку	play	track	Кино - Кукушка		indirect	
+включи песенку	play_wave				indirect	
+а можно другую песенку	next				indirect	
+сделай погромче а то не слышно ничего	volume_up				indirect	
+выключи эту шарманку	stop				indirect	pause
+включи что-нибудь из старого	play_wave				indirect	
+это кто поёт такой	now_playing				indirect	
+нажми кнопку громче	volume_up				indirect	
+а как сделать погромче	volume_up				indirect	help
+как поставить паузу	pause				indirect	help
+включи песню где поют про группу крови	play	track	Кино - Группа крови		indirect	
+а песенку про мотылька можно	play	track	Макс Корж - Мотылёк		indirect	
+включи мне цоя кино	play	artist	Кино		indirect	
+Включи Басту, а потом — Скриптонита.	play+queue_add	artist	Баста+Скриптонит		alice	
+на всю катушку	volume_set			100	numbers	volume_up
+сделай на максимум	volume_set			100	numbers	
+чуточку погромче	volume_up				numbers	
+намного громче	volume_up				numbers	
+гораздо тише	volume_down				numbers	
+на два деления тише	volume_down				numbers	
+на одно деление громче	volume_up				numbers	
+громкость на семь из десяти	volume_set			70	numbers	
+убавь на тридцать процентов	volume_down			30	numbers	
+сделай тише на десять процентов	volume_down			10	numbers	
+на середину	seek_to				numbers	
+перемотай на середину трека	seek_to				numbers	
+на одну минуту тридцать секунд	seek_to			90	numbers	
+минус десять секунд	seek_backward			10	numbers	
+плюс тридцать секунд	seek_forward			30	numbers	
+вернись на десять секунд	seek_backward			10	numbers	
+перемотай на минуту и десять секунд вперёд	seek_forward			70	numbers	
+какой это трек	now_playing				plain	
+что можно сказать	help				plain	
+верни	undo				plain	previous
+отпаузь	resume				plain	
+включи что угодно	play_wave				plain	
+включи мою коллекцию	play_likes				plain	
+звук обратно	unmute				plain	
+убери из понравившихся	unlike				plain	
+больше не нравится	unlike				plain	
+включи шевчука	play	artist	ДДТ		slang	
+включи бутусова	play	artist	Наутилус Помпилиус		slang	
+включи гребенщикова	play	artist	Аквариум		slang	
+включи слим шейди	play	artist	Eminem		slang	
+включи зонтик рианны	play	track	Rihanna - Umbrella		translit	
+включи кэти перри	none				false_act	
+добавь в очередь металлику	none				false_act	
+в следующий раз	none				false_act	
+продолжай рассказывай	none				false_act	
+убери звук на телевизоре	none				false_act	
+дальше больше	none				false_act	
+это любовь	none				false_act	play
+не лайкай	none				negative	
+громче нет тише	volume_down				correction	
+включи сплин нет кино	play	artist	Кино		correction	
+включи кино нет сплин	play	artist	Сплин		correction	
+включи земфиру ой монеточку	play	artist	Монеточка		correction	
+включи скриптонита ой коржа	play	artist	Макс Корж		correction	
+следующий ой назад	previous				correction	
+громкость сорок нет пятьдесят	volume_set			50	correction	
+включи притон ой нет лучше цепи	play	track	Скриптонит - Цепи		correction	
+добавь в очередь лесника ой нет куклу колдуна	queue_add	track	Король и Шут - Кукла колдуна		correction	
+лайкни ой то есть следующий	next				correction	
+включи цоя ой нет то есть звери и громче	play+volume_up	artist	Звери		correction	
+выключи перемешивание и повтор	shuffle_off+repeat_off				two_part	
+что-то громко	volume_down				indirect	
+что-то тихо	volume_up				indirect	
+не слышу ничего	volume_up				indirect	
+я не слышу музыку	volume_up				indirect	
+слишком тихо	volume_up				indirect	
+слишком громко играет	volume_down				indirect	
+это не моё	next				indirect	
+не моё	next				indirect	
+давай другое	next				indirect	
+что-нибудь другое	next				indirect	play_wave
+поменяй песню	next				indirect	
+эту не хочу	next				indirect	
+отличный трек сохрани	like				indirect	
+как зовут исполнителя	now_playing				indirect	
+кто автор	now_playing				indirect	
+секунду	pause				indirect	
+тихо мне звонят	pause				indirect	mute
+ещё раз	seek_to			0	indirect	repeat_one
+предыдущая была лучше	previous				indirect	
+верни ту песню	previous				indirect	
+хочу слушать её снова и снова	repeat_one				indirect	
+что-нибудь для настроения	play_wave				indirect	
+поставь фоном что-нибудь	play_wave				indirect	
+музыку	play_wave				indirect	resume
+пропускай	next				slang	
+плейни лесника	play	track	Король и Шут - Лесник		slang	
+плейни что-нибудь	play_wave				slang	
+резюм	resume				slang	
+мьютни	mute				slang	
+анмьютни	unmute				slang	
+репит ван	repeat_one				slang	
+репит олл	repeat_all				slang	
+волюм ап	volume_up				slang	
+волюм даун	volume_down				slang	
+в рандоме	shuffle_on				slang	
+без рандома	shuffle_off				slang	
+шо там играет	now_playing				slang	
+зробы тыше	volume_down				slang	
+та включи вже басту	play	artist	Баста		slang	
+ну шо ты включай	resume				slang	
+давай уже наступну	next				slang	
+мотай назад	seek_backward				asr	
+громкость полста	volume_set			50	asr	
+громкость на тридцатник	volume_set			30	asr	
+включи всё от коржа	play	artist	Макс Корж		ambiguous	
+включи музыку моргенштерна	play	artist	Моргенштерн		ambiguous	
+включи двадцать пять на семнадцать	play	artist	25/17		ambiguous	
+включи кино восьмиклассница	play	artist	Кино		ambiguous	
+включи басту чёрный бумер	play	artist	Баста		ambiguous	
+включи скриптонита вечеринка	play	artist	Скриптонит		ambiguous	
+включи земфиру ромашки	play	artist	Земфира		ambiguous	
+включи сплин мое сердце	play	artist	Сплин		ambiguous	
+включи моргенштерна пожалуйста мама разрешила	play	artist	Моргенштерн		indirect	
+хочу песенку про мотылька	play	track	Макс Корж - Мотылёк		indirect	
+а включи мне эту ну цоя	play	artist	Кино		indirect	
+поставь мне музыку погромче	play_wave+volume_up				indirect	play_wave
+включи басту нет скриптонита	play	artist	Скриптонит		correction	
+включи басту вернее скриптонита	play	artist	Скриптонит		correction	
+включи басту лучше скриптонита	play	artist	Скриптонит		correction	
+сделай громче ой нет тише	volume_down				correction	
+громкость тридцать то есть сорок	volume_set			40	correction	
+не лайкни	none				negative	
+не лайкай пожалуйста	none				negative	
+не лайкай этот трек	none				negative	
+не скипай	none				negative	
+выключи повтор и шафл	repeat_off+shuffle_off				two_part	
+отключи перемешивание и повтор	shuffle_off+repeat_off				two_part	
+убери повтор и рандом	repeat_off+shuffle_off				two_part	
+включи цоя кино	play	artist	Кино		ambiguous	
