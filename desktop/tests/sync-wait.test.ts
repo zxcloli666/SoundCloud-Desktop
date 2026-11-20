@@ -30,6 +30,9 @@ test('only syncing and stalled queries wait', () => {
     queuedSince: null,
     waitingSince: NOW,
     retryAt: 0,
+    wait: null,
+    waitAt: NOW,
+    syncedItems: null,
   });
   assert.equal(waitKindOf({ isError: false, syncInfo: info('syncing') }), 'syncing');
   assert.equal(waitKindOf({ isError: false, syncInfo: info('stalled') }), 'stalled');

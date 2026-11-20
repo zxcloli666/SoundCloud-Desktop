@@ -2276,7 +2276,10 @@
     "availability": "{{indexed}}/{{total}} mevcut",
     "verified": "Doğrulandı",
     "noTracks": "Henüz dizinlenmiş parça yok",
-    "comingSoon": "Yakında"
+    "comingSoon": "Yakında",
+    "save": "Kaydet",
+    "saved": "Kaydedildi",
+    "saveHint": "SoundCloud kitaplığına kaydet"
   },
   "contextMenu": {
     "mute": "Sesi kapat",
@@ -3054,5 +3057,20 @@
     "deselect": "Seçimi kaldır",
     "shuffle": "Seçilenleri karıştır",
     "clear": "Seçimi temizle"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Hızlı hat",
+      "queue": "Sırada"
+    },
+    "ahead_one": "{{count}} önde",
+    "ahead_other": "{{count}} önde",
+    "saved": "Alındı"
+  },
+  "syncNow": {
+    "label": "Şimdi eşitle",
+    "hint": "Beğenilerini ve çalma listelerini SoundCloud'dan yeniden oku",
+    "next": "Sonraki eşitleme {{time}}",
+    "failed": "Başlatılamadı, daha sonra tekrar dene"
   }
 }

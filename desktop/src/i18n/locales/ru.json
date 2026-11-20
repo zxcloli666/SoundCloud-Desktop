@@ -2407,7 +2407,10 @@
     "availability": "{{indexed}}/{{total}} доступно",
     "verified": "Проверено",
     "noTracks": "Пока нет проиндексированных треков",
-    "comingSoon": "Скоро"
+    "comingSoon": "Скоро",
+    "save": "Сохранить",
+    "saved": "Сохранён",
+    "saveHint": "Сохранить в библиотеку SoundCloud"
   },
   "discover": {
     "title": "Каталог",
@@ -3122,5 +3125,22 @@
     "deselect": "Снять выбор",
     "shuffle": "Перемешать выбранные",
     "clear": "Сбросить выбор"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Быстрая",
+      "queue": "В очереди"
+    },
+    "saved": "Загружено",
+    "ahead_one": "{{count}} впереди",
+    "ahead_few": "{{count}} впереди",
+    "ahead_many": "{{count}} впереди",
+    "ahead_other": "{{count}} впереди"
+  },
+  "syncNow": {
+    "label": "Обновить",
+    "hint": "Заново прочитать лайки и плейлисты из SoundCloud",
+    "next": "Следующее обновление в {{time}}",
+    "failed": "Не удалось запустить, попробуйте позже"
   }
 }

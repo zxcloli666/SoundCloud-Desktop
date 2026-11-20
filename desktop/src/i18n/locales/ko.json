@@ -2187,7 +2187,10 @@
     "availability": "{{total}}곡 중 {{indexed}}곡 이용 가능",
     "verified": "인증됨",
     "noTracks": "아직 인덱싱된 트랙이 없어요",
-    "comingSoon": "곧 공개"
+    "comingSoon": "곧 공개",
+    "save": "저장",
+    "saved": "저장됨",
+    "saveHint": "SoundCloud 라이브러리에 저장"
   },
   "discover": {
     "title": "둘러보기",
@@ -2961,5 +2964,20 @@
     "deselect": "선택 해제",
     "shuffle": "선택 항목 셔플",
     "clear": "선택 지우기"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "빠른 줄",
+      "queue": "대기열"
+    },
+    "ahead_one": "앞에 {{count}}",
+    "ahead_other": "앞에 {{count}}",
+    "saved": "저장됨"
+  },
+  "syncNow": {
+    "label": "지금 동기화",
+    "hint": "SoundCloud에서 좋아요와 플레이리스트를 다시 불러오기",
+    "next": "다음 동기화 {{time}}",
+    "failed": "시작하지 못했어요, 나중에 다시 시도하세요"
   }
 }

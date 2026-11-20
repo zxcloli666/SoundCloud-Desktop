@@ -49,7 +49,7 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
               {fc(count)}
             </span>
                     )}
-                    <SyncStatusChip quietWhenSynced/>
+                    <SyncStatusChip quietWhenSynced syncNow/>
                 </div>
 
                 {(onFilter || actions) && (

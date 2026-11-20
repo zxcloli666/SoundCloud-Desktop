@@ -672,6 +672,9 @@ export function useUserPopularTracks(userUrn: string | undefined) {
       Date.now(),
     ),
     retryAt: query.dataUpdatedAt + (sync?.retryAfterSeconds ?? 0) * 1000,
+    wait: sync?.wait ?? null,
+    waitAt: query.dataUpdatedAt,
+    syncedItems: sync?.syncedItems ?? null,
   };
   return { ...query, tracks: query.data?.tracks ?? EMPTY_TRACKS, syncState, syncInfo };
 }

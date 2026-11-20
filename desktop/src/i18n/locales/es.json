@@ -2390,7 +2390,10 @@
     "availability": "{{indexed}}/{{total}} disponibles",
     "verified": "Verificado",
     "noTracks": "Aún no hay pistas indexadas",
-    "comingSoon": "Próximamente"
+    "comingSoon": "Próximamente",
+    "save": "Guardar",
+    "saved": "Guardado",
+    "saveHint": "Guardar en tu biblioteca de SoundCloud"
   },
   "discover": {
     "title": "Descubrir",
@@ -3088,5 +3091,20 @@
     "deselect": "Deseleccionar",
     "shuffle": "Mezclar seleccionadas",
     "clear": "Borrar selección"
+  },
+  "syncWait": {
+    "lane": {
+      "read": "Vía rápida",
+      "queue": "En cola"
+    },
+    "ahead_one": "{{count}} delante",
+    "ahead_other": "{{count}} delante",
+    "saved": "Guardado"
+  },
+  "syncNow": {
+    "label": "Sincronizar",
+    "hint": "Volver a leer tus me gusta y listas de SoundCloud",
+    "next": "Próxima sincronización a las {{time}}",
+    "failed": "No se pudo iniciar, inténtalo más tarde"
   }
 }

@@ -143,6 +143,7 @@ import {
   Wifi as _Wifi,
   WifiOff as _WifiOff,
   X as _X,
+  Zap as _Zap,
 } from 'lucide-react';
 import { memo } from 'react';
 import { siInstagram, siVk, siX, siYoutube } from 'simple-icons';
@@ -301,6 +302,7 @@ export const Volume1 = memo(_Volume1);
 export const Volume2 = memo(_Volume2);
 export const VolumeX = memo(_VolumeX);
 export const X = memo(_X);
+export const Zap = memo(_Zap);
 export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
 export const AudioLines = memo(_AudioLines);

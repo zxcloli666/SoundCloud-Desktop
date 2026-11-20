@@ -5,6 +5,7 @@ import { type Aura, auraRgba } from '../../lib/aura';
 import { dur } from '../../lib/formatters';
 import { Calendar, Check, Disc3, ListMusic, MicVocal } from '../../lib/icons';
 import {usePerfMode} from '../../lib/perf';
+import { PlaylistLikeBtn } from '../playlist/PlaylistActions';
 import { Avatar } from '../ui/Avatar';
 import { GlassHeroPanel } from '../ui/GlassHeroPanel';
 import { InfoChip } from '../user/UserChips';
@@ -233,6 +234,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center @min-[740px]:justify-start">
             <AlbumPlayButton tracks={album.tracks} aura={aura} />
+            {album.sc_playlist_urn && <PlaylistLikeBtn playlistUrn={album.sc_playlist_urn} />}
             <AlbumSaveButton album={album} />
           </div>
         </div>

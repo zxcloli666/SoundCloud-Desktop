@@ -127,7 +127,7 @@ export const LikesTab = React.memo(function LikesTab({filter}: { filter: string 
                     {isWaitKind(notice) ? (
                         <WaitStrip
                             kind={notice}
-                            since={syncInfo.waitingSince}
+                            info={syncInfo}
                             scope="likes"
                             icon={<Heart size={16}/>}
                             title={t('library.likedTracks')}

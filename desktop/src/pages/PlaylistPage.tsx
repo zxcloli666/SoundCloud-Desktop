@@ -356,7 +356,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
       return (
         <WaitStrip
           kind={notice}
-          since={tracksSyncInfo.waitingSince}
+          info={tracksSyncInfo}
           scope="tracks"
           icon={<ListMusic size={16} />}
           title={t('playlist.partialTracks', {

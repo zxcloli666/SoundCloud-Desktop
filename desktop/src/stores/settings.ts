@@ -327,7 +327,7 @@ const DEFAULTS = {
   roomAccess: 'private' as RoomAccess,
   autoplay: true,
   playAltUploads: true,
-  searchPlayback: 'similar' as SearchPlayback,
+  searchPlayback: 'results' as SearchPlayback,
   sidebarCollapsed: false,
   floatingComments: true,
   startupPage: 'home' as StartupPage,

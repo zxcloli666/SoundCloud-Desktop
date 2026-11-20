@@ -1,4 +1,5 @@
-import { memo } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
+import { type CSSProperties, memo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { type BlockedArtist, useBlocklistVersion } from '../../../lib/blocked-artists';
@@ -21,7 +22,9 @@ function blockedSince(value: string | undefined): string | null {
   return date.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-const BlockedRow = memo(({ entry }: { entry: BlockedArtist }) => {
+const ROW_PITCH = 64;
+
+const BlockedRow = memo(({ entry, style }: { entry: BlockedArtist; style: CSSProperties }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { busy, unblock } = useBlockToggle(entry);
@@ -29,7 +32,10 @@ const BlockedRow = memo(({ entry }: { entry: BlockedArtist }) => {
   const since = blockedSince(entry.created_at);
 
   return (
-    <li className="group flex items-center gap-3 rounded-2xl border-[0.5px] border-ink/[0.05] bg-ink/[0.02] px-3 py-2.5 transition-colors duration-200 hover:border-ink/[0.10] hover:bg-ink/[0.04]">
+    <li
+      style={style}
+      className="group absolute left-0 top-0 flex h-[58px] w-full items-center gap-3 rounded-2xl border-[0.5px] border-ink/[0.05] bg-ink/[0.02] px-3 py-2.5 transition-colors duration-200 hover:border-ink/[0.10] hover:bg-ink/[0.04]"
+    >
       <button
         type="button"
         disabled={!path}
@@ -76,6 +82,14 @@ const BlockedRow = memo(({ entry }: { entry: BlockedArtist }) => {
 export function BlockedArtistsCard() {
   const { t } = useTranslation();
   const entries = useBlocklistVersion();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const virtualizer = useVirtualizer({
+    count: entries.length,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_PITCH,
+    overscan: 8,
+    getItemKey: (index) => `${entries[index].kind}:${entries[index].id}`,
+  });
 
   return (
     <Card
@@ -98,11 +112,17 @@ export function BlockedArtistsCard() {
           <p className="text-[12px] leading-snug text-ink-35">{t('blocklist.empty')}</p>
         </div>
       ) : (
-        <ul className="flex max-h-[420px] flex-col gap-1.5 overflow-y-auto pr-1">
-          {entries.map((entry) => (
-            <BlockedRow key={`${entry.kind}:${entry.id}`} entry={entry} />
-          ))}
-        </ul>
+        <div ref={scrollRef} className="max-h-[420px] overflow-y-auto pr-1">
+          <ul className="relative w-full" style={{ height: virtualizer.getTotalSize() - 6 }}>
+            {virtualizer.getVirtualItems().map((row) => (
+              <BlockedRow
+                key={row.key}
+                entry={entries[row.index]}
+                style={{ transform: `translateY(${row.start}px)` }}
+              />
+            ))}
+          </ul>
+        </div>
       )}
     </Card>
   );

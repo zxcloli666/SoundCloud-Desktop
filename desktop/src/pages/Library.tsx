@@ -214,7 +214,7 @@ export const Library = React.memo(() => {
     sections[id] = (
       <WaitStrip
         kind={waitKindOf(query)!}
-        since={query.syncInfo.waitingSince}
+        info={query.syncInfo}
         scope={scope}
         icon={<Icon size={16} />}
         title={t(title)}
