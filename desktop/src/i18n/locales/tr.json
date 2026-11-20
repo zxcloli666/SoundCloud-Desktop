@@ -376,7 +376,10 @@
     "deleteAction": "Sil",
     "deleteConfirm": "\"{{title}}\" SoundCloud'dan kalıcı olarak silinecek. Dinlenmeler, beğeniler ve yorumlar da gider.",
     "deleted": "Parça silindi",
-    "notSyncedYet": "Bu parça henüz senkronize edilmedi, bir dakika sonra tekrar deneyin"
+    "notSyncedYet": "Bu parça henüz senkronize edilmedi, bir dakika sonra tekrar deneyin",
+    "lyricsEarlier": "Sözler 0,5 sn erken",
+    "lyricsLater": "Sözler 0,5 sn geç",
+    "lyricsOffsetReset": "Söz kaydırmasını sıfırla"
   },
   "playlist": {
     "playAll": "Hepsini Çal",
@@ -1638,7 +1641,9 @@
     "groupGlobal": "Genel (her uygulamada)",
     "zoomIn": "Arayüzü büyüt",
     "zoomOut": "Arayüzü küçült",
-    "zoomReset": "Arayüz ölçeğini sıfırla"
+    "zoomReset": "Arayüz ölçeğini sıfırla",
+    "lyricsEarlier": "Sözleri öne al",
+    "lyricsLater": "Sözleri geciktir"
   },
   "update": {
     "available": "Güncelleme mevcut",

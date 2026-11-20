@@ -349,7 +349,10 @@
     "deleteAction": "Excluir",
     "deleteConfirm": "\"{{title}}\" será excluída do SoundCloud para sempre. Reproduções, curtidas e comentários vão junto.",
     "deleted": "Faixa excluída",
-    "notSyncedYet": "Esta faixa ainda não foi sincronizada, tente de novo em um minuto"
+    "notSyncedYet": "Esta faixa ainda não foi sincronizada, tente de novo em um minuto",
+    "lyricsEarlier": "Letra 0,5 s antes",
+    "lyricsLater": "Letra 0,5 s depois",
+    "lyricsOffsetReset": "Zerar o ajuste da letra"
   },
   "playlist": {
     "playAll": "Tocar tudo",
@@ -1632,7 +1635,9 @@
     "groupGlobal": "Globais (qualquer app)",
     "zoomIn": "Aumentar zoom da interface",
     "zoomOut": "Diminuir zoom da interface",
-    "zoomReset": "Redefinir escala da interface"
+    "zoomReset": "Redefinir escala da interface",
+    "lyricsEarlier": "Letra antes",
+    "lyricsLater": "Letra depois"
   },
   "update": {
     "available": "Atualização disponível",

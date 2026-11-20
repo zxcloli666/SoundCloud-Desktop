@@ -1,3 +1,4 @@
+import { lyricsOffsetOf } from '../stores/lyrics-offset';
 import { getLyricsByTrack, type LyricLine, type LyricsResult } from './lyrics';
 import { queryClient } from './query-client';
 
@@ -77,7 +78,7 @@ export function discordLyricLine(trackUrn: string, time: number): string | null 
     return null;
   }
   if (!settled) void loadDiscordLyrics(trackUrn);
-  return lines ? lyricLineAt(lines, time) : null;
+  return lines ? lyricLineAt(lines, time - lyricsOffsetOf(trackUrn)) : null;
 }
 
 export function resetDiscordLyrics() {

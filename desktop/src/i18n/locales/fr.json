@@ -348,7 +348,10 @@
     "deleteAction": "Supprimer",
     "deleteConfirm": "\"{{title}}\" sera supprimé définitivement de SoundCloud, avec ses écoutes, ses j'aime et ses commentaires.",
     "deleted": "Titre supprimé",
-    "notSyncedYet": "Ce titre n'est pas encore synchronisé, réessayez dans une minute"
+    "notSyncedYet": "Ce titre n'est pas encore synchronisé, réessayez dans une minute",
+    "lyricsEarlier": "Paroles 0,5 s plus tôt",
+    "lyricsLater": "Paroles 0,5 s plus tard",
+    "lyricsOffsetReset": "Réinitialiser le décalage"
   },
   "playlist": {
     "playAll": "Tout lire",
@@ -1609,7 +1612,9 @@
     "groupGlobal": "Global (toute application)",
     "zoomIn": "Agrandir l'interface",
     "zoomOut": "Réduire l'interface",
-    "zoomReset": "Réinitialiser l'échelle de l'interface"
+    "zoomReset": "Réinitialiser l'échelle de l'interface",
+    "lyricsEarlier": "Paroles plus tôt",
+    "lyricsLater": "Paroles plus tard"
   },
   "importer": {
     "title": "Importer",

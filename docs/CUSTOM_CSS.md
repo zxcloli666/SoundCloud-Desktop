@@ -64,6 +64,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="lyrics"]` | Full-screen lyrics |
 | `[data-ui="lyrics-backdrop"]` | Blurred background of the full screen player |
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
+| `[data-ui="lyrics-offset"]` | Lyrics timing offset control (minus, value, plus) |
 | `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view`, `moments` or `room` (track page cover) |
 | `html[data-video-opaque]` | Set while the video fully covers its place (same values as `data-place`); what it covers is hidden |
 | `[data-ui="lyrics-video-toggle"]` | Video on/off button in full screen |

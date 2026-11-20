@@ -6,7 +6,8 @@ import { isLocalUrn } from '../../../lib/local-library';
 import { getLyricsByTrack, searchLyricsManual } from '../../../lib/lyrics';
 import { getTrackDisplay } from '../../../lib/track-display';
 import type { Track } from '../../../stores/player';
-import { LyricsSourceBadge, PlainLyrics, SyncedLyrics } from './SyncedLyrics';
+import { OffsetSyncedLyrics } from './LyricsOffsetControl';
+import { LyricsSourceBadge, PlainLyrics } from './SyncedLyrics';
 
 const PENDING_POLL_FAST_MS = 3_000;
 const PENDING_POLL_SLOW_MS = 10_000;
@@ -191,10 +192,12 @@ export const LyricsPane = React.memo(({ track }: { track: Track }) => {
 
   if (lyrics?.synced && lyrics.synced.length > 0) {
     return (
-      <>
-        <LyricsSourceBadge source={lyrics.source} onSearch={startSearch} />
-        <SyncedLyrics lines={lyrics.synced} />
-      </>
+      <OffsetSyncedLyrics
+        urn={track.urn}
+        lines={lyrics.synced}
+        source={lyrics.source}
+        onSearch={startSearch}
+      />
     );
   }
 

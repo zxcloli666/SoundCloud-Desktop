@@ -387,7 +387,11 @@ export const PlainLyrics = React.memo(({text}: { text: string }) => (
 ));
 
 export const LyricsSourceBadge = React.memo(
-    ({source, onSearch}: { source: LyricsSource; onSearch: () => void }) => {
+    ({source, onSearch, children}: {
+        source: LyricsSource;
+        onSearch: () => void;
+        children?: React.ReactNode
+    }) => {
         const {t} = useTranslation();
         const label = source === 'self_gen' ? t('track.selfGenerated') : SOURCE_LABELS[source];
         return (
@@ -400,6 +404,7 @@ export const LyricsSourceBadge = React.memo(
                 ) : (
                     <span/>
                 )}
+                {children}
                 <button
                     type="button"
                     onClick={onSearch}

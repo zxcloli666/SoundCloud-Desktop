@@ -346,7 +346,10 @@
     "deleteAction": "삭제",
     "deleteConfirm": "\"{{title}}\" 트랙이 SoundCloud에서 영구 삭제돼요. 재생 수, 좋아요, 댓글도 함께 사라져요.",
     "deleted": "트랙을 삭제했어요",
-    "notSyncedYet": "아직 동기화되지 않은 트랙이에요. 잠시 후 다시 시도해 주세요"
+    "notSyncedYet": "아직 동기화되지 않은 트랙이에요. 잠시 후 다시 시도해 주세요",
+    "lyricsEarlier": "가사 0.5초 앞당기기",
+    "lyricsLater": "가사 0.5초 늦추기",
+    "lyricsOffsetReset": "가사 싱크 초기화"
   },
   "playlist": {
     "playAll": "모두 재생",
@@ -1568,7 +1571,9 @@
     "groupGlobal": "전역 (모든 앱)",
     "zoomIn": "인터페이스 확대",
     "zoomOut": "인터페이스 축소",
-    "zoomReset": "인터페이스 크기 초기화"
+    "zoomReset": "인터페이스 크기 초기화",
+    "lyricsEarlier": "가사 앞당기기",
+    "lyricsLater": "가사 늦추기"
   },
   "update": {
     "available": "업데이트 가능",
