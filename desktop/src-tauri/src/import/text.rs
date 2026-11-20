@@ -28,7 +28,12 @@ fn plain(text: &str) -> Vec<ExtTrack> {
         .lines()
         .map(strip_numbering)
         .filter(|line| !line.is_empty())
-        .filter_map(split_line)
+        .filter_map(|line| {
+            let (line, duration_ms) = strip_tail(line);
+            let mut track = split_line(line)?;
+            track.duration_ms = duration_ms;
+            Some(track)
+        })
         .collect();
     drop_header(tracks)
 }
@@ -43,6 +48,29 @@ pub fn parse(text: &str) -> Result<ExtList, Failure> {
         tracks,
         partial: false,
     })
+}
+
+fn strip_tail(line: &str) -> (&str, Option<u64>) {
+    let is_marker = |token: &str| matches!(token, "E" | "\u{415}" | "\u{1F174}");
+    let (mut rest, mut marked) = (line.trim_end(), false);
+    if let Some((head, token)) = rest.rsplit_once(char::is_whitespace)
+        && is_marker(token)
+    {
+        rest = head.trim_end();
+        marked = true;
+    }
+    let Some((head, token)) = rest.rsplit_once(char::is_whitespace) else {
+        return (line, None);
+    };
+    let Some(ms) = vk_text::duration(token) else {
+        return (line, None);
+    };
+    let head = head.trim_end();
+    let head = match head.rsplit_once(char::is_whitespace) {
+        Some((before, token)) if is_marker(token) && !marked => before.trim_end(),
+        _ => head,
+    };
+    (head, Some(ms))
 }
 
 fn drop_header(mut tracks: Vec<ExtTrack>) -> Vec<ExtTrack> {
@@ -162,5 +190,26 @@ mod tests {
             vec![pair("Moby", "Porcelain")]
         );
         assert!(parse(" \n\n").is_err());
+    }
+
+    #[test]
+    fn inline_durations_and_markers_are_stripped() {
+        let text = "Moby - Porcelain 4:01\nSkrillex \u{2014} Bangarang 3:35\nDaft Punk \u{2013} One More Time\t5:20\nEminem - Lose Yourself E 5:26\nTravis Scott - Sicko Mode 5:12 E\nVitamin E\n";
+        let tracks = parse(text).unwrap().tracks;
+        let found: Vec<_> = tracks
+            .iter()
+            .map(|t| (t.artist.as_str(), t.title.as_str(), t.duration_ms))
+            .collect();
+        assert_eq!(
+            found,
+            vec![
+                ("Moby", "Porcelain", Some(241_000)),
+                ("Skrillex", "Bangarang", Some(215_000)),
+                ("Daft Punk", "One More Time", Some(320_000)),
+                ("Eminem", "Lose Yourself", Some(326_000)),
+                ("Travis Scott", "Sicko Mode", Some(312_000)),
+                ("", "Vitamin E", None),
+            ]
+        );
     }
 }

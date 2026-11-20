@@ -42,7 +42,7 @@ fn classify(line: &str) -> Line<'_> {
     Line::Text(line)
 }
 
-fn duration(line: &str) -> Option<u64> {
+pub(super) fn duration(line: &str) -> Option<u64> {
     let parts: Vec<&str> = line.split(':').collect();
     if !(2..=3).contains(&parts.len()) {
         return None;
