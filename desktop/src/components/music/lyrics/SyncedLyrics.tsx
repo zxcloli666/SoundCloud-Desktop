@@ -23,6 +23,13 @@ const PAUSE_MARKER = '♪♪♪';
 const PAUSE_GAP_THRESHOLD = 4.5; // seconds — when to insert ♪♪♪
 const PAUSE_MIN_LENGTH = 1;
 
+const SECONDS_PER_CHAR = 0.12;
+const LINE_SPAN_SLACK = 1;
+
+function lineSpan(text: string): number {
+    return text.length * SECONDS_PER_CHAR + LINE_SPAN_SLACK;
+}
+
 type DisplayLine = LyricLine & { pause?: boolean; duration?: number };
 
 function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
@@ -35,7 +42,7 @@ function buildDisplayLines(lines: LyricLine[]): DisplayLine[] {
             continue;
         }
         if (prev) {
-            const start = prevEnd ?? prev.time + 0.5;
+            const start = prevEnd ?? prev.time + Math.min(lineSpan(prev.text), cur.time - prev.time);
             const longGap = cur.time - prev.time >= PAUSE_GAP_THRESHOLD;
             if (longGap && cur.time - start >= PAUSE_MIN_LENGTH) {
                 out.push({
@@ -242,7 +249,8 @@ export const SyncedLyrics = React.memo(({lines}: { lines: LyricLine[] }) => {
             if (idx < 0 || idx >= linesRef.current.length) return;
             const cur = linesRef.current[idx];
             const next = linesRef.current[idx + 1];
-            const dur = Math.max(0.4, (next?.time ?? cur.time + 2.6) - cur.time);
+            const gap = (next?.time ?? cur.time + 2.6) - cur.time;
+            const dur = Math.max(0.4, cur.pause ? gap : Math.min(gap, lineSpan(cur.text)));
             const target = clamp01((getCurrentTime() - cur.time) / dur);
 
             const prev = lineProgressRef.current;
