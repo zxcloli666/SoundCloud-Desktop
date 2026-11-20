@@ -1763,6 +1763,7 @@
     }
   },
   "common": {
+    "backToTop": "Back to top",
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Retry",

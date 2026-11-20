@@ -1679,6 +1679,7 @@
     }
   },
   "common": {
+    "backToTop": "Başa dön",
     "loading": "Yükleniyor...",
     "error": "Bir şeyler ters gitti",
     "retry": "Tekrar dene",

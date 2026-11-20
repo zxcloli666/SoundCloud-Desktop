@@ -1609,6 +1609,7 @@
     }
   },
   "common": {
+    "backToTop": "맨 위로",
     "loading": "로딩 중...",
     "error": "문제가 발생했어요",
     "retry": "다시 시도",
