@@ -220,6 +220,7 @@ function createTrackWaveContinuationSource(seedId: string): QueueContinuationSou
         seedId,
         cursor,
         limit: TRACK_WAVE_PAGE_SIZE,
+        languages: useSettingsStore.getState().soundwaveLanguages,
         hideListened: useSettingsStore.getState().soundwaveHideListened,
       });
       cursor = batch.cursor;
