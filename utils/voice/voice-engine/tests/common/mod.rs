@@ -330,6 +330,8 @@ pub fn timing() -> Timing {
         server: Duration::from_secs(5),
         release: Duration::from_millis(80),
         opening: Duration::from_millis(150),
+        pause: Duration::ZERO,
+        unfinished_pause: Duration::ZERO,
     }
 }
 
