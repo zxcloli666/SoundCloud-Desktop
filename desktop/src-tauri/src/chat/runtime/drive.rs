@@ -3,7 +3,6 @@ use std::sync::Arc;
 use super::Runtime;
 use super::bringup::Halt;
 use super::local::Core;
-use crate::network::offline;
 
 const FIRST_FAILURE: u32 = 1;
 
@@ -19,7 +18,6 @@ impl Runtime {
                 Err(error) => self.halt(&error, FIRST_FAILURE),
             },
             _ = self.signals.restarted(generation) => Halt::Restart,
-            _ = offline::entered() => Halt::Restart,
         }
     }
 }

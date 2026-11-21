@@ -1,16 +1,7 @@
-import { offlineModeOn } from '../../stores/app-status';
 import { trackedInvoke as invoke } from '../diagnostics';
 import type { Tier } from '../edge/config';
 
-export type NetErrorKind =
-  | 'timeout'
-  | 'dns'
-  | 'connect'
-  | 'tls'
-  | 'reset'
-  | 'body'
-  | 'offline'
-  | 'other';
+export type NetErrorKind = 'timeout' | 'dns' | 'connect' | 'tls' | 'reset' | 'body' | 'other';
 
 export class NetError extends Error {
   constructor(
@@ -104,7 +95,6 @@ export async function netRequest(
   init: NetInit = {},
 ): Promise<{ res: Response; bytes: number; stalled: boolean }> {
   if (init.signal?.aborted) throw abortError();
-  if (offlineModeOn()) throw new NetError('offline', 'offline mode');
   const id = takeId();
   const request = {
     id,

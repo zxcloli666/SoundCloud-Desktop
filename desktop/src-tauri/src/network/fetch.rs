@@ -13,7 +13,6 @@ use crate::diag::trace;
 use crate::network::edge::{Hop, Tier};
 use crate::network::fail::{self, FailKind};
 use crate::network::netcheck::model::Role;
-use crate::network::offline::{self, Offline};
 use crate::network::pace::{self, Pace};
 use crate::network::traced;
 use crate::network::{dns, system_proxy};
@@ -64,7 +63,6 @@ pub enum NetKind {
     Tls,
     Reset,
     Body,
-    Offline,
     Other,
 }
 
@@ -167,15 +165,7 @@ pub async fn net_fetch(request: FetchRequest) -> tauri::ipc::Response {
         return tauri::ipc::Response::new(frame(&head, &[]));
     };
     let id = request.id;
-    let task = tokio::spawn(async move {
-        tokio::select! {
-            biased;
-            () = offline::entered() => {
-                (Head::failed(NetKind::Offline, Offline.to_string()), Vec::new())
-            }
-            done = perform(pooled, fresh, request) => done,
-        }
-    });
+    let task = tokio::spawn(perform(pooled, fresh, request));
     inflight().insert(id, task.abort_handle());
     let done = task.await;
     inflight().remove(&id);

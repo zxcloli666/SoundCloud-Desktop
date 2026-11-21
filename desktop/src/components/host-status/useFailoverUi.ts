@@ -17,7 +17,7 @@ export function useFailoverUi(): FailoverUi {
     useShallow((s) => ({ main: s.main, star: s.star, net: s.net })),
   );
   const navigatorOnline = useAppStatusStore((s) => s.navigatorOnline);
-  const offlineBypass = useAppStatusStore((s) => s.offlineBypass || s.offlineMode);
+  const offlineBypass = useAppStatusStore((s) => s.offlineBypass);
   const hasSession = useAuthStore((s) => s.hasSession);
   const premium = usePremium();
   // Деградация main живёт вне zustand (её меняет сетевой слой, а не стор) —

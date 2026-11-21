@@ -3,7 +3,6 @@ import { trackedInvoke as invoke, onDiagQueueFull } from './diagnostics';
 import i18n from '../i18n';
 import { getIsPremium } from './premium-cache';
 import { requestedQuality } from './streaming';
-import { offlineModeOn } from '../stores/app-status';
 
 export type ReportTrigger = 'manual' | 'render' | 'netcheck';
 export type ReportResult = { code: string } | { file: string };
@@ -42,7 +41,7 @@ export async function sendReport(trigger: ReportTrigger): Promise<ReportResult> 
 }
 
 async function flushEvents() {
-  if (flushing || offlineModeOn()) return;
+  if (flushing) return;
   flushing = true;
   try {
     await pushSession();
