@@ -3,8 +3,8 @@ use crate::kin;
 use crate::lexicon::{
     self, ABOUT_OWN_WORDS, ASKS_A_PERSON, ASKS_TO_TALK, BLOCK_HEAD, BLOCK_TAIL, DENY, DOWN_WORDS,
     FED_UP, HELLO_ON_THE_PHONE, IDLE, INSISTING, LIKE_HEDGES, LISTENERS, NEXT_STRONG, OBJECT_VERBS,
-    ORDER_ENDINGS, PAUSE_WORDS, PEOPLE, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, STOP_WORDS,
-    SUBJECTS, TAIL_REMARK, TO_THE_LISTENER,
+    ORDER_ENDINGS, PAUSE_WORDS, PEOPLE, PLAY_STRONG, PLAY_WEAK, PLAYER, PREV_STRONG, REMOVE_WORDS,
+    STOP_WORDS, SUBJECTS, TAIL_REMARK, TO_THE_LISTENER,
 };
 use crate::normalize::Tok;
 use crate::types::Intent;
@@ -261,6 +261,18 @@ fn asks_to_talk(head: &[Tok], window: &[Tok]) -> bool {
     said(ASKS_TO_TALK, head) && !said(PLAY_STRONG, window) && !said(PLAY_WEAK, window)
 }
 
+fn misheard_removal(head: &[Tok], said: Intent) -> bool {
+    let Some(last) = head.last() else {
+        return false;
+    };
+    let w = last.w.as_str();
+    said == Intent::Like
+        && !lexicon::is_known(w)
+        && REMOVE_WORDS
+            .iter()
+            .any(|remove| intent::edit_distance(w, remove) <= 2)
+}
+
 pub fn find(toks: &[Tok]) -> Option<Found> {
     let n = toks.len();
     if !(2..=12).contains(&n) {
@@ -275,7 +287,7 @@ pub fn find(toks: &[Tok]) -> Option<Found> {
                 continue;
             }
             let det = intent::detect(window);
-            if answers_a_call(head, det.intent) {
+            if answers_a_call(head, det.intent) || misheard_removal(head, det.intent) {
                 continue;
             }
             let head_only = end == n && start > 0 && head_intent(det.intent);
