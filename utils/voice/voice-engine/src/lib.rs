@@ -97,13 +97,15 @@ pub struct Timing {
     pub server: Duration,
     pub release: Duration,
     pub opening: Duration,
+    pub pause: Duration,
+    pub unfinished_pause: Duration,
 }
 
 impl Default for Timing {
     fn default() -> Self {
         Self {
             no_speech: Duration::from_secs(4),
-            max_utterance: Duration::from_secs(12),
+            max_utterance: Duration::from_secs(25),
             ask: Duration::from_secs(8),
             done: Duration::from_secs(10),
             lookup: Duration::from_millis(1200),
@@ -112,6 +114,8 @@ impl Default for Timing {
             server: Duration::from_secs(100),
             release: Duration::from_millis(80),
             opening: Duration::from_millis(700),
+            pause: Duration::from_millis(400),
+            unfinished_pause: Duration::from_millis(1500),
         }
     }
 }
