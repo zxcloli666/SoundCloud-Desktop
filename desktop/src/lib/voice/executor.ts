@@ -225,7 +225,7 @@ export function answerAsk(choice: string) {
 
 export function dismissHud() {
   const runtime = useVoiceRuntime.getState();
-  dismiss(runtime.hud, {
+  dismiss(runtime.hud, runtime.engine, {
     stopChat,
     cancelEngine: () => void voiceIpc.cancel().catch(() => {}),
     hide: runtime.hideHud,
