@@ -2,7 +2,13 @@ import type { MediaId, MediaVariant } from '../../../../lib/chat/media-types';
 import { chatMediaUrl } from '../../../../lib/chat/media-url';
 import type { ConvId } from '../../../../lib/chat/types';
 
-export type ViewVariant = 'placeholder' | 'thumb' | 'image' | 'upload-thumb';
+export type ViewVariant =
+  | 'placeholder'
+  | 'thumb'
+  | 'image'
+  | 'motion'
+  | 'upload-thumb'
+  | 'upload-motion';
 
 export function viewUrl(
   conversationId: ConvId,

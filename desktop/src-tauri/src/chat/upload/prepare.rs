@@ -2,7 +2,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-use sc_chat::media::{DECODE_THREADS, DECODE_TIMEOUT, MediaError, SOURCE_MAX_BYTES};
+use sc_chat::media::{DECODE_THREADS, MediaError, PREPARE_TIMEOUT, SOURCE_MAX_BYTES};
 use sc_chat::{ChatError, ChatResult};
 use tokio::io::AsyncReadExt;
 use tokio::sync::Semaphore;
@@ -16,7 +16,7 @@ impl Default for Prepare {
     fn default() -> Self {
         Self {
             slots: Arc::new(Semaphore::new(DECODE_THREADS)),
-            timeout: DECODE_TIMEOUT,
+            timeout: PREPARE_TIMEOUT,
         }
     }
 }

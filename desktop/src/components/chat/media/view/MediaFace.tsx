@@ -5,6 +5,7 @@ import type { ConvId } from '../../../../lib/chat/types';
 import { BlurImage } from '../BlurImage';
 import { CloudOff, ImageOff, RotateCcw } from './icons';
 import { type LoadAttempt, useLoadAttempt } from './load-attempt';
+import { MotionImage } from './MotionImage';
 import { type GoneState, useGone, useRevive } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
@@ -98,19 +99,36 @@ export const FailedFace = memo(function FailedFace({ compact }: { compact: boole
   );
 });
 
+const GifBadge = memo(function GifBadge() {
+  const { t } = useTranslation();
+  return (
+    <span
+      aria-hidden
+      data-ui="chat-media-gif"
+      data-scheme="dark"
+      className="pointer-events-none absolute bottom-1.5 left-1.5 rounded-[5px] bg-paper/70 px-1.5 py-px text-[10px] font-bold tracking-wide text-ink-90 ring-1 ring-ink/15"
+    >
+      {t('chat.gallery.tile.gif')}
+    </span>
+  );
+});
+
 export const MediaFace = memo(function MediaFace({
   conversationId,
   mediaId,
+  motion,
   thumb,
   compact,
 }: {
   conversationId: ConvId;
   mediaId: MediaId;
+  motion: boolean;
   thumb: ThumbState;
   compact: boolean;
 }) {
   const calm = useCalmMotion();
   if (thumb.gone) return <GoneFace state={thumb.gone} compact={compact} />;
+  const animated = motion && thumb.phase === 'ready';
   return (
     <>
       <span aria-hidden className="absolute inset-0 bg-ink/[0.06]" />
@@ -134,6 +152,8 @@ export const MediaFace = memo(function MediaFace({
           transition: calm ? undefined : `opacity ${THUMB_FADE_MS}ms ease-out`,
         }}
       />
+      {animated && !calm && <MotionImage src={viewUrl(conversationId, mediaId, 'motion')} cover />}
+      {animated && calm && <GifBadge />}
       {thumb.phase === 'failed' && <FailedFace compact={compact} />}
     </>
   );

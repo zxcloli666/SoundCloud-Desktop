@@ -13,6 +13,7 @@ import { fitInside, type Size } from './album-layout';
 import { CloudOff, ImageOff, LoaderCircle, RotateCcw } from './icons';
 import type { ViewImage } from './images';
 import { type LoadPhase, useLoadAttempt } from './load-attempt';
+import { MotionImage } from './MotionImage';
 import { useGone, useRevive } from './media-state';
 import { useCalmMotion } from './motion';
 import { viewUrl } from './urls';
@@ -232,6 +233,9 @@ export const LightboxStage = memo(function LightboxStage({
                     transition: calm ? undefined : 'opacity 240ms ease-out',
                   }}
                 />
+              )}
+              {wanted && image.motion && (
+                <MotionImage src={viewUrl(conversationId, mediaId, 'motion')} cover={false} />
               )}
             </div>
           </div>

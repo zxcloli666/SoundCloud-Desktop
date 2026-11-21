@@ -6,6 +6,7 @@ import { failureOf, notifyFailure } from '../compose/failure';
 import { AlbumFrame, type TileStyle } from './AlbumFrame';
 import { albumLayout, type Size } from './album-layout';
 import { CircleAlert, RotateCcw, X } from './icons';
+import { MotionImage } from './MotionImage';
 import { useCalmMotion } from './motion';
 import { ProgressRing } from './ProgressRing';
 import { uploadDone, uploadFraction } from './upload-progress';
@@ -89,6 +90,9 @@ const UploadTile = memo(function UploadTile({
         onLoad={onLoad}
         className="absolute inset-0 size-full object-cover"
       />
+      {upload.motionBytes > 0 && !calm && (
+        <MotionImage src={viewUrl(upload.conversationId, upload.id, 'upload-motion')} cover />
+      )}
       <span
         data-scheme="dark"
         className="chat-media-motion absolute inset-0 flex items-center justify-center"

@@ -27,9 +27,11 @@ pub const MEDIA_STATE: &str = "chat:media-state";
 pub enum Variant {
     Thumb,
     Image,
+    Motion,
     Placeholder,
     UploadThumb,
     UploadImage,
+    UploadMotion,
 }
 
 impl Variant {
@@ -37,9 +39,11 @@ impl Variant {
         match raw {
             "thumb" => Some(Self::Thumb),
             "image" => Some(Self::Image),
+            "motion" => Some(Self::Motion),
             "placeholder" => Some(Self::Placeholder),
             "upload-thumb" => Some(Self::UploadThumb),
             "upload-image" => Some(Self::UploadImage),
+            "upload-motion" => Some(Self::UploadMotion),
             _ => None,
         }
     }
@@ -49,6 +53,7 @@ impl Variant {
 pub enum Part {
     Thumb,
     Image,
+    Motion,
 }
 
 impl Part {
@@ -56,6 +61,7 @@ impl Part {
         match self {
             Self::Thumb => "thumb",
             Self::Image => "image",
+            Self::Motion => "motion",
         }
     }
 }
@@ -102,12 +108,14 @@ pub async fn load(state: &ChatState, key: &MediaKey) -> ChatResult<Fetched> {
     match key.variant {
         Variant::UploadThumb => local::upload(state, downloads, key, Part::Thumb).await,
         Variant::UploadImage => local::upload(state, downloads, key, Part::Image).await,
+        Variant::UploadMotion => local::upload(state, downloads, key, Part::Motion).await,
         Variant::Placeholder => match attachment(state, &key).await? {
             Some(attachment) => Ok(open::placeholder(attachment.thumbhash).await),
             None => Ok(unknown(downloads, &key)),
         },
         Variant::Thumb => remote(state, downloads, key, Part::Thumb).await,
         Variant::Image => remote(state, downloads, key, Part::Image).await,
+        Variant::Motion => remote(state, downloads, key, Part::Motion).await,
     }
 }
 

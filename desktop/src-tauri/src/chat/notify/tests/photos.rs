@@ -16,6 +16,7 @@ fn with_photos(body: &str, count: u128) -> Message {
             w: 1600,
             h: 1200,
             thumbhash: vec![1, 2, 3],
+            motion: false,
         })
         .collect();
     message

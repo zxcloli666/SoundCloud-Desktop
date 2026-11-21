@@ -1,3 +1,6 @@
+use image::codecs::gif::GifEncoder;
+use image::{Delay, Frame, Rgba, RgbaImage};
+use sc_chat::media::prepare_image;
 use sc_chat::store::MediaUpload;
 use sc_chat::{MediaKind, UploadObject, UploadState};
 use uuid::Uuid;
@@ -21,6 +24,7 @@ fn upload(rig: &Rig, seed: u64, image_ref: &str, thumb_ref: Option<&str>) -> Med
         kind: MediaKind::Image,
         image_ref: image_ref.to_owned(),
         thumb_ref: thumb_ref.map(str::to_owned),
+        motion_ref: None,
         attachment: media.attachment,
         state: UploadState::Uploading,
         object: UploadObject::Thumb,
@@ -91,4 +95,38 @@ async fn an_avatar_upload_has_only_an_image() {
     let thumb = rig.downloads.local(local, Part::Thumb).await.unwrap();
 
     assert_eq!(shown(&thumb), "image/jpeg");
+}
+
+#[tokio::test]
+async fn a_gif_upload_plays_its_motion_and_falls_back_to_the_still() {
+    let rig = Rig::new();
+    let prepared = prepare_image(&gif()).unwrap();
+    let mut local = upload(&rig, 65, "e1.img", Some("e1.thumb"));
+    let uploads = rig.dir.join("uploads");
+    std::fs::write(uploads.join("e1.img"), &prepared.image).unwrap();
+    std::fs::write(uploads.join("e1.thumb"), &prepared.thumb).unwrap();
+    std::fs::write(uploads.join("e1.motion"), prepared.motion.unwrap()).unwrap();
+    local.attachment = prepared.attachment;
+    local.motion_ref = Some("e1.motion".to_owned());
+
+    let motion = rig
+        .downloads
+        .local(local.clone(), Part::Motion)
+        .await
+        .unwrap();
+    local.motion_ref = None;
+    let still = rig.downloads.local(local, Part::Motion).await.unwrap();
+
+    assert_eq!(shown(&motion), "image/webp");
+    assert_eq!(shown(&still), "image/jpeg");
+}
+
+fn gif() -> Vec<u8> {
+    let mut out = Vec::new();
+    let frames = (0..3u8).map(|step| {
+        let image = RgbaImage::from_fn(64, 48, |x, _| Rgba([step * 80, x as u8 * 4, 90, 255]));
+        Frame::from_parts(image, 0, 0, Delay::from_numer_denom_ms(100, 1))
+    });
+    GifEncoder::new(&mut out).encode_frames(frames).unwrap();
+    out
 }

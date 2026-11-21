@@ -5,7 +5,8 @@
     "lost": "Imagem indisponível",
     "lostRetry": "Imagem indisponível, clique para tentar de novo",
     "failed": "Falha ao carregar, clique para tentar de novo",
-    "retry": "Tentar de novo"
+    "retry": "Tentar de novo",
+    "gif": "GIF"
   },
   "upload": {
     "sending": "Enviando {{done}} de {{total}}",

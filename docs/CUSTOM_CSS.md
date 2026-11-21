@@ -218,6 +218,7 @@ States are in attributes too: `aria-current="page"` on the open link or section,
 | `[data-ui="chat-upload-tile"]` | Your image that is still uploading, `[data-state]` is `queued`, `reserved`, `uploading`, `uploaded`, `committed` or `failed` |
 | `[data-ui="chat-album-status"]` | Upload progress or failure line under your album |
 | `[data-ui="chat-media-gone"]` | Placeholder of a deleted or unavailable image |
+| `[data-ui="chat-media-gif"]` | GIF badge on a still animated image, shown when motion is reduced |
 | `[data-ui="chat-lightbox"]` | Image viewer, the image area is `[data-ui="chat-lightbox-stage"]` |
 | `[data-ui="chat-gallery"]` | Images tab in chat info. A tile is `[data-ui="chat-gallery-tile"]` with `[data-state]` as in an album, the empty tab is `[data-ui="chat-gallery-empty"]` |
 | `[data-ui="chat-device-alert"]` | New device alert |

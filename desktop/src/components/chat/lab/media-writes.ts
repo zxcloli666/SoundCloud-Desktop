@@ -72,6 +72,7 @@ function attachments(album: string) {
         w,
         h,
         thumbhash: thumbhashOf(u.id),
+        motion: u.motionBytes > 0,
       };
     });
 }

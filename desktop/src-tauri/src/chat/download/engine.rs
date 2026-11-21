@@ -72,10 +72,14 @@ impl Downloads {
         };
         let this = self.clone();
         let key = (conversation_id, media_id, object.part);
+        let quiet = object.part == Part::Motion;
         self.flights
             .run(key, async move {
                 let fetched = this.fetch_once(object).await?;
-                Ok::<_, ChatError>(this.tell(conversation_id, media_id, fetched))
+                Ok::<_, ChatError>(match (quiet, fetched) {
+                    (true, Fetched::Lost) => Fetched::Lost,
+                    (_, fetched) => this.tell(conversation_id, media_id, fetched),
+                })
             })
             .await
             .unwrap_or(Err(ChatError::Internal))
@@ -188,6 +192,10 @@ impl Downloads {
     }
 
     async fn gone(&self, object: &Object, gone: Gone) -> Fetched {
+        if object.part == Part::Motion && gone == Gone::Lost {
+            self.drop_part(object).await;
+            return Fetched::Lost;
+        }
         let cache = self.cache.clone();
         let media_id = object.media_id;
         let _ = tokio::task::spawn_blocking(move || cache.forget(media_id)).await;

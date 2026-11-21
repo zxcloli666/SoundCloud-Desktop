@@ -87,6 +87,7 @@ export function labUpload(id: string, state: UploadState, patch: Partial<UploadV
     partsSent: state === 'uploading' ? 14 : 0,
     imageBytes: 2_300_000,
     thumbBytes: 40_000,
+    motionBytes: 0,
     attempts: state === 'failed' ? 3 : 0,
     updatedAt: NOW,
     ...patch,

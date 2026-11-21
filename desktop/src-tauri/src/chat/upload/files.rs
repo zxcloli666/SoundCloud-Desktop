@@ -10,6 +10,7 @@ pub const DIR: &str = "uploads";
 const PART: &str = ".part";
 pub const IMAGE: &str = "img";
 pub const THUMB: &str = "thumb";
+pub const MOTION: &str = "motion";
 
 pub struct Files {
     dir: PathBuf,

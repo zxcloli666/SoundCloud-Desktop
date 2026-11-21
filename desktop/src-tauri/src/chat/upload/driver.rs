@@ -193,6 +193,7 @@ impl Uploads {
 pub fn file_names(upload: &MediaUpload) -> Vec<String> {
     let mut names = vec![upload.image_ref.clone()];
     names.extend(upload.thumb_ref.clone());
+    names.extend(upload.motion_ref.clone());
     names
 }
 

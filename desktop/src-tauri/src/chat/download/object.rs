@@ -23,8 +23,13 @@ impl Object {
             .thumb
             .as_ref()
             .and_then(|thumb| Uuid::parse_str(&thumb.media_id).ok());
-        let (part, remote_id) = match (part, thumb) {
-            (Part::Thumb, Some(thumb)) => (Part::Thumb, thumb),
+        let motion = attachment
+            .motion
+            .as_ref()
+            .and_then(|motion| Uuid::parse_str(&motion.media_id).ok());
+        let (part, remote_id) = match (part, thumb, motion) {
+            (Part::Thumb, Some(thumb), _) => (Part::Thumb, thumb),
+            (Part::Motion, _, Some(motion)) => (Part::Motion, motion),
             _ => (Part::Image, media_id),
         };
         Some(Self {
@@ -37,8 +42,8 @@ impl Object {
     }
 
     pub fn expect(&self) -> Arc<Expect> {
-        let expect = match (self.part, &self.attachment.thumb) {
-            (Part::Thumb, Some(thumb)) => Expect {
+        let expect = match (self.part, &self.attachment.thumb, &self.attachment.motion) {
+            (Part::Thumb, Some(thumb), _) => Expect {
                 size: thumb.size,
                 cap: THUMB_SERVER_CAP,
                 sha256: Vec::new(),
@@ -46,6 +51,12 @@ impl Object {
                     key: thumb.key.clone(),
                     nonce: thumb.nonce.clone(),
                 }),
+            },
+            (Part::Motion, _, Some(motion)) => Expect {
+                size: motion.size,
+                cap: IMAGE_CAP,
+                sha256: motion.sha256_cipher.clone(),
+                seal: None,
             },
             _ => Expect {
                 size: self.attachment.size,

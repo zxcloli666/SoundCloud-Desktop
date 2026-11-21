@@ -38,6 +38,15 @@ impl Uploads {
                     .map_or(0, |thumb| thumb.size),
                 targets.thumb.clone(),
             ),
+            UploadObject::Motion => (
+                upload.motion_ref.clone(),
+                upload
+                    .attachment
+                    .motion
+                    .as_ref()
+                    .map_or(0, |motion| motion.size),
+                targets.motion.clone(),
+            ),
         };
         let (Some(name), Some(target)) = (name, target) else {
             return Err(Snag::Failed(ChatError::Invalid));

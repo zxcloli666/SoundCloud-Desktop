@@ -5,7 +5,8 @@
     "lost": "Görsel kullanılamıyor",
     "lostRetry": "Görsel kullanılamıyor, yeniden denemek için tıklayın",
     "failed": "Yüklenemedi, yeniden denemek için tıklayın",
-    "retry": "Yeniden dene"
+    "retry": "Yeniden dene",
+    "gif": "GIF"
   },
   "upload": {
     "sending": "{{total}} görselden {{done}} gönderildi",

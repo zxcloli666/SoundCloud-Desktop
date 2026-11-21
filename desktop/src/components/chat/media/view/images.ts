@@ -9,6 +9,7 @@ export interface ViewImage {
   mediaId: MediaId;
   w: number;
   h: number;
+  motion: boolean;
   position: number;
   count: number;
   sender: UserId;
@@ -34,6 +35,7 @@ export function imagesOf(message: Message): ViewImage[] {
     mediaId: attachment.mediaId,
     w: attachment.w,
     h: attachment.h,
+    motion: attachment.motion,
     position,
     count,
     sender: message.sender,

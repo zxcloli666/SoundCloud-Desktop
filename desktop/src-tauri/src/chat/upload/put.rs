@@ -113,6 +113,7 @@ impl Uploads {
         let target = match object.object {
             UploadObject::Image => Some(targets.image),
             UploadObject::Thumb => targets.thumb,
+            UploadObject::Motion => targets.motion,
         };
         object.target = target.ok_or(Snag::Failed(ChatError::Protocol))?;
         object.expires_at = targets.expires_at;
