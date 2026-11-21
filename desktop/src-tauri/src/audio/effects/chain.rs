@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use super::limiter::Limiter;
 use super::pan::HeadPan;
 use super::params::{EffectsParams, Targets};
 use super::reverb::Reverb;
@@ -32,7 +31,6 @@ pub struct Chain {
     shelf: [LowShelf; 2],
     head: HeadPan,
     reverb: Reverb,
-    limiter: Limiter,
 }
 
 fn approach(value: &mut f32, target: f32, glide: f32) {
@@ -62,7 +60,6 @@ impl Chain {
             shelf: [LowShelf::new(rate as f64), LowShelf::new(rate as f64)],
             head: HeadPan::new(),
             reverb: Reverb::new(rate),
-            limiter: Limiter::new(rate),
         }
     }
 
@@ -105,7 +102,7 @@ impl Chain {
             left = left * dry + wet_left * wet;
             right = right * dry + wet_right * wet;
         }
-        self.limiter.process(left, right)
+        (left, right)
     }
 
     fn tune(&mut self) {
@@ -155,7 +152,6 @@ impl Chain {
     pub fn reset(&mut self) {
         self.reverb.clear();
         self.head.clear();
-        self.limiter.clear();
         self.shelf.iter_mut().for_each(LowShelf::clear);
     }
 }

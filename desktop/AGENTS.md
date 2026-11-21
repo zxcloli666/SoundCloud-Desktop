@@ -92,7 +92,7 @@ desktop/
       lib.rs, main.rs    — bootstrap, регистрация команд, `scproxy://` scheme
       app/               diagnostics (app_log_dir/desktop.log + FD-monitor на Linux), tray
       audio/             engine, decode (symphonia + cached normalization gain),
-                         eq (biquad + преамп), eq_curve (АЧХ полос, автопреамп, подгонка
+                         eq (biquad + преамп, без clamp: запас во float до master/limiter, единственного лимитера выше 0 dBFS), eq_curve (АЧХ полос, автопреамп, подгонка
                          чужих кривых под 10 полос), eq_preset (импорт/экспорт APO, Peace,
                          GraphicEQ), pitch (signalsmith-stretch), analyser (rustfft, отдельный поток),
                          device (cpal + follow-default-output),

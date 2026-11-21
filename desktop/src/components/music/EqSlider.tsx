@@ -7,6 +7,7 @@ export const EqSlider = React.memo(function EqSlider({
   max,
   label,
   hollow = false,
+  limit,
   onChange,
 }: {
   index: number;
@@ -15,6 +16,7 @@ export const EqSlider = React.memo(function EqSlider({
   max: number;
   label: string;
   hollow?: boolean;
+  limit?: number;
   onChange: (index: number, value: number) => void;
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -58,12 +60,20 @@ export const EqSlider = React.memo(function EqSlider({
   const isPositive = value > 0;
   const isNegative = value < 0;
   const color = isPositive ? '52,211,153' : '96,165,250';
+  const over = limit !== undefined && value > limit;
+  const limitPct = over ? (Math.max(min, limit) - min) / (max - min) : 0;
 
   return (
     <div className="flex flex-col items-center gap-2 select-none">
       <span
         className={`text-[10px] tabular-nums font-semibold h-4 ${
-          isPositive ? 'text-emerald-400' : isNegative ? 'text-blue-400' : 'text-ink-30'
+          over
+            ? 'text-bad'
+            : isPositive
+              ? 'text-emerald-400'
+              : isNegative
+                ? 'text-blue-400'
+                : 'text-ink-30'
         }`}
       >
         {value > 0 ? '+' : ''}
@@ -94,19 +104,37 @@ export const EqSlider = React.memo(function EqSlider({
                 : 'transparent',
           }}
         />
+        {over && (
+          <>
+            <div
+              className="absolute w-[3px] rounded-full left-1/2 -translate-x-1/2 bg-bad/70"
+              style={{ bottom: `${limitPct * 100}%`, top: `${(1 - pct) * 100}%` }}
+            />
+            <div
+              className="absolute w-3 h-0.5 rounded-full left-1/2 -translate-x-1/2 bg-bad"
+              style={{ bottom: `${limitPct * 100}%` }}
+            />
+          </>
+        )}
         <div
           className="absolute left-1/2 -translate-x-1/2 w-4 h-4 rounded-full transition-shadow duration-150 will-change-transform"
           style={{
             bottom: `calc(${pct * 100}% - 8px)`,
             background: hollow
               ? 'transparent'
-              : value === 0
-                ? 'rgb(var(--ink) / 0.5)'
-                : `rgb(${color})`,
+              : over
+                ? 'rgb(var(--bad))'
+                : value === 0
+                  ? 'rgb(var(--ink) / 0.5)'
+                  : `rgb(${color})`,
             border: hollow
               ? `2px solid ${value === 0 ? 'rgb(var(--ink) / 0.5)' : `rgb(${color})`}`
               : undefined,
-            boxShadow: value !== 0 && !hollow ? `0 0 12px rgba(${color},0.4)` : 'none',
+            boxShadow: over
+              ? '0 0 12px rgb(var(--bad) / 0.4)'
+              : value !== 0 && !hollow
+                ? `0 0 12px rgba(${color},0.4)`
+                : 'none',
           }}
         />
       </div>

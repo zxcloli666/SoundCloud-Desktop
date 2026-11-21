@@ -6,6 +6,7 @@ use rodio::Source;
 use rodio::mixer::MixerSource;
 
 use super::Master;
+use super::limiter::Limiter;
 use super::ring::Ring;
 
 const DUCK_GLIDE_SECS: f32 = 0.04;
@@ -21,6 +22,7 @@ pub struct Render {
     gain: f32,
     glide: f32,
     speaking: bool,
+    limiter: Limiter,
     tap: Tap,
 }
 
@@ -45,6 +47,7 @@ impl Render {
             channels,
             channel: 0,
             speaking: false,
+            limiter: Limiter::new(channels, rate),
             tap: Tap {
                 channels: channels as f32,
                 sum: 0.0,
@@ -70,8 +73,9 @@ impl Render {
         if self.channel == 0 {
             self.glide_gain(target);
             self.speaking = self.master.is_speaking();
+            self.limiter.advance(&mut self.music);
         }
-        let mut sample = self.music.next().unwrap_or(0.0) * self.gain;
+        let mut sample = self.limiter.sample(self.channel) * self.gain;
         if self.speaking {
             sample += self.voice.next().unwrap_or(0.0);
         }

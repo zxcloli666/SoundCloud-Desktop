@@ -9,6 +9,8 @@ pub mod effects;
 mod eq;
 mod eq_curve;
 mod eq_preset;
+#[cfg(test)]
+mod headroom_tests;
 pub mod master;
 mod media_controls;
 mod mpeg;
