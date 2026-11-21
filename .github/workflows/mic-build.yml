@@ -78,6 +78,12 @@ jobs:
         working-directory: desktop
         run: pnpm install --frozen-lockfile
 
+      - name: Signing keychain
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: bash scripts/ci-macos-signing.sh
+
       - name: Build Tauri
         working-directory: desktop
         shell: bash
@@ -86,6 +92,20 @@ jobs:
           LASTFM_API_SECRET: ${{ secrets.LASTFM_API_SECRET }}
           BOOSTY_BUNDLE_KEYS: ${{ secrets.BOOSTY_BUNDLE_KEYS }}
         run: pnpm tauri build --target aarch64-apple-darwin
+
+      - name: Check signature
+        shell: bash
+        run: |
+          app=$(ls -d desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/macos/*.app)
+          codesign --verify --strict --deep --verbose=2 "$app"
+          codesign -dv --verbose=4 "$app" 2>&1 | grep -E '^(Identifier|Authority|TeamIdentifier|CodeDirectory|Runtime)'
+          codesign -d -r- "$app" 2>&1
+          codesign -d --entitlements - "$app" 2>&1
+          spctl -a -vv "$app" 2>&1 || true
+          "$app/Contents/MacOS/soundcloud-desktop" > "$RUNNER_TEMP/app.log" 2>&1 &
+          pid=$!
+          perl -e 'select(undef,undef,undef,20)'
+          if kill -0 "$pid"; then echo "running after 20 s"; kill "$pid"; else tail -20 "$RUNNER_TEMP/app.log"; exit 1; fi
 
       - uses: actions/upload-artifact@v7
         with:
