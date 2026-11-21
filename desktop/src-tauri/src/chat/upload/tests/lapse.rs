@@ -111,6 +111,7 @@ async fn a_crash_in_the_middle_of_a_renewal_ends_with_one_row_per_image() {
         kind: old.kind,
         image_ref: old.image_ref.clone(),
         thumb_ref: old.thumb_ref.clone(),
+        motion_ref: old.motion_ref.clone(),
         attachment: old.attachment.clone(),
     };
     rig.store().enqueue_upload(&again, rig.now()).unwrap();

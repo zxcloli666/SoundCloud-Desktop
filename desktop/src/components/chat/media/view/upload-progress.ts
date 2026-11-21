@@ -8,13 +8,15 @@ export function uploadDone(upload: UploadView): boolean {
 
 export function uploadFraction(upload: UploadView): number {
   if (uploadDone(upload)) return 1;
-  const total = upload.thumbBytes + upload.imageBytes;
+  const total = upload.thumbBytes + upload.imageBytes + upload.motionBytes;
   if (total <= 0) return 0;
   const sent = upload.partsSent * PART_BYTES;
   const bytes =
     upload.object === 'image'
       ? Math.min(sent, upload.imageBytes)
-      : upload.imageBytes + Math.min(sent, upload.thumbBytes);
+      : upload.object === 'thumb'
+        ? upload.imageBytes + Math.min(sent, upload.thumbBytes)
+        : upload.imageBytes + upload.thumbBytes + Math.min(sent, upload.motionBytes);
   return Math.min(0.99, bytes / total);
 }
 
@@ -31,7 +33,7 @@ export function albumProgress(uploads: UploadView[]): AlbumProgress {
   let bytes = 0;
   let sent = 0;
   for (const upload of uploads) {
-    const size = Math.max(1, upload.thumbBytes + upload.imageBytes);
+    const size = Math.max(1, upload.thumbBytes + upload.imageBytes + upload.motionBytes);
     if (uploadDone(upload)) done++;
     if (upload.state === 'failed') failed++;
     bytes += size;

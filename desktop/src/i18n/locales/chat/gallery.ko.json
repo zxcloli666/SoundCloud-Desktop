@@ -5,7 +5,8 @@
     "lost": "이미지를 사용할 수 없음",
     "lostRetry": "이미지를 사용할 수 없습니다. 눌러서 다시 시도",
     "failed": "불러오지 못했습니다. 눌러서 다시 시도",
-    "retry": "다시 시도"
+    "retry": "다시 시도",
+    "gif": "GIF"
   },
   "upload": {
     "sending": "{{total}}장 중 {{done}}장 전송",

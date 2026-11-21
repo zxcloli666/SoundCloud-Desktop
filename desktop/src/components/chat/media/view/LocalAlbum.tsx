@@ -6,6 +6,7 @@ import { useChatMediaStore } from '../../../../stores/chat/media';
 import { AlbumFrame } from './AlbumFrame';
 import { albumLayout } from './album-layout';
 import { Shimmer } from './MediaFace';
+import { MotionImage } from './MotionImage';
 import { useCalmMotion } from './motion';
 import { ProgressRing } from './ProgressRing';
 import { viewUrl } from './urls';
@@ -50,6 +51,12 @@ export const LocalAlbum = memo(function LocalAlbum({
               draggable={false}
               onError={hideOnError}
               className="absolute inset-0 size-full object-cover"
+            />
+          )}
+          {parked && attachments[index].motion && !calm && (
+            <MotionImage
+              src={viewUrl(conversationId, attachments[index].mediaId, 'upload-motion')}
+              cover
             />
           )}
           {!parked && !calm && <Shimmer />}

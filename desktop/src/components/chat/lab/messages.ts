@@ -25,7 +25,7 @@ export function labEmbed(title: string, artist: string, index: number): Embed {
 
 export function attachment(id: string, w: number, h: number, size = 240_000): MessageAttachment {
   setPictureSize(id, w, h);
-  return { mediaId: id, kind: 'image', size, w, h, thumbhash: thumbhashOf(id) };
+  return { mediaId: id, kind: 'image', size, w, h, thumbhash: thumbhashOf(id), motion: false };
 }
 
 interface Draft {

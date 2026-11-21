@@ -17,6 +17,7 @@ const upload: UploadView = {
   partsSent: 4,
   imageBytes: 400_000,
   thumbBytes: 0,
+  motionBytes: 0,
   attempts: 1,
   updatedAt: 1,
 };

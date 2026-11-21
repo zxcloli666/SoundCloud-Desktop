@@ -1,7 +1,14 @@
 import type { ChatError, ConvId, Millis } from './types';
 
 export type MediaId = string;
-export type MediaVariant = 'thumb' | 'image' | 'placeholder' | 'upload-thumb' | 'upload-image';
+export type MediaVariant =
+  | 'thumb'
+  | 'image'
+  | 'motion'
+  | 'placeholder'
+  | 'upload-thumb'
+  | 'upload-image'
+  | 'upload-motion';
 export type MediaKind = 'image' | 'avatar' | 'backdrop';
 
 export interface MediaLimits {
@@ -106,10 +113,11 @@ export interface UploadView {
   conversationId: ConvId;
   kind: MediaKind;
   state: UploadState;
-  object: 'image' | 'thumb';
+  object: 'image' | 'thumb' | 'motion';
   partsSent: number;
   imageBytes: number;
   thumbBytes: number;
+  motionBytes: number;
   attempts: number;
   updatedAt: Millis;
 }
@@ -138,6 +146,7 @@ export interface MessageAttachment {
   w: number;
   h: number;
   thumbhash: number[];
+  motion: boolean;
 }
 
 export type AvatarChange = { kind: 'set'; uploadId: string } | { kind: 'clear' };

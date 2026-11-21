@@ -47,6 +47,7 @@ impl Uploads {
             kind,
             image_ref: image_ref.clone(),
             thumb_ref: None,
+            motion_ref: None,
             attachment: single.attachment,
         };
         let albums = self.albums.lock().await;

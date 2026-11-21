@@ -107,6 +107,7 @@ const GalleryTile = memo(function GalleryTile({
       <MediaFace
         conversationId={image.conversationId}
         mediaId={image.mediaId}
+        motion={image.motion}
         thumb={thumb}
         compact
       />

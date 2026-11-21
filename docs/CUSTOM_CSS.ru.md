@@ -218,6 +218,7 @@
 | `[data-ui="chat-upload-tile"]` | Ваша картинка, которая ещё загружается, `[data-state]`: `queued`, `reserved`, `uploading`, `uploaded`, `committed` или `failed` |
 | `[data-ui="chat-album-status"]` | Строка прогресса или ошибки под вашим альбомом |
 | `[data-ui="chat-media-gone"]` | Заглушка удалённой или недоступной картинки |
+| `[data-ui="chat-media-gif"]` | Метка GIF на неподвижной анимированной картинке, когда анимации снижены |
 | `[data-ui="chat-lightbox"]` | Просмотр картинки, область картинки `[data-ui="chat-lightbox-stage"]` |
 | `[data-ui="chat-gallery"]` | Вкладка «Картинки» в инфо чата. Плитка `[data-ui="chat-gallery-tile"]` с `[data-state]` как в альбоме, пустая вкладка `[data-ui="chat-gallery-empty"]` |
 | `[data-ui="chat-device-alert"]` | Окно о новом устройстве |

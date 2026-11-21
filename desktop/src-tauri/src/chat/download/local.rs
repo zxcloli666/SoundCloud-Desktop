@@ -31,8 +31,9 @@ pub async fn upload(
 
 impl Downloads {
     pub async fn local(&self, upload: MediaUpload, part: Part) -> ChatResult<Fetched> {
-        let (part, name) = match (part, upload.thumb_ref.as_deref()) {
-            (Part::Thumb, Some(thumb)) => (Part::Thumb, thumb.to_owned()),
+        let (part, name) = match (part, &upload.thumb_ref, &upload.motion_ref) {
+            (Part::Thumb, Some(thumb), _) => (Part::Thumb, thumb.clone()),
+            (Part::Motion, _, Some(motion)) => (Part::Motion, motion.clone()),
             _ => (Part::Image, upload.image_ref.clone()),
         };
         let Some(path) = file(&self.uploads, &name) else {

@@ -216,6 +216,7 @@ fn again(upload: &MediaUpload) -> NewUpload {
         kind: upload.kind,
         image_ref: upload.image_ref.clone(),
         thumb_ref: upload.thumb_ref.clone(),
+        motion_ref: upload.motion_ref.clone(),
         attachment: upload.attachment.clone(),
     }
 }
@@ -230,6 +231,9 @@ fn placeholder(upload: &MediaUpload) -> Attachment {
     attachment.media_id = upload.id.to_string();
     if let Some(thumb) = attachment.thumb.as_mut() {
         thumb.media_id = upload.id.to_string();
+    }
+    if let Some(motion) = attachment.motion.as_mut() {
+        motion.media_id = upload.id.to_string();
     }
     attachment
 }

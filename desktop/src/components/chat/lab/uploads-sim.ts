@@ -115,6 +115,7 @@ export function enqueue(
     partsSent: 0,
     imageBytes: bytes,
     thumbBytes: Math.round(Math.min(40_000, (bytes * w) / (w + h) / 20)),
+    motionBytes: 0,
     attempts: 0,
     updatedAt: Date.now(),
   };

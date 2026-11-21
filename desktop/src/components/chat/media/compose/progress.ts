@@ -8,13 +8,15 @@ export function isDone(upload: UploadView): boolean {
 
 export function uploadFraction(upload: UploadView): number {
   if (isDone(upload)) return 1;
-  const total = upload.imageBytes + upload.thumbBytes;
+  const total = upload.imageBytes + upload.thumbBytes + upload.motionBytes;
   if (total <= 0 || upload.state === 'queued' || upload.state === 'reserved') return 0;
   const sent = upload.partsSent * PART;
   const done =
     upload.object === 'image'
       ? Math.min(sent, upload.imageBytes)
-      : upload.imageBytes + Math.min(sent, upload.thumbBytes);
+      : upload.object === 'thumb'
+        ? upload.imageBytes + Math.min(sent, upload.thumbBytes)
+        : upload.imageBytes + upload.thumbBytes + Math.min(sent, upload.motionBytes);
   return Math.min(0.99, done / total);
 }
 

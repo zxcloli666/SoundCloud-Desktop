@@ -9,7 +9,7 @@ use sc_chat::{
 use uuid::Uuid;
 
 use super::engine::Uploads;
-use super::files::{IMAGE, THUMB};
+use super::files::{IMAGE, MOTION, THUMB};
 use super::post::{Posted, posted, repark_in};
 use super::prepare::{checked_source, read_source};
 use crate::app::diagnostics;
@@ -29,6 +29,7 @@ struct Slot {
 struct Sealed {
     image_ref: String,
     thumb_ref: String,
+    motion_ref: Option<String>,
     attachment: Attachment,
 }
 
@@ -86,7 +87,8 @@ impl Uploads {
         };
         let mut accepted = Vec::new();
         for image in sealed {
-            let files = vec![image.image_ref.clone(), image.thumb_ref.clone()];
+            let mut files = vec![image.image_ref.clone(), image.thumb_ref.clone()];
+            files.extend(image.motion_ref.clone());
             if accepted.len() >= slot.left {
                 refused.get_or_insert(ChatError::Invalid);
                 self.files.remove(files).await;
@@ -172,9 +174,20 @@ impl Uploads {
                 return Err(error);
             }
         };
+        let motion_ref = match &prepared.motion {
+            Some(motion) => match self.files.write(MOTION, motion).await {
+                Ok(name) => Some(name),
+                Err(error) => {
+                    self.files.remove(vec![image_ref, thumb_ref]).await;
+                    return Err(error);
+                }
+            },
+            None => None,
+        };
         Ok(Sealed {
             image_ref,
             thumb_ref,
+            motion_ref,
             attachment: prepared.attachment,
         })
     }
@@ -209,6 +222,7 @@ fn new_upload(conversation_id: ConvId, slot: &Slot, image: Sealed) -> NewUpload 
         kind: MediaKind::Image,
         image_ref: image.image_ref,
         thumb_ref: Some(image.thumb_ref),
+        motion_ref: image.motion_ref,
         attachment: image.attachment,
     }
 }

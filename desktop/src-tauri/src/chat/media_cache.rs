@@ -99,7 +99,7 @@ impl MediaCache {
 
     pub fn forget(&self, media_id: Uuid) -> ChatResult<()> {
         let mut index = self.index()?;
-        for part in [Part::Thumb, Part::Image] {
+        for part in [Part::Thumb, Part::Image, Part::Motion] {
             let name = name(media_id, part);
             index.remove(&name);
             let _ = fs::remove_file(self.dir.join(name));

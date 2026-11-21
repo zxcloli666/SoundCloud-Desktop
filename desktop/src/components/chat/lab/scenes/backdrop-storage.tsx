@@ -41,6 +41,7 @@ function uploading(): UploadView {
     partsSent: 9,
     imageBytes: 590_000,
     thumbBytes: 0,
+    motionBytes: 0,
     attempts: 1,
     updatedAt: Date.now(),
   };

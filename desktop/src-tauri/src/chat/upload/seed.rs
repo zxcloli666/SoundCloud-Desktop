@@ -12,6 +12,7 @@ impl Uploads {
             let parts = [
                 (Part::Image, Some(&upload.image_ref)),
                 (Part::Thumb, upload.thumb_ref.as_ref()),
+                (Part::Motion, upload.motion_ref.as_ref()),
             ];
             for (part, name) in parts {
                 let Some(name) = name else {

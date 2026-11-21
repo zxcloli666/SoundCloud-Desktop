@@ -49,6 +49,7 @@ const AlbumTile = memo(function AlbumTile({
       <MediaFace
         conversationId={conversationId}
         mediaId={attachment.mediaId}
+        motion={attachment.motion}
         thumb={thumb}
         compact={compact}
       />

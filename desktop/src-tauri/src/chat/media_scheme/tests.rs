@@ -12,9 +12,11 @@ fn every_variant_parses() {
     for (raw, variant) in [
         ("thumb", Variant::Thumb),
         ("image", Variant::Image),
+        ("motion", Variant::Motion),
         ("placeholder", Variant::Placeholder),
         ("upload-thumb", Variant::UploadThumb),
         ("upload-image", Variant::UploadImage),
+        ("upload-motion", Variant::UploadMotion),
     ] {
         assert_eq!(
             parse(&format!("/{CONV}/{MEDIA}/{raw}")),

@@ -2,7 +2,7 @@ use std::io::Cursor;
 
 use image::ImageEncoder;
 use image::codecs::png::PngEncoder;
-use sc_chat::media::{MediaError, MediaWorker, OpenedImage, open_image, open_thumb};
+use sc_chat::media::{MediaError, MediaWorker, OpenedImage, open_image, open_motion, open_thumb};
 use sc_chat::sc_chat_wire::proto::Attachment;
 
 use super::{Fetched, Part, Picture};
@@ -24,6 +24,7 @@ pub async fn sealed(
 ) -> Opened {
     let opened = tokio::task::spawn_blocking(move || match (part, &attachment.thumb) {
         (Part::Thumb, Some(thumb)) => open_thumb(&worker, &cipher, thumb),
+        (Part::Motion, _) => open_motion(&worker, &cipher, &attachment),
         _ => open_image(&worker, &cipher, &attachment),
     })
     .await;
