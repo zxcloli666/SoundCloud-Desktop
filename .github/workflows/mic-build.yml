@@ -1,0 +1,118 @@
+name: Mic build
+
+on:
+  push:
+    branches: [voice/mic-build]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Restore target
+        uses: ./.github/actions/ghcr-cache
+        with:
+          mode: restore
+          triple: aarch64-apple-darwin
+
+      - name: Mtimes
+        shell: bash
+        run: bash scripts/ci-mtime.sh restore
+
+      - name: Install dependencies
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: 1
+          HOMEBREW_NO_INSTALL_CLEANUP: 1
+        run: brew install autoconf automake libtool protobuf
+
+      - name: Checkout internal repo
+        if: ${{ env.HAS_INTERNAL_PAT == 'true' }}
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository_owner }}/SoundCloud-Internal
+          token: ${{ secrets.INTERNAL_PAT }}
+          path: _internal
+          sparse-checkout: |
+            call
+            decrypt-client
+
+      - name: Replace mock crates with real
+        if: ${{ env.HAS_INTERNAL_PAT == 'true' }}
+        run: |
+          rm -rf utils/call utils/decrypt-client
+          cp -r _internal/call ./utils/call
+          cp -r _internal/decrypt-client ./utils/decrypt-client
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: desktop/pnpm-lock.yaml
+
+      - name: Install Rust
+        shell: bash
+        run: |
+          bash scripts/ci-toolchain.sh
+          rustup target add aarch64-apple-darwin
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: desktop/src-tauri -> target
+          key: macos-arm64
+          cache-targets: false
+          save-if: false
+
+      - name: Install frontend dependencies
+        working-directory: desktop
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Tauri
+        working-directory: desktop
+        shell: bash
+        env:
+          LASTFM_API_KEY: ${{ secrets.LASTFM_API_KEY }}
+          LASTFM_API_SECRET: ${{ secrets.LASTFM_API_SECRET }}
+          BOOSTY_BUNDLE_KEYS: ${{ secrets.BOOSTY_BUNDLE_KEYS }}
+        run: pnpm tauri build --target aarch64-apple-darwin
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: mic-build-macos-arm64
+          path: desktop/src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          retention-days: 3
+
+  hear:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: utils/voice
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Toolchain
+        working-directory: .
+        run: bash scripts/ci-toolchain.sh
+
+      - name: Models
+        run: voice-models/fetch.sh models silero-vad sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16 sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16
+
+      - name: Hear
+        run: |
+          mkdir rig
+          cp models/silero-vad/silero_vad.onnx rig/
+          ln -s "$PWD/models/sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16" rig/asr
+          printf 'психосиз\nскриптонит\nбаста\nкино\n' > hotwords.txt
+          export EXACT_DIR="$PWD/models/sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16"
+          cargo run --release -q -p voice-speech --example transcribe -- rig hotwords.txt .mic-clips/*.wav | grep -v partial

@@ -348,6 +348,7 @@ impl Core {
                 exact = listener.exact(&listen.said);
             }
         }
+        dump(&listen.said, &finals.join(" "), exact.as_deref());
         let for_ask = listen.for_ask;
         let woken = listen.woken;
         self.close(listen);
@@ -427,4 +428,31 @@ impl Core {
             _ => {}
         }
     }
+}
+
+fn dump(said: &[f32], heard: &str, exact: Option<&str>) {
+    let Some(home) = std::env::var_os("HOME") else {
+        return;
+    };
+    let dir = std::path::Path::new(&home)
+        .join("Library/Application Support/com.soundcloud.desktop/voice-debug");
+    let _ = std::fs::create_dir_all(&dir);
+    let at = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|d| d.as_millis())
+        .unwrap_or(0);
+    let spec = hound::WavSpec {
+        channels: 1,
+        sample_rate: 16_000,
+        bits_per_sample: 16,
+        sample_format: hound::SampleFormat::Int,
+    };
+    if let Ok(mut wav) = hound::WavWriter::create(dir.join(format!("{at}.wav")), spec) {
+        for sample in said {
+            let _ = wav.write_sample((sample.clamp(-1.0, 1.0) * 32767.0) as i16);
+        }
+        let _ = wav.finalize();
+    }
+    let text = format!("streaming: {heard}\nexact: {}\n", exact.unwrap_or(""));
+    let _ = std::fs::write(dir.join(format!("{at}.txt")), text);
 }
