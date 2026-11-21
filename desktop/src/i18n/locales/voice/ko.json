@@ -253,7 +253,8 @@
       },
       "voice": "음성: {{name}}",
       "name": {
-        "qwen-codec": "음성 디코더"
+        "qwen-codec": "음성 디코더",
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "정밀 인식"
       }
     },
     "credits": {

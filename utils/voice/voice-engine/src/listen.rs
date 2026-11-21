@@ -18,6 +18,7 @@ use crate::models;
 pub const CHUNK: usize = 1600;
 const HEARD_OUT: usize = CHUNK * 4;
 const THREADS: i32 = 2;
+const EXACT_THREADS: i32 = 4;
 
 pub struct Listen {
     pub r#gen: u64,
@@ -209,6 +210,9 @@ impl Core {
             threads: THREADS,
             hotwords: hotwords.clone(),
             hotwords_score,
+            exact_dir: models::exact(self.config.language)
+                .and_then(|id| models::dir(&self.deps.store, id)),
+            exact_threads: EXACT_THREADS,
         };
         let listener = Listener::open(&options).or_else(|_| {
             options.hotwords.clear();
@@ -306,6 +310,7 @@ impl Core {
                 }
             }
         }
+        listen.said.truncate(end);
         self.finish_listen();
     }
 
@@ -326,6 +331,7 @@ impl Core {
         let mut listen = *listen;
         self.release_at = None;
         let mut finals = std::mem::take(&mut listen.finals);
+        let mut exact = None;
         if let Some((_, _, listener)) = self.listener.as_mut() {
             if !listen.buffer.is_empty() {
                 for event in listener.push(&listen.buffer) {
@@ -333,9 +339,13 @@ impl Core {
                         finals.push(text);
                     }
                 }
+                listen.said.extend_from_slice(&listen.buffer);
             }
             if let Some(Heard::Final(text)) = listener.finish() {
                 finals.push(text);
+            }
+            if listen.speech_seen {
+                exact = listener.exact(&listen.said);
             }
         }
         let for_ask = listen.for_ask;
@@ -344,9 +354,12 @@ impl Core {
         let heard = finals.join(" ");
         let heard = heard.trim();
         let text = if woken {
-            self.addressed(heard, true)
+            exact
+                .as_deref()
+                .and_then(|exact| self.addressed(exact, true))
+                .or_else(|| self.addressed(heard, true))
         } else {
-            Some(heard.to_string()).filter(|text| !text.is_empty())
+            exact.or_else(|| Some(heard.to_string()).filter(|text| !text.is_empty()))
         };
         let Some(text) = text else {
             self.go_idle();
