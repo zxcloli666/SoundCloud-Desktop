@@ -57,7 +57,7 @@ fn noise(len: usize) -> Vec<f32> {
             seed ^= seed << 13;
             seed ^= seed >> 17;
             seed ^= seed << 5;
-            (seed as f32 / u32::MAX as f32) * 2.4 - 1.2
+            (seed as f32 / u32::MAX as f32) * 1.8 - 0.9
         })
         .collect()
 }
@@ -129,10 +129,49 @@ fn samples_convert_to_the_device_format() {
     rig.render.fill(&mut ints);
     assert_eq!(ints, [16_384, -16_384, i16::MAX, i16::MIN, 0, 0]);
 
+    let mut rig = self::rig(1);
     rig.music.add(buffer(1, vec![0.5, -1.0]));
     let mut unsigned = [0u8; 3];
     rig.render.fill(&mut unsigned);
     assert_eq!(unsigned, [192, 0, 128]);
+}
+
+fn sine(amplitude: f32, seconds: f32) -> Vec<f32> {
+    (0..(RATE as f32 * seconds) as usize)
+        .flat_map(|i| {
+            [(i as f32 / RATE as f32 * 60.0 * std::f32::consts::TAU).sin() * amplitude; 2]
+        })
+        .collect()
+}
+
+#[test]
+fn music_over_full_scale_is_turned_down_not_clipped() {
+    let mut rig = rig(2);
+    let loud = sine(2.0, 1.0);
+    rig.music.add(buffer(2, loud.clone()));
+    let out = fill(&mut rig.render, loud.len());
+    assert!(out.iter().all(|v| v.abs() <= 1.0 + 1e-6));
+    let half = loud.len() / 2;
+    let halved = out[half..].iter().zip(&loud[half..]);
+    assert!(
+        halved
+            .clone()
+            .all(|(out, loud)| (out - loud * 0.5).abs() < 1e-3)
+    );
+    assert!(out[half..].iter().any(|v| v.abs() > 0.999));
+}
+
+#[test]
+fn limiter_lets_go_after_the_loud_part() {
+    let mut rig = rig(2);
+    let mut samples = sine(2.0, 0.5);
+    let quiet = sine(0.5, 2.5);
+    samples.extend(&quiet);
+    rig.music.add(buffer(2, samples.clone()));
+    let out = fill(&mut rig.render, samples.len());
+    let tail = out.len() - RATE as usize;
+    let bits = |values: &[f32]| values.iter().map(|v| v.to_bits()).collect::<Vec<_>>();
+    assert_eq!(bits(&out[tail..]), bits(&samples[tail..]));
 }
 
 #[test]

@@ -12,9 +12,9 @@ export const EqPreamp = React.memo(function EqPreamp() {
   const setEqPreamp = useSettingsStore((s) => s.setEqPreamp);
   const [autoValue, setAutoValue] = useState(0);
   const auto = preamp === null;
+  const clipping = preamp !== null && preamp > autoValue;
 
   useEffect(() => {
-    if (!auto) return;
     let alive = true;
     invoke<number>('audio_eq_auto_preamp', { gains })
       .then((value) => {
@@ -24,7 +24,7 @@ export const EqPreamp = React.memo(function EqPreamp() {
     return () => {
       alive = false;
     };
-  }, [auto, gains]);
+  }, [gains]);
 
   const handleChange = useCallback(
     (_index: number, value: number) => setEqPreamp(value),
@@ -41,7 +41,9 @@ export const EqPreamp = React.memo(function EqPreamp() {
         className={`h-4 rounded-md px-1.5 text-[9px] font-semibold uppercase tracking-wide transition-colors cursor-pointer border ${
           auto
             ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20'
-            : 'bg-ink/[0.03] text-ink-30 border-ink/[0.06] hover:text-ink-60'
+            : clipping
+              ? 'bg-bad/15 text-bad border-bad/30 hover:bg-bad/25'
+              : 'bg-ink/[0.03] text-ink-30 border-ink/[0.06] hover:text-ink-60'
         }`}
       >
         {t('eq.auto')}
@@ -53,6 +55,7 @@ export const EqPreamp = React.memo(function EqPreamp() {
         max={EQ_PREAMP_MAX}
         label={t('eq.preamp')}
         hollow={auto}
+        limit={clipping ? autoValue : undefined}
         onChange={handleChange}
       />
     </div>

@@ -28,9 +28,7 @@ impl<S: Source<Item = f32>> Iterator for GainSource<S> {
     type Item = f32;
 
     fn next(&mut self) -> Option<f32> {
-        self.source
-            .next()
-            .map(|sample| (sample * self.gain).clamp(-1.0, 1.0))
+        self.source.next().map(|sample| sample * self.gain)
     }
 }
 
@@ -240,7 +238,7 @@ impl<S: Source<Item = f32>> Iterator for EqSource<S> {
             out = Biquad::run(filter, out);
         }
 
-        Some((dry + (out - dry) * self.wet).clamp(-1.0, 1.0) as f32)
+        Some((dry + (out - dry) * self.wet) as f32)
     }
 }
 

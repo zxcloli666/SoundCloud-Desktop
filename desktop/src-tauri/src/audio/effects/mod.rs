@@ -1,5 +1,4 @@
 mod chain;
-mod limiter;
 mod pan;
 mod params;
 mod reverb;

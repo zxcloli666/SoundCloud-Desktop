@@ -21,9 +21,12 @@ const CHANGE_DEBOUNCE_MS = 400;
 const SEEK_DEBOUNCE_MS = 180;
 const TEXT_MIN_LENGTH = 2;
 const TEXT_MAX_LENGTH = 128;
-const LYRIC_MIN_INTERVAL_MS = 5000;
+const ACTIVITY_LIMIT = 5;
+const ACTIVITY_WINDOW_MS = 20000;
+const LYRIC_MIN_INTERVAL_MS = ACTIVITY_WINDOW_MS / ACTIVITY_LIMIT;
 
 let lastPushAt = 0;
+const recentPushes: number[] = [];
 let lastLyric: string | null = null;
 let lyricTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -105,6 +108,8 @@ async function pushPresence(): Promise<boolean> {
     const display = getArtistDisplay(track);
     const lyric = currentLyric();
     lastPushAt = Date.now();
+    recentPushes.push(lastPushAt);
+    if (recentPushes.length > ACTIVITY_LIMIT) recentPushes.shift();
     lastLyric = lyric;
     await invoke('discord_set_activity', {
       track: {
@@ -171,7 +176,10 @@ function cancelLyricSync() {
 
 function scheduleLyricSync() {
   if (lyricTimer || syncTimer) return;
-  const wait = Math.max(0, lastPushAt + LYRIC_MIN_INTERVAL_MS - Date.now());
+  const windowOpensAt =
+    recentPushes.length < ACTIVITY_LIMIT ? 0 : recentPushes[0] + ACTIVITY_WINDOW_MS;
+  const now = Date.now();
+  const wait = Math.max(0, lastPushAt + LYRIC_MIN_INTERVAL_MS - now, windowOpensAt - now);
   lyricTimer = setTimeout(() => {
     lyricTimer = null;
     if (currentLyric() !== lastLyric) void updatePresence();
