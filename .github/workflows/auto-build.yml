@@ -82,6 +82,7 @@ jobs:
     env:
       HAS_INTERNAL_PAT: ${{ secrets.INTERNAL_PAT != '' }}
       HAS_UPDATER_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY != '' && vars.TAURI_UPDATER_PUBKEY != '' }}
+      HAS_MACOS_CERT: ${{ secrets.MACOS_CERTIFICATE != '' }}
       SIGNPATH_POLICY: ${{ vars.SIGNPATH_POLICY }}
     strategy:
       fail-fast: false
@@ -229,6 +230,13 @@ jobs:
         env:
           TAURI_UPDATER_PUBKEY: ${{ vars.TAURI_UPDATER_PUBKEY }}
         run: node .github/scripts/updater-manifest.mjs config desktop/src-tauri/tauri.updater.conf.json
+
+      - name: Signing keychain (macos only)
+        if: runner.os == 'macOS' && env.HAS_MACOS_CERT == 'true'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: bash scripts/ci-macos-signing.sh
 
       - name: Build Tauri
         id: build
