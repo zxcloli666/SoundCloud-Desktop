@@ -103,12 +103,10 @@ export default function App() {
   const appMode = useAppMode();
   const navigatorOnline = useAppStatusStore((s) => s.navigatorOnline);
   const offlineBypass = useAppStatusStore((s) => s.offlineBypass);
-  const offlineMode = useAppStatusStore((s) => s.offlineMode);
   const canUseMainShell = isAuthenticated || hasSession;
-  // Offline-only shell is an explicit choice (offline mode, or "browse offline"
-  // from Login) — NOT a fallback for being logged out. An explicit logout always
-  // lands on <Login/>.
-  const showOfflineOnlyShell = offlineMode || (!canUseMainShell && offlineBypass);
+  // Offline-only shell is the explicit "browse offline" choice from Login — NOT
+  // a fallback for being logged out. An explicit logout always lands on <Login/>.
+  const showOfflineOnlyShell = !canUseMainShell && offlineBypass;
 
   useEffect(() => {
     useImportStore.getState().initBridge();
@@ -184,7 +182,7 @@ export default function App() {
   }, [appMode, fetchUser, hasSession]);
 
   useEffect(() => {
-    if (!CHECK_UPDATES || !navigatorOnline || offlineMode) return;
+    if (!CHECK_UPDATES || !navigatorOnline) return;
 
     const checkUpdates = () => void useAppUpdateStore.getState().check(false);
     const interval = window.setInterval(checkUpdates, UPDATE_RECHECK_MS);
@@ -202,7 +200,7 @@ export default function App() {
       window.clearInterval(interval);
       clearTimeout(id);
     };
-  }, [navigatorOnline, offlineMode]);
+  }, [navigatorOnline]);
 
   return (
     <ThemeProvider>

@@ -1,4 +1,4 @@
-import { offlineModeOn, useAppStatusStore } from '../stores/app-status';
+import { useAppStatusStore } from '../stores/app-status';
 import { useAuthStore } from '../stores/auth';
 import { describeApiError } from './api-error-text';
 import { emitApiWrite } from './api-writes';
@@ -28,7 +28,7 @@ import {
   preferredControlBase,
   SLOW_RESPONSE_MS,
 } from './host-status';
-import { NetError, type NetInit } from './net/fetch';
+import type { NetInit } from './net/fetch';
 import { notifyError } from './notify';
 import { retryAfterMs, shedSeconds } from './pacing';
 import { getIsPremium, requestPremiumRecheck } from './premium-cache';
@@ -302,7 +302,6 @@ export async function apiRequest<T = unknown>(
   options: ApiRequestOptions = {},
   timeoutMs?: number,
 ): Promise<T> {
-  if (offlineModeOn()) throw new NetError('offline', 'offline mode');
   const trace = newTraceId();
   try {
     return await requestAcrossHosts<T>(path, options, timeoutMs, trace);

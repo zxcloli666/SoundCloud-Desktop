@@ -93,7 +93,6 @@ async fn spawn_agent(app: AppHandle, state: Arc<CallState>) {
 async fn supervise(app: AppHandle, state: Arc<CallState>) {
     let mut backoff = Duration::from_secs(5);
     loop {
-        crate::network::offline::online().await;
         let mut connected = false;
         let candidates = endpoint_candidates(&state.device_id).await;
         if candidates.is_empty() {

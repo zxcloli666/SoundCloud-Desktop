@@ -4,7 +4,7 @@ use super::model::{TargetCheck, TargetId, Trigger, VolumeProbe};
 use super::targets::Target;
 use crate::network::health::link::{self, Measured, Shape};
 use crate::network::pro;
-use crate::network::{dns, edge, offline};
+use crate::network::{dns, edge};
 
 const PROBE_PATH: &str = "/probe";
 const CARRIER_SERVICE: &str = "storage";
@@ -72,7 +72,7 @@ async fn in_pieces(host: &str, size: u64) -> VolumeProbe {
 }
 
 fn client() -> Option<wreq::Client> {
-    offline::gate(dns::install(sc_fingerprint::builder(None)))
+    dns::install(sc_fingerprint::builder(None))
         .no_proxy()
         .pool_max_idle_per_host(0)
         .connect_timeout(CONNECT_TIMEOUT)

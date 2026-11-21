@@ -527,13 +527,6 @@
     "placa de som",
     "ao plugar o fone"
   ],
-  "settings.offlineMode": [
-    "usar sem internet",
-    "modo avião",
-    "bloquear a rede",
-    "economizar dados",
-    "não conectar ao servidor"
-  ],
   "netCheck.title": [
     "não conecta",
     "diz que está sem internet",

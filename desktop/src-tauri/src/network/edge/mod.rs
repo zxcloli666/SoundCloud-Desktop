@@ -234,9 +234,6 @@ fn is_named_host(host: &str) -> bool {
 }
 
 pub fn note(origin: &str, tier: Tier, ok: bool) {
-    if !ok && crate::network::offline::on() {
-        return;
-    }
     let event = Event::of(tier, ok);
     let failed = matches!(event, Event::DirectFailed);
     record(origin, failed, |inner, now| inner.apply(origin, event, now));

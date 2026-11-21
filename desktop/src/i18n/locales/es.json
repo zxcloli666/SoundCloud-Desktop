@@ -942,8 +942,6 @@
     "netNoInternet": "sin internet",
     "netServerDown": "servidor inaccesible",
     "tryOnline": "Probar en línea de nuevo",
-    "goOffline": "Desconectarse",
-    "goOnline": "Volver a conectarse",
     "failedCount": "{{count}} con error",
     "forgeTitle": "Forja",
     "forgeSub": "cinta A → B",
@@ -1584,9 +1582,7 @@
     "videoNoCodec": "No H.264",
     "videoCacheSize": "Vídeo",
     "videoCacheLimit": "Límite de la caché de vídeo",
-    "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver",
-    "offlineMode": "Modo sin conexión",
-    "offlineModeDesc": "La app no usa internet. Las descargas y tus archivos siguen sonando; los scrobbles y chats esperan."
+    "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver"
   },
   "effects": {
     "title": "Efectos",

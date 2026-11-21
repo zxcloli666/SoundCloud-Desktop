@@ -97,9 +97,6 @@ pub async fn updater_install(
     if !self_update(install_kind::detect()) {
         return Err("self update is not available for this install".into());
     }
-    if crate::network::offline::on() {
-        return Err(crate::network::offline::Offline.to_string());
-    }
     let result = download_and_install(&app, &on_progress).await;
     if let Err(error) = &result {
         log_native(&app, "ERROR", format!("[updater] install failed: {error}"));

@@ -44,7 +44,6 @@ import {isBelow} from './playback-quality';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
 import {recordEvent, recordSeek} from './events';
-import {recordPlay, reportListened} from './history-queue';
 import {playbackServersDown} from './host-status';
 import {trackUrn} from './ids';
 import {
@@ -114,7 +113,12 @@ let roomCrossfade = false;
 let startGate: ((urn: string) => Promise<number | null>) | null = null;
 let pendingStart: {urn: string; at: number} | null = null;
 const listeners = new Set<() => void>();
-const listened = createListenedMeter(reportListened);
+const listened = createListenedMeter((id, ms) => {
+  api(`/history/${id}/listened`, {
+    method: 'POST',
+    body: JSON.stringify({listenedMs: ms}),
+  }).catch(() => {});
+});
 const seekListeners = new Set<(seconds: number) => void>();
 const API_PREVIEW_DURATION_MS = 30_000;
 
@@ -805,15 +809,20 @@ async function afterLoad(track: Track, gen: number, resumeAt: number) {
   // Record to listening history (fire-and-forget), skip on repeat-one (same track looping)
   const historyUrn = trackUrn(historyTrack?.urn);
   if (historyUrn && historyTrack?.title && usePlayerStore.getState().repeat !== 'one') {
-    const recorded = recordPlay({
-      scTrackId: historyUrn,
-      title: getDisplayTitle(historyTrack),
-      artistName: getArtistDisplay(historyTrack).primary || historyTrack.user?.username || '',
-      artistUrn: historyTrack.user?.urn || null,
-      artworkUrl: historyTrack.artwork_url || null,
-      duration: historyTrack.duration || 0,
-    });
-    listened.begin(Promise.resolve(recorded));
+    const recorded = api<{id?: string} | null>('/history', {
+      method: 'POST',
+      body: JSON.stringify({
+        scTrackId: historyUrn,
+        title: getDisplayTitle(historyTrack),
+        artistName: getArtistDisplay(historyTrack).primary || historyTrack.user?.username || '',
+        artistUrn: historyTrack.user?.urn || null,
+        artworkUrl: historyTrack.artwork_url || null,
+        duration: historyTrack.duration || 0,
+      }),
+    })
+      .then((row) => row?.id ?? null)
+      .catch(() => null);
+    listened.begin(recorded);
   }
 
   if (startGate) {

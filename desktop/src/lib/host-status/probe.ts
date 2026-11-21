@@ -1,4 +1,4 @@
-import { offlineModeOn, useAppStatusStore } from '../../stores/app-status';
+import { useAppStatusStore } from '../../stores/app-status';
 import { API_BASE, API_STAR_BASE } from '../constants';
 import { trackedInvoke as invoke } from '../diagnostics';
 import { edgeProbe } from '../edge';
@@ -181,7 +181,7 @@ function stopRecheckTimer(): void {
 
 /** Single-flight + min-gap с trailing-добивкой; force обходит min-gap, но не single-flight. */
 export function requestProbe(opts?: { force?: boolean }): void {
-  if (useHostStatusStore.getState().probing || offlineModeOn()) return;
+  if (useHostStatusStore.getState().probing) return;
   const sinceLast = Date.now() - lastRunAt;
   if (sinceLast < PROBE_MIN_GAP_MS && !opts?.force) {
     if (trailingTimer === null) {

@@ -11,7 +11,6 @@ use tokio::time::Instant;
 use super::fallback::{listed, usable};
 use super::{normalize, scope, wire};
 use crate::network::fail::{Fail, FailKind};
-use crate::network::offline;
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(6);
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(9);
@@ -74,7 +73,7 @@ fn build_client() -> Option<wreq::Client> {
         let addrs = provider.ips.iter().map(|ip| SocketAddr::new(*ip, 443));
         builder = builder.resolve_to_addrs(provider.name, addrs);
     }
-    offline::gate(configured(builder)).build().ok()
+    configured(builder).build().ok()
 }
 
 fn configured(builder: wreq::ClientBuilder) -> wreq::ClientBuilder {
