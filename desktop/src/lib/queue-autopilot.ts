@@ -29,12 +29,17 @@ import { useSettingsStore } from '../stores/settings';
 import { withoutHidden } from './feed-filter';
 import { trackUrn } from './ids';
 import { isLocalUrn } from './local-library';
-import { getQueueContinuationSource, setQueueContinuationSource } from './queue-continuation';
+import {
+  getQueueContinuationSource,
+  type QueueContinuationSource,
+  setQueueContinuationSource,
+} from './queue-continuation';
 import { fetchRelatedTracks } from './related';
 import { fetchSmartWave } from './soundwave';
 
 let playbackGen = 0;
 let inFlightGen = -1;
+const SOURCE_RETRY_DELAYS_MS = [1000, 3000, 8000];
 
 function isStale(gen: number, lastTrack: Track): boolean {
   return gen !== playbackGen || usePlayerStore.getState().currentTrack?.urn !== lastTrack.urn;
@@ -99,7 +104,7 @@ async function continueFromContextSource(stale: () => boolean): Promise<boolean>
   for (;;) {
     let batch: Track[];
     try {
-      batch = await source.next();
+      batch = await nextFromSource(source, stale);
     } catch (e) {
       if (stale()) return false;
       console.debug(`[autopilot] source "${source.kind}" failed → wave:`, e);
@@ -121,6 +126,23 @@ async function continueFromContextSource(stale: () => boolean): Promise<boolean>
     }
     for (const t of batch) existing.add(t.urn);
   }
+}
+
+async function nextFromSource(
+  source: QueueContinuationSource,
+  stale: () => boolean,
+): Promise<Track[]> {
+  for (const delay of SOURCE_RETRY_DELAYS_MS) {
+    try {
+      return await source.next();
+    } catch (e) {
+      if (stale()) throw e;
+      console.debug(`[autopilot] source "${source.kind}" failed, retry in ${delay} ms:`, e);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      if (stale()) throw e;
+    }
+  }
+  return source.next();
 }
 
 async function fetchContinuation(seed: Track): Promise<Track[]> {
