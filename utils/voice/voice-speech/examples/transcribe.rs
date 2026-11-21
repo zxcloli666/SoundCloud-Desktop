@@ -36,6 +36,8 @@ fn main() {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(1.5),
+        exact_dir: env::var_os("EXACT_DIR").map(PathBuf::from),
+        exact_threads: 4,
     };
     let mut listener = Listener::open(&options).expect("open");
 
@@ -54,6 +56,7 @@ fn main() {
         }
         events.extend(listener.push(&vec![0.0; SAMPLE_RATE as usize]));
         events.extend(listener.finish());
+        let exact = listener.exact(&samples);
         spent += started.elapsed().as_secs_f64();
         audio_seconds += seconds;
 
@@ -62,6 +65,9 @@ fn main() {
                 Event::Partial(text) => println!("  partial: {text}"),
                 Event::Final(text) => println!("  final: {text}"),
             }
+        }
+        if let Some(text) = exact {
+            println!("  exact: {text}");
         }
     }
     println!(

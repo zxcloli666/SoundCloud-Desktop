@@ -16,12 +16,14 @@ mod reworded;
 mod slots;
 mod steps;
 mod types;
+mod unfinished;
 mod variants;
 
 pub use fold::{distance, fold, fold_words, similarity, skeleton, strict_similarity, word_ends};
 pub use names::Names;
 pub use normalize::{Normalized, Tok, normalize};
 pub use types::{Intent, Kind, Parsed, Reading, Variant};
+pub use unfinished::sounds_unfinished;
 pub use variants::lemma;
 
 pub use steps::parse;

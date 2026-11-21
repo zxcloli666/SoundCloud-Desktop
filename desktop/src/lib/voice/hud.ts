@@ -15,9 +15,10 @@ const CANCELS_ENGINE = new Set<HudView['kind']>([
   'chat',
 ]);
 
-export function dismiss(hud: HudView, port: DismissPort) {
+export function dismiss(hud: HudView, engine: EngineState, port: DismissPort) {
   if (hud.kind === 'chat') port.stopChat(hud.id);
-  if (CANCELS_ENGINE.has(hud.kind)) port.cancelEngine();
+  const hearsAnew = engine === 'listening' && hud.kind !== 'listening';
+  if (CANCELS_ENGINE.has(hud.kind) && !hearsAnew) port.cancelEngine();
   port.hide();
 }
 

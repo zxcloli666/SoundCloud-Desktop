@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use std::sync::mpsc::{Receiver, Sender, channel};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use voice_audio::{
     CaptureError, EchoMode, ErrorCode, Event as CaptureEvent, ListenMode, Purpose, Request, Session,
@@ -18,6 +18,7 @@ use crate::models;
 pub const CHUNK: usize = 1600;
 const HEARD_OUT: usize = CHUNK * 4;
 const THREADS: i32 = 2;
+const EXACT_THREADS: i32 = 4;
 
 pub struct Listen {
     pub r#gen: u64,
@@ -26,6 +27,7 @@ pub struct Listen {
     pub woken: bool,
     pub started: Instant,
     pub speech_seen: bool,
+    pub quiet_since: Option<Instant>,
     pub finals: Vec<String>,
     pub buffer: Vec<f32>,
     pub said: Vec<f32>,
@@ -35,14 +37,25 @@ pub struct Listen {
 
 impl Listen {
     pub fn deadline(&self, timing: &Timing) -> Instant {
-        if self.for_ask {
-            return self.started + timing.ask;
-        }
-        let max = self.started + timing.max_utterance;
-        if self.speech_seen {
-            max
+        let limit = if self.for_ask {
+            self.started + timing.ask
+        } else if self.speech_seen {
+            self.started + timing.max_utterance
         } else {
-            max.min(self.started + timing.no_speech)
+            self.started + timing.max_utterance.min(timing.no_speech)
+        };
+        match self.quiet_since {
+            Some(quiet) => limit.min(quiet + self.pause(timing)),
+            None => limit,
+        }
+    }
+
+    pub fn pause(&self, timing: &Timing) -> Duration {
+        let last = self.finals.last().map(String::as_str).unwrap_or_default();
+        if voice_nlu::sounds_unfinished(last) {
+            timing.unfinished_pause
+        } else {
+            timing.pause
         }
     }
 }
@@ -116,6 +129,7 @@ impl Core {
             woken: false,
             started: Instant::now(),
             speech_seen: false,
+            quiet_since: None,
             finals: Vec::new(),
             buffer: Vec::with_capacity(CHUNK * 2),
             said: Vec::new(),
@@ -209,6 +223,9 @@ impl Core {
             threads: THREADS,
             hotwords: hotwords.clone(),
             hotwords_score,
+            exact_dir: models::exact(self.config.language)
+                .and_then(|id| models::dir(&self.deps.store, id)),
+            exact_threads: EXACT_THREADS,
         };
         let listener = Listener::open(&options).or_else(|_| {
             options.hotwords.clear();
@@ -259,6 +276,7 @@ impl Core {
         listen.buffer.clear();
         if listener.in_speech() {
             listen.speech_seen = true;
+            listen.quiet_since = None;
         }
         let hold = self.config.activation.hold && self.source == crate::Source::Hotkey;
         let ends_itself = listen.for_ask || !hold;
@@ -277,14 +295,26 @@ impl Core {
                 }
             }
         }
-        let fell_quiet = fell_quiet.filter(|_| ends_itself && listen.speech_seen);
+        let fell_quiet = fell_quiet
+            .filter(|_| ends_itself && listen.speech_seen && listen.quiet_since.is_none());
         for text in partials {
             self.emit(Event::Partial(PartialEvent { text }));
         }
         if done {
-            self.finish_listen();
+            self.phrase_ended();
         } else if let Some(end) = fell_quiet {
             self.finish_at(end);
+        }
+    }
+
+    pub fn phrase_ended(&mut self) {
+        let Phase::Listening(listen) = &mut self.phase else {
+            return;
+        };
+        if listen.pause(&self.deps.timing).is_zero() {
+            self.finish_listen();
+        } else {
+            listen.quiet_since = Some(Instant::now());
         }
     }
 
@@ -306,6 +336,7 @@ impl Core {
                 }
             }
         }
+        listen.said.truncate(end);
         self.finish_listen();
     }
 
@@ -326,6 +357,7 @@ impl Core {
         let mut listen = *listen;
         self.release_at = None;
         let mut finals = std::mem::take(&mut listen.finals);
+        let mut exact = None;
         if let Some((_, _, listener)) = self.listener.as_mut() {
             if !listen.buffer.is_empty() {
                 for event in listener.push(&listen.buffer) {
@@ -333,9 +365,13 @@ impl Core {
                         finals.push(text);
                     }
                 }
+                listen.said.extend_from_slice(&listen.buffer);
             }
             if let Some(Heard::Final(text)) = listener.finish() {
                 finals.push(text);
+            }
+            if listen.speech_seen {
+                exact = listener.exact(&listen.said);
             }
         }
         let for_ask = listen.for_ask;
@@ -344,9 +380,12 @@ impl Core {
         let heard = finals.join(" ");
         let heard = heard.trim();
         let text = if woken {
-            self.addressed(heard, true)
+            exact
+                .as_deref()
+                .and_then(|exact| self.addressed(exact, true))
+                .or_else(|| self.addressed(heard, true))
         } else {
-            Some(heard.to_string()).filter(|text| !text.is_empty())
+            exact.or_else(|| Some(heard.to_string()).filter(|text| !text.is_empty()))
         };
         let Some(text) = text else {
             self.go_idle();
