@@ -6,6 +6,7 @@ import {playlistScope} from '../../lib/bulk-cache';
 import {playlistEmbed} from '../../lib/chat/embed-snapshot';
 import {fc} from '../../lib/formatters';
 import {fetchAllPlaylistTracks, type Playlist} from '../../lib/hooks';
+import {patchLikedCollections} from '../../lib/liked-collections';
 import {
     Check,
     Copy,
@@ -30,9 +31,11 @@ import {DuplicatesDialog} from './DuplicatesDialog';
 
 export const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
                                                                 playlistUrn,
+                                                                playlist,
                                                                 count,
                                                             }: {
     playlistUrn: string;
+    playlist?: Playlist;
     count?: number;
 }) {
     const {t} = useTranslation();
@@ -56,6 +59,7 @@ export const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
         const next = !liked;
         setLiked(next);
         setLocalCount((c) => c + (next ? 1 : -1));
+        if (playlist) patchLikedCollections(qc, playlist, next);
         try {
             await api(`/likes/playlists/${encodeURIComponent(playlistUrn)}`, {
                 method: next ? 'POST' : 'DELETE',
@@ -65,6 +69,7 @@ export const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
                 qc.invalidateQueries({queryKey: ['me', 'likes', 'playlists']});
             }, 3000);
         } catch {
+            if (playlist) patchLikedCollections(qc, playlist, !next);
             setLiked(!next);
             setLocalCount((c) => c + (next ? -1 : 1));
         }
@@ -205,7 +210,7 @@ export const PlaylistActions = React.memo(function PlaylistActions({
                 <span className="hidden @min-[384px]:inline">{t('playlist.shuffle')}</span>
             </button>
 
-            <PlaylistLikeBtn playlistUrn={playlist.urn} count={playlist.likes_count}/>
+            <PlaylistLikeBtn playlistUrn={playlist.urn} playlist={playlist} count={playlist.likes_count}/>
 
             <div
                 className="flex items-center gap-0.5 h-11 px-1.5 rounded-2xl"

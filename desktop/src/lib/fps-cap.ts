@@ -43,7 +43,7 @@ export function installFpsCap(targetFps: number = DEFAULT_FPS): void {
       schedule(); // кадр пропускаем целиком — вместе со всеми, без исключений
       return;
     }
-    last = now;
+    last = last === 0 ? now : last + Math.floor((now - last + 1) / minDelta) * minDelta;
     // Снимок: колбэк вправе тут же заказать следующий кадр, и он должен попасть
     // в СЛЕДУЮЩУЮ пачку, а не быть съеденным текущей итерацией.
     const batch = Array.from(pending.values());
@@ -60,6 +60,11 @@ export function installFpsCap(targetFps: number = DEFAULT_FPS): void {
 
   window.cancelAnimationFrame = (handle: number): void => {
     // id не из нашего пула (например, выдан до установки капа) — в нативный.
-    if (!pending.delete(handle)) cafNative(handle);
+    if (!pending.delete(handle)) {
+      cafNative(handle);
+    } else if (pending.size === 0 && nativeId !== null) {
+      cafNative(nativeId);
+      nativeId = null;
+    }
   };
 }

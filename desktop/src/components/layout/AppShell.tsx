@@ -384,7 +384,8 @@ export const AppShell = React.memo(() => {
         return;
       }
 
-      if (inInput) return;
+      if (inInput || e.defaultPrevented) return;
+      if (code === 'Space' && e.target instanceof HTMLElement && e.target.closest('button, summary, [role="button"]')) return;
 
       const player = usePlayerStore.getState();
 

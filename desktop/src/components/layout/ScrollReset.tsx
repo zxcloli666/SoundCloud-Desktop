@@ -2,6 +2,7 @@ import { type RefObject, useLayoutEffect, useRef } from 'react';
 import { useLocation, useNavigationType } from 'react-router-dom';
 
 const RESTORE_TRIES = 20;
+const MAX_SCROLL_POSITIONS = 64;
 
 export function scrollMainToTop() {
   document.querySelector('[data-ui="main"]')?.scrollTo({ top: 0 });
@@ -24,7 +25,13 @@ export function ScrollReset({ target }: { target: RefObject<HTMLElement | null> 
     };
     apply();
     const positions = saved.current;
-    const remember = () => positions.set(key, main.scrollTop);
+    const remember = () => {
+      if (!positions.has(key) && positions.size >= MAX_SCROLL_POSITIONS) {
+        const oldest = positions.keys().next();
+        if (!oldest.done) positions.delete(oldest.value);
+      }
+      positions.set(key, main.scrollTop);
+    };
     main.addEventListener('scroll', remember, { passive: true });
     return () => {
       cancelAnimationFrame(frame);

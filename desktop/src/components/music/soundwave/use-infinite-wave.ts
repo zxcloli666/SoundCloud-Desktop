@@ -88,8 +88,8 @@ export function useInfiniteWave(opts: {
       const existing = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
       const fresh = batch.tracks.filter((t) => !existing.has(t.urn) && (!filterFn || filterFn(t)));
       if (fresh.length > 0) {
-        usePlayerStore.getState().addToQueue(fresh);
         for (const t of fresh) tallyRef.current.owned.add(t.urn);
+        usePlayerStore.getState().addToQueue(fresh);
       }
     };
 

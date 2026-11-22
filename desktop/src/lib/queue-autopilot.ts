@@ -40,6 +40,10 @@ import { fetchSmartWave } from './soundwave';
 let playbackGen = 0;
 let inFlightGen = -1;
 const SOURCE_RETRY_DELAYS_MS = [1000, 3000, 8000];
+const MIN_UP_NEXT = 3;
+const TOP_UP_DEBOUNCE_MS = 180;
+let topUpTimer: ReturnType<typeof setTimeout> | null = null;
+let topUpUrn: string | null = null;
 
 function isStale(gen: number, lastTrack: Track): boolean {
   return gen !== playbackGen || usePlayerStore.getState().currentTrack?.urn !== lastTrack.urn;
@@ -190,10 +194,60 @@ async function fetchRelated(seed: Track): Promise<Track[]> {
   }
 }
 
+function scheduleQueueTopUp(): void {
+  if (topUpTimer) clearTimeout(topUpTimer);
+  topUpTimer = setTimeout(() => {
+    topUpTimer = null;
+    void topUpQueue();
+  }, TOP_UP_DEBOUNCE_MS);
+}
+
+async function topUpQueue(): Promise<void> {
+  const state = usePlayerStore.getState();
+  const seed = state.currentTrack;
+  const remaining = state.queue.length - state.queueIndex - 1;
+  if (!seed || isLocalUrn(seed.urn) || state.repeat !== 'off') return;
+  if (remaining >= MIN_UP_NEXT || topUpUrn === seed.urn) return;
+
+  const source = getQueueContinuationSource();
+  if (!source && !useSettingsStore.getState().autoplay) return;
+
+  topUpUrn = seed.urn;
+  try {
+    const candidates = source ? await source.next() : await fetchContinuation(seed);
+    const current = usePlayerStore.getState();
+    if (current.currentTrack?.urn !== seed.urn) return;
+    const known = new Set(current.queue.map((track) => track.urn));
+    const fresh = candidates.filter((track) => !known.has(track.urn));
+    if (fresh.length > 0) current.addToQueue(fresh);
+  } catch (error) {
+    console.debug('[autopilot] queue top-up failed:', error);
+  } finally {
+    if (topUpUrn === seed.urn) topUpUrn = null;
+  }
+}
+
 // Регистрируем при загрузке модуля. Сторе пнёт сюда при end-of-queue,
 // а при старте нового play() — сбросит контекстный источник.
 setEndOfQueueFallback(autopilotContinueFromTrack);
 setPlaybackContextResetHandler(() => {
   playbackGen++;
   setQueueContinuationSource(null);
+  topUpUrn = null;
+});
+
+const unsubscribeTopUp = usePlayerStore.subscribe((state, previous) => {
+  if (
+    state.currentTrack?.urn !== previous.currentTrack?.urn ||
+    state.queueIndex !== previous.queueIndex ||
+    state.queue.length !== previous.queue.length
+  ) {
+    scheduleQueueTopUp();
+  }
+});
+scheduleQueueTopUp();
+
+import.meta.hot?.dispose(() => {
+  unsubscribeTopUp();
+  if (topUpTimer) clearTimeout(topUpTimer);
 });
