@@ -34,8 +34,8 @@ const INTERACTIVE = [
   '[role="slider"]',
   '[role="combobox"]',
 ].join(',');
-const DIALOGS =
-  '[role="dialog"],[role="alertdialog"],[aria-modal="true"],[role="menu"],[role="listbox"]';
+const DIALOGS = '[role="dialog"],[role="alertdialog"],[aria-modal="true"]';
+const POPUPS = '[role="menu"],[role="listbox"]';
 const MAIN = '[data-ui="main"]';
 const EDGE = 8;
 
@@ -111,9 +111,18 @@ function stateOf(el: HTMLElement, control: SeenControl): SeenControl {
   return control;
 }
 
+function popupsOver(root: Element): Element[] {
+  const open = Array.from(document.querySelectorAll(POPUPS)).filter(shown);
+  return open.filter((popup) => root.contains(popup) || !popup.closest(DIALOGS));
+}
+
 function controlsOf(root: Element): Found[] {
+  const popups = popupsOver(root);
+  const nodes = [...popups, root].flatMap((part) =>
+    Array.from(part.querySelectorAll<HTMLElement>(INTERACTIVE)),
+  );
   const found: Found[] = [];
-  for (const node of Array.from(root.querySelectorAll<HTMLElement>(INTERACTIVE))) {
+  for (const node of new Set(nodes)) {
     if (node.closest(`[${TRACK_MARK}]`)) continue;
     if (node.closest('[aria-hidden="true"],[inert]')) continue;
     if ((node as HTMLButtonElement).disabled || node.getAttribute('aria-disabled') === 'true')
