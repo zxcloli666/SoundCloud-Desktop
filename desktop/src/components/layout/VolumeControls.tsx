@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/shallow';
 import { volume1Icon16, volume2Icon16, volumeXIcon16 } from '../../lib/icons';
 import { clampVolume, VOLUME_MAX, VOLUME_SNAP_POINTS } from '../../lib/volume';
 import { usePlayerStore } from '../../stores/player';
+import { playerBtn } from './player/button-class';
 import { useVolumeDrag } from './useVolumeDrag';
 
 const VOLUME_TICKS = VOLUME_SNAP_POINTS.filter((point) => point < VOLUME_MAX);
@@ -26,7 +27,7 @@ const VolumeTip = React.memo(
             ? 'left-full top-1/2 ml-2.5 -translate-y-1/2'
             : 'bottom-full left-1/2 mb-2.5 -translate-x-1/2'
         } ${fine ? 'border-accent/40 text-accent' : 'border-ink/[0.10]'} ${
-          volume > 100 ? 'text-amber-400' : fine ? '' : 'text-ink-85'
+          volume > 100 ? 'text-bad' : fine ? '' : 'text-ink-85'
         }`}
       >
         {volume}%
@@ -125,28 +126,37 @@ export const VolumeSlider = React.memo(
   },
 );
 
-export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'default' | 'sm' }) => {
-  const { volume, volumeBeforeMute, setVolume } = usePlayerStore(
-    useShallow((s) => ({
-      volume: s.volume,
-      volumeBeforeMute: s.volumeBeforeMute,
-      setVolume: s.setVolume,
-    })),
-  );
-  const s = size === 'sm' ? 'w-9 h-9' : 'w-10 h-10';
-  return (
-    <button
-      type="button"
-      onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
-      onWheel={stepVolumeOnWheel}
-      className={`${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-ink/[0.04] ${
-        volume === 0 ? 'text-accent' : 'text-ink-40 hover:text-ink-70'
-      }`}
-    >
-      {volume === 0 ? volumeXIcon16 : volume < 50 ? volume1Icon16 : volume2Icon16}
-    </button>
-  );
-});
+export const ControlVolumeBtn = React.memo(
+  ({ size = 'default' }: { size?: 'default' | 'sm' | 'player' }) => {
+    const { volume, volumeBeforeMute, setVolume } = usePlayerStore(
+      useShallow((s) => ({
+        volume: s.volume,
+        volumeBeforeMute: s.volumeBeforeMute,
+        setVolume: s.setVolume,
+      })),
+    );
+    const { t } = useTranslation();
+    const s = size === 'sm' ? 'w-9 h-9' : 'w-10 h-10';
+    return (
+      <button
+        type="button"
+        onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
+        onWheel={stepVolumeOnWheel}
+        title={t('player.volume')}
+        aria-label={t('player.volume')}
+        className={
+          size === 'player'
+            ? playerBtn(volume === 0)
+            : `${s} rounded-full flex items-center justify-center transition-all duration-150 ease-[var(--ease-apple)] cursor-pointer hover:bg-ink/[0.04] ${
+                volume === 0 ? 'text-accent' : 'text-ink-40 hover:text-ink-70'
+              }`
+        }
+      >
+        {volume === 0 ? volumeXIcon16 : volume < 50 ? volume1Icon16 : volume2Icon16}
+      </button>
+    );
+  },
+);
 
 export const VolumeLabel = React.memo(({ className = 'text-right' }: { className?: string }) => {
   const { t } = useTranslation();
@@ -155,8 +165,7 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
   );
   const [editing, setEditing] = React.useState(false);
   const [draft, setDraft] = React.useState(String(volume));
-  const tone =
-    volume > 100 ? 'text-amber-400/70 hover:text-amber-300' : 'text-ink-30 hover:text-ink-70';
+  const tone = volume > 100 ? 'text-bad/70 hover:text-bad' : 'text-ink-30 hover:text-ink-70';
 
   React.useEffect(() => {
     if (!editing) setDraft(String(volume));
@@ -209,7 +218,7 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
 
 export const VolumeFlyout = React.memo(() => (
   <div className="npb-vol" onWheel={stepVolumeOnWheel}>
-    <ControlVolumeBtn size="sm" />
+    <ControlVolumeBtn size="player" />
     <div className="npb-vol-pop">
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-ink/[0.10] bg-surface/96 px-2 py-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))]">
         <VolumeLabel className="text-center" />

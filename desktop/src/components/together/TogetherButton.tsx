@@ -5,63 +5,36 @@ import { Users } from '../../lib/icons';
 import { selectRoomThread, useChatRoomStore } from '../../stores/chat/room';
 import { useTogetherStore } from '../../stores/together';
 import { useOpenRoomChat } from '../chat/shell/useOpenChat';
-import { Avatar } from '../ui/Avatar';
+import { playerBtn } from '../layout/player/button-class';
 import { LiveView } from './LiveView';
 import { StartView } from './StartView';
-
-const STACK_LIMIT = 3;
 
 const Trigger = forwardRef<HTMLButtonElement, ComponentPropsWithoutRef<'button'>>((props, ref) => {
   const { t } = useTranslation();
   const room = useTogetherStore((s) => s.room);
   const reconnecting = useTogetherStore((s) => s.phase === 'reconnecting');
+  const online = room ? room.members.filter((m) => room.online.includes(m.userId)).length : 0;
 
-  if (!room) {
-    return (
-      <button
-        {...props}
-        ref={ref}
-        type="button"
-        title={t('together.title')}
-        aria-label={t('together.title')}
-        className="w-[30px] h-[30px] rounded-full flex items-center justify-center transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer text-ink-55 hover:text-ink hover:bg-ink/[0.08] hover:-translate-y-px active:scale-90"
-      >
-        <Users size={16} />
-      </button>
-    );
-  }
-
-  const online = room.members.filter((m) => room.online.includes(m.userId));
-  const stack = online.slice(0, STACK_LIMIT);
   return (
     <button
       {...props}
       ref={ref}
       type="button"
+      data-ui="player-together"
       title={t('together.title')}
       aria-label={t('together.title')}
-      className="relative flex h-[30px] cursor-pointer items-center gap-1.5 rounded-full bg-accent/15 pr-2.5 pl-1 text-accent shadow-[0_0_14px_-4px_var(--color-accent-glow)] transition-all duration-200 ease-[var(--ease-apple)] hover:bg-accent/25 active:scale-95"
+      className={`relative ${playerBtn(room !== null)}`}
     >
-      <Users size={15} className="together-icon ml-1" />
-      <span className="together-stack flex -space-x-1.5">
-        {stack.map((member) => (
-          <Avatar
-            key={member.userId}
-            src={member.avatarUrl}
-            alt={member.name}
-            size={22}
-            className="ring-2 ring-surface"
-          />
-        ))}
-      </span>
-      <span className="text-[12px] font-semibold tabular-nums">{online.length}</span>
-      <span
-        className={`absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full ${
-          reconnecting
-            ? 'bg-amber-300'
-            : 'animate-pulse bg-accent shadow-[0_0_6px_var(--color-accent-glow)]'
-        }`}
-      />
+      <Users size={16} />
+      {room && (
+        <span
+          className={`pointer-events-none absolute -bottom-0.5 -right-0.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full px-[3px] text-[9px] font-semibold leading-none tabular-nums text-accent-contrast ${
+            reconnecting ? 'bg-ink/40' : 'bg-accent'
+          }`}
+        >
+          {online}
+        </span>
+      )}
     </button>
   );
 });

@@ -78,17 +78,6 @@
 [data-perf="light"] .npb-glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: linear-gradient(
-            180deg,
-            rgb(var(--ink) / 0.06),
-            rgb(var(--ink) / 0.015) 44%,
-            rgb(var(--ink) / 0.008)
-    ),
-    rgb(var(--surface) / 0.92);
-}
-
-[data-perf="light"] .npb-glass::after {
-    display: none;
 }
 
 [data-perf="light"] *,
@@ -945,7 +934,6 @@ select,
    (vinyl ring, eq bars, play pulse) run only while [data-playing] is true
    (= playing AND window visible). */
 .npb {
-    --npb-quality-w: 67px;
     position: absolute;
     left: 0;
     right: 0;
@@ -972,40 +960,18 @@ select,
     }
 }
 
-/* accent under-glow plate behind the pill (cheap gradient, no backdrop-filter) */
-.npb-underglow {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(62%, 660px);
-    height: 70px;
-    pointer-events: none;
-    z-index: 0;
-    background: radial-gradient(60% 100% at 50% 100%, var(--color-accent-glow) 0%, transparent 72%);
-    filter: blur(8px);
-    opacity: 0.85;
-    transition: opacity 0.4s var(--ease-apple);
-}
-
-.npb:hover .npb-underglow {
-    opacity: 1;
-}
-
-/* the floating capsule — frame carries shadow + the gentle float */
+/* flat card: one line, no glow */
 .npb-dock {
     position: relative;
     z-index: 1;
     pointer-events: auto;
     width: 1128px;
     max-width: calc(100% - 32px);
-    border-radius: 28px;
+    border-radius: 18px;
     container: npb / inline-size;
-    box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
-    0 0 64px -18px var(--color-accent-glow);
+    box-shadow: 0 10px 30px -14px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)));
 }
 
-/* the ONLY backdrop-filter — isolated in its own GPU layer */
 .npb-glass {
     position: absolute;
     inset: 0;
@@ -1013,39 +979,12 @@ select,
     overflow: hidden;
     pointer-events: none;
     z-index: 0;
-    background: linear-gradient(
-            180deg,
-            rgb(var(--ink) / 0.09),
-            rgb(var(--ink) / 0.022) 44%,
-            rgb(var(--ink) / 0.01)
-    ),
-    rgb(var(--surface) / 0.55);
-    border: 1px solid rgb(var(--ink) / 0.11);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 -10px 26px -18px rgb(var(--shade) / calc(0.7 * var(--shade-alpha))) inset;
-    backdrop-filter: blur(var(--glass-blur-soft)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(1.6);
+    background: color-mix(in srgb, var(--shell-side-solid) 95%, transparent);
+    border: 1px solid var(--shell-line-hi);
+    backdrop-filter: blur(var(--glass-blur-soft));
+    -webkit-backdrop-filter: blur(var(--glass-blur-soft));
     contain: strict;
     transform: translateZ(0);
-}
-
-/* accent tint in the corner */
-.npb-glass::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(120% 180% at 6% 0%, var(--color-accent-glow) 0%, transparent 42%);
-    opacity: 0.5;
-}
-
-/* fine grain for material realism */
-.npb-glass::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    opacity: 0.04;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* content layer — repaints here never re-blur the glass below */
@@ -1056,44 +995,44 @@ select,
     display: flex;
     flex-direction: column;
     gap: 7px;
-    padding: 10px 18px 8px;
+    padding: 12px 18px 10px;
 }
 
 .npb-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
-.npb-quality {
+.npb-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.npb-track-btns,
+.npb-tool-btns {
+    display: flex;
+    align-items: center;
     flex: 0 0 auto;
-    width: auto;
-}
-
-.npb-react {
-    display: flex;
-    align-items: center;
     gap: 2px;
-    flex: 0 0 auto;
 }
 
-.npb-react.is-local {
-    justify-content: center;
-    width: calc(5 * 36px + 5 * 2px + var(--npb-quality-w));
+.npb-tool-btns {
+    justify-self: end;
 }
 
-.npb-slot {
-    display: flex;
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-}
-
-.npb-sep {
-    width: 1px;
-    height: 30px;
-    flex: 0 0 auto;
-    background: linear-gradient(180deg, transparent, rgb(var(--ink) / 0.16), transparent);
+.npb-ghosts {
+    position: absolute;
+    top: 0;
+    right: 18px;
+    width: 34px;
+    height: 34px;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* meta (art + title) */
@@ -1447,36 +1386,32 @@ select,
     filter: brightness(0.92);
 }
 
-/* progress lane (full pill width) */
+/* progress lane: time, waveform, time */
 .npb-lane {
-    position: relative;
     display: flex;
-    flex-direction: column;
-    gap: 0;
+    align-items: center;
+    gap: 10px;
 }
 
-.npb-times {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9.5px;
+.npb-time {
+    flex: 0 0 34px;
+    font-size: 10px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
     color: rgb(var(--ink) / 0.42);
-    padding: 0 1px 1px;
 }
 
-.npb-times b {
-    color: rgb(var(--ink) / 0.9);
-    font-weight: 700;
+.npb-time.is-now {
+    color: rgb(var(--ink) / 0.85);
+    text-align: right;
 }
 
 /* track loading (SC → SCD): the capsule traces its own glowing accent outline,
    the artwork shows a % veil, and the halo brightens. No idle motion — the ring
    just fills to the real download progress via a transition. */
 .npb-dock.is-loading {
-    box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
-    0 0 90px -10px var(--color-accent-glow);
+    box-shadow: 0 10px 30px -14px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))),
+    0 0 40px -12px var(--color-accent-glow);
 }
 
 .npb-loadring {
@@ -1494,8 +1429,8 @@ select,
     y: 1px;
     width: calc(100% - 2px);
     height: calc(100% - 2px);
-    rx: 27px;
-    ry: 27px;
+    rx: 17px;
+    ry: 17px;
     fill: none;
 }
 
@@ -1542,20 +1477,7 @@ select,
     display: block;
 }
 
-.together-icon {
-    display: none;
-}
-
-.npb-extra,
-.npb-spare {
-    display: contents;
-}
-
 @container npb (width < 1096px) {
-    .npb-content {
-        --npb-quality-w: 64px;
-    }
-
     .npb-vol-slider {
         display: none;
     }
@@ -1567,40 +1489,16 @@ select,
     .npb-txt {
         flex-basis: 112px;
     }
+}
 
-    .together-icon {
-        display: block;
-    }
-
-    .together-stack {
+@container npb (width < 800px) {
+    .npb-track-btns {
         display: none;
     }
 }
 
-@container npb (width < 936px) {
-    .npb-quality {
-        display: none;
-    }
-
-    .npb-react.is-local {
-        width: auto;
-    }
-}
-
-@container npb (width < 836px) {
-    .npb-row {
-        gap: 8px;
-    }
-
-    .npb-slot,
-    .npb-abloop:not(.is-active) {
-        display: none;
-    }
-}
-
-@container npb (width < 696px) {
-    .npb-extra,
-    .npb-sep {
+@container npb (width < 620px) {
+    .npb-tool-btns {
         display: none;
     }
 
@@ -1609,25 +1507,15 @@ select,
     }
 }
 
-@container npb (width < 536px) {
-    .npb-spare {
-        display: none;
-    }
-}
-
 @container npb (width < 480px) {
     .npb-row {
-        flex-wrap: wrap;
-        justify-content: center;
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
         row-gap: 6px;
     }
 
-    .npb-meta {
-        flex-basis: 100%;
-    }
-
-    .npb-react.is-local {
-        display: none;
+    .npb-left {
+        width: 100%;
     }
 }
 

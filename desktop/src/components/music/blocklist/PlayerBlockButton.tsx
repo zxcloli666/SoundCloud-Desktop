@@ -37,52 +37,79 @@ const TargetRow = memo(({ target }: { target: BlockTarget }) => {
   );
 });
 
-export const PlayerBlockButton = memo(({ track }: { track: Track | null | undefined }) => {
-  const { t } = useTranslation();
-  const targets = useMemo(() => (track ? trackTargets(track) : []), [track]);
-  if (targets.length === 0) return null;
+const DEFAULT_TRIGGER =
+  'w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer text-ink-30 hover:text-rose-300 hover:bg-ink/[0.04] data-[state=open]:text-rose-300 data-[state=open]:bg-ink/[0.06]';
 
-  return (
-    <Popover.Root>
-      <Popover.Trigger asChild>
+export const PlayerBlockButton = memo(
+  ({
+    track,
+    className = DEFAULT_TRIGGER,
+    keepSlot = false,
+  }: {
+    track: Track | null | undefined;
+    className?: string;
+    keepSlot?: boolean;
+  }) => {
+    const { t } = useTranslation();
+    const targets = useMemo(() => (track ? trackTargets(track) : []), [track]);
+    if (targets.length === 0) {
+      if (!keepSlot) return null;
+      return (
         <button
           type="button"
+          disabled
           title={t('blocklist.playerTitle')}
           aria-label={t('blocklist.playerTitle')}
-          className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-all duration-200 cursor-pointer text-ink-30 hover:text-rose-300 hover:bg-ink/[0.04] data-[state=open]:text-rose-300 data-[state=open]:bg-ink/[0.06]"
+          className={className}
         >
           <Ban size={16} />
         </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content
-          side="top"
-          align="end"
-          sideOffset={10}
-          collisionPadding={12}
-          className="z-[200] w-[300px] origin-bottom-right rounded-[18px] border border-ink/[0.10] bg-[#101012]/96 p-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] backdrop-blur-xl outline-none data-[state=open]:animate-fade-in-up"
-        >
-          <div className="absolute inset-x-0 top-0 h-12 rounded-t-[18px] bg-gradient-to-b from-rose-500/[0.07] to-transparent pointer-events-none" />
-          <div className="relative flex items-start gap-2 px-1 pb-2.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rose-400/20 bg-rose-500/[0.08] text-rose-300">
-              <Ban size={14} />
+      );
+    }
+
+    return (
+      <Popover.Root>
+        <Popover.Trigger asChild>
+          <button
+            type="button"
+            title={t('blocklist.playerTitle')}
+            aria-label={t('blocklist.playerTitle')}
+            data-ui="player-block"
+            className={className}
+          >
+            <Ban size={16} />
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            side="top"
+            align="end"
+            sideOffset={10}
+            collisionPadding={12}
+            className="z-[200] w-[300px] origin-bottom-right rounded-[18px] border border-ink/[0.10] bg-surface/96 p-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))] backdrop-blur-xl outline-none data-[state=open]:animate-fade-in-up"
+          >
+            <div className="absolute inset-x-0 top-0 h-12 rounded-t-[18px] bg-gradient-to-b from-rose-500/[0.07] to-transparent pointer-events-none" />
+            <div className="relative flex items-start gap-2 px-1 pb-2.5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-rose-400/20 bg-rose-500/[0.08] text-rose-300">
+                <Ban size={14} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-65">
+                  {t('blocklist.playerTitle')}
+                </p>
+                <p className="text-[10.5px] leading-snug text-ink-30">
+                  {t('blocklist.playerHint')}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-65">
-                {t('blocklist.playerTitle')}
-              </p>
-              <p className="text-[10.5px] leading-snug text-ink-30">
-                {t('blocklist.playerHint')}
-              </p>
+            <div className="relative space-y-0.5">
+              {targets.map((target) => (
+                <TargetRow key={`${target.kind}:${target.id}`} target={target} />
+              ))}
             </div>
-          </div>
-          <div className="relative space-y-0.5">
-            {targets.map((target) => (
-              <TargetRow key={`${target.kind}:${target.id}`} target={target} />
-            ))}
-          </div>
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
-  );
-});
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
+    );
+  },
+);
