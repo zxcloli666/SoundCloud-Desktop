@@ -81,6 +81,8 @@
     "volume": "볼륨",
     "volumeReset": "볼륨을 100%로 초기화",
     "volumeResetHint": "더블클릭하면 100%로 초기화돼요",
+    "volumeType": "볼륨 입력",
+    "volumePercent": "볼륨 퍼센트",
     "autoplay": "자동 재생",
     "autoplayOn": "대기열이 끝나면 비슷한 트랙을 이어서 재생해요",
     "autoplayOff": "대기열이 끝나면 재생을 멈춰요",

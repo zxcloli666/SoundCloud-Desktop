@@ -81,6 +81,8 @@
     "volume": "Volumen",
     "volumeReset": "Restablecer volumen a 100%",
     "volumeResetHint": "Doble clic para restablecer a 100%",
+    "volumeType": "Escribir volumen",
+    "volumePercent": "Volumen en porcentaje",
     "autoplay": "Reproducción automática",
     "autoplayOn": "Seguirán sonando pistas similares al terminar la cola",
     "autoplayOff": "La reproducción se detiene al terminar la cola",

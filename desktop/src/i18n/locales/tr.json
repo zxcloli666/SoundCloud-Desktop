@@ -114,6 +114,8 @@
     "volume": "Ses",
     "volumeReset": "Sesi %100'e sıfırla",
     "volumeResetHint": "%100'e sıfırlamak için çift tıkla",
+    "volumeType": "Ses düzeyini yaz",
+    "volumePercent": "Yüzde olarak ses düzeyi",
     "previous": "Önceki",
     "next": "Sonraki",
     "openApp": "SoundCloud'u aç",

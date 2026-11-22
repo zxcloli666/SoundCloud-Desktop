@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { volume1Icon16, volume2Icon16, volumeXIcon16 } from '../../lib/icons';
 import { clampVolume, VOLUME_MAX, VOLUME_SNAP_POINTS } from '../../lib/volume';
-import { usePlayerStore, VOLUME_DEFAULT } from '../../stores/player';
+import { usePlayerStore } from '../../stores/player';
 import { useVolumeDrag } from './useVolumeDrag';
 
 const VOLUME_TICKS = VOLUME_SNAP_POINTS.filter((point) => point < VOLUME_MAX);
@@ -150,20 +150,57 @@ export const ControlVolumeBtn = React.memo(({ size = 'default' }: { size?: 'defa
 
 export const VolumeLabel = React.memo(({ className = 'text-right' }: { className?: string }) => {
   const { t } = useTranslation();
-  const { volume, resetVolume } = usePlayerStore(
-    useShallow((s) => ({ volume: s.volume, resetVolume: s.resetVolume })),
+  const { volume, setVolume } = usePlayerStore(
+    useShallow((s) => ({ volume: s.volume, setVolume: s.setVolume })),
   );
-  const isDefault = volume === VOLUME_DEFAULT;
+  const [editing, setEditing] = React.useState(false);
+  const [draft, setDraft] = React.useState(String(volume));
   const tone =
     volume > 100 ? 'text-amber-400/70 hover:text-amber-300' : 'text-ink-30 hover:text-ink-70';
+
+  React.useEffect(() => {
+    if (!editing) setDraft(String(volume));
+  }, [editing, volume]);
+
+  const commit = () => {
+    const parsed = Number.parseInt(draft, 10);
+    if (Number.isFinite(parsed)) setVolume(clampVolume(parsed));
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        type="number"
+        min={0}
+        max={VOLUME_MAX}
+        step={1}
+        inputMode="numeric"
+        aria-label={t('player.volumePercent')}
+        value={draft}
+        onFocus={(event) => event.currentTarget.select()}
+        onChange={(event) => setDraft(event.currentTarget.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') event.currentTarget.blur();
+          if (event.key === 'Escape') {
+            setDraft(String(volume));
+            setEditing(false);
+          }
+        }}
+        className={`h-4 w-[34px] shrink-0 bg-transparent text-center text-[10px] tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${tone}`}
+      />
+    );
+  }
+
   return (
     <button
       type="button"
-      title={isDefault ? t('player.volume') : t('player.volumeReset')}
-      onClick={() => {
-        if (!isDefault) resetVolume();
-      }}
-      className={`text-[10px] tabular-nums w-[34px] shrink-0 transition-colors ${isDefault ? 'cursor-default' : 'cursor-pointer'} ${className} ${tone}`}
+      title={t('player.volumeType')}
+      aria-label={t('player.volumeType')}
+      onClick={() => setEditing(true)}
+      className={`text-[10px] tabular-nums w-[34px] shrink-0 cursor-text transition-colors ${className} ${tone}`}
     >
       {volume}%
     </button>

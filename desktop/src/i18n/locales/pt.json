@@ -81,6 +81,8 @@
     "volume": "Volume",
     "volumeReset": "Voltar o volume para 100%",
     "volumeResetHint": "Clique duplo para voltar a 100%",
+    "volumeType": "Digitar volume",
+    "volumePercent": "Volume em porcentagem",
     "autoplay": "Reprodução automática",
     "autoplayOn": "Faixas parecidas continuam tocando depois da fila",
     "autoplayOff": "A reprodução para quando a fila acaba",

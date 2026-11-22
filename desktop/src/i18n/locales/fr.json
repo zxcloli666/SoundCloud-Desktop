@@ -81,6 +81,8 @@
     "volume": "Volume",
     "volumeReset": "Remettre le volume à 100 %",
     "volumeResetHint": "Double-clic pour revenir à 100 %",
+    "volumeType": "Saisir le volume",
+    "volumePercent": "Volume en pourcentage",
     "autoplay": "Lecture automatique",
     "autoplayOn": "Des titres similaires continueront après la file d'attente",
     "autoplayOff": "La lecture s'arrête à la fin de la file d'attente",

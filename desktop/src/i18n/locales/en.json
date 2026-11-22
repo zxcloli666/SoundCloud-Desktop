@@ -81,6 +81,8 @@
     "volume": "Volume",
     "volumeReset": "Reset volume to 100%",
     "volumeResetHint": "Double-click to reset to 100%",
+    "volumeType": "Type a volume",
+    "volumePercent": "Volume in percent",
     "autoplay": "Autoplay",
     "autoplayOn": "Similar tracks will keep playing after the queue",
     "autoplayOff": "Playback stops when the queue ends",
