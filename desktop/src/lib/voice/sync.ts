@@ -82,12 +82,13 @@ async function readLibrary() {
     fetchAllSuperlikedTracks().catch((): Track[] => []),
   ]);
   const owned = ownedTracks(superliked, liked.collection);
-  await voiceIpc.library(owned);
+  const { language } = useVoiceStore.getState().config;
+  const learned = () => (language === 'ru' ? useVoiceStore.getState().readings : {});
+  await voiceIpc.library(withReadings(owned, learned()));
   const artists = likedArtists([...superliked, ...liked.collection], followed.collection);
   boost({ artists });
-  const { language } = useVoiceStore.getState().config;
   const heard = await readNames(language, libraryNames(language, artists, owned), askReadings);
-  const asked = language === 'ru' ? useVoiceStore.getState().readings : {};
+  const asked = learned();
   const known = { ...heard, ...asked };
   await voiceIpc.library(withReadings(owned, known));
   boost({ spoken: spokenNames(language, asked, artists, ownedTracks(superliked), known) });
