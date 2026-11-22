@@ -1,4 +1,5 @@
-import { useLocation } from 'react-router-dom';
+import { useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { RIVER_KEYFRAMES } from '../components/home/river/keyframes';
 import { MOMENTS_KEYFRAMES } from '../components/moments/keyframes';
 import {
@@ -10,12 +11,22 @@ import {
 import { MomentsStage } from '../components/moments/MomentsStage';
 import { useMomentsFeed } from '../components/moments/use-moments-feed';
 import { useWaveSource } from '../components/moments/use-wave-source';
+import type { Track } from '../stores/player';
 
 export function Moments() {
   const location = useLocation();
+  const navigate = useNavigate();
   const startUrn = (location.state as { startUrn?: string } | null)?.startUrn;
   const feed = useMomentsFeed(useWaveSource(startUrn));
   const current = feed.tracks[feed.index];
+  const { listenFull: startFull } = feed;
+  const listenFull = useCallback(
+    (track: Track) => {
+      startFull(track);
+      navigate('/home');
+    },
+    [startFull, navigate],
+  );
 
   return (
     <div data-ui="moments" className="relative flex h-full w-full flex-col overflow-hidden">
@@ -33,7 +44,7 @@ export function Moments() {
             index={feed.index}
             go={feed.go}
             toggle={feed.toggle}
-            listenFull={feed.listenFull}
+            listenFull={listenFull}
           />
         )}
       </div>

@@ -1,8 +1,6 @@
-import type {ReactNode} from 'react';
+import type { ReactNode } from 'react';
 import React from 'react';
 
-/** Рамка участка реки: заголовок + «почему это здесь». Узлы и ветки рисует
- *  RiverBraid по якорю-обёртке секции — здесь только контент. */
 export const RiverSection = React.memo(function RiverSection({
   title,
   why,
@@ -25,7 +23,7 @@ export const RiverSection = React.memo(function RiverSection({
 
   if (tone === 'open') {
     return (
-      <section className="min-w-0">
+      <section data-ui="river-section" className="min-w-0">
         {head}
         {children}
       </section>
@@ -33,7 +31,7 @@ export const RiverSection = React.memo(function RiverSection({
   }
 
   return (
-    <section className="min-w-0">
+    <section data-ui="river-section" className="min-w-0">
       {head}
       <div
         className={`rounded-2xl border p-4 ${

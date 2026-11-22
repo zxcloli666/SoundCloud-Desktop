@@ -1,7 +1,7 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { getCurrentTime, getDuration, handlePrev, seek } from '../../lib/audio';
 import { getWallpaperUrl } from '../../lib/cache';
@@ -10,8 +10,10 @@ import { useDesktopWallpaper } from '../../lib/desktop-wallpaper';
 import { art } from '../../lib/formatters';
 import { usePerfMode } from '../../lib/perf';
 import { isMac } from '../../lib/platform';
+import { useVisibleBlocks } from '../../lib/use-layout';
 import { useWallpaperRotation } from '../../lib/wallpaper-rotation';
 import { toggleWindowFullscreen } from '../../lib/window';
+import { useAuthStore } from '../../stores/auth';
 import { useLyricsStore } from '../../stores/lyrics';
 import { usePlayerStore } from '../../stores/player';
 import { useSettingsStore } from '../../stores/settings';
@@ -36,6 +38,7 @@ import { BackToTop } from './BackToTop';
 import { CoverTint } from './CoverTint';
 import { GlobalBindingsGroup } from './GlobalBindingsGroup';
 import { NowPlayingBar } from './NowPlayingBar';
+import type { PlayerContext } from './player/PlayerButtons';
 import { ScrollReset } from './ScrollReset';
 import { Sidebar } from './Sidebar';
 import { ThemeTryBar } from './ThemeTryBar';
@@ -291,7 +294,9 @@ const AmbientGlow = React.memo(() => {
   );
 });
 
-const StableOutlet = React.memo(() => <Outlet />);
+const StableOutlet = React.memo(({ context }: { context: PlayerContext }) => (
+  <Outlet context={context} />
+));
 
 /* ── Helpers ───────────────────────────────────────────────── */
 
@@ -303,6 +308,11 @@ const isInputEl = (el: EventTarget | null) =>
 /* ── AppShell ──────────────────────────────────────────────── */
 
 export const AppShell = React.memo(() => {
+  const { pathname } = useLocation();
+  const authenticated = useAuthStore((s) => s.isAuthenticated);
+  const deckVisible = useVisibleBlocks('home').includes('river');
+  const onHome = /^\/home\/?$/.test(pathname) && deckVisible && authenticated;
+  const hideNowPlaying = onHome || /^\/moments\/?$/.test(pathname);
   const [queueOpen, setQueueOpen] = useState(false);
   const hasWall = useSettingsStore((s) => !!s.backgroundImage);
   const kbOpen = useShortcutsStore((s) => s.open);
@@ -314,6 +324,7 @@ export const AppShell = React.memo(() => {
     lastAt: 0,
   });
   const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
+  const outletContext = useMemo(() => ({ onQueueToggle, queueOpen }), [onQueueToggle, queueOpen]);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
   const onShowShortcuts = useCallback(() => useShortcutsStore.getState().setOpen(true), []);
   useAppContextMenu({ queueOpen, toggleQueue: onQueueToggle, showShortcuts: onShowShortcuts });
@@ -505,15 +516,15 @@ export const AppShell = React.memo(() => {
           <main
             ref={mainRef}
             data-ui="main"
-            className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]"
+            className={`flex-1 overflow-y-auto overflow-x-hidden ${hideNowPlaying ? 'pb-0' : 'pb-[136px]'}`}
           >
             <ScrollReset target={mainRef} />
-            <StableOutlet />
+            <StableOutlet context={outletContext} />
           </main>
           <ChatDock />
           <BackToTop target={mainRef} />
         </div>
-        <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />
+        {!hideNowPlaying && <NowPlayingBar onQueueToggle={onQueueToggle} queueOpen={queueOpen} />}
       </div>
       <AddToPlaylistHost />
       <SuperlikeLimitHost />
