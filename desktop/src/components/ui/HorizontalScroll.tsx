@@ -7,6 +7,9 @@ import { useScrollEdges } from './useScrollEdges';
 interface HorizontalScrollProps {
   children: ReactNode;
   className?: string;
+  activeItemKey?: string;
+  wheelStepItems?: number;
+  onNearEnd?: () => void;
 }
 
 const DRAG_THRESHOLD = 6;
@@ -41,7 +44,13 @@ function ScrollArrow({ side, visible, label, onClick }: ScrollArrowProps) {
   );
 }
 
-export function HorizontalScroll({ children, className = '' }: HorizontalScrollProps) {
+export function HorizontalScroll({
+  children,
+  className = '',
+  activeItemKey,
+  wheelStepItems,
+  onNearEnd,
+}: HorizontalScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef({
     active: false,
@@ -69,6 +78,54 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
       document.body.style.removeProperty('user-select');
     };
   }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!activeItemKey || !el) return;
+    const item = Array.from(el.children).find(
+      (child) => child.getAttribute('data-scroll-key') === activeItemKey,
+    );
+    if (!(item instanceof HTMLElement)) return;
+    const box = el.getBoundingClientRect();
+    const rect = item.getBoundingClientRect();
+    const left = el.scrollLeft + rect.left - box.left - (el.clientWidth - rect.width) / 2;
+    el.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
+  }, [activeItemKey, smooth]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onWheel = (event: WheelEvent) => {
+      if (el.scrollWidth <= el.clientWidth) return;
+      const horizontal = Math.abs(event.deltaX) > Math.abs(event.deltaY);
+      if (!horizontal && !wheelStepItems) return;
+      const delta = horizontal ? event.deltaX : event.deltaY;
+      if (delta === 0) return;
+      event.preventDefault();
+      if (!wheelStepItems) {
+        el.scrollBy({ left: delta, behavior: smooth ? 'smooth' : 'auto' });
+        return;
+      }
+      const card = el.firstElementChild as HTMLElement | null;
+      const gap = Number.parseFloat(getComputedStyle(el).columnGap) || 0;
+      const step = ((card?.getBoundingClientRect().width ?? 96) + gap) * wheelStepItems;
+      el.scrollBy({ left: Math.sign(delta) * step, behavior: smooth ? 'smooth' : 'auto' });
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [smooth, wheelStepItems]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !onNearEnd) return;
+    const onScroll = () => {
+      if (el.scrollWidth - el.clientWidth - el.scrollLeft < Math.max(420, el.clientWidth * 0.45)) {
+        onNearEnd();
+      }
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [onNearEnd]);
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
