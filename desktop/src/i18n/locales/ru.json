@@ -92,7 +92,10 @@
     "copyArtist": "Исполнитель",
     "copyBoth": "Исполнитель и название",
     "copyLink": "Ссылка",
-    "copiedShort": "Скопировано"
+    "copiedShort": "Скопировано",
+    "seek": "Перемотка",
+    "abLoopName": "Цикл A-B",
+    "qualityName": "Качество"
   },
   "auth": {
     "signIn": "Войти через SoundCloud",
@@ -1604,7 +1607,9 @@
     "videoNoCodec": "Нет H.264",
     "videoCacheSize": "Видео",
     "videoCacheLimit": "Лимит кэша видео",
-    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели"
+    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели",
+    "layoutPlayer": "Плеер",
+    "layoutPlayerHint": "Кнопки можно включать и правой кнопкой мыши по плееру"
   },
   "effects": {
     "title": "Эффекты",

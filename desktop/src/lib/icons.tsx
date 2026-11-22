@@ -28,9 +28,9 @@ import {
   ChevronRight as _ChevronRight,
   ChevronUp as _ChevronUp,
   CircleCheck as _CircleCheck,
+  Clapperboard as _Clapperboard,
   ClipboardCopy as _ClipboardCopy,
   ClipboardPaste as _ClipboardPaste,
-  Clapperboard as _Clapperboard,
   Clock as _Clock,
   Cloud as _Cloud,
   CloudUpload as _CloudUpload,
@@ -44,19 +44,19 @@ import {
   Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
   Eye as _Eye,
-  Film as _Film,
-  Infinity as _Infinity,
   EyeOff as _EyeOff,
   FastForward as _FastForward,
   FileDown as _FileDown,
   FileMusic as _FileMusic,
   FileText as _FileText,
+  Film as _Film,
   Flame as _Flame,
   FolderInput as _FolderInput,
   FolderOpen as _FolderOpen,
   FolderPlus as _FolderPlus,
-  GalleryVerticalEnd as _GalleryVerticalEnd,
   Fullscreen as _Fullscreen,
+  GalleryVerticalEnd as _GalleryVerticalEnd,
+  Gauge as _Gauge,
   Gift as _Gift,
   Globe as _Globe,
   GripVertical as _GripVertical,
@@ -68,6 +68,7 @@ import {
   Image as _Image,
   ImagePlus as _ImagePlus,
   Images as _Images,
+  Infinity as _Infinity,
   Info as _Info,
   Keyboard as _Keyboard,
   KeyRound as _KeyRound,
@@ -120,9 +121,9 @@ import {
   Shuffle as _Shuffle,
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
-  SmilePlus as _SmilePlus,
   SlidersHorizontal as _SlidersHorizontal,
   Smartphone as _Smartphone,
+  SmilePlus as _SmilePlus,
   Sparkles as _Sparkles,
   Square as _Square,
   Star as _Star,
@@ -226,6 +227,7 @@ export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
+export const Gauge = memo(_Gauge);
 export const Film = memo(_Film);
 export const InfinityLoop = memo(_Infinity);
 export const EyeOff = memo(_EyeOff);

@@ -13,7 +13,15 @@ const SCOPES: Array<{ id: LayoutScope; labelKey: string }> = [
   { id: 'sidebar', labelKey: 'settings.layoutSidebar' },
   { id: 'library', labelKey: 'settings.layoutLibrary' },
   { id: 'home', labelKey: 'settings.layoutHome' },
+  { id: 'player', labelKey: 'settings.layoutPlayer' },
 ];
+
+const HINTS: Record<LayoutScope, string> = {
+  sidebar: 'settings.layoutSidebarHint',
+  library: 'settings.layoutPageHint',
+  home: 'settings.layoutPageHint',
+  player: 'settings.layoutPlayerHint',
+};
 
 function BlocksEditor({ scope }: { scope: LayoutScope }) {
   const { t } = useTranslation();
@@ -97,9 +105,7 @@ export function LayoutCard() {
         <BlocksEditor key={scope} scope={scope} />
         {scope === 'sidebar' && <PinnedEditor />}
         {scope === 'home' && <RiverSections />}
-        <p className="text-[11.5px] leading-snug text-ink-30">
-          {t(scope === 'sidebar' ? 'settings.layoutSidebarHint' : 'settings.layoutPageHint')}
-        </p>
+        <p className="text-[11.5px] leading-snug text-ink-30">{t(HINTS[scope])}</p>
       </div>
     </Card>
   );

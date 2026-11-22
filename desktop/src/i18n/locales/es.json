@@ -92,7 +92,10 @@
     "copyArtist": "Artista",
     "copyBoth": "Artista y título",
     "copyLink": "Enlace",
-    "copiedShort": "Copiado"
+    "copiedShort": "Copiado",
+    "seek": "Buscar",
+    "abLoopName": "Bucle A-B",
+    "qualityName": "Calidad"
   },
   "auth": {
     "signIn": "Iniciar sesión con SoundCloud",
@@ -1588,7 +1591,9 @@
     "videoNoCodec": "No H.264",
     "videoCacheSize": "Vídeo",
     "videoCacheLimit": "Límite de la caché de vídeo",
-    "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver"
+    "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver",
+    "layoutPlayer": "Reproductor",
+    "layoutPlayerHint": "También puedes hacer clic derecho en el reproductor para cambiar los botones"
   },
   "effects": {
     "title": "Efectos",

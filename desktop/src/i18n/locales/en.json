@@ -92,7 +92,10 @@
     "copyArtist": "Artist",
     "copyBoth": "Artist and title",
     "copyLink": "Link",
-    "copiedShort": "Copied"
+    "copiedShort": "Copied",
+    "seek": "Seek",
+    "abLoopName": "A-B loop",
+    "qualityName": "Quality"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",
@@ -1567,7 +1570,9 @@
     "videoNoCodec": "No H.264",
     "videoCacheSize": "Video",
     "videoCacheLimit": "Video cache limit",
-    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first"
+    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first",
+    "layoutPlayer": "Player",
+    "layoutPlayerHint": "You can also right-click the player to switch buttons"
   },
   "effects": {
     "title": "Effects",

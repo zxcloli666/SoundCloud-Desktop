@@ -92,7 +92,10 @@
     "copyArtist": "아티스트",
     "copyBoth": "아티스트와 제목",
     "copyLink": "링크",
-    "copiedShort": "복사됨"
+    "copiedShort": "복사됨",
+    "seek": "탐색",
+    "abLoopName": "A-B 반복",
+    "qualityName": "음질"
   },
   "auth": {
     "signIn": "SoundCloud로 로그인",
@@ -1550,7 +1553,9 @@
     "videoNoCodec": "H.264 없음",
     "videoCacheSize": "비디오",
     "videoCacheLimit": "비디오 캐시 한도",
-    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요"
+    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요",
+    "layoutPlayer": "플레이어",
+    "layoutPlayerHint": "플레이어를 우클릭해도 버튼을 바꿀 수 있어요"
   },
   "effects": {
     "title": "효과",

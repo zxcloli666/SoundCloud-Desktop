@@ -128,7 +128,10 @@
     "copyArtist": "Sanatçı",
     "copyBoth": "Sanatçı ve başlık",
     "copyLink": "Bağlantı",
-    "copiedShort": "Kopyalandı"
+    "copiedShort": "Kopyalandı",
+    "seek": "Sar",
+    "abLoopName": "A-B döngüsü",
+    "qualityName": "Kalite"
   },
   "auth": {
     "signIn": "SoundCloud ile giriş yap",
@@ -1619,7 +1622,9 @@
     "videoNoCodec": "H.264 yok",
     "videoCacheSize": "Video",
     "videoCacheLimit": "Video önbellek limiti",
-    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir"
+    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir",
+    "layoutPlayer": "Oynatıcı",
+    "layoutPlayerHint": "Düğmeleri değiştirmek için oynatıcıya sağ tıklayabilirsin"
   },
   "effects": {
     "title": "Efektler",
