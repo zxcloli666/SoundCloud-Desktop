@@ -23,7 +23,7 @@ export function ShelfScroll<T>({ items, keyOf, renderItem, activeKey, onEnd }: P
 
   return (
     <HorizontalScroll
-      className="gap-3 pb-1"
+      className="gap-4 pb-1"
       activeItemKey={activeKey}
       wheelStepItems={WHEEL_STEP_CARDS}
       onNearEnd={more}

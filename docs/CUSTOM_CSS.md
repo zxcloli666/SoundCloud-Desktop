@@ -53,6 +53,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player"]` | Floating player bar |
 | `[data-ui="player-art"]` | Cover in the player |
 | `[data-ui="player-title"]` | Track title in the player |
+| `[data-ui="marquee"]` | A long name that scrolls; `data-moving="true"` while it moves |
 | `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
 | `[data-ui="player-transport"]` | Shuffle, previous, play, next, repeat group in the player |
@@ -124,17 +125,21 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="deck-scene"]` | Cover colour glow behind the Home deck; `data-live="true"` while the live background is drawn |
 | `[data-ui="deck-status"]` | "Now playing" or "Paused" label in the Home deck |
 | `[data-ui="deck-artist"]` | Artist names in the Home deck |
+| `[data-ui="deck-frame"]` | Square around the big cover that holds the glow |
 | `[data-ui="deck-cover"]` | Big cover in the Home deck |
-| `[data-ui="deck-title"]` | Track title in the Home deck |
-| `[data-ui="deck-seek"]` | Time and waveform row in the Home deck |
+| `[data-ui="deck-title"]` | Track title in the Home deck, next to the queue button |
+| `[data-ui="deck-seek"]` | Seek capsule with the waveform and the time inside |
 | `[data-ui="deck-controls"]` | Player buttons in the Home deck |
-| `[data-ui="deck-lyrics"]` | Current lyric line in the Home deck |
+| `[data-ui="deck-lyrics"]` | Current and next lyric lines under the player in a narrow window |
+| `[data-ui="deck-lyric-current"]` | Current lyric line under the wave list in a wide window |
+| `[data-ui="deck-lyric-next"]` | Next lyric line under the wave settings in a wide window |
 | `[data-ui="deck-idle"]` | Home deck when nothing is playing |
 | `[data-ui="deck-start"]` | Button that starts the wave when nothing is playing |
-| `[data-ui="up-next"]` | Up next column in the Home deck |
-| `[data-ui="up-next-row"]` | A track in the Up next column |
-| `[data-ui="up-next-queue"]` | Queue button in the Up next column |
-| `[data-ui="wave-settings"]` | Wave filter chips in the Home deck |
+| `[data-ui="wave-pane"]` | Wave list on the left of the Home deck in a wide window |
+| `[data-ui="wave-row"]` | A track in that list |
+| `[data-ui="up-next"]` | Up next list in the Home deck |
+| `[data-ui="up-next-row"]` | A track in the Up next list |
+| `[data-ui="wave-settings"]` | Wave settings box under Up next |
 | `[data-ui="vibe-search"]` | Vibe search button in the Home deck |
 | `[data-ui="home-shelf"]` | Liked, artists, playlists and history shelf on Home |
 | `[data-ui="shelf-tab"]` | A tab of that shelf; `aria-selected` marks the open one |

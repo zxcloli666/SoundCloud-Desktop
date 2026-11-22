@@ -53,7 +53,7 @@ export function Home() {
       }}
     >
       <style>{RIVER_KEYFRAMES}</style>
-      <div className="mx-auto flex max-w-[1320px] flex-col gap-10 px-4 pb-10 pt-4 md:px-8">
+      <div className="mx-auto flex max-w-[1800px] flex-col gap-5 px-[clamp(18px,3.5vw,68px)] pb-10 pt-[clamp(22px,4.6vh,56px)]">
         {groups.map((group) => {
           if (group.kind === 'river') {
             return (

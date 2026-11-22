@@ -3043,6 +3043,7 @@
     "paused": "일시정지됨",
     "openPlayer": "전체 플레이어 열기: {{title}}",
     "upNext": "다음 곡",
+    "waveTitle": "웨이브",
     "emptyQueue": "대기열이 비어 있어요",
     "waveSettings": "웨이브 설정",
     "vibe": "바이브",

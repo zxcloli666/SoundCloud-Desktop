@@ -94,19 +94,36 @@ function Group({
   );
 }
 
-export const TrackButtons = React.memo(({ ctx }: { ctx: PlayerContext }) => (
-  <Group ids={TRACK_IDS} ctx={ctx} className="npb-track-btns" />
-));
+const NO_IDS: readonly PlayerButtonId[] = [];
 
-export const ToolButtons = React.memo(({ ctx }: { ctx: PlayerContext }) => {
-  const rest = React.useMemo(
-    () =>
-      (Object.keys(BUTTONS) as PlayerButtonId[]).filter(
-        (id) => !TRACK_IDS.includes(id) && !TRANSPORT_IDS.includes(id),
-      ),
-    [],
-  );
-  return <Group ids={rest} ctx={ctx} className="npb-tool-btns" />;
+interface ToolProps {
+  ctx: PlayerContext;
+  omit?: readonly PlayerButtonId[];
+  className?: string;
+}
+
+export const TrackButtons = React.memo(
+  ({ ctx, className = 'npb-track-btns' }: { ctx: PlayerContext; className?: string }) => (
+    <Group ids={TRACK_IDS} ctx={ctx} className={className} />
+  ),
+);
+
+export const ToolButtons = React.memo(
+  ({ ctx, omit = NO_IDS, className = 'npb-tool-btns' }: ToolProps) => {
+    const rest = React.useMemo(
+      () =>
+        (Object.keys(BUTTONS) as PlayerButtonId[]).filter(
+          (id) => !TRACK_IDS.includes(id) && !TRANSPORT_IDS.includes(id) && !omit.includes(id),
+        ),
+      [omit],
+    );
+    return <Group ids={rest} ctx={ctx} className={className} />;
+  },
+);
+
+export const QueueSlot = React.memo(({ ctx }: { ctx: PlayerContext }) => {
+  const visible = useVisible();
+  return visible.has('queue') ? BUTTONS.queue(ctx) : null;
 });
 
 export const TransportButtons = React.memo(({ ctx }: { ctx: PlayerContext }) => {

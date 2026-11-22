@@ -1,4 +1,11 @@
-import React, { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
+import React, {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useSyncExternalStore,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import { getCurrentTime, getDuration, seek, subscribe } from '../../../lib/audio';
 import { tintFromRgb, useCoverPalette } from '../../../lib/cover-palette';
@@ -26,26 +33,34 @@ function Bars({ bars }: { bars: number[] }) {
   );
 }
 
+const CAPSULE_BARS = 64;
 const layerClass = 'pointer-events-none absolute inset-0 flex items-center gap-[2px]';
+const capsuleLayer = 'justify-between px-5 py-2 [&>i]:max-w-[2px]';
+const capsuleClass = 'deck-capsule h-[68px]! rounded-full! border overflow-hidden';
 
-export const WaveSeek = React.memo(({ className = '' }: { className?: string }) => {
+interface Props {
+  className?: string;
+  capsule?: boolean;
+  children?: ReactNode;
+}
+
+export const WaveSeek = React.memo(({ className = '', capsule = false, children }: Props) => {
   const { t } = useTranslation();
   const perf = usePerfMode();
   const track = usePlayerStore((s) => s.currentTrack);
   const duration = useSyncExternalStore(subscribe, getDuration);
   const { data: waveform } = useTrackWaveform(track);
   const palette = useCoverPalette(Boolean(track));
+  const count = capsule ? CAPSULE_BARS : WAVE_BAR_COUNT;
   const bars = useMemo(
-    () =>
-      waveform
-        ? peakBars(waveform.values, waveform.height, WAVE_BAR_COUNT)
-        : fallbackBars(WAVE_BAR_COUNT),
-    [waveform],
+    () => (waveform ? peakBars(waveform.values, waveform.height, count) : fallbackBars(count)),
+    [waveform, count],
   );
   const playedColor = palette ? `rgb(${tintFromRgb(palette.primary).join(' ')})` : undefined;
 
   const rootRef = useRef<HTMLDivElement>(null);
   const playedRef = useRef<HTMLDivElement>(null);
+  const tintRef = useRef<HTMLDivElement>(null);
   const headRef = useRef<HTMLSpanElement>(null);
   const hoverRef = useRef<HTMLSpanElement>(null);
   const tipRef = useRef<HTMLSpanElement>(null);
@@ -56,6 +71,7 @@ export const WaveSeek = React.memo(({ className = '' }: { className?: string }) 
     const total = getDuration();
     const pct = total > 0 ? Math.max(0, Math.min(100, (seconds / total) * 100)) : 0;
     if (playedRef.current) playedRef.current.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    if (tintRef.current) tintRef.current.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
     if (headRef.current) headRef.current.style.left = `${pct}%`;
   }, []);
 
@@ -163,23 +179,45 @@ export const WaveSeek = React.memo(({ className = '' }: { className?: string }) 
       onKeyDown={onKeyDown}
       className={`group relative h-7 w-full touch-none select-none rounded-md outline-none focus-visible:ring-2 focus-visible:ring-accent/60 ${
         canSeek ? 'cursor-pointer' : 'cursor-default opacity-60'
-      } ${className}`}
+      } ${capsule ? capsuleClass : ''} ${className}`}
     >
-      <div className={`${layerClass} text-ink/[0.2]`}>
+      {capsule && (
+        <div
+          ref={tintRef}
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `color-mix(in srgb, ${playedColor ?? 'rgb(var(--ink))'} 28%, transparent)`,
+            clipPath: 'inset(0 100% 0 0)',
+          }}
+        />
+      )}
+      <div
+        className={`${layerClass} ${capsule ? `${capsuleLayer} text-ink/[0.3]` : 'text-ink/[0.2]'}`}
+      >
         <Bars bars={bars} />
       </div>
       <div
         ref={playedRef}
-        className={`${layerClass} text-accent`}
-        style={{ color: playedColor, clipPath: 'inset(0 100% 0 0)' }}
+        className={`${layerClass} ${capsule ? capsuleLayer : ''} text-accent`}
+        style={{
+          color: playedColor,
+          clipPath: 'inset(0 100% 0 0)',
+          filter:
+            capsule && perf.glow
+              ? 'drop-shadow(0 0 4px color-mix(in srgb, currentColor 62%, transparent))'
+              : undefined,
+        }}
       >
         <Bars bars={bars} />
       </div>
-      <span
-        ref={headRef}
-        className="pointer-events-none absolute inset-y-0 w-[2px] -translate-x-1/2 rounded-full bg-ink/60"
-        style={{ left: '0%' }}
-      />
+      {!capsule && (
+        <span
+          ref={headRef}
+          className="pointer-events-none absolute inset-y-0 w-[2px] -translate-x-1/2 rounded-full bg-ink/60"
+          style={{ left: '0%' }}
+        />
+      )}
+      {children}
       <span
         ref={hoverRef}
         className={`pointer-events-none absolute inset-y-1 w-px -translate-x-1/2 bg-ink/30 opacity-0 ${

@@ -54,9 +54,9 @@ function Placeholder({ feed, hint }: { feed: Feed; hint: string }) {
   if (feed.failed) return <SyncNotice kind="failed" onRetry={feed.retry} />;
   if (feed.empty) return <p className="px-1 py-6 text-[12.5px] text-ink-40">{hint}</p>;
   return (
-    <div className="flex gap-3 overflow-hidden px-0.5" aria-hidden>
+    <div className="flex gap-4 overflow-hidden px-0.5" aria-hidden>
       {Array.from({ length: 10 }, (_, i) => (
-        <div key={`sk-${i}`} className="w-[148px] shrink-0">
+        <div key={`sk-${i}`} className="w-[92px] shrink-0">
           <Skeleton className="aspect-square w-full" rounded="lg" />
           <Skeleton className="mt-2.5 h-3.5 w-3/4" rounded="sm" />
         </div>
@@ -124,7 +124,7 @@ function Body() {
 export function HomeShelf() {
   const open = useSettingsStore((s) => s.homeShelfOpen);
   return (
-    <section data-ui="home-shelf" className="flex flex-col gap-3">
+    <section data-ui="home-shelf" className="flex flex-col gap-2.5">
       <ShelfTabs />
       {open && <Body />}
     </section>

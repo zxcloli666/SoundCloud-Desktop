@@ -1,18 +1,9 @@
-import { type RefObject, useEffect, useState, useSyncExternalStore } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { useAppIdle, usePerfMode } from '../../../../lib/perf';
+import { useReducedMotion } from '../../../../lib/reduced-motion';
 import { useSettingsStore } from '../../../../stores/settings';
 
 const SCROLL_SETTLE_MS = 110;
-const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-function subscribeMotion(callback: () => void) {
-  reducedMotion.addEventListener('change', callback);
-  return () => reducedMotion.removeEventListener('change', callback);
-}
-
-export function useReducedMotion(): boolean {
-  return useSyncExternalStore(subscribeMotion, () => reducedMotion.matches);
-}
 
 function useScrolling(ref: RefObject<HTMLElement | null>): boolean {
   const [scrolling, setScrolling] = useState(false);

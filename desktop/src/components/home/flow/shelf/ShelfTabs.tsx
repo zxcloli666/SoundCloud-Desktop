@@ -31,7 +31,7 @@ export function ShelfTabs() {
               setTab(id);
               setOpen(true);
             }}
-            className={`h-8 cursor-pointer rounded-full px-3.5 text-[12px] font-semibold transition-colors ${
+            className={`h-7 cursor-pointer rounded-full px-3 text-[11.5px] font-semibold transition-colors ${
               tab === id && open
                 ? 'bg-ink text-paper'
                 : 'text-ink-50 hover:bg-ink/[0.07] hover:text-ink'

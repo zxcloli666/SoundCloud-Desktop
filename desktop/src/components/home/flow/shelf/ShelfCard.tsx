@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export const SHELF_CARD_WIDTH = 148;
+export const SHELF_CARD_WIDTH = 92;
 
 interface Props {
   scrollKey: string;
@@ -40,7 +40,7 @@ export function ShelfCard({
           aria-label={coverLabel}
           onClick={onOpen}
           className={`group relative block aspect-square w-full cursor-pointer overflow-hidden bg-ink/[0.06] outline-none ring-1 transition-shadow focus-visible:ring-2 focus-visible:ring-accent/70 ${
-            round ? 'rounded-full' : 'rounded-2xl'
+            round ? 'rounded-full' : 'rounded-[11px]'
           } ${active ? 'ring-2 ring-accent' : 'ring-ink/[0.08] hover:ring-ink/[0.2]'}`}
         >
           {cover && (
@@ -58,12 +58,12 @@ export function ShelfCard({
         {action}
       </div>
       <p
-        className={`mt-2.5 truncate text-[13px] font-medium text-ink-90 ${round ? 'text-center' : ''}`}
+        className={`mt-2 truncate text-[13px] font-medium text-ink-90 ${round ? 'text-center' : ''}`}
       >
         {title}
       </p>
       {subtitle && (
-        <p className={`truncate text-[11.5px] text-ink-40 ${round ? 'text-center' : ''}`}>
+        <p className={`truncate text-[11px] text-ink-40 ${round ? 'text-center' : ''}`}>
           {subtitle}
         </p>
       )}
@@ -87,7 +87,7 @@ export function ShelfAction({
       aria-label={label}
       title={label}
       onClick={onClick}
-      className="absolute right-2 top-2 flex size-7 cursor-pointer items-center justify-center rounded-full bg-black/55 text-ink-90 outline-none transition-colors hover:bg-black/75 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/70"
+      className="absolute left-1.5 top-1.5 flex size-6 cursor-pointer items-center justify-center rounded-full bg-black/55 text-ink-90 outline-none transition-colors hover:bg-black/75 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/70"
     >
       {children}
     </button>
