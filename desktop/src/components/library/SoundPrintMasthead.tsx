@@ -156,7 +156,7 @@ export const SoundPrintMasthead = memo(function SoundPrintMasthead({
                         >
                             {t(greetingKey(), {name: user.username})}
                         </h1>
-                        <SyncStatusChip quietWhenSynced syncNow className="mt-3"/>
+                        <SyncStatusChip quietWhenSynced className="mt-3"/>
                     </div>
                     <button
                         type="button"

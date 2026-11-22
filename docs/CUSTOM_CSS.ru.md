@@ -142,7 +142,6 @@
 | `[data-ui="shelf"]` | Горизонтальная лента |
 | `[data-ui="sync-wait"]` | Библиотека ещё в очереди синхронизации: заготовки, карточка очереди, полоса на месте ленты, дорожка STAR. `[data-stage]`: `calm`, `long` или `priority`, `[data-kind]`: `syncing` или `stalled` |
 | `[data-ui="sync-wait-progress"]` | Внутри полосы синхронизации: линия, обратный отсчет и число загруженного. `[data-lane]`: `read` или `queue` |
-| `[data-ui="library-sync-now"]` | Кнопка «Обновить» рядом со статусом синхронизации библиотеки. `[data-state]`: `ready`, `pending` или `cooldown` |
 
 ### Элементы
 
