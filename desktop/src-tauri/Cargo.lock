@@ -387,20 +387,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
-name = "backend-contracts"
-version = "1.0.0"
-source = "git+https://github.com/zxcloli666/SoundCloud-Backend?tag=v9.9.1#f645b396520fb525e64ad53ab9dab625e8f7081d"
-dependencies = [
- "chrono",
- "hex",
- "schemars 1.2.1",
- "serde",
- "serde_json",
- "sha2 0.10.9",
- "uuid 1.29.0",
-]
-
-[[package]]
 name = "base64"
 version = "0.21.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5717,9 +5703,22 @@ name = "sc-deep-link"
 version = "0.1.0"
 
 [[package]]
+name = "sc-diag"
+version = "0.1.0"
+source = "git+https://github.com/zxcloli666/SoundCloud-Core?tag=sc-diag-v0.1.0#d1bff0285e5cf64aeabb782ef646cb4611ef0793"
+dependencies = [
+ "chrono",
+ "hex",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "sha2 0.10.9",
+]
+
+[[package]]
 name = "sc-fingerprint"
 version = "0.1.0"
-source = "git+https://github.com/zxcloli666/SoundCloud-Backend?tag=v9.9.1#f645b396520fb525e64ad53ab9dab625e8f7081d"
+source = "git+https://github.com/zxcloli666/SoundCloud-Core?tag=sc-fingerprint-v0.1.0#d1bff0285e5cf64aeabb782ef646cb4611ef0793"
 dependencies = [
  "dashmap",
  "futures-util",
@@ -6341,7 +6340,6 @@ name = "soundcloud-desktop"
 version = "8.9.0"
 dependencies = [
  "audiopus",
- "backend-contracts",
  "base64 0.22.1",
  "biquad",
  "bytes",
@@ -6374,6 +6372,7 @@ dependencies = [
  "rustls",
  "sc-chat",
  "sc-deep-link",
+ "sc-diag",
  "sc-fingerprint",
  "secret-service",
  "security-framework 3.7.0",

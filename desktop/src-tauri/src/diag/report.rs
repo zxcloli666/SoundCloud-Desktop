@@ -1,4 +1,4 @@
-use backend_contracts::diag::ErrorKind;
+use sc_diag::diag::ErrorKind;
 
 use super::errors::{self, ErrorInput};
 use super::{queue, trace};
