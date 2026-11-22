@@ -1,18 +1,4 @@
-/** Per-page keyframes для OfflinePage («кузница»). tg-orb-drift* нужны
- *  переиспользуемой Atmosphere; остальное — transform/opacity only. */
 export const OFFLINE_KEYFRAMES = `
-@keyframes tg-orb-drift {
-  0%   { transform: translate3d(0,0,0) scale(1); }
-  33%  { transform: translate3d(3%,4%,0) scale(1.08); }
-  66%  { transform: translate3d(-3%,2%,0) scale(1.04); }
-  100% { transform: translate3d(0,0,0) scale(1); }
-}
-@keyframes tg-orb-drift-lite {
-  0%   { transform: translate3d(0,0,0); }
-  33%  { transform: translate3d(3%,4%,0); }
-  66%  { transform: translate3d(-3%,2%,0); }
-  100% { transform: translate3d(0,0,0); }
-}
 @keyframes off-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
 @keyframes off-flicker { 0%, 100% { opacity: 0.5; } 38% { opacity: 0.85; } 62% { opacity: 0.6; } 80% { opacity: 0.92; } }
 @keyframes off-spark {
