@@ -47,9 +47,13 @@ impl Bare {
 
     pub(crate) fn hands_after(self, unsure: &Decision, ranked: Vec<Scored>) -> Vec<Entity> {
         let mut handed = Vec::new();
-        if let Decision::Ask { first, second } = unsure {
-            handed.push(first.entity.clone());
-            handed.extend(second.iter().map(|hit| hit.entity.clone()));
+        match unsure {
+            Decision::Ask { first, second } => {
+                handed.push(first.entity.clone());
+                handed.extend(second.iter().map(|hit| hit.entity.clone()));
+            }
+            Decision::Act { pick } => handed.push(pick.entity.clone()),
+            Decision::NotFound => {}
         }
         for entity in self.hands(ranked) {
             let known = |hit: &Entity| hit.kind == entity.kind && hit.id == entity.id;
