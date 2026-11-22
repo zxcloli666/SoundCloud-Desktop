@@ -1,45 +1,45 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import React, {lazy, Suspense, useCallback, useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Outlet} from 'react-router-dom';
-import {useShallow} from 'zustand/shallow';
-import {getCurrentTime, getDuration, handlePrev, seek} from '../../lib/audio';
-import {getWallpaperUrl} from '../../lib/cache';
-import {customCssHotkeyLabel} from '../../lib/custom-css';
-import {useDesktopWallpaper} from '../../lib/desktop-wallpaper';
-import {art} from '../../lib/formatters';
-import {usePerfMode} from '../../lib/perf';
-import {BackToTop} from './BackToTop';
-import {isMac} from '../../lib/platform';
-import {useWallpaperRotation} from '../../lib/wallpaper-rotation';
-import {toggleWindowFullscreen} from '../../lib/window';
-import {useLyricsStore} from '../../stores/lyrics';
-import {usePlayerStore} from '../../stores/player';
-import {useSettingsStore} from '../../stores/settings';
-import {useShortcutsStore} from '../../stores/shortcuts';
-import {ChatDock} from '../chat/shell/ChatDock';
-import {ImportHost} from '../import/ImportHost';
-import {MobileLinkHost} from '../mobile-link/MobileLinkHost';
-import {AddToPlaylistHost} from '../music/AddToPlaylistHost';
-import {SuperlikeLimitHost} from '../music/superlike/SuperlikeLimitHost';
-import {SelectionBar} from '../music/selection/SelectionBar';
-import {TrackContextMenu} from '../music/track-menu/TrackContextMenu';
-import {DropImportOverlay} from '../offline/local/DropImportOverlay';
-import {StarMomentsHost} from '../star-moments/StarMomentsHost';
-import {ContextMenuHost} from '../ui/ContextMenu';
-import {CrossfadeImage} from '../ui/CrossfadeImage';
-import {KeyCaps} from '../ui/KeyCap';
-import {UploadTrackDialog} from '../upload/UploadTrackDialog';
-import {useAppContextMenu} from './AppContextMenu';
-import {CoverTint} from './CoverTint';
-import {GlobalBindingsGroup} from './GlobalBindingsGroup';
-import {NowPlayingBar} from './NowPlayingBar';
-import {ScrollReset} from './ScrollReset';
-import {Sidebar} from './Sidebar';
-import {ThemeTryBar} from './ThemeTryBar';
-import {Titlebar} from './Titlebar';
-import {ReleaseWatch} from '../releases/ReleaseWatch';
-import {VoiceHost} from '../voice/VoiceHost';
+import React, { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Outlet } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
+import { getCurrentTime, getDuration, handlePrev, seek } from '../../lib/audio';
+import { getWallpaperUrl } from '../../lib/cache';
+import { customCssHotkeyLabel } from '../../lib/custom-css';
+import { useDesktopWallpaper } from '../../lib/desktop-wallpaper';
+import { art } from '../../lib/formatters';
+import { usePerfMode } from '../../lib/perf';
+import { isMac } from '../../lib/platform';
+import { useWallpaperRotation } from '../../lib/wallpaper-rotation';
+import { toggleWindowFullscreen } from '../../lib/window';
+import { useLyricsStore } from '../../stores/lyrics';
+import { usePlayerStore } from '../../stores/player';
+import { useSettingsStore } from '../../stores/settings';
+import { useShortcutsStore } from '../../stores/shortcuts';
+import { ChatDock } from '../chat/shell/ChatDock';
+import { ImportHost } from '../import/ImportHost';
+import { MobileLinkHost } from '../mobile-link/MobileLinkHost';
+import { AddToPlaylistHost } from '../music/AddToPlaylistHost';
+import { SelectionBar } from '../music/selection/SelectionBar';
+import { SuperlikeLimitHost } from '../music/superlike/SuperlikeLimitHost';
+import { TrackContextMenu } from '../music/track-menu/TrackContextMenu';
+import { DropImportOverlay } from '../offline/local/DropImportOverlay';
+import { ReleaseWatch } from '../releases/ReleaseWatch';
+import { StarMomentsHost } from '../star-moments/StarMomentsHost';
+import { ContextMenuHost } from '../ui/ContextMenu';
+import { CrossfadeImage } from '../ui/CrossfadeImage';
+import { KeyCaps } from '../ui/KeyCap';
+import { UploadTrackDialog } from '../upload/UploadTrackDialog';
+import { VoiceHost } from '../voice/VoiceHost';
+import { useAppContextMenu } from './AppContextMenu';
+import { BackToTop } from './BackToTop';
+import { CoverTint } from './CoverTint';
+import { GlobalBindingsGroup } from './GlobalBindingsGroup';
+import { NowPlayingBar } from './NowPlayingBar';
+import { ScrollReset } from './ScrollReset';
+import { Sidebar } from './Sidebar';
+import { ThemeTryBar } from './ThemeTryBar';
+import { Titlebar } from './Titlebar';
 
 const LyricsPanel = lazy(() =>
   import('../music/LyricsPanel').then((module) => ({ default: module.LyricsPanel })),
@@ -66,7 +66,7 @@ const keybindings: Keybinding[] = [
   { key: 'p', label: 'kb.prevTrack', group: 'playback', display: 'P' },
   { key: 's', label: 'kb.shuffle', group: 'playback', display: 'S' },
   { key: 'r', label: 'kb.repeat', group: 'playback', display: 'R' },
-    {key: 'b', label: 'kb.abLoop', group: 'playback', display: 'B'},
+  { key: 'b', label: 'kb.abLoop', group: 'playback', display: 'B' },
   { key: 'ArrowUp', label: 'kb.volumeUp', group: 'playback', display: '↑' },
   { key: 'ArrowDown', label: 'kb.volumeDown', group: 'playback', display: '↓' },
   { key: 'm', label: 'kb.mute', group: 'playback', display: 'M' },
@@ -89,7 +89,12 @@ const keybindings: Keybinding[] = [
   { key: 'Ctrl+0', label: 'kb.zoomReset', group: 'panels', display: isMac() ? '⌘ 0' : 'Ctrl 0' },
   { key: 'Escape', label: 'kb.close', group: 'panels', display: 'Esc' },
   { key: 'Ctrl+/', label: 'kb.showBindings', group: 'panels', display: isMac() ? '⌘ /' : 'Ctrl /' },
-  { key: 'Ctrl+Alt+Shift+C', label: 'kb.customCss', group: 'panels', display: customCssHotkeyLabel().join(' ') },
+  {
+    key: 'Ctrl+Alt+Shift+C',
+    label: 'kb.customCss',
+    group: 'panels',
+    display: customCssHotkeyLabel().join(' '),
+  },
 ];
 
 const groupLabels = {
@@ -120,8 +125,8 @@ const KeybindingsDialog = React.memo(
     return (
       <Dialog.Root open={open} onOpenChange={onOpenChange}>
         <Dialog.Portal>
-          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-shade-60 backdrop-blur-sm" />
-          <Dialog.Content className="dialog-content fixed z-[80] top-1/2 left-1/2 w-full max-w-[520px] bg-surface-hi/95 backdrop-blur-2xl border border-ink/[0.08] rounded-3xl shadow-2xl overflow-hidden">
+          <Dialog.Overlay className="dialog-overlay fixed inset-0 z-[80] bg-shade-60" />
+          <Dialog.Content className="dialog-content fixed z-[80] top-1/2 left-1/2 w-full max-w-[520px] surface-pop rounded-2xl overflow-hidden">
             {/* Header */}
             <div className="px-7 pt-6 pb-4 border-b border-ink/[0.06]">
               <Dialog.Title className="text-[18px] font-bold text-ink-90 tracking-tight">
@@ -178,7 +183,7 @@ const KeybindingsDialog = React.memo(
 // Fine film grain (SVG turbulence) — one static tile, no animation. Gives the
 // wallpaper a photographic, premium feel instead of a flat poster.
 const GRAIN_BG =
-    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
 
 /** Wallpaper layer — the photo lives at the very back, full-bleed and crisp. A
  *  cinematic vignette sinks the edges (so the page's aura orbs read as light
@@ -187,12 +192,12 @@ const GRAIN_BG =
  *  field still mount over this — wallpaper + glow + stars as one composition.
  *  `bgOpacity` is the readability dim on top; no motion (it's a backdrop). */
 const CustomBackground = React.memo(() => {
-    const perf = usePerfMode();
-    const {bgName, bgOpacity, bgDim, bgBlur} = useSettingsStore(
+  const perf = usePerfMode();
+  const { bgName, bgOpacity, bgDim, bgBlur } = useSettingsStore(
     useShallow((s) => ({
       bgName: s.backgroundImage,
       bgOpacity: s.backgroundOpacity,
-        bgDim: s.backgroundDim,
+      bgDim: s.backgroundDim,
       bgBlur: s.backgroundBlur,
     })),
   );
@@ -200,78 +205,78 @@ const CustomBackground = React.memo(() => {
   const bgUrl = bgName ? getWallpaperUrl(bgName) : null;
   if (!bgUrl) return null;
 
-    const effBlur = perf.blur(bgBlur);
-    const dim = bgOpacity; // edge/vignette + chrome readability framing
+  const effBlur = perf.blur(bgBlur);
+  const dim = bgOpacity; // edge/vignette + chrome readability framing
 
   return (
-      <div
-          className="absolute inset-0 pointer-events-none overflow-hidden"
-          style={{contain: 'strict', transform: 'translateZ(0)'}}
-      >
-          <CrossfadeImage
-              src={bgUrl}
-              fade={perf.mode !== 'light'}
-              className="absolute inset-0 w-full h-full object-cover select-none"
-              style={{
-                  filter: effBlur > 0 ? `blur(${effBlur}px)` : undefined,
-                  transform: 'translateZ(0)',
-              }}
-          />
+    <div
+      className="absolute inset-0 pointer-events-none overflow-hidden"
+      style={{ contain: 'strict', transform: 'translateZ(0)' }}
+    >
+      <CrossfadeImage
+        src={bgUrl}
+        fade={perf.mode !== 'light'}
+        className="absolute inset-0 w-full h-full object-cover select-none"
+        style={{
+          filter: effBlur > 0 ? `blur(${effBlur}px)` : undefined,
+          transform: 'translateZ(0)',
+        }}
+      />
 
-          {/* cinematic vignette — vivid centre, sunken edges where the orbs glow */}
-          <div
-              className="absolute inset-0"
-              style={{
-                  background: `radial-gradient(125% 110% at 50% 38%, transparent 38%, rgba(6,6,9,${(0.4 + dim * 0.45).toFixed(3)}) 100%)`,
-              }}
-          />
-          {/* chrome legibility gradients */}
-          <div
-              className="absolute inset-x-0 top-0 h-36"
-              style={{
-                  background: `linear-gradient(to bottom, rgba(6,6,9,${(0.45 + dim * 0.4).toFixed(3)}), transparent)`,
-              }}
-          />
-          <div
-              className="absolute inset-x-0 bottom-0 h-52"
-              style={{
-                  background: `linear-gradient(to top, rgba(6,6,9,${(0.52 + dim * 0.4).toFixed(3)}), transparent)`,
-              }}
-          />
-          <div
-              className="absolute inset-y-0 left-0 w-40"
-              style={{
-                  background: `linear-gradient(to right, rgba(6,6,9,${(0.28 + dim * 0.35).toFixed(3)}), transparent)`,
-              }}
-          />
-          {/* uniform full-frame dim — tames very bright wallpapers everywhere,
+      {/* cinematic vignette — vivid centre, sunken edges where the orbs glow */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `radial-gradient(125% 110% at 50% 38%, transparent 38%, rgb(var(--paper) / ${(0.4 + dim * 0.45).toFixed(3)}) 100%)`,
+        }}
+      />
+      {/* chrome legibility gradients */}
+      <div
+        className="absolute inset-x-0 top-0 h-36"
+        style={{
+          background: `linear-gradient(to bottom, rgb(var(--paper) / ${(0.45 + dim * 0.4).toFixed(3)}), transparent)`,
+        }}
+      />
+      <div
+        className="absolute inset-x-0 bottom-0 h-52"
+        style={{
+          background: `linear-gradient(to top, rgb(var(--paper) / ${(0.52 + dim * 0.4).toFixed(3)}), transparent)`,
+        }}
+      />
+      <div
+        className="absolute inset-y-0 left-0 w-40"
+        style={{
+          background: `linear-gradient(to right, rgb(var(--paper) / ${(0.28 + dim * 0.35).toFixed(3)}), transparent)`,
+        }}
+      />
+      {/* uniform full-frame dim — tames very bright wallpapers everywhere,
           not just the edges (separate from the vignette above) */}
-          {bgDim > 0 && (
-              <div
-                  className="absolute inset-0 bg-[rgb(var(--paper))] transition-opacity duration-300"
-                  style={{opacity: bgDim}}
-              />
-          )}
-          {perf.atmosphere && (
-              <div
-                  className="absolute inset-0 mix-blend-overlay opacity-[0.06]"
-                  style={{backgroundImage: GRAIN_BG, backgroundSize: '140px 140px'}}
-              />
-          )}
+      {bgDim > 0 && (
+        <div
+          className="absolute inset-0 bg-[rgb(var(--paper))] transition-opacity duration-300"
+          style={{ opacity: bgDim }}
+        />
+      )}
+      {perf.atmosphere && (
+        <div
+          className="absolute inset-0 mix-blend-overlay opacity-[0.06]"
+          style={{ backgroundImage: GRAIN_BG, backgroundSize: '140px 140px' }}
+        />
+      )}
     </div>
   );
 });
 
 const WallpaperRotator = React.memo(() => {
-    useWallpaperRotation();
-    useDesktopWallpaper();
-    return null;
+  useWallpaperRotation();
+  useDesktopWallpaper();
+  return null;
 });
 
 const AmbientGlow = React.memo(() => {
-    const perf = usePerfMode();
+  const perf = usePerfMode();
   const artwork = usePlayerStore((s) => art(s.currentTrack?.artwork_url, 't500x500'));
-    if (!perf.bloom || !artwork) return null;
+  if (!perf.bloom || !artwork) return null;
   return (
     <div
       className="absolute bottom-0 left-0 right-0 h-[400px] opacity-[0.06] blur-[100px] pointer-events-none transition-all duration-[2s] ease-out"
@@ -299,6 +304,7 @@ const isInputEl = (el: EventTarget | null) =>
 
 export const AppShell = React.memo(() => {
   const [queueOpen, setQueueOpen] = useState(false);
+  const hasWall = useSettingsStore((s) => !!s.backgroundImage);
   const kbOpen = useShortcutsStore((s) => s.open);
   const setKbOpen = useShortcutsStore((s) => s.setOpen);
   const lyricsOpen = useLyricsStore((s) => s.open);
@@ -311,44 +317,44 @@ export const AppShell = React.memo(() => {
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
   const onShowShortcuts = useCallback(() => useShortcutsStore.getState().setOpen(true), []);
   useAppContextMenu({ queueOpen, toggleQueue: onQueueToggle, showShortcuts: onShowShortcuts });
-    const mainRef = useRef<HTMLElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
 
-    // Mirror panel state into refs so the global keydown listener binds once.
-    const queueOpenRef = useRef(queueOpen);
-    queueOpenRef.current = queueOpen;
-    const kbOpenRef = useRef(kbOpen);
-    kbOpenRef.current = kbOpen;
+  // Mirror panel state into refs so the global keydown listener binds once.
+  const queueOpenRef = useRef(queueOpen);
+  queueOpenRef.current = queueOpen;
+  const kbOpenRef = useRef(kbOpen);
+  kbOpenRef.current = kbOpen;
 
-    // Anti-sticky-hover: WebKitGTK doesn't re-hit-test :hover while the content
-    // scrolls under a stationary cursor, so cards "freeze" hovered or light up the
-    // wrong tile. Flag the scroll container while scrolling (CSS drops pointer
-    // events app-wide); clear the instant the pointer actually moves or presses.
-    useEffect(() => {
-        const main = mainRef.current;
-        if (!main) return;
-        let t: ReturnType<typeof setTimeout> | null = null;
-        const clear = () => {
-            if (t) {
-                clearTimeout(t);
-                t = null;
-            }
-            if (main.hasAttribute('data-scrolling')) main.removeAttribute('data-scrolling');
-        };
-        const onScroll = () => {
-            if (!main.hasAttribute('data-scrolling')) main.setAttribute('data-scrolling', '1');
-            if (t) clearTimeout(t);
-            t = setTimeout(clear, 120);
-        };
-        main.addEventListener('scroll', onScroll, {passive: true});
-        main.addEventListener('pointermove', clear, {passive: true});
-        main.addEventListener('pointerdown', clear, {passive: true});
-        return () => {
-            main.removeEventListener('scroll', onScroll);
-            main.removeEventListener('pointermove', clear);
-            main.removeEventListener('pointerdown', clear);
-            if (t) clearTimeout(t);
-        };
-    }, []);
+  // Anti-sticky-hover: WebKitGTK doesn't re-hit-test :hover while the content
+  // scrolls under a stationary cursor, so cards "freeze" hovered or light up the
+  // wrong tile. Flag the scroll container while scrolling (CSS drops pointer
+  // events app-wide); clear the instant the pointer actually moves or presses.
+  useEffect(() => {
+    const main = mainRef.current;
+    if (!main) return;
+    let t: ReturnType<typeof setTimeout> | null = null;
+    const clear = () => {
+      if (t) {
+        clearTimeout(t);
+        t = null;
+      }
+      if (main.hasAttribute('data-scrolling')) main.removeAttribute('data-scrolling');
+    };
+    const onScroll = () => {
+      if (!main.hasAttribute('data-scrolling')) main.setAttribute('data-scrolling', '1');
+      if (t) clearTimeout(t);
+      t = setTimeout(clear, 120);
+    };
+    main.addEventListener('scroll', onScroll, { passive: true });
+    main.addEventListener('pointermove', clear, { passive: true });
+    main.addEventListener('pointerdown', clear, { passive: true });
+    return () => {
+      main.removeEventListener('scroll', onScroll);
+      main.removeEventListener('pointermove', clear);
+      main.removeEventListener('pointerdown', clear);
+      if (t) clearTimeout(t);
+    };
+  }, []);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -366,7 +372,7 @@ export const AppShell = React.memo(() => {
       // Ctrl+K — focus search (always, even in input)
       if (code === 'KeyK' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-          document.getElementById('global-search-input')?.focus();
+        document.getElementById('global-search-input')?.focus();
         return;
       }
 
@@ -380,12 +386,17 @@ export const AppShell = React.memo(() => {
       // / — focus search (not in input)
       if ((e.key === '/' || code === 'Slash') && !inInput) {
         e.preventDefault();
-          document.getElementById('global-search-input')?.focus();
+        document.getElementById('global-search-input')?.focus();
         return;
       }
 
       if (inInput || e.defaultPrevented) return;
-      if (code === 'Space' && e.target instanceof HTMLElement && e.target.closest('button, summary, [role="button"]')) return;
+      if (
+        code === 'Space' &&
+        e.target instanceof HTMLElement &&
+        e.target.closest('button, summary, [role="button"]')
+      )
+        return;
 
       const player = usePlayerStore.getState();
 
@@ -438,9 +449,9 @@ export const AppShell = React.memo(() => {
         case 'KeyR':
           player.toggleRepeat();
           break;
-          case 'KeyB':
-              player.cycleAbPoint(getCurrentTime());
-              break;
+        case 'KeyB':
+          player.cycleAbPoint(getCurrentTime());
+          break;
         case 'KeyL':
           useLyricsStore.getState().toggle();
           break;
@@ -451,7 +462,7 @@ export const AppShell = React.memo(() => {
           useSettingsStore.getState().toggleSidebar();
           break;
         case 'Escape':
-            if (kbOpenRef.current) {
+          if (kbOpenRef.current) {
             useShortcutsStore.getState().setOpen(false);
             break;
           }
@@ -476,7 +487,11 @@ export const AppShell = React.memo(() => {
   }, []);
 
   return (
-    <div data-ui="app" className="flex flex-col h-screen relative overflow-hidden">
+    <div
+      data-ui="app"
+      data-wall={hasWall ? '' : undefined}
+      className="flex flex-col h-screen relative overflow-hidden"
+    >
       <ReleaseWatch />
       <div className="under-lyrics contents">
         <WallpaperRotator />
@@ -487,7 +502,11 @@ export const AppShell = React.memo(() => {
         <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>
           <Sidebar />
           {/* pb clears the floating now-playing dock, which overlays (doesn't push) content */}
-          <main ref={mainRef} data-ui="main" className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]">
+          <main
+            ref={mainRef}
+            data-ui="main"
+            className="flex-1 overflow-y-auto overflow-x-hidden pb-[136px]"
+          >
             <ScrollReset target={mainRef} />
             <StableOutlet />
           </main>

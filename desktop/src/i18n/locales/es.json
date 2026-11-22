@@ -19,6 +19,8 @@
     "home": "Inicio",
     "moments": "Momentos",
     "reload": "Recargar interfaz",
+    "lightMode": "Modo claro",
+    "darkMode": "Modo oscuro",
     "search": "Buscar",
     "discover": "Descubrir",
     "library": "Biblioteca",

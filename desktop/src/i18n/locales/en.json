@@ -19,6 +19,8 @@
     "home": "Home",
     "moments": "Moments",
     "reload": "Reload interface",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
     "search": "Search",
     "discover": "Discover",
     "library": "Library",

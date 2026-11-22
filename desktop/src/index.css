@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @import "./scheme.css";
+@import "./shell.css";
 
 @theme {
   --color-bg-primary: rgb(var(--paper) / 0.95);
@@ -137,7 +138,6 @@
 [data-app-idle="1"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-app-idle="1"] .npb-dock[data-playing="true"] .npb-ring,
 [data-app-idle="1"] .npb-dock[data-playing="true"] .npb-eq i,
-[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after,
 [data-app-idle="1"] .tp[data-playing="true"] .npb-ring,
 [data-app-idle="1"] .tp[data-playing="true"] .npb-eq i {
     animation-play-state: paused !important;
@@ -153,7 +153,6 @@
 [data-perf="light"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-eq i,
-[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after,
 [data-perf="light"] .tp[data-playing="true"] .npb-ring,
 [data-perf="light"] .tp[data-playing="true"] .npb-eq i {
     animation: none !important;
@@ -253,9 +252,12 @@ select,
 
 /* ── Glass ──────────────────────────────────────────────────── */
 .glass {
-  background: rgb(var(--ink) / 0.025);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-  border: 1px solid rgb(var(--ink) / 0.05);
+  background: var(--shell-fill);
+  border: 1px solid var(--shell-line);
+}
+
+[data-wall] .glass {
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 .glass-hover:hover {
@@ -264,8 +266,8 @@ select,
 }
 
 .glass-flat {
-  background: rgb(var(--ink) / 0.025);
-  border: 1px solid rgb(var(--ink) / 0.05);
+  background: var(--shell-fill);
+  border: 1px solid var(--shell-line);
 }
 
 /* ── Shimmer ───────────────────────────────────────────────── */
@@ -1422,64 +1424,27 @@ select,
     box-shadow: 0 0 14px var(--color-accent-glow);
 }
 
-/* play orb — the hero */
 .npb-play {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    flex: 0 0 auto;
-    margin: 0 3px;
     display: grid;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    margin: 0 3px;
     place-items: center;
-    border-radius: 50%;
-    cursor: pointer;
     border: 0;
-    background: radial-gradient(
-            125% 125% at 32% 24%,
-            var(--color-accent-hover),
-            var(--color-accent) 68%
-    );
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.26) inset,
-    0 8px 20px -5px var(--color-accent-glow),
-    0 0 30px -6px var(--color-accent-glow);
-    transition: transform 0.25s var(--ease-apple),
-    box-shadow 0.25s var(--ease-apple);
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-accent-contrast);
+    cursor: pointer;
+    transition: background-color 0.15s, filter 0.15s;
 }
 
 .npb-play:hover {
-    transform: translateY(-1px) scale(1.06);
+    filter: brightness(1.1);
 }
 
 .npb-play:active {
-    transform: scale(0.95);
-}
-
-.npb-play::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    pointer-events: none;
-    border: 1.5px solid var(--color-accent);
-    opacity: 0;
-}
-
-.npb-dock[data-playing="true"] .npb-play::after {
-    animation: npb-pulse 2.8s var(--ease-apple) infinite;
-}
-
-@keyframes npb-pulse {
-    0% {
-        transform: scale(1);
-        opacity: 0.7;
-    }
-    70% {
-        transform: scale(1.4);
-        opacity: 0;
-    }
-    100% {
-        opacity: 0;
-    }
+    filter: brightness(0.92);
 }
 
 /* progress lane (full pill width) */
@@ -1670,8 +1635,7 @@ select,
     .npb-namecard,
     .npb,
     .npb-dock[data-playing="true"] .npb-ring,
-    .npb-dock[data-playing="true"] .npb-eq i,
-    .npb-dock[data-playing="true"] .npb-play::after {
+    .npb-dock[data-playing="true"] .npb-eq i {
         animation: none;
     }
 }

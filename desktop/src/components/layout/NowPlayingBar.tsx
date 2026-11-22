@@ -1,87 +1,87 @@
 import * as Popover from '@radix-ui/react-popover';
 import * as Slider from '@radix-ui/react-slider';
-import {useQuery, useQueryClient} from '@tanstack/react-query';
-import React, {useCallback, useEffect, useRef, useState, useSyncExternalStore} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
-import {api} from '../../lib/api';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { api } from '../../lib/api';
 import {
-    cancelTrackLoad,
-    getCurrentTime,
-    getDownloadProgress,
-    getDuration,
-    handlePrev,
-    seek,
-    subscribe,
+  cancelTrackLoad,
+  getCurrentTime,
+  getDownloadProgress,
+  getDuration,
+  handlePrev,
+  seek,
+  subscribe,
 } from '../../lib/audio';
-import {forgetOfflineLike} from '../../lib/cache';
-import {clearDislike, dislikeTrack} from '../../lib/dislike-actions';
-import {useDislikeStatus} from '../../lib/dislikes';
-import {trackTasteWrite} from '../../lib/events';
-import {art, formatTime} from '../../lib/formatters';
-import {invalidateAllLikesCache} from '../../lib/hooks';
+import { forgetOfflineLike } from '../../lib/cache';
+import { clearDislike, dislikeTrack } from '../../lib/dislike-actions';
+import { useDislikeStatus } from '../../lib/dislikes';
+import { trackTasteWrite } from '../../lib/events';
+import { art, formatTime } from '../../lib/formatters';
+import { invalidateAllLikesCache } from '../../lib/hooks';
 import {
-    audioLines16,
-    HardDrive,
-    ListPlus,
-    Loader2,
-    listMusic16,
-    MicVocal,
-    pauseBlack20,
-    playBlack20,
-    repeat1Icon16,
-    repeatAbIcon16,
-    repeatIcon16,
-    shuffleIcon16,
-    skipBack20,
-    skipForward20,
-    slidersHorizontal16,
-    ThumbsDown,
-    X,
+  audioLines16,
+  HardDrive,
+  ListPlus,
+  Loader2,
+  listMusic16,
+  MicVocal,
+  Pause,
+  Play,
+  repeat1Icon16,
+  repeatAbIcon16,
+  repeatIcon16,
+  shuffleIcon16,
+  skipBack20,
+  skipForward20,
+  slidersHorizontal16,
+  ThumbsDown,
+  X,
 } from '../../lib/icons';
-import {optimisticToggleLike, useLiked} from '../../lib/likes';
-import {isLocalUrn} from '../../lib/local-library';
-import {rememberLikedUrn} from '../../lib/offline-index';
-import {usePerfMode} from '../../lib/perf';
-import {QUALITY_LABEL_KEYS} from '../../lib/playback-quality';
-import {useSuperliked} from '../../lib/superlikes';
-import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useWheelSeek} from '../../lib/useWheelSeek';
-import {useAddToPlaylistRequest} from '../../stores/add-to-playlist';
-import {useLyricsStore} from '../../stores/lyrics';
+import { optimisticToggleLike, useLiked } from '../../lib/likes';
+import { isLocalUrn } from '../../lib/local-library';
+import { rememberLikedUrn } from '../../lib/offline-index';
+import { usePerfMode } from '../../lib/perf';
+import { QUALITY_LABEL_KEYS } from '../../lib/playback-quality';
+import { useSuperliked } from '../../lib/superlikes';
+import { useArtistDisplay, useArtistLinkItems, useDisplayTitle } from '../../lib/track-display';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useWheelSeek } from '../../lib/useWheelSeek';
+import { useAddToPlaylistRequest } from '../../stores/add-to-playlist';
+import { useLyricsStore } from '../../stores/lyrics';
 import {
-    AB_MIN_GAP,
-    getEffectivePitchSemitones,
-    PITCH_SEMITONES_MAX,
-    PITCH_SEMITONES_MIN,
-    PITCH_SEMITONES_STEP,
-    PLAYBACK_RATE_MAX,
-    PLAYBACK_RATE_MIN,
-    PLAYBACK_RATE_STEP,
-    type Track,
-    usePlayerStore,
+  AB_MIN_GAP,
+  getEffectivePitchSemitones,
+  PITCH_SEMITONES_MAX,
+  PITCH_SEMITONES_MIN,
+  PITCH_SEMITONES_STEP,
+  PLAYBACK_RATE_MAX,
+  PLAYBACK_RATE_MIN,
+  PLAYBACK_RATE_STEP,
+  type Track,
+  usePlayerStore,
 } from '../../stores/player';
-import {useSettingsStore} from '../../stores/settings';
-import {useChatDockWidth} from '../chat/shell/useChatDockWidth';
-import {AlbumLinkButton} from '../music/AlbumLinkButton';
-import {AltUploadMark} from '../music/AltUploadMark';
-import {ArtistNameLinks} from '../music/ArtistNameLinks';
-import {PlayerBlockButton} from '../music/blocklist/PlayerBlockButton';
-import {EqualizerPanel} from '../music/EqualizerPanel';
-import {EffectsBtn} from '../music/effects/EffectsBtn';
-import {VoiceMicButton} from '../voice/VoiceMicButton';
-import {HoldHeart} from '../music/superlike/HoldHeart';
-import {heartTitle} from '../music/superlike/heart-title';
-import {useSuperlikeGesture} from '../music/superlike/useSuperlikeGesture';
-import {TrackSoundToggle} from '../music/TrackSoundToggle';
-import {RATING_CHIPS, tierOf, tierTitleKey} from '../music/TrackStatusBadges';
-import {UploadKindDot} from '../music/UploadKindDot';
-import {TogetherButton} from '../together/TogetherButton';
-import {NowPlayingNameCard} from './NowPlayingNameCard';
-import {sidebarWidth, useSidebarCollapsed} from './SidebarChrome';
-import {SleepTimerButton} from './SleepTimerButton';
-import {VolumeFlyout, VolumeLabel, VolumeSlider} from './VolumeControls';
+import { useSettingsStore } from '../../stores/settings';
+import { useChatDockWidth } from '../chat/shell/useChatDockWidth';
+import { AlbumLinkButton } from '../music/AlbumLinkButton';
+import { AltUploadMark } from '../music/AltUploadMark';
+import { ArtistNameLinks } from '../music/ArtistNameLinks';
+import { PlayerBlockButton } from '../music/blocklist/PlayerBlockButton';
+import { EqualizerPanel } from '../music/EqualizerPanel';
+import { EffectsBtn } from '../music/effects/EffectsBtn';
+import { HoldHeart } from '../music/superlike/HoldHeart';
+import { heartTitle } from '../music/superlike/heart-title';
+import { useSuperlikeGesture } from '../music/superlike/useSuperlikeGesture';
+import { TrackSoundToggle } from '../music/TrackSoundToggle';
+import { RATING_CHIPS, tierOf, tierTitleKey } from '../music/TrackStatusBadges';
+import { UploadKindDot } from '../music/UploadKindDot';
+import { TogetherButton } from '../together/TogetherButton';
+import { VoiceMicButton } from '../voice/VoiceMicButton';
+import { NowPlayingNameCard } from './NowPlayingNameCard';
+import { sidebarWidth, useSidebarCollapsed } from './SidebarChrome';
+import { SleepTimerButton } from './SleepTimerButton';
+import { VolumeFlyout, VolumeLabel, VolumeSlider } from './VolumeControls';
 
 /* ── Track loading progress (SC → SCD download) ──────────────── */
 
@@ -436,13 +436,7 @@ function useTrackReactions(trackUrn: string) {
   return trackData;
 }
 
-function LikeButton({
-  trackUrn,
-  trackData,
-}: {
-  trackUrn: string;
-  trackData: Track | undefined;
-}) {
+function LikeButton({ trackUrn, trackData }: { trackUrn: string; trackData: Track | undefined }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
 
@@ -567,7 +561,11 @@ const PlayPauseBtn = React.memo(() => {
       data-ui="play-button"
       className="npb-play"
     >
-      {isPlaying ? pauseBlack20 : playBlack20}
+      {isPlaying ? (
+        <Pause size={20} fill="currentColor" strokeWidth={0} />
+      ) : (
+        <Play size={20} fill="currentColor" strokeWidth={0} className="ml-0.5" />
+      )}
     </button>
   );
 });
@@ -863,7 +861,8 @@ const TuningBtn = React.memo(() => {
           type="button"
           data-ui="player-tuning"
           title={t('player.soundTuning')}
-          className={btnClass(isActive, 'sm')}>
+          className={btnClass(isActive, 'sm')}
+        >
           {slidersHorizontal16}
         </button>
       </Popover.Trigger>
@@ -947,7 +946,11 @@ const PillTrackBody = React.memo(function PillTrackBody({
 
   return (
     <div className="npb-meta" onContextMenu={onContextMenu}>
-      <div className="npb-art" data-ui="player-art" onClick={() => openLyricsPanel({ rightPanelOpen: false })}>
+      <div
+        className="npb-art"
+        data-ui="player-art"
+        onClick={() => openLyricsPanel({ rightPanelOpen: false })}
+      >
         {artworkSmall ? <img src={artworkSmall} alt="" /> : <div className="npb-artfb" />}
         {/* spinning vinyl ring + live "playing" equaliser — animated only while playing */}
         <span className="npb-ring" />

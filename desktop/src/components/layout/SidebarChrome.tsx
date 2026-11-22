@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { useSettingsStore } from '../../stores/settings';
 
 export const ROW =
-  'group relative w-full flex items-center h-10 rounded-xl transition-all duration-200';
+  'nav-row group relative w-full flex items-center h-9 rounded-lg transition-colors duration-150';
 const LABEL_T = 'max-width 320ms cubic-bezier(0.2,0.8,0.2,1), opacity 240ms ease';
 
 export function sidebarWidth(collapsed: boolean): number {
@@ -26,13 +26,6 @@ export function useSidebarCollapsed(): boolean {
   const stored = useSettingsStore((s) => s.sidebarCollapsed);
   return useNarrowWindow() || stored;
 }
-
-export const ACTIVE: React.CSSProperties = {
-  color: 'rgb(var(--ink))',
-  background:
-    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
-  boxShadow: '0 0 18px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.14)',
-};
 
 export function Label({
   collapsed,

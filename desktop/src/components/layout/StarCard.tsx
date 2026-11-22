@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Star } from '../../lib/icons';
 import { money, monthsOf } from '../../lib/offer-format';
-import { usePerfMode } from '../../lib/perf';
 import { usePersonalOffer } from '../../lib/personal-offer';
 import { useOpenStar } from '../../lib/star-offer';
 import { SOON_DAYS, type StarStatus, useStarLine, useStarStatus } from '../../lib/star-status';
@@ -12,19 +11,19 @@ import { OfferBar, OfferTimer } from '../offer/OfferCopy';
 type Tone = 'calm' | 'warn' | 'bad';
 
 const LINE: Record<Tone, string> = {
-  calm: 'text-[10.5px] font-medium text-purple-300/90',
+  calm: 'text-[10.5px] font-medium text-ink-55',
   warn: 'text-[11px] font-bold text-amber-400',
   bad: 'text-[11px] font-bold text-bad',
 };
 
 const FILL: Record<Tone, string> = {
-  calm: 'bg-purple-300',
+  calm: 'bg-amber-400',
   warn: 'bg-amber-400',
   bad: 'bg-bad',
 };
 
 const EDGE: Record<Tone, string> = {
-  calm: 'rgba(168,85,247,0.2)',
+  calm: 'var(--shell-line-hi)',
   warn: 'color-mix(in srgb, var(--color-amber-400) 45%, transparent)',
   bad: 'rgb(var(--bad) / 0.5)',
 };
@@ -40,8 +39,6 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
   const { t } = useTranslation();
   const navigate = useNavigate();
   const openStar = useOpenStar();
-  const perf = usePerfMode();
-  const cardBlur = perf.blur(16);
   const status = useStarStatus();
   const line = useStarLine(status);
   const tone = toneOf(status);
@@ -70,19 +67,12 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
               ? `${t('star.title')} · ${line}`
               : t('star.title')
         }
-        className="relative flex items-center justify-center w-full py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 group"
-        style={{
-          background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(168,85,247,0.12))',
-          border: `0.5px solid ${EDGE[tone]}`,
-        }}
+        className="relative flex items-center justify-center w-full py-2.5 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-ink/[0.08] group"
+        style={{ background: 'var(--shell-fill)', border: `1px solid ${EDGE[tone]}` }}
       >
-        <span
-          className="text-amber-400"
-          style={{ filter: 'drop-shadow(0 0 4px rgba(168,85,247,0.6))' }}
-        >
+        <span className="text-amber-400">
           <Star size={16} fill="currentColor" />
         </span>
-        <StarParticles />
         {deal && <span className="absolute right-1 top-1 size-2 rounded-full bg-accent" />}
         {(ending || charging) && (
           <span
@@ -101,23 +91,12 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
       data-ui="star-card"
       data-tone={tone}
       onClick={open}
-      className="relative flex w-full px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-[1.01] overflow-hidden group"
-      style={{
-        background:
-          'linear-gradient(135deg, rgba(139,92,246,0.18), rgba(168,85,247,0.1), rgba(192,132,252,0.08))',
-        backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : undefined,
-        WebkitBackdropFilter: cardBlur > 0 ? `blur(${cardBlur}px)` : undefined,
-        border: `0.5px solid ${EDGE[tone]}`,
-        boxShadow: '0 2px 12px rgba(139,92,246,0.12), inset 0 0.5px 0 rgba(255,255,255,0.08)',
-      }}
+      className="relative flex w-full px-3 py-2.5 rounded-lg cursor-pointer transition-colors duration-150 hover:bg-ink/[0.08] overflow-hidden group"
+      style={{ background: 'var(--shell-fill)', border: `1px solid ${EDGE[tone]}` }}
     >
-      <StarParticles />
-      <div className="relative flex w-full flex-col gap-2" style={{ isolation: 'isolate' }}>
+      <div className="relative flex w-full flex-col gap-2">
         <div className="flex items-center gap-2.5">
-          <span
-            className="text-amber-400 shrink-0"
-            style={{ filter: 'drop-shadow(0 0 6px rgba(168,85,247,0.5))' }}
-          >
+          <span className="text-amber-400 shrink-0">
             <Star size={16} fill="currentColor" />
           </span>
           <div className="flex min-w-0 flex-col items-start">
@@ -155,11 +134,7 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
         {offer && ending?.level === 'urgent' && (
           <span
             className="flex w-full items-center justify-center gap-1.5 rounded-full py-1.5 text-[11px] font-semibold text-accent-contrast"
-            style={{
-              background: 'linear-gradient(180deg, var(--color-accent-hover), var(--color-accent))',
-              boxShadow:
-                '0 0 18px -6px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.35)',
-            }}
+            style={{ background: 'var(--color-accent)' }}
           >
             <Star size={10} fill="currentColor" />
             {t(offer === 'buy' ? 'starMoments.getStar' : 'starMoments.extend')}
@@ -167,35 +142,5 @@ export const StarCard = memo(function StarCard({ collapsed }: { collapsed: boole
         )}
       </div>
     </button>
-  );
-});
-
-const PARTICLES = Array.from({ length: 12 }, (_, i) => i);
-
-const StarParticles = memo(function StarParticles() {
-  const perf = usePerfMode();
-  const count = perf.particles(PARTICLES.length);
-  if (count === 0) return null;
-  return (
-    <div
-      className="absolute inset-0 overflow-hidden pointer-events-none"
-      style={{ contain: 'strict', transform: 'translateZ(0)' }}
-    >
-      {PARTICLES.slice(0, count).map((i) => (
-        <div
-          key={i}
-          className="absolute w-[3px] h-[3px] rounded-full"
-          style={{
-            background: `hsl(${260 + ((i * 20) % 60)}, 80%, ${70 + ((i * 5) % 30)}%)`,
-            left: `${10 + ((i * 37) % 80)}%`,
-            top: `${10 + ((i * 53) % 80)}%`,
-            opacity: 0.4 + (i % 3) * 0.2,
-            animation: perf.idleAnim
-              ? `star-float ${3 + (i % 3)}s ease-in-out ${(i * 0.4) % 3}s infinite alternate`
-              : undefined,
-          }}
-        />
-      ))}
-    </div>
   );
 });

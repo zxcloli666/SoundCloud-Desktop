@@ -1,0 +1,137 @@
+:root,
+[data-scheme] {
+  --shell: var(--bg-primary, rgb(var(--paper)));
+  --shell-side-solid: color-mix(in srgb, var(--shell) 94%, rgb(var(--ink)));
+  --shell-side: var(--shell-side-solid);
+  --shell-top: var(--shell);
+  --shell-line: rgb(var(--ink) / 0.08);
+  --shell-line-hi: rgb(var(--ink) / 0.16);
+  --shell-fill: rgb(var(--ink) / 0.045);
+  --shell-fill-hi: rgb(var(--ink) / 0.09);
+}
+
+[data-ui="app"][data-wall] {
+  --shell-side: color-mix(in srgb, var(--shell-side-solid) 56%, transparent);
+  --shell-top: color-mix(in srgb, var(--shell) 38%, transparent);
+}
+
+[data-ui="app"][data-wall] [data-ui="sidebar"],
+[data-ui="app"][data-wall] [data-ui="chat-dock"],
+[data-ui="app"][data-wall] [data-ui="titlebar"] {
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+}
+
+.surface-pop {
+  background: rgb(var(--surface-hi));
+  border: 1px solid var(--shell-line-hi);
+  box-shadow: 0 14px 36px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)));
+}
+
+.shell-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  cursor: pointer;
+  border: 1px solid var(--shell-line);
+  border-radius: 0.5rem;
+  background: var(--shell-fill);
+  color: rgb(var(--ink) / 0.6);
+  transition: color 150ms, background-color 150ms, border-color 150ms;
+}
+
+.shell-btn:hover:not(:disabled),
+.shell-btn:focus-visible {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.shell-btn:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.shell-btn[aria-current="page"] {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.nav-row[aria-current="page"] {
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.nav-row[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-accent);
+  transform: translateY(-50%);
+}
+
+.chip-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2rem;
+  padding: 0 0.75rem;
+  cursor: pointer;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-fill);
+  color: rgb(var(--ink) / 0.65);
+  font-size: 11px;
+  font-weight: 500;
+  transition: color 150ms, background-color 150ms, border-color 150ms;
+}
+
+.chip-toggle:hover {
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.chip-toggle[data-on] {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.chip-toggle-switch {
+  position: relative;
+  width: 22px;
+  height: 12px;
+  margin-left: 0.25rem;
+  border-radius: 999px;
+  background: rgb(var(--ink) / 0.2);
+  transition: background-color 150ms;
+}
+
+.chip-toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(var(--paper));
+  transition: transform 150ms;
+}
+
+.chip-toggle[data-on] .chip-toggle-switch {
+  background: var(--color-accent);
+}
+
+.chip-toggle[data-on] .chip-toggle-switch::after {
+  background: var(--color-accent-contrast);
+  transform: translateX(10px);
+}

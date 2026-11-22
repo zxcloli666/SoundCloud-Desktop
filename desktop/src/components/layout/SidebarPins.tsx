@@ -7,7 +7,7 @@ import { art } from '../../lib/formatters';
 import { Heart, ListMusic, X } from '../../lib/icons';
 import { useSettingsStore } from '../../stores/settings';
 import { Avatar } from '../ui/Avatar';
-import { ACTIVE, IconBox, Label, ROW } from './SidebarChrome';
+import { IconBox, Label, ROW } from './SidebarChrome';
 import { SortableSlot, SortableStack } from './SortableStack';
 
 function PinnedRow({
@@ -31,9 +31,8 @@ function PinnedRow({
         to={to}
         title={collapsed ? title : undefined}
         className={({ isActive }) =>
-          `${ROW} ${isActive ? '' : 'text-ink-45 hover:text-ink-80 hover:bg-ink/[0.05]'}`
+          `${ROW} ${isActive ? '' : 'text-ink-50 hover:text-ink hover:bg-ink/[0.05]'}`
         }
-        style={({ isActive }) => (isActive ? ACTIVE : undefined)}
       >
         <IconBox>{icon}</IconBox>
         <Label
