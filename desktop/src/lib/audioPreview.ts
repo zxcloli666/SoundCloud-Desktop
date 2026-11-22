@@ -29,6 +29,7 @@ const FADE_OUT_MS = 500;
 export const PREVIEW_WINDOW_MS = 15_000;
 const PREVIEW_VOLUME_FACTOR = 0.85;
 const FADE_IN_MS = 200;
+const RESUME_SETTLE_MS = 400;
 
 let hoverTimer: ReturnType<typeof setTimeout> | null = null;
 let windowTimer: ReturnType<typeof setTimeout> | null = null;
@@ -40,6 +41,8 @@ let claimed = false;
 let awaitingWire: number | null = null;
 let awaitingUrn: string | null = null;
 let ackTimer: ReturnType<typeof setTimeout> | null = null;
+let resumeTimer: ReturnType<typeof setTimeout> | null = null;
+let pausedMainUrn: string | null = null;
 
 const listeners = new Set<() => void>();
 
@@ -65,11 +68,31 @@ function canPreview(urn: string): boolean {
   return true;
 }
 
+function clearResume(): void {
+  if (!resumeTimer) return;
+  clearTimeout(resumeTimer);
+  resumeTimer = null;
+}
+
+function scheduleResume(): void {
+  if (!pausedMainUrn) return;
+  clearResume();
+  resumeTimer = setTimeout(() => {
+    resumeTimer = null;
+    if (hoverTimer || pendingUrn || activeUrn || awaitingWire !== null) return;
+    const player = usePlayerStore.getState();
+    const urn = pausedMainUrn;
+    pausedMainUrn = null;
+    if (urn && !player.isPlaying && player.currentTrack?.urn === urn) player.resume();
+  }, RESUME_SETTLE_MS);
+}
+
 /** Hover a tile: after a debounce, ensure it's cached and start a preview. */
 export function startHoverPreview(track: Track, windowMs = PREVIEW_WINDOW_MS): void {
   const urn = track.urn;
   if (activeUrn === urn || pendingUrn === urn) return;
   if (hoverTimer) clearTimeout(hoverTimer);
+  clearResume();
   pendingUrn = urn;
   hoverTimer = setTimeout(async () => {
     hoverTimer = null;
@@ -79,7 +102,10 @@ export function startHoverPreview(track: Track, windowMs = PREVIEW_WINDOW_MS): v
       return;
     }
     const player = usePlayerStore.getState();
-    if (player.isPlaying) player.pause();
+    if (player.isPlaying) {
+      player.pause();
+      pausedMainUrn = player.currentTrack?.urn ?? null;
+    }
     const gen = ++startGen;
     try {
       // Reuse the cache at the user's normal quality — never force a low-quality
@@ -98,7 +124,12 @@ export function startHoverPreview(track: Track, windowMs = PREVIEW_WINDOW_MS): v
         previewStartMs(track, windowMs),
       ]);
       // Superseded by a newer hover, or no longer allowed.
-      if (gen !== startGen || pendingUrn !== urn || !info?.path || !canPreview(urn)) return;
+      if (gen !== startGen) return;
+      if (pendingUrn !== urn || !info?.path || !canPreview(urn)) {
+        if (pendingUrn === urn) pendingUrn = null;
+        scheduleResume();
+        return;
+      }
       const volume = (usePlayerStore.getState().volume / 100) * PREVIEW_VOLUME_FACTOR;
       const wire = nextPreviewGen();
       awaitingWire = wire;
@@ -130,6 +161,7 @@ export function startHoverPreview(track: Track, windowMs = PREVIEW_WINDOW_MS): v
     } catch {
       // Silent fail — a preview that can't load just never lights.
       if (pendingUrn === urn) pendingUrn = null;
+      scheduleResume();
     }
   }, HOVER_DEBOUNCE_MS);
 }
@@ -156,6 +188,7 @@ function endPreview(fadeMs: number): void {
     invoke('audio_preview_stop', { fadeMs, gen: 0 }).catch(() => {});
     notify();
   }
+  scheduleResume();
 }
 
 /** Unhover / fast-scroll / leave / route-away: gracefully fade the preview out. */
@@ -202,6 +235,7 @@ export function wirePreviewGuards(): void {
       (state.isPlaying && !prev.isPlaying) ||
       state.currentTrack?.urn !== prev.currentTrack?.urn
     ) {
+      pausedMainUrn = null;
       stopHoverPreview();
     }
   });
