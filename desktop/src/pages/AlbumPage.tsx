@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { AlbumCast } from '../components/album/AlbumCast';
 import { AlbumHero } from '../components/album/AlbumHero';
@@ -6,6 +5,7 @@ import { AlbumTrackList } from '../components/album/AlbumTrackList';
 import { useAlbumDetail } from '../components/album/useAlbumData';
 import { useArtistStar } from '../components/artist/useArtistData';
 import { OfflineCopyLink } from '../components/offline/OfflineCopyLink';
+import { LoadErrorState } from '../components/ui/LoadErrorState';
 import { AuraField } from '../components/user/AuraField';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { albumScope } from '../lib/bulk-cache';
@@ -13,8 +13,6 @@ import { Loader2 } from '../lib/icons';
 
 export function AlbumPage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
-
   const album = useAlbumDetail(id);
   const data = album.data;
   const { hasStar, aura } = useArtistStar(data?.primary_artist?.id);
@@ -30,7 +28,11 @@ export function AlbumPage() {
   if (album.error || !data) {
     return (
       <div className="relative w-full min-h-screen flex flex-col items-center justify-center gap-5 text-ink-40 text-sm">
-        {t('common.error')}
+        <LoadErrorState
+          error={album.error}
+          retrying={album.isFetching}
+          onRetry={() => void album.refetch()}
+        />
         {id && <OfflineCopyLink scope={albumScope(id)} />}
       </div>
     );
