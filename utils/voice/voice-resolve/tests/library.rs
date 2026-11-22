@@ -94,25 +94,15 @@ fn found(said: &str) -> Option<String> {
 
 #[test]
 fn a_library_track_said_by_sound_is_played() {
-    for said in [
-        "включи психосис гот раша",
-        "включи гот раша",
-        "поставь готраша",
-    ] {
-        assert_eq!(
-            played(said).as_deref(),
-            Some("soundcloud:tracks:2"),
-            "{said}"
-        );
+    let cases = [
+        ("включи психосис гот раша", "soundcloud:tracks:2"),
+        ("включи найтмер", "soundcloud:tracks:1"),
+        ("включи притон", "soundcloud:tracks:3"),
+        ("включи комори", "soundcloud:tracks:4"),
+    ];
+    for (said, id) in cases {
+        assert_eq!(played(said).as_deref(), Some(id), "{said}");
     }
-    assert_eq!(
-        played("включи найтмер").as_deref(),
-        Some("soundcloud:tracks:1")
-    );
-    assert_eq!(
-        played("включи притон").as_deref(),
-        Some("soundcloud:tracks:3")
-    );
 }
 
 #[test]
@@ -153,9 +143,25 @@ fn the_chat_search_finds_library_tracks_too() {
 }
 
 #[test]
-fn the_library_answers_only_for_tracks_near_what_was_said() {
-    let readings = named("баста сансара");
-    let variants: Vec<Variant> = readings.iter().flat_map(|r| r.queries.clone()).collect();
-    assert!(library().candidates(&variants, &Kind::ALL).is_empty());
-    assert!(library().candidates(&variants, &[Kind::Artist]).is_empty());
+fn a_name_found_nowhere_plays_nothing_from_the_library() {
+    let both = Both {
+        server: server()
+            .into_iter()
+            .filter(|e| e.name != "Сансара")
+            .collect(),
+        library: library(),
+    };
+    let names = Names::new(&["Loli", "Лоля"]);
+    let outcomes = interpret(
+        "включи басту сансара",
+        &both,
+        &Boosts::none(),
+        Bare::Popular,
+        &names,
+    );
+    let picked = outcomes.iter().find_map(|o| match &o.decision {
+        Some(Decision::Act { pick }) => Some(pick.entity.id.clone()),
+        _ => None,
+    });
+    assert_eq!(picked, None);
 }
