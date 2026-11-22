@@ -24,7 +24,7 @@ interface ArtistsCatalogProps {
 
 function ArtistsCatalogImpl({ aura, query }: ArtistsCatalogProps) {
   const { t } = useTranslation();
-    const [sort, setSort] = useState<ArtistSort>('popular');
+  const [sort, setSort] = useState<ArtistSort>('popular');
   const [tag, setTag] = useState<TagFilter>('all');
 
   const tagsQuery = useDiscoverTags(8);
@@ -50,17 +50,17 @@ function ArtistsCatalogImpl({ aura, query }: ArtistsCatalogProps) {
     [t, tagsQuery.data],
   );
 
-    const sortOptions = useMemo<ReadonlyArray<{ id: ArtistSort; label: string }>>(
-        () => [
-            {id: 'popular', label: t('discover.sortPopular')},
-            {id: 'trending', label: t('discover.sortTrending')},
-            {id: 'listeners', label: t('discover.sortListeners')},
-            {id: 'tracks', label: t('discover.sortTracks')},
-            {id: 'star', label: t('discover.sortStar')},
-            {id: 'az', label: t('discover.sortAz')},
-        ],
-        [t],
-    );
+  const sortOptions = useMemo<ReadonlyArray<{ id: ArtistSort; label: string }>>(
+    () => [
+      { id: 'popular', label: t('discover.sortPopular') },
+      { id: 'trending', label: t('discover.sortTrending') },
+      { id: 'listeners', label: t('discover.sortListeners') },
+      { id: 'tracks', label: t('discover.sortTracks') },
+      { id: 'star', label: t('discover.sortStar') },
+      { id: 'az', label: t('discover.sortAz') },
+    ],
+    [t],
+  );
 
   const isInitialLoading = artistsQuery.isLoading;
   const isFailed = artistsQuery.isError && items.length === 0;
@@ -88,7 +88,6 @@ function ArtistsCatalogImpl({ aura, query }: ArtistsCatalogProps) {
           minColumnWidth={210}
           gap={20}
           overscan={3}
-          disabled={items.length < 30}
           getItemKey={(a) => a.id}
           renderItem={(a) => <ArtistGridCard artist={a} />}
         />
