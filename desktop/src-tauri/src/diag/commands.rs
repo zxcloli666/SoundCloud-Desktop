@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use backend_contracts::diag::{EventsBody, TriggerKind};
+use sc_diag::diag::{EventsBody, TriggerKind};
 
 use super::app_info;
 use super::bundle::{self, Inputs};

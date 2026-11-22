@@ -1,18 +1,18 @@
 use std::collections::{BTreeMap, VecDeque};
 use std::sync::Mutex;
 
-use backend_contracts::diag::{
+use sc_diag::diag::{
     ErrorKind, MAX_COMPONENT_STACK_CHARS, MAX_CONTEXT_KEYS, MAX_CONTEXT_VALUE_CHARS,
     MAX_MESSAGE_CHARS, MAX_SHORT_CHARS, MAX_STACK_CHARS,
 };
-use backend_contracts::diag_fingerprint::fingerprint;
+use sc_diag::diag_fingerprint::fingerprint;
 use serde::Deserialize;
 
 use super::caps;
 use super::trace;
 use crate::app::log_sink::redact;
 
-pub use backend_contracts::diag::ErrorEntry;
+pub use sc_diag::diag::ErrorEntry;
 
 pub const CAPACITY: usize = 50;
 

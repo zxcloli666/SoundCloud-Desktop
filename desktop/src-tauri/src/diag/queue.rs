@@ -168,7 +168,7 @@ pub fn settle_batch(delivery: Delivery) {
 mod tests {
     use std::collections::BTreeMap;
 
-    use backend_contracts::diag::ErrorKind;
+    use sc_diag::diag::ErrorKind;
 
     use super::*;
 

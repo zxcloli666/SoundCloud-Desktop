@@ -7,6 +7,7 @@ use std::sync::atomic::{AtomicU32, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use futures_util::StreamExt;
+use sc_diag::diag::ErrorKind;
 use tauri::Emitter;
 use tokio::fs::File;
 use tokio::io::{AsyncWriteExt, BufWriter};
@@ -16,7 +17,6 @@ use wreq::{Client, Method};
 
 use crate::app::diagnostics::{self, log_native};
 use crate::diag::errors::ErrorInput;
-use backend_contracts::diag::ErrorKind;
 use crate::diag::{report, trace};
 use crate::network::dns;
 use crate::network::edge::{Hop, Tier};
