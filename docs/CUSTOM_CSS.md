@@ -25,8 +25,11 @@ Tailwind class names change from release to release. These attributes do not.
 | Selector | Element |
 |---|---|
 | `[data-ui="app"]` | The whole window frame |
+| `[data-ui="app"][data-wall]` | The window frame while a wallpaper or custom background is on; the side panels turn translucent |
 | `[data-ui="titlebar"]` | Title bar with search and window buttons |
 | `[data-ui="brand"]` | Logo in the title bar |
+| `[data-ui="titlebar-navigation"]` | Back, forward, home and reload buttons in the title bar |
+| `[data-ui="scheme-toggle"]` | Light and dark switch in the title bar |
 | `[data-ui="window-controls"]` | Minimize, maximize, close |
 | `[data-ui="search"]` | Search field in the title bar |
 | `[data-ui="sidebar"]` | Left navigation |
