@@ -83,6 +83,7 @@ pub struct Speak {
 #[serde(default)]
 pub struct Boosts {
     pub artists: Vec<String>,
+    pub spoken: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Deserialize)]

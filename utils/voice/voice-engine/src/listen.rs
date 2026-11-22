@@ -197,10 +197,24 @@ impl Core {
         let Some((vad, asr)) = self.listener_models() else {
             return Err("no_models");
         };
-        let artists = &self.config.boosts.artists;
-        let (names, hotwords_score) = match self.config.language {
-            Language::Ru => (hotwords::russian(artists), hotwords::RUSSIAN_SCORE),
-            Language::En => (hotwords::english(artists), hotwords::ENGLISH_SCORE),
+        let boosts = &self.config.boosts;
+        let said: Vec<String> = boosts
+            .spoken
+            .iter()
+            .chain(&boosts.artists)
+            .cloned()
+            .collect();
+        let (names, hotwords_score, exact_hotwords_score) = match self.config.language {
+            Language::Ru => (
+                hotwords::russian(&said),
+                hotwords::RUSSIAN_SCORE,
+                hotwords::RUSSIAN_EXACT_SCORE,
+            ),
+            Language::En => (
+                hotwords::english(&said),
+                hotwords::ENGLISH_SCORE,
+                hotwords::ENGLISH_SCORE,
+            ),
         };
         let mut hotwords = if self.config.activation.wake.on {
             self.ear().hints()
@@ -225,6 +239,7 @@ impl Core {
             hotwords_score,
             exact_dir: models::exact(self.config.language)
                 .and_then(|id| models::dir(&self.deps.store, id)),
+            exact_hotwords_score,
             exact_threads: EXACT_THREADS,
         };
         let listener = Listener::open(&options).or_else(|_| {

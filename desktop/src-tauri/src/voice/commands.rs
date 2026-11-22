@@ -124,6 +124,10 @@ pub struct Owned {
     artist: String,
     #[serde(default)]
     plays: u64,
+    #[serde(default)]
+    said: Vec<String>,
+    #[serde(default, rename = "artistSaid")]
+    artist_said: Vec<String>,
 }
 
 #[tauri::command]
@@ -136,8 +140,8 @@ pub async fn voice_library(voice: Managed<'_, Voice>, tracks: Vec<Owned>) -> Res
             artist: Some(t.artist).filter(|a| !a.trim().is_empty()),
             popularity: t.plays,
             id: t.id,
-            aliases: Vec::new(),
-            artist_aliases: Vec::new(),
+            aliases: t.said,
+            artist_aliases: t.artist_said,
         })
         .collect();
     *voice.library.write().unwrap() = Library::new(tracks);

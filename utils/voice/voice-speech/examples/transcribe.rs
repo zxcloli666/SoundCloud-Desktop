@@ -26,17 +26,21 @@ fn main() {
             .collect()
     };
 
+    let score = |name: &str, default: f32| {
+        env::var(name)
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(default)
+    };
     let options = Options {
         vad_model: models.join("silero_vad.onnx"),
         asr_dir: models.join("asr"),
         model: Model::Streaming,
         threads: 2,
         hotwords,
-        hotwords_score: env::var("HOTWORDS_SCORE")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(1.5),
+        hotwords_score: score("HOTWORDS_SCORE", 1.5),
         exact_dir: env::var_os("EXACT_DIR").map(PathBuf::from),
+        exact_hotwords_score: score("EXACT_HOTWORDS_SCORE", 0.5),
         exact_threads: 4,
     };
     let mut listener = Listener::open(&options).expect("open");

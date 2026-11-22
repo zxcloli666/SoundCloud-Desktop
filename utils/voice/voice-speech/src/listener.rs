@@ -25,6 +25,7 @@ pub struct Options {
     pub hotwords: Vec<String>,
     pub hotwords_score: f32,
     pub exact_dir: Option<PathBuf>,
+    pub exact_hotwords_score: f32,
     pub exact_threads: i32,
 }
 
@@ -85,7 +86,7 @@ impl Listener {
                 dir,
                 options.exact_threads,
                 &options.hotwords,
-                options.hotwords_score,
+                options.exact_hotwords_score,
             )?),
             None => None,
         };

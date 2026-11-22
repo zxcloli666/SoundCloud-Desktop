@@ -56,7 +56,7 @@ export interface VoiceConfig {
   duck: number;
   echo: EchoMode;
   llm: boolean;
-  boosts: { artists: string[] };
+  boosts: { artists: string[]; spoken: string[] };
   listener: ListenerConfig;
   relation: RelationConfig;
 }

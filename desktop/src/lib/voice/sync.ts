@@ -7,14 +7,33 @@ import { type PagedResponse, pagedUrl, type SCUser } from '../hooks';
 import { fetchAllSuperlikedTracks } from '../superlikes';
 import { voiceIpc } from './ipc';
 import { ownedTracks } from './library';
+import {
+  type AskReadings,
+  libraryNames,
+  type ReadingsAnswer,
+  readNames,
+  spokenNames,
+  withReadings,
+} from './library-readings';
 import { changesLikedArtists, likedArtists } from './liked-artists';
 import { engineConfig } from './names';
 import { useVoiceRuntime } from './runtime';
 import { useVoiceStore } from './store';
+import type { VoiceConfig } from './types';
 
 const APPLY_DEBOUNCE_MS = 120;
 const LIKED_PAGE = 200;
 const LIKED_SETTLE_MS = 5_000;
+const READINGS_PATH = '/voice/readings';
+const READINGS_SILENT = [403, 404, 429, 503];
+
+const askReadings: AskReadings = (language, names) =>
+  api<ReadingsAnswer>(READINGS_PATH, {
+    method: 'POST',
+    body: JSON.stringify({ language, names }),
+    silentStatuses: READINGS_SILENT,
+    quiet: true,
+  });
 
 function push() {
   loadVoiceLocales()
@@ -62,10 +81,24 @@ async function readLibrary() {
     api<PagedResponse<SCUser>>(pagedUrl('/me/followings', 0, LIKED_PAGE)),
     fetchAllSuperlikedTracks().catch((): Track[] => []),
   ]);
-  await voiceIpc.library(ownedTracks(superliked, liked.collection));
+  const owned = ownedTracks(superliked, liked.collection);
+  await voiceIpc.library(owned);
   const artists = likedArtists([...superliked, ...liked.collection], followed.collection);
+  boost({ artists });
+  const { language } = useVoiceStore.getState().config;
+  const heard = await readNames(language, libraryNames(language, artists, owned), askReadings);
+  const asked = language === 'ru' ? useVoiceStore.getState().readings : {};
+  const known = { ...heard, ...asked };
+  await voiceIpc.library(withReadings(owned, known));
+  boost({ spoken: spokenNames(language, asked, artists, ownedTracks(superliked), known) });
+}
+
+function boost(change: Partial<VoiceConfig['boosts']>) {
   const { config, patch } = useVoiceStore.getState();
-  if (artists.join('\n') !== config.boosts.artists.join('\n')) patch({ boosts: { artists } });
+  const boosts = { ...config.boosts, ...change };
+  const same = (key: keyof VoiceConfig['boosts']) =>
+    boosts[key].join('\n') === config.boosts[key].join('\n');
+  if (!same('artists') || !same('spoken')) patch({ boosts });
 }
 
 function followLibrary() {

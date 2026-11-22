@@ -6,6 +6,8 @@ export interface OwnedTrack {
   name: string;
   artist: string;
   plays: number;
+  said?: string[];
+  artistSaid?: string[];
 }
 
 export function ownedTracks(...lists: Track[][]): OwnedTrack[] {
