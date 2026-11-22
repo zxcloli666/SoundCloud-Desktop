@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::sync::Mutex;
 
-use backend_contracts::diag::Service;
+use sc_diag::diag::Service;
 
 use crate::network::edge::Tier;
 use crate::network::fail::FailKind;

@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::OnceLock;
 
-use backend_contracts::diag::ErrorKind;
+use sc_diag::diag::ErrorKind;
 use serde::{Deserialize, Serialize};
 
 use super::errors::{ErrorEntry, ErrorInput, entry_of};

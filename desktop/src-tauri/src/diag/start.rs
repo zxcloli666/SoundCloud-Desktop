@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use backend_contracts::diag::App;
+use sc_diag::diag::App;
 
 use super::app_info::{self};
 use super::{errors, panic, queue, session};
