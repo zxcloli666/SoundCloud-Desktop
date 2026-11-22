@@ -465,6 +465,14 @@
     "sem próxima música",
     "modo rádio"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "prévia sobre a música",
+    "trecho ao passar o mouse",
+    "pausa ao passar o cursor",
+    "toca ao passar em cima",
+    "ouvir um pedaço",
+    "minha música parou sozinha"
+  ],
   "settings.altUploads": [
     "a música não toca",
     "faixa indisponível",

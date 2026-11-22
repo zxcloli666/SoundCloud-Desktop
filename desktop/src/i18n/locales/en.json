@@ -1502,6 +1502,8 @@
     "manualUpdates": "Updates are installed manually",
     "autoplay": "Autoplay",
     "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
+    "hoverPreviewDuringPlayback": "Hover preview while music plays",
+    "hoverPreviewDuringPlaybackDesc": "Hovering a track for a second pauses your music and plays a short preview",
     "altUploads": "Copy instead of an unavailable track",
     "altUploadsDesc": "If a track can't be played, an upload of the same track on another account plays instead when one is found",
     "searchPlayback": "Playing from search",

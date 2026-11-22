@@ -1544,6 +1544,8 @@
     "manualUpdates": "As atualizações são instaladas manualmente",
     "autoplay": "Reprodução automática",
     "autoplayDesc": "Quando a fila acabar, continua tocando faixas parecidas com a onda da última",
+    "hoverPreviewDuringPlayback": "Prévia ao passar o mouse",
+    "hoverPreviewDuringPlaybackDesc": "Se você parar o cursor um segundo numa faixa, sua música pausa e toca um trecho curto",
     "altUploads": "Cópia no lugar de uma faixa indisponível",
     "altUploadsDesc": "Se uma faixa não puder ser tocada, toca um envio da mesma faixa em outra conta, quando houver",
     "searchPlayback": "Reprodução pela busca",

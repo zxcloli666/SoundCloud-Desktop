@@ -1554,6 +1554,8 @@
     "manualUpdates": "Güncellemeler elle kurulur",
     "autoplay": "Otomatik devam",
     "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
+    "hoverPreviewDuringPlayback": "Müzik çalarken üzerine gelince önizleme",
+    "hoverPreviewDuringPlaybackDesc": "Bir parçanın üzerinde bir saniye durursan müziğin duraklar ve kısa bir önizleme çalar",
     "altUploads": "Erişilemeyen parça yerine kopya",
     "altUploadsDesc": "Bir parça çalınamazsa, bulunursa aynı parçanın başka bir hesaptaki yüklemesi çalar",
     "searchPlayback": "Aramadan çalma",

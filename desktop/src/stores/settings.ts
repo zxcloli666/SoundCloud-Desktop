@@ -1,20 +1,26 @@
-import {create} from 'zustand';
-import {createJSONStorage, persist} from 'zustand/middleware';
-import {normalizeAudioCacheLimit, normalizeImageCacheLimit} from '../lib/cache-limit';
-import {EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset} from '../lib/equalizer';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { normalizeAudioCacheLimit, normalizeImageCacheLimit } from '../lib/cache-limit';
+import { EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset } from '../lib/equalizer';
 import {
   DEFAULT_GLOBAL_HOTKEYS,
   type GlobalHotkeyAction,
   type GlobalHotkeyMap,
 } from '../lib/hotkeys/actions';
-import type {InterfaceFont} from '../lib/interface-font';
-import type {SchemeChoice} from '../lib/scheme';
-import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type RiverSectionId,} from '../lib/layout';
-import type {PerfMode} from '../lib/perf';
-import {tauriStorage} from '../lib/tauri-storage';
-import type {TrackSort} from '../lib/track-sort';
-import {VIDEO_KINDS} from '../lib/video-pick';
-import type {VideoKind} from './player';
+import type { InterfaceFont } from '../lib/interface-font';
+import {
+  EMPTY_LAYOUT,
+  type LayoutEntry,
+  type LayoutScope,
+  type LayoutState,
+  type RiverSectionId,
+} from '../lib/layout';
+import type { PerfMode } from '../lib/perf';
+import type { SchemeChoice } from '../lib/scheme';
+import { tauriStorage } from '../lib/tauri-storage';
+import type { TrackSort } from '../lib/track-sort';
+import { VIDEO_KINDS } from '../lib/video-pick';
+import type { VideoKind } from './player';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
@@ -110,6 +116,7 @@ export interface SettingsState {
   audioCacheLimitMB: number;
   imageCacheLimitMB: number;
   hoverPreload: boolean;
+  hoverPreviewDuringPlayback: boolean;
   language: string;
   eqEnabled: boolean;
   eqGains: number[];
@@ -204,6 +211,7 @@ export interface SettingsState {
   setAudioCacheLimitMB: (limit: number) => void;
   setImageCacheLimitMB: (limit: number) => void;
   setHoverPreload: (enabled: boolean) => void;
+  setHoverPreviewDuringPlayback: (enabled: boolean) => void;
   setLanguage: (lang: string) => void;
   setEqEnabled: (enabled: boolean) => void;
   setEqGains: (gains: number[]) => void;
@@ -314,6 +322,7 @@ const DEFAULTS = {
   audioCacheLimitMB: 1024,
   imageCacheLimitMB: 1024,
   hoverPreload: true,
+  hoverPreviewDuringPlayback: false,
   language: navigator.language?.split('-')[0] || 'en',
   eqEnabled: false,
   eqGains: DEFAULT_EQ_GAINS,
@@ -421,6 +430,8 @@ export const useSettingsStore = create<SettingsState>()(
       setAudioCacheLimitMB: (audioCacheLimitMB) => set({ audioCacheLimitMB }),
       setImageCacheLimitMB: (imageCacheLimitMB) => set({ imageCacheLimitMB }),
       setHoverPreload: (hoverPreload) => set({ hoverPreload }),
+      setHoverPreviewDuringPlayback: (hoverPreviewDuringPlayback) =>
+        set({ hoverPreviewDuringPlayback }),
       setLanguage: (language) => set({ language }),
       setEqEnabled: (eqEnabled) => set({ eqEnabled }),
       setEqGains: (eqGains) => set({ eqGains, eqPreset: 'custom' }),
@@ -617,7 +628,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 23,
+      version: 24,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -645,6 +656,9 @@ export const useSettingsStore = create<SettingsState>()(
         if (version < 23) {
           next.sendErrorReports = prev.sendErrorReports ?? true;
         }
+        if (version < 24) {
+          next.hoverPreviewDuringPlayback = prev.hoverPreviewDuringPlayback ?? false;
+        }
         return next;
       },
       partialize: (s) => ({
@@ -666,6 +680,7 @@ export const useSettingsStore = create<SettingsState>()(
         audioCacheLimitMB: s.audioCacheLimitMB,
         imageCacheLimitMB: s.imageCacheLimitMB,
         hoverPreload: s.hoverPreload,
+        hoverPreviewDuringPlayback: s.hoverPreviewDuringPlayback,
         language: s.language,
         eqEnabled: s.eqEnabled,
         eqGains: s.eqGains,

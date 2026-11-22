@@ -1523,6 +1523,8 @@
     "manualUpdates": "Les mises à jour s'installent manuellement",
     "autoplay": "Lecture automatique",
     "autoplayDesc": "Quand la file d'attente est vide, continue avec des titres similaires issus de la wave du dernier",
+    "hoverPreviewDuringPlayback": "Aperçu au survol pendant la lecture",
+    "hoverPreviewDuringPlaybackDesc": "Si tu restes une seconde sur un titre, ta musique se met en pause et un court extrait est joué",
     "altUploads": "Copie à la place d'un titre indisponible",
     "altUploadsDesc": "Si un titre ne peut pas être lu, une mise en ligne du même titre sur un autre compte est lue à la place, si elle est trouvée",
     "searchPlayback": "Lecture depuis la recherche",

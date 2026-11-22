@@ -1485,6 +1485,8 @@
     "manualUpdates": "업데이트를 직접 설치해야 해요",
     "autoplay": "자동 재생",
     "autoplayDesc": "대기열이 끝나면 마지막 곡의 웨이브에서 비슷한 트랙을 이어서 재생해요",
+    "hoverPreviewDuringPlayback": "재생 중 마우스 오버 미리듣기",
+    "hoverPreviewDuringPlaybackDesc": "트랙에 1초 동안 마우스를 올리면 음악이 일시정지되고 짧은 미리듣기가 재생돼요",
     "altUploads": "재생할 수 없는 트랙 대신 사본",
     "altUploadsDesc": "트랙을 재생할 수 없으면 다른 계정에 올라온 같은 곡의 업로드를 찾아 대신 재생해요",
     "searchPlayback": "검색에서 재생",

@@ -525,6 +525,14 @@
     "la musique s'arrête après le dernier titre",
     "autoplay"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "aperçu par-dessus la musique",
+    "extrait au survol",
+    "pause au survol",
+    "le titre se lance au survol",
+    "écouter un extrait",
+    "ma musique s'arrête toute seule"
+  ],
   "settings.altUploads": [
     "titre indisponible",
     "bloqué dans mon pays",

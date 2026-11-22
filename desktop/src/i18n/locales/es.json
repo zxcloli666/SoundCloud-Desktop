@@ -1523,6 +1523,8 @@
     "manualUpdates": "Las actualizaciones se instalan manualmente",
     "autoplay": "Reproducción automática",
     "autoplayDesc": "Cuando se acabe la cola, sigue reproduciendo pistas similares de la wave de la última",
+    "hoverPreviewDuringPlayback": "Vista previa al pasar el cursor",
+    "hoverPreviewDuringPlaybackDesc": "Si dejas el cursor un segundo sobre una pista, tu música se pausa y suena un fragmento corto",
     "altUploads": "Copia en lugar de una pista no disponible",
     "altUploadsDesc": "Si una pista no se puede reproducir, suena una subida de la misma pista en otra cuenta, si se encuentra",
     "searchPlayback": "Reproducción desde la búsqueda",

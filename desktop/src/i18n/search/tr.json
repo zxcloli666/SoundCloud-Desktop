@@ -473,6 +473,14 @@
     "sonraki şarkı yok",
     "radyo modu"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "müziğin üstüne önizleme",
+    "üzerine gelince ses",
+    "imleç gelince duraklıyor",
+    "parça kendiliğinden çalıyor",
+    "kısa bölüm dinle",
+    "müzik kendi kendine durdu"
+  ],
   "settings.altUploads": [
     "şarkı oynamıyor",
     "bu parça kullanılamıyor",

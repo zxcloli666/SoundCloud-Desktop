@@ -550,6 +550,15 @@
     "music stops after last song",
     "autoplay"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "preview over music",
+    "sample while playing",
+    "hover pauses my song",
+    "track plays on hover",
+    "listen to a snippet",
+    "pause when hovering",
+    "hover sound"
+  ],
   "settings.altUploads": [
     "track unavailable",
     "blocked in my country",

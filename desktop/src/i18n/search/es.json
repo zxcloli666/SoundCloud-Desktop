@@ -525,6 +525,14 @@
     "la música para tras la última canción",
     "autoplay"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "previsualizar sobre la música",
+    "fragmento al pasar el ratón",
+    "pausa al pasar el cursor",
+    "suena al pasar encima",
+    "escuchar un trozo",
+    "la música se para sola"
+  ],
   "settings.altUploads": [
     "pista no disponible",
     "bloqueada en mi país",
