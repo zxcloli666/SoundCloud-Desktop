@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import type { Track } from '../../stores/player';
 import { useSettingsStore } from '../../stores/settings';
-import { hasMoment } from '../moment';
 import { queryClient } from '../query-client';
 import { fetchSmartWave } from '../soundwave';
 
@@ -12,6 +11,7 @@ export interface MomentsBatch {
 
 const TEASER_LIMIT = 8;
 const TEASER_STALE_MS = 1000 * 60 * 10;
+const MOMENT_FORMAT_VERSION = 2;
 
 export async function fetchMoments(opts: {
   cursor?: string;
@@ -20,13 +20,14 @@ export async function fetchMoments(opts: {
   hideListened: boolean;
 }): Promise<MomentsBatch> {
   const batch = await fetchSmartWave({ seedKind: 'user', mode: 'moments', ...opts });
-  return { tracks: batch.tracks.filter(hasMoment), cursor: batch.cursor };
+  return { tracks: batch.tracks, cursor: batch.cursor };
 }
 
 function teaserKey(languages: string[], genres: string[], hideListened: boolean) {
   return [
     'moments',
     'teaser',
+    MOMENT_FORMAT_VERSION,
     [...languages].sort().join(',') || 'all',
     [...genres].sort().join(',') || 'any',
     hideListened,

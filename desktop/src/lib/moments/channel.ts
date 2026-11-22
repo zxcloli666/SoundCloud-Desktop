@@ -31,6 +31,8 @@ let phase: MomentPhase = 'idle';
 let phaseUrn: string | null = null;
 let token = 0;
 let onWindowEnd: ((urn: string) => void) | null = null;
+let endTimer: ReturnType<typeof setTimeout> | null = null;
+let pausedMainForMoment = false;
 
 const progressListeners = new Set<() => void>();
 const phaseListeners = new Set<() => void>();
@@ -45,7 +47,9 @@ export function openMoments(onEnd: (urn: string) => void): () => void {
     listen<number>('audio:preview-ended', (event) => onEnded(event.payload)),
   ];
   const unsubscribe = usePlayerStore.subscribe((state, prev) => {
-    if (state.isPlaying && !prev.isPlaying && phase === 'playing') pauseMoment();
+    if (state.isPlaying && !prev.isPlaying && phase === 'playing' && !pausedMainForMoment) {
+      pauseMoment();
+    }
     if (state.volume !== prev.volume && live) {
       invoke('audio_preview_volume', { volume: previewVolume() }).catch(() => {});
     }
@@ -61,7 +65,9 @@ export function openMoments(onEnd: (urn: string) => void): () => void {
 
 export async function playMoment(track: Track, crossfadeMs: number): Promise<boolean> {
   const mine = ++token;
+  disarmActiveWindow();
   setPhase('loading', track.urn);
+  let pausedForThisMoment = false;
   try {
     const [info, moment] = await Promise.all([
       ensureTrackCached(
@@ -74,7 +80,11 @@ export async function playMoment(track: Track, crossfadeMs: number): Promise<boo
     ]);
     if (mine !== token) return false;
     const player = usePlayerStore.getState();
-    if (player.isPlaying) player.pause();
+    if (player.isPlaying) {
+      player.pause();
+      pausedMainForMoment = true;
+      pausedForThisMoment = true;
+    }
     const gen = nextPreviewGen();
     const startedMs = await invoke<number>('audio_preview_play', {
       request: {
@@ -82,6 +92,7 @@ export async function playMoment(track: Track, crossfadeMs: number): Promise<boo
         volume: previewVolume(),
         gen,
         startMs: moment.startMs,
+        endMs: moment.startMs + moment.lengthMs,
         fadeInMs: FADE_IN_MS,
         crossfadeMs: live ? crossfadeMs : 0,
         report: true,
@@ -92,19 +103,25 @@ export async function playMoment(track: Track, crossfadeMs: number): Promise<boo
       return false;
     }
     const startMs = startedMs > 0 ? startedMs : 0;
-    live = {
+    const next: Live = {
       urn: track.urn,
       path: info.path,
       window: { ...moment, startMs },
       gen,
       endFired: false,
     };
+    live = next;
+    scheduleWindowEnd(next, startMs);
     setPosition(startMs);
     notifyProgress();
     setPhase('playing', track.urn);
     return true;
   } catch (e) {
     console.debug('[moments] play failed', e);
+    if (pausedForThisMoment && mine === token) {
+      pausedMainForMoment = false;
+      usePlayerStore.getState().resume();
+    }
     if (mine === token) setPhase('failed', track.urn);
     return false;
   }
@@ -112,15 +129,15 @@ export async function playMoment(track: Track, crossfadeMs: number): Promise<boo
 
 export function pauseMoment(): void {
   if (!live || phase !== 'playing') return;
+  clearWindowEnd();
   invoke('audio_preview_pause', { paused: true, gen: live.gen }).catch(() => {});
   setPhase('paused', live.urn);
 }
 
 export function resumeMoment(): boolean {
   if (!live || phase !== 'paused' || live.endFired) return false;
-  const player = usePlayerStore.getState();
-  if (player.isPlaying) player.pause();
   invoke('audio_preview_pause', { paused: false, gen: live.gen }).catch(() => {});
+  scheduleWindowEnd(live, positionMs || live.window.startMs);
   setPhase('playing', live.urn);
   return true;
 }
@@ -131,9 +148,8 @@ export async function seekMoment(urn: string, share: number): Promise<void> {
   const { startMs, lengthMs } = current.window;
   const targetMs = Math.round(startMs + Math.min(0.98, Math.max(0, share)) * lengthMs);
   const mine = ++token;
+  disarmActiveWindow();
   const gen = nextPreviewGen();
-  const player = usePlayerStore.getState();
-  if (player.isPlaying) player.pause();
   try {
     await invoke<number>('audio_preview_play', {
       request: {
@@ -141,6 +157,7 @@ export async function seekMoment(urn: string, share: number): Promise<void> {
         volume: previewVolume(),
         gen,
         startMs: targetMs,
+        endMs: startMs + lengthMs,
         fadeInMs: SEEK_FADE_MS,
         crossfadeMs: SEEK_FADE_MS,
         report: true,
@@ -148,6 +165,10 @@ export async function seekMoment(urn: string, share: number): Promise<void> {
     });
   } catch (e) {
     console.debug('[moments] seek failed', e);
+    if (live === current) {
+      current.endFired = false;
+      scheduleWindowEnd(current, positionMs || current.window.startMs);
+    }
     return;
   }
   if (mine !== token || live !== current) {
@@ -155,6 +176,7 @@ export async function seekMoment(urn: string, share: number): Promise<void> {
     return;
   }
   live = { ...current, gen, endFired: false };
+  scheduleWindowEnd(live, targetMs);
   recordSeek(urn, targetMs, positionMs, 'moment');
   setPosition(targetMs);
   notifyProgress();
@@ -172,18 +194,25 @@ export function toggleMoment(track: Track): void {
 
 export function handOffMoment(urn: string): void {
   token += 1;
+  clearWindowEnd();
   live = null;
+  pausedMainForMoment = false;
   invoke('audio_preview_stop', { fadeMs: STOP_FADE_MS, gen: 0 }).catch(() => {});
   setPhase('handed', urn);
 }
 
 export function stopMoments(fadeMs: number): void {
   token += 1;
+  clearWindowEnd();
   const wasLive = live !== null;
   live = null;
   positionMs = 0;
   if (wasLive) invoke('audio_preview_stop', { fadeMs, gen: 0 }).catch(() => {});
   setPhase('idle', null);
+  if (pausedMainForMoment) {
+    pausedMainForMoment = false;
+    usePlayerStore.getState().resume();
+  }
 }
 
 export function prefetchMoment(track: Track): void {
@@ -258,7 +287,7 @@ function onTick(gen: number, ms: number) {
   if (!live || live.gen !== gen) return;
   setPosition(ms);
   notifyProgress();
-  const endAt = live.window.startMs + live.window.lengthMs - AUTO_CROSSFADE_MS;
+  const endAt = live.window.startMs + live.window.lengthMs;
   if (ms >= endAt) fireEnd();
 }
 
@@ -268,8 +297,28 @@ function onEnded(gen: number) {
 
 function fireEnd() {
   if (!live || live.endFired) return;
+  clearWindowEnd();
   live.endFired = true;
   onWindowEnd?.(live.urn);
+}
+
+function scheduleWindowEnd(current: Live, fromMs: number) {
+  clearWindowEnd();
+  const remaining = Math.max(0, current.window.startMs + current.window.lengthMs - fromMs);
+  endTimer = setTimeout(() => {
+    if (live?.gen === current.gen) fireEnd();
+  }, remaining + 40);
+}
+
+function clearWindowEnd() {
+  if (!endTimer) return;
+  clearTimeout(endTimer);
+  endTimer = null;
+}
+
+function disarmActiveWindow() {
+  clearWindowEnd();
+  if (live) live.endFired = true;
 }
 
 function previewVolume(): number {

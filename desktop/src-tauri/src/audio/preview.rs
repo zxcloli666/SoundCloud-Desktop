@@ -26,6 +26,7 @@ pub struct PreviewState {
     outgoing: Option<Outgoing>,
     report: bool,
     ended: bool,
+    end_ms: Option<u64>,
     r#gen: u64,
 }
 
@@ -47,6 +48,8 @@ pub struct PreviewRequest {
     fade_in_ms: u64,
     #[serde(default)]
     crossfade_ms: u64,
+    #[serde(default)]
+    end_ms: Option<u64>,
     #[serde(default)]
     report: bool,
 }
@@ -122,6 +125,7 @@ pub async fn play(request: PreviewRequest, state: State<'_, AudioState>) -> Resu
     preview.stop_at_zero = false;
     preview.report = request.report;
     preview.ended = false;
+    preview.end_ms = request.end_ms.filter(|end| *end > started_ms);
     preview.r#gen = request.r#gen;
     Ok(started_ms)
 }
@@ -159,6 +163,7 @@ pub fn stop(fade_ms: u64, r#gen: u64, state: State<'_, AudioState>) {
         preview.target = 0.0;
         preview.step = 0.0;
         preview.stop_at_zero = false;
+        preview.end_ms = None;
         return;
     }
     if preview.player.is_none() {
@@ -266,5 +271,15 @@ fn progress(preview: &mut PreviewState) -> (Option<PreviewTick>, Option<u64>) {
         return (None, None);
     }
     let ms = player.get_pos().as_millis() as u64;
+    if preview.end_ms.is_some_and(|end| ms >= end) {
+        if let Some(done) = preview.player.take() {
+            done.stop();
+        }
+        if preview.ended {
+            return (None, None);
+        }
+        preview.ended = true;
+        return (None, Some(r#gen));
+    }
     (Some(PreviewTick { r#gen, ms }), None)
 }
