@@ -49,7 +49,7 @@ test('only the tools the model must hear back from ask for another round', () =>
   const { tools } = setup();
   assert.deepEqual(
     tools.filter((t) => t.returns).map((t) => t.name),
-    ['play', 'queue_add', 'search', 'get_settings', 'queue_list'],
+    ['play', 'queue_add', 'search', 'list_tracks', 'get_settings', 'queue_list'],
   );
 });
 
@@ -353,6 +353,57 @@ test('speed, lyrics, queue and the playlist picker call the app', async () => {
   await run('queue_clear');
   await run('add_to_playlist');
   assert.deepEqual(app.calls, ['speed:2', 'lyrics:true', 'queue_clear', 'pick_playlist']);
+});
+
+function superlikes(count: number) {
+  return Array.from({ length: count }, (_, at) => ({
+    n: at + 1,
+    title: `Super ${at + 1}`,
+    artist: 'Psychosis',
+    id: `soundcloud:tracks:${at + 1}`,
+  }));
+}
+
+test('list_tracks reads a numbered page of a list and goes back to the model', async () => {
+  const { app, run } = setup();
+  app.lists.superlikes = superlikes(12);
+  const read = await run('list_tracks', { list: 'superlikes', from: 9, count: 2 });
+  assert.deepEqual(read.result, {
+    ok: true,
+    list: 'superlikes',
+    from: 9,
+    tracks: app.lists.superlikes.slice(8, 10),
+  });
+  assert.equal(read.returns, true);
+  await run('list_tracks', { list: 'history' });
+  await run('list_tracks', { list: 'likes', from: -3, count: 500 });
+  assert.deepEqual(app.calls, ['list:superlikes:9:2', 'list:history:1:10', 'list:likes:1:30']);
+  assert.equal((await run('list_tracks', { list: 'playlists' })).result.ok, false);
+});
+
+test('play_list plays from a number of a list, and voice undo brings back what played', async () => {
+  const { player, env, run } = setup();
+  const played = await run('play_list', { list: 'superlikes', n: 9 });
+  assert.deepEqual(played.result, { ok: true, started: 'Track 309' });
+  assert.equal(played.returns, false);
+  assert.equal(played.mark.intent, 'play');
+  assert.equal(played.mark.text, 'Track 309');
+  assert.deepEqual(player.calls, ['list:superlikes:9']);
+  assert.equal(env.stack.length, 1);
+  assert.equal(env.undo, true);
+  assert.deepEqual((await run('undo')).result, { ok: true });
+  assert.equal(player.state.track?.urn, 'soundcloud:tracks:1');
+  assert.equal(player.state.queue.length, 3);
+});
+
+test('play_list jumps inside the queue and says so when the number is past its end', async () => {
+  const { player, env, run } = setup();
+  assert.equal((await run('play_list', { list: 'queue', n: 2 })).result.ok, true);
+  assert.equal(player.state.track?.urn, 'soundcloud:tracks:3');
+  const past = await run('play_list', { list: 'queue', n: 5 });
+  assert.deepEqual(past.result, { ok: false, reason: 'not_found' });
+  assert.equal(past.returns, true);
+  assert.equal(env.stack.length, 1);
 });
 
 test('remember and forget keep notes through the app', async () => {

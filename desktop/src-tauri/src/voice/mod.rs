@@ -14,7 +14,7 @@ mod server;
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 use tauri::Manager;
@@ -22,6 +22,7 @@ use tokio::runtime::Handle;
 use voice_audio::{Capture, DeviceList, RefTap};
 use voice_engine::{Command, Config, Deps, Engine, ErrorEvent, Event, Source, State, Timing};
 use voice_models::{Cancel, Store};
+use voice_resolve::Library;
 
 use crate::audio::AudioState;
 use crate::rt::AppHandle;
@@ -42,6 +43,7 @@ pub struct Voice {
     pub installs: Mutex<HashMap<String, Cancel>>,
     pub progress: Mutex<HashMap<String, (u64, u64)>>,
     pub rounds: chat::Rounds,
+    pub library: Arc<RwLock<Library>>,
 }
 
 pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, premium: bool) {
@@ -51,12 +53,14 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
     let store = Arc::new(Store::new(data_dir.join(MODELS_DIR), fetch));
     let retired = store.clone();
     rt.spawn_blocking(move || retired.drop_retired());
+    let library = Arc::new(RwLock::new(Library::default()));
     let deps = Deps {
         capture: Capture::new(tap.clone()),
         store: store.clone(),
         catalog: Arc::new(catalog::ResolveCatalog {
             app: app.clone(),
             rt: rt.clone(),
+            library: library.clone(),
         }),
         output: Box::new(output::MasterOutput::new(
             audio.master.clone(),
@@ -85,6 +89,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         installs: Mutex::new(HashMap::new()),
         progress: Mutex::new(HashMap::new()),
         rounds: chat::Rounds::default(),
+        library,
     });
     events::forward(app.clone(), events);
 }

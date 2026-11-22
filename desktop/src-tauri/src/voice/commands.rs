@@ -1,8 +1,10 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tauri::State as Managed;
 use tauri::ipc::Channel;
 use voice_chat::ChatEvent;
 use voice_engine::{Command, Config, EntityEvent, ErrorEvent, Outcome, Source, State};
+use voice_nlu::Kind;
+use voice_resolve::{Entity, Library};
 
 use super::chat::{self, Refused, Turn};
 use super::devices::{self, Devices};
@@ -107,11 +109,39 @@ pub fn voice_chat_cancel(voice: Managed<'_, Voice>, id: String) {
 
 #[tauri::command]
 pub async fn voice_resolve(
+    app: AppHandle,
     voice: Managed<'_, Voice>,
     query: String,
     kinds: Vec<String>,
 ) -> Result<Vec<EntityEvent>, String> {
-    catalog::search(&voice, &query, &kinds).await
+    catalog::search(&app, &voice, &query, &kinds).await
+}
+
+#[derive(Deserialize)]
+pub struct Owned {
+    id: String,
+    name: String,
+    artist: String,
+    #[serde(default)]
+    plays: u64,
+}
+
+#[tauri::command]
+pub async fn voice_library(voice: Managed<'_, Voice>, tracks: Vec<Owned>) -> Result<(), String> {
+    let tracks = tracks
+        .into_iter()
+        .map(|t| Entity {
+            kind: Kind::Track,
+            name: t.name,
+            artist: Some(t.artist).filter(|a| !a.trim().is_empty()),
+            popularity: t.plays,
+            id: t.id,
+            aliases: Vec::new(),
+            artist_aliases: Vec::new(),
+        })
+        .collect();
+    *voice.library.write().unwrap() = Library::new(tracks);
+    Ok(())
 }
 
 #[tauri::command]

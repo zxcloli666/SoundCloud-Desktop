@@ -327,6 +327,7 @@ pub fn run() {
             voice::commands::voice_chat,
             voice::commands::voice_chat_cancel,
             voice::commands::voice_resolve,
+            voice::commands::voice_library,
             voice::commands::voice_devices,
             voice::commands::voice_meter,
             voice::commands::voice_models,

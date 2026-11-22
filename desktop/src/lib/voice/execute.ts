@@ -2,6 +2,7 @@ import { type Failure, failureOf } from './chat/failure.ts';
 import { awayResult, type ChatStep, chatResult } from './chat/step.ts';
 import type { TurnEnd } from './chat/types';
 import { entityReply, entityTitle, type Reply, type ReplyKey, reply } from './replies.ts';
+import type { TrackList } from './track-lists';
 import type { Address, Entity, Intent, Outcome, VoiceCommand, VoiceLanguage } from './types';
 import {
   type PlayerShot,
@@ -23,6 +24,7 @@ export interface PlayerPort {
   playLikes(): Promise<boolean>;
   playWave(): Promise<boolean>;
   playSimilar(): Promise<boolean>;
+  playList(list: TrackList, at: number): Promise<boolean>;
   pause(): void;
   resume(): void;
   next(): void;

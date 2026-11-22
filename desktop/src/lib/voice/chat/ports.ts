@@ -1,3 +1,4 @@
+import type { Listed, TrackList } from '../track-lists';
 import type { Entity, EntityKind } from '../types';
 import type { Brief } from './context';
 import type { Forgot, Kept } from './notes';
@@ -12,6 +13,7 @@ export interface AppPort {
   setSpeed(rate: number): number;
   showLyrics(open: boolean): void;
   upNext(limit: number): Brief[];
+  listTracks(list: TrackList, from: number, count: number): Promise<Listed[]>;
   clearQueue(): void;
   pickPlaylist(): boolean;
   settings(): Record<SettingKey, SettingValue>;

@@ -1,4 +1,5 @@
 import { trackedInvoke as invoke } from '../diagnostics';
+import type { OwnedTrack } from './library';
 import type { Devices, EngineConfig, Model, Outcome, StartSource, Status } from './types';
 
 export const voiceIpc = {
@@ -17,4 +18,5 @@ export const voiceIpc = {
   modelGet: (id: string) => invoke<void>('voice_model_get', { id }),
   modelDelete: (id: string) => invoke<void>('voice_model_delete', { id }),
   preview: (voiceId: string) => invoke<void>('voice_preview', { voiceId }),
+  library: (tracks: OwnedTrack[]) => invoke<void>('voice_library', { tracks }),
 };

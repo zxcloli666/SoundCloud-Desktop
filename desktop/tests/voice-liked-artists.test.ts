@@ -39,9 +39,11 @@ test('the list stops at two hundred names', () => {
   assert.equal(artists[199], 'followed 49');
 });
 
-test('a liked track and a follow change the list, a liked playlist and a repost do not', () => {
+test('a like, a superlike and a follow change the list, a liked playlist and a repost do not', () => {
   assert.equal(changesLikedArtists('/likes/tracks/soundcloud%3Atracks%3A1'), true);
+  assert.equal(changesLikedArtists('/superlikes/soundcloud%3Atracks%3A1'), true);
   assert.equal(changesLikedArtists('/me/followings/soundcloud%3Ausers%3A2'), true);
+  assert.equal(changesLikedArtists('/superlikes/order'), false);
   assert.equal(changesLikedArtists('/likes/playlists/soundcloud%3Aplaylists%3A3'), false);
   assert.equal(changesLikedArtists('/reposts/tracks/soundcloud%3Atracks%3A1'), false);
 });

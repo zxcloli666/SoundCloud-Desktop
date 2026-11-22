@@ -188,6 +188,8 @@
         "lyrics": "Текст песни",
         "queue_list": "Очередь",
         "queue_clear": "Очистить очередь",
+        "list_tracks": "Списки",
+        "play_list": "Включить из списка",
         "add_to_playlist": "В плейлист",
         "remember": "Запомнить",
         "forget": "Забыть"

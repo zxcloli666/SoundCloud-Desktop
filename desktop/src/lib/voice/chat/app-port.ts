@@ -4,6 +4,7 @@ import { type Track, usePlayerStore } from '../../../stores/player';
 import { useSearchQueryStore } from '../../../stores/searchQuery';
 import { isLocalUrn } from '../../local-library';
 import { getAlbumTarget, getArtistTarget, getTrackDisplay } from '../../track-display';
+import { listTracks } from '../lists';
 import { useVoiceStore } from '../store';
 import { applySetting, readSettings } from './app-settings';
 import type { Brief } from './context';
@@ -80,6 +81,7 @@ export const appPort: AppPort = {
   setSpeed,
   showLyrics,
   upNext,
+  listTracks,
   clearQueue: () => usePlayerStore.getState().clearQueue(),
   pickPlaylist,
   settings: readSettings,

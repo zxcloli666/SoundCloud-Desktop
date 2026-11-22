@@ -108,6 +108,15 @@ export function fakePort(initial: Partial<PlayerShot> = {}): FakePort {
       calls.push('similar');
       return true;
     },
+    playList: async (list, at) => {
+      calls.push(`list:${list}:${at}`);
+      if (list === 'queue' && state.queueIndex + at >= state.queue.length) return false;
+      if (list === 'queue') state.queueIndex += at;
+      else state.queue = [track(300 + at), track(301 + at)];
+      if (list !== 'queue') state.queueIndex = 0;
+      state.track = state.queue[state.queueIndex];
+      return true;
+    },
     pause: () => {
       calls.push('pause');
       state.playing = false;

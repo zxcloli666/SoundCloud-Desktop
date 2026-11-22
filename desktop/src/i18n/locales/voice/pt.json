@@ -184,6 +184,8 @@
         "lyrics": "Letra",
         "queue_list": "Fila",
         "queue_clear": "Limpar fila",
+        "list_tracks": "Listas",
+        "play_list": "Tocar da lista",
         "add_to_playlist": "Adicionar à playlist",
         "remember": "Memorizar",
         "forget": "Esquecer"

@@ -179,6 +179,8 @@
         "lyrics": "Lyrics",
         "queue_list": "Queue",
         "queue_clear": "Clear queue",
+        "list_tracks": "Lists",
+        "play_list": "Play from the list",
         "add_to_playlist": "Add to playlist",
         "remember": "Remember",
         "forget": "Forget"

@@ -10,6 +10,7 @@ import type {
   ToolEnv,
   ToolMark,
 } from '../src/lib/voice/chat/types';
+import type { Listed, TrackList } from '../src/lib/voice/track-lists';
 import type { Entity } from '../src/lib/voice/types';
 import { command } from './voice-fake-port.ts';
 
@@ -27,6 +28,7 @@ export interface FakeApp extends AppPort {
   values: Record<SettingKey, SettingValue>;
   found: Entity[];
   queue: Brief[];
+  lists: Partial<Record<TrackList, Listed[]>>;
 }
 
 export function fakeApp(): FakeApp {
@@ -35,6 +37,7 @@ export function fakeApp(): FakeApp {
     calls,
     notes: [],
     found: [],
+    lists: {},
     queue: [{ title: 'Track 2', artist: 'Скриптонит' }],
     values: {
       theme: 'dark',
@@ -72,6 +75,10 @@ export function fakeApp(): FakeApp {
       calls.push(`lyrics:${open}`);
     },
     upNext: (limit) => app.queue.slice(0, limit),
+    listTracks: async (list, from, count) => {
+      calls.push(`list:${list}:${from}:${count}`);
+      return (app.lists[list] ?? []).slice(from - 1, from - 1 + count);
+    },
     clearQueue: () => {
       calls.push('queue_clear');
       app.queue = [];

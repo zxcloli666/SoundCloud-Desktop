@@ -13,6 +13,7 @@ import {
   waveQueue,
 } from './entity-tracks';
 import type { PlayerPort } from './execute';
+import { playListed } from './lists';
 import type { PlayerShot, Scope } from './undo';
 
 const UNMUTE_FALLBACK = 60;
@@ -105,6 +106,7 @@ export const playerPort: PlayerPort = {
   },
   playWave: async () => start(await waveQueue()),
   playSimilar: async () => start(await similarQueue()),
+  playList: playListed,
   pause: () => usePlayerStore.getState().pause(),
   resume: () => usePlayerStore.getState().resume(),
   next: () => usePlayerStore.getState().next(),
