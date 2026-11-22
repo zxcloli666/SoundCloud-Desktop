@@ -10,6 +10,9 @@ import type { Screen, ScrollTo } from '../screen/shape';
 import { readScreen } from '../screen/snapshot';
 import { useVoiceStore } from '../store';
 import { applySetting, readSettings } from './app-settings';
+import { setEffect, setSleep } from './app-sound';
+import { dislike, superlike } from './app-taste';
+import { together } from './app-together';
 import type { Brief } from './context';
 import { chatIpc } from './ipc';
 import { currentPage, goTo } from './navigator';
@@ -116,4 +119,9 @@ export const appPort: AppPort = {
   applySetting,
   remember,
   forget,
+  setSleep,
+  setEffect,
+  dislike,
+  superlike,
+  together,
 };

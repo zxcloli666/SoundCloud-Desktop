@@ -25,6 +25,8 @@ export const TRACK: Entity = {
 
 export interface FakeApp extends AppPort {
   calls: string[];
+  superlikes: number;
+  room: string | null;
   notes: string[];
   values: Record<SettingKey, SettingValue>;
   found: Entity[];
@@ -38,6 +40,8 @@ export function fakeApp(): FakeApp {
   const calls: string[] = [];
   const app: FakeApp = {
     calls,
+    superlikes: 1,
+    room: null,
     notes: [],
     found: [],
     lists: {},
@@ -141,6 +145,36 @@ export function fakeApp(): FakeApp {
       const res = dropNote(app.notes, note);
       app.notes = res.notes;
       return res.state;
+    },
+    setSleep: (plan) => {
+      calls.push(`sleep:${typeof plan === 'string' ? plan : plan.minutes}`);
+    },
+    setEffect: (effect) => {
+      calls.push(`effect:${effect}`);
+    },
+    dislike: async (on) => {
+      calls.push(`dislike:${on}`);
+      return 'ok';
+    },
+    superlike: (on) => {
+      calls.push(`superlike:${on}`);
+      if (!on) return 'ok';
+      if (app.superlikes === 0) return 'quota_full';
+      app.superlikes -= 1;
+      return 'ok';
+    },
+    together: async (act, code, open) => {
+      calls.push(`together:${act}:${code}:${open}`);
+      if (act === 'leave' || act === 'invite') {
+        if (!app.room) return { state: 'no_room' };
+        const was = app.room;
+        if (act === 'leave') app.room = null;
+        return { state: 'ok', code: act === 'leave' ? null : was };
+      }
+      if (app.room) return { state: 'in_room' };
+      if (act === 'join' && code.length !== 6) return { state: 'bad_code' };
+      app.room = act === 'join' ? code : 'K7M2QP';
+      return { state: 'ok', code: app.room };
     },
   };
   return app;

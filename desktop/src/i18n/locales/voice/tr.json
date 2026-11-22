@@ -189,7 +189,12 @@
         "type_text": "Yaz",
         "scroll": "Kaydır",
         "play_screen": "Ekrandan çal",
-        "open_item": "Aç"
+        "open_item": "Aç",
+        "sleep_timer": "Uyku zamanlayıcı",
+        "effect": "Efekt",
+        "dislike": "Beğenmedim",
+        "superlike": "Süper beğeni",
+        "together": "Birlikte"
       }
     },
     "you": {

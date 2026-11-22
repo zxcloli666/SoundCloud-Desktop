@@ -304,6 +304,45 @@ test('the real tool list and a full context fit the request limits', () => {
   assert.equal(idle.weekday, 'Sunday');
 });
 
+test('the context shows the sleep timer, the effect, the room and a rated track only when set', () => {
+  const base = {
+    track: { title: 'Положение', artist: 'Скриптонит' },
+    liked: true,
+    position: 10,
+    duration: 200,
+    playing: true,
+    volume: 80,
+    shuffle: false,
+    repeat: 'off' as const,
+    next: [],
+    candidates: [],
+    page: 'home',
+    screen: null,
+    now: new Date(2026, 10, 11, 8, 5),
+    appLanguage: 'ru',
+  };
+  const plain = buildContext({
+    ...base,
+    extras: { disliked: false, superliked: false, sleep: null, effect: null, room: null },
+  });
+  for (const key of ['sleep_timer', 'effect', 'together']) assert.ok(!(key in plain), key);
+  assert.ok(!('superliked' in (plain.now_playing as object)));
+  const set = buildContext({
+    ...base,
+    extras: {
+      disliked: false,
+      superliked: true,
+      sleep: { minutes_left: 12 },
+      effect: 'slowed_reverb',
+      room: { role: 'host', code: 'K7M2QP', listeners: 2 },
+    },
+  });
+  assert.equal((set.now_playing as { superliked?: boolean }).superliked, true);
+  assert.deepEqual(set.sleep_timer, { minutes_left: 12 });
+  assert.equal(set.effect, 'slowed_reverb');
+  assert.deepEqual(set.together, { role: 'host', code: 'K7M2QP', listeners: 2 });
+});
+
 test('a command with candidates sends them in the context, best first, five at most', async () => {
   const candidates = [1, 2, 3, 4, 5, 6, 7].map((n) => ({
     ...TRACK,

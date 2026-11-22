@@ -198,7 +198,12 @@
         "type_text": "Ввод текста",
         "scroll": "Прокрутка",
         "play_screen": "Включить с экрана",
-        "open_item": "Открыть"
+        "open_item": "Открыть",
+        "sleep_timer": "Таймер сна",
+        "effect": "Эффект",
+        "dislike": "Дизлайк",
+        "superlike": "Суперлайк",
+        "together": "Вместе"
       }
     },
     "you": {

@@ -184,7 +184,20 @@
         "queue_clear": "Vaciar cola",
         "add_to_playlist": "Añadir a la playlist",
         "remember": "Recordar",
-        "forget": "Olvidar"
+        "forget": "Olvidar",
+        "list_tracks": "Listas",
+        "play_list": "Reproducir de la lista",
+        "screen": "Pantalla",
+        "press": "Pulsar",
+        "type_text": "Escribir",
+        "scroll": "Desplazar",
+        "play_screen": "Reproducir de la pantalla",
+        "open_item": "Abrir",
+        "sleep_timer": "Temporizador",
+        "effect": "Efecto",
+        "dislike": "No me gusta",
+        "superlike": "Superlike",
+        "together": "Juntos"
       }
     },
     "you": {

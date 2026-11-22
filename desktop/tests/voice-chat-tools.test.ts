@@ -58,14 +58,15 @@ test('only the tools the model must hear back from ask for another round', () =>
       'queue_list',
       'screen',
       'scroll',
+      'together',
     ],
   );
 });
 
-test('every tool has a chip label in all five interface languages and none is left over', () => {
+test('every tool has a chip label in every interface language and none is left over', () => {
   const { tools } = setup();
   const names = tools.map((t) => t.name).sort();
-  for (const lang of ['en', 'ru', 'tr', 'ko', 'pt']) {
+  for (const lang of ['en', 'ru', 'es', 'fr', 'tr', 'ko', 'pt']) {
     const file = new URL(`../src/i18n/locales/voice/${lang}.json`, import.meta.url);
     const labels: Record<string, string> = JSON.parse(readFileSync(file, 'utf8')).voice.chat.tools;
     assert.deepEqual(Object.keys(labels).sort(), names, lang);
@@ -362,6 +363,77 @@ test('speed, lyrics, queue and the playlist picker call the app', async () => {
   await run('queue_clear');
   await run('add_to_playlist');
   assert.deepEqual(app.calls, ['speed:2', 'lyrics:true', 'queue_clear', 'pick_playlist']);
+});
+
+test('the sleep timer pauses later, at the track end or turns off', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('sleep_timer', { when: 'minutes', minutes: 30 })).result, {
+    ok: true,
+    minutes: 30,
+  });
+  await run('sleep_timer', { when: 'track_end' });
+  await run('sleep_timer', { when: 'off' });
+  const wrong = await run('sleep_timer', { when: 'minutes', minutes: 0 });
+  assert.equal(wrong.result.reason, 'bad_minutes');
+  assert.equal(wrong.returns, true);
+  assert.deepEqual(app.calls, ['sleep:30', 'sleep:track_end', 'sleep:off']);
+});
+
+test('the sleep timer needs something playing, but turning it off never does', async () => {
+  const { app, run } = setup(fakePort({ track: null, queue: [] }));
+  assert.equal(
+    (await run('sleep_timer', { when: 'minutes', minutes: 15 })).result.reason,
+    'nothing_playing',
+  );
+  assert.equal((await run('sleep_timer', { when: 'off' })).result.ok, true);
+  assert.deepEqual(app.calls, ['sleep:off']);
+});
+
+test('effects switch by name and an unknown effect is refused before the app', async () => {
+  const { app, run } = setup();
+  await run('effect', { name: 'slowed_reverb' });
+  await run('effect', { name: 'off' });
+  assert.equal((await run('effect', { name: 'vaporwave' })).result.reason, 'bad_args:name');
+  assert.deepEqual(app.calls, ['effect:slowed_reverb', 'effect:off']);
+});
+
+test('dislike and superlike rate the current track and a full quota goes back to the model', async () => {
+  const { app, run } = setup();
+  assert.equal((await run('dislike', { on: true })).returns, false);
+  assert.equal((await run('superlike', { on: true })).result.ok, true);
+  const full = await run('superlike', { on: true });
+  assert.deepEqual(full.result, { ok: false, reason: 'quota_full' });
+  assert.equal(full.returns, true);
+  await run('superlike', { on: false });
+  assert.deepEqual(app.calls, [
+    'dislike:true',
+    'superlike:true',
+    'superlike:true',
+    'superlike:false',
+  ]);
+});
+
+test('together opens a room with a copied invite, refuses a second one and leaves', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('together', { act: 'invite' })).result, {
+    ok: false,
+    reason: 'no_room',
+  });
+  assert.deepEqual((await run('together', { act: 'start' })).result, {
+    ok: true,
+    code: 'K7M2QP',
+    invite_copied: true,
+  });
+  assert.equal((await run('together', { act: 'join', code: 'ABC234' })).result.reason, 'in_room');
+  assert.deepEqual((await run('together', { act: 'leave' })).result, { ok: true, code: null });
+  assert.equal((await run('together', { act: 'join', code: 'AB' })).result.reason, 'bad_code');
+  assert.deepEqual(app.calls, [
+    'together:invite::false',
+    'together:start::false',
+    'together:join:ABC234:false',
+    'together:leave::false',
+    'together:join:AB:false',
+  ]);
 });
 
 function superlikes(count: number) {

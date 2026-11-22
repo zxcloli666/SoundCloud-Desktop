@@ -194,7 +194,12 @@
         "type_text": "Digitar",
         "scroll": "Rolar",
         "play_screen": "Tocar da tela",
-        "open_item": "Abrir"
+        "open_item": "Abrir",
+        "sleep_timer": "Timer de sono",
+        "effect": "Efeito",
+        "dislike": "Não curti",
+        "superlike": "Superlike",
+        "together": "Juntos"
       }
     },
     "you": {

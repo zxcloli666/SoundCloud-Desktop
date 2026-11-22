@@ -186,7 +186,12 @@
         "type_text": "입력",
         "scroll": "스크롤",
         "play_screen": "화면에서 재생",
-        "open_item": "열기"
+        "open_item": "열기",
+        "sleep_timer": "수면 타이머",
+        "effect": "효과",
+        "dislike": "싫어요",
+        "superlike": "슈퍼라이크",
+        "together": "함께 듣기"
       }
     },
     "you": {

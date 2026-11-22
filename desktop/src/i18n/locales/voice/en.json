@@ -189,7 +189,12 @@
         "type_text": "Type",
         "scroll": "Scroll",
         "play_screen": "Play from the screen",
-        "open_item": "Open"
+        "open_item": "Open",
+        "sleep_timer": "Sleep timer",
+        "effect": "Effect",
+        "dislike": "Dislike",
+        "superlike": "Superlike",
+        "together": "Together"
       }
     },
     "you": {

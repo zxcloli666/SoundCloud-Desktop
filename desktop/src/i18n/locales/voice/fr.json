@@ -184,7 +184,20 @@
         "queue_clear": "Vider la file d'attente",
         "add_to_playlist": "Ajouter à une playlist",
         "remember": "Retenir",
-        "forget": "Oublier"
+        "forget": "Oublier",
+        "list_tracks": "Listes",
+        "play_list": "Lire depuis la liste",
+        "screen": "Écran",
+        "press": "Appuyer",
+        "type_text": "Saisir",
+        "scroll": "Défiler",
+        "play_screen": "Lire depuis l'écran",
+        "open_item": "Ouvrir",
+        "sleep_timer": "Minuterie",
+        "effect": "Effet",
+        "dislike": "Je n'aime pas",
+        "superlike": "Superlike",
+        "together": "Ensemble"
       }
     },
     "you": {

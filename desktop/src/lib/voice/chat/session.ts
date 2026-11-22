@@ -8,6 +8,9 @@ import { type HudView, useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
 import type { Entity, HeardEvent, VoiceCommand, VoiceSource } from '../types';
 import { appPort, briefOf, screenNow } from './app-port';
+import { effectNow, sleepNow } from './app-sound';
+import { tasteNow } from './app-taste';
+import { roomNow } from './app-together';
 import { buildBody } from './body';
 import { buildContext, candidatesOf, QUEUE_TAIL } from './context';
 import { dialogMessages, withExchange } from './dialog';
@@ -73,6 +76,12 @@ function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unkn
     screen: screenNow(),
     now: new Date(),
     appLanguage: useSettingsStore.getState().language,
+    extras: {
+      ...tasteNow(shot.track?.urn),
+      sleep: sleepNow(Date.now()),
+      effect: effectNow(),
+      room: roomNow(),
+    },
   });
 }
 
