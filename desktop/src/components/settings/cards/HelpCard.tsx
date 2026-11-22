@@ -1,9 +1,9 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { useTranslation } from 'react-i18next';
-import { DISCORD_URL } from '../../../lib/constants';
+import { DISCORD_URL, TELEGRAM_URL } from '../../../lib/constants';
 import { trackedInvoke } from '../../../lib/diagnostics';
 import { helpUrl } from '../../../lib/help-url';
-import { Activity, BookOpen, FolderOpen, LifeBuoy, MessageCircle } from '../../../lib/icons';
+import { Activity, BookOpen, FolderOpen, LifeBuoy, MessageCircle, Send } from '../../../lib/icons';
 import { useNetCheckStore } from '../../../lib/net/check';
 import { notifyError } from '../../../lib/notify';
 import { ReportButton } from '../../ui/ReportButton';
@@ -55,6 +55,14 @@ export function HelpCard() {
           icon={<MessageCircle size={12} />}
           label={t('settings.helpDiscordOpen')}
           onClick={() => openUrl(DISCORD_URL)}
+        />
+      </Row>
+      <Divider />
+      <Row title={t('settings.helpTelegram')} desc={t('settings.helpTelegramDesc')}>
+        <ActionButton
+          icon={<Send size={12} />}
+          label={t('settings.helpTelegramOpen')}
+          onClick={() => openUrl(TELEGRAM_URL)}
         />
       </Row>
     </Card>

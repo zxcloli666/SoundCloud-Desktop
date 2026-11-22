@@ -182,6 +182,14 @@
     "salon des développeurs",
     "rejoindre discord"
   ],
+  "settings.helpTelegram": [
+    "chaîne telegram",
+    "actus de l'appli",
+    "annonces",
+    "chaîne de l'auteur",
+    "suivre les nouveautés",
+    "telegram"
+  ],
   "settings.android": [
     "android",
     "iphone",

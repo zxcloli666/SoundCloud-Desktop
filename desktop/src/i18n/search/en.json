@@ -198,6 +198,16 @@
     "developers channel",
     "join discord"
   ],
+  "settings.helpTelegram": [
+    "telegram",
+    "telegram channel",
+    "app news",
+    "announcements",
+    "author's channel",
+    "dev updates",
+    "follow updates",
+    "tg channel"
+  ],
   "settings.android": [
     "android",
     "iphone",
