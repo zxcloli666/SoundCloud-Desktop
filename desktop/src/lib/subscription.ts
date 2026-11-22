@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { offlineModeOn, useAppStatusStore } from '../stores/app-status';
+import { useAppStatusStore } from '../stores/app-status';
 import { useAuthStore } from '../stores/auth';
 import { api, getSessionId } from './api';
 import { noteAuthGap } from './auth-recovery';
@@ -119,7 +119,7 @@ let bootstrapDone = false;
 
 export async function bootstrapPremium(): Promise<void> {
   const token = getSessionId();
-  if (!token || bootstrapDone || offlineModeOn()) return;
+  if (!token || bootstrapDone) return;
   bootstrapDone = true;
 
   const [main, star] = await Promise.all([

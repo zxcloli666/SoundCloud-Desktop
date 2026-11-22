@@ -23,7 +23,6 @@ use self::fallback::Fallback;
 pub use self::wire::{garbage, tunnelled};
 use crate::network::edge;
 use crate::network::fail::{Fail, FailKind};
-use crate::network::offline::{self, Offline};
 
 const SYSTEM_BUDGET: Duration = Duration::from_secs(2);
 const OUR_ZONES: [&str; 2] = ["scnative.dev", "getsoundcloud.app"];
@@ -114,7 +113,7 @@ fn shared() -> &'static Fallback {
     SHARED.get_or_init(|| {
         Fallback::new(Config {
             system: Arc::new(|host| system_lookup(host).boxed()),
-            doh: Arc::new(|host| doh_lookup(host).boxed()),
+            doh: Arc::new(|host| async move { doh::query(&host).await }.boxed()),
             system_budget: SYSTEM_BUDGET,
             known: edge::is_known_host,
             zone: edge::zone_hosts,
@@ -123,9 +122,6 @@ fn shared() -> &'static Fallback {
 }
 
 async fn system_lookup(host: String) -> Result<Vec<IpAddr>, Fail> {
-    if offline::on() && scope(&host) != Scope::Local {
-        return Err(offline_fail());
-    }
     match tokio::net::lookup_host((host.as_str(), 0)).await {
         Ok(addrs) => Ok(addrs.map(|addr| addr.ip()).collect()),
         Err(error) if not_found(&error) => Ok(Vec::new()),
@@ -133,21 +129,6 @@ async fn system_lookup(host: String) -> Result<Vec<IpAddr>, Fail> {
             detail: Some(error.to_string()),
             ..Fail::of(FailKind::Dns)
         }),
-    }
-}
-
-async fn doh_lookup(host: String) -> Result<DohAnswer, Fail> {
-    if offline::on() {
-        return Err(offline_fail());
-    }
-    doh::query(&host).await
-}
-
-fn offline_fail() -> Fail {
-    offline::note_refused();
-    Fail {
-        detail: Some(Offline.to_string()),
-        ..Fail::of(FailKind::Dns)
     }
 }
 

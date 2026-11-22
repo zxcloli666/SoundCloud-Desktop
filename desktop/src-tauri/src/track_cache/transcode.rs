@@ -50,7 +50,6 @@ pub async fn acquire_ffmpeg(install_dir: &Path) -> Option<PathBuf> {
     if ffmpeg_runs(&system).await {
         return Some(system);
     }
-    crate::network::offline::online().await;
     download_ffmpeg(install_dir).await
 }
 

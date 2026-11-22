@@ -923,8 +923,6 @@
     "netNoInternet": "인터넷 없음",
     "netServerDown": "서버 연결 불가",
     "tryOnline": "다시 온라인 연결 시도",
-    "goOffline": "오프라인 전환",
-    "goOnline": "온라인 전환",
     "failedCount": "{{count}}개 실패",
     "forgeTitle": "대장간",
     "forgeSub": "컨베이어 A → B",
@@ -1546,9 +1544,7 @@
     "videoNoCodec": "H.264 없음",
     "videoCacheSize": "비디오",
     "videoCacheLimit": "비디오 캐시 한도",
-    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요",
-    "offlineMode": "오프라인 모드",
-    "offlineModeDesc": "앱이 인터넷을 쓰지 않습니다. 다운로드한 곡과 내 파일은 계속 재생되고, 스크로블과 채팅은 대기합니다."
+    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요"
   },
   "effects": {
     "title": "효과",

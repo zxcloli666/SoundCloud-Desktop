@@ -69,7 +69,7 @@ pub fn start(data_dir: PathBuf, app: crate::rt::AppHandle, runtime: Handle) {
 }
 
 fn builder(app_version: &str) -> wreq::ClientBuilder {
-    crate::network::offline::gate(crate::network::dns::install(wreq::Client::builder()))
+    crate::network::dns::install(wreq::Client::builder())
         .no_proxy()
         .user_agent(format!("soundcloud-desktop-health/{app_version}"))
         .connect_timeout(Duration::from_secs(3))
@@ -93,7 +93,6 @@ impl Agent {
         let mut last_lost = Vec::new();
         let mut end_to_end = EndToEnd::new();
         loop {
-            crate::network::offline::online().await;
             let started = Instant::now();
             round = round.wrapping_add(1);
             let pool = Pool {

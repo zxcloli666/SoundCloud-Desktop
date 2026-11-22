@@ -12,7 +12,6 @@ use super::engine::Uploads;
 use super::errors::{Outcome, Snag, backoff, outcome};
 use super::post::finish_renewals;
 use super::schedule::{Queue, Rows, queued};
-use crate::network::offline;
 
 const IDLE_RECHECK: Duration = Duration::from_secs(30);
 const STAGE_PAUSE: Duration = Duration::from_secs(20);
@@ -26,7 +25,6 @@ impl Uploads {
         let mut rows = Rows::default();
         let mut failures = 0u32;
         loop {
-            offline::online().await;
             let Some(store) = self.live_store() else {
                 self.rest(IDLE_RECHECK, &mut rows).await;
                 continue;

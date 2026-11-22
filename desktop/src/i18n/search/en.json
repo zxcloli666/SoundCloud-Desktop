@@ -612,16 +612,6 @@
     "select speakers",
     "output device"
   ],
-  "settings.offlineMode": [
-    "work without internet",
-    "airplane mode",
-    "no network at all",
-    "stop all traffic",
-    "block internet access",
-    "don't connect to the server",
-    "save mobile data",
-    "offline"
-  ],
   "netCheck.title": [
     "no internet",
     "cannot connect",
@@ -999,6 +989,7 @@
     "save likes to disk",
     "music without internet",
     "listen offline",
+    "offline mode",
     "disk full"
   ],
   "settings.audioCacheSize": [

@@ -946,8 +946,6 @@
     "netNoInternet": "нет интернета",
     "netServerDown": "сервер недоступен",
     "tryOnline": "Попробовать онлайн",
-    "goOffline": "Уйти в офлайн",
-    "goOnline": "Вернуться в сеть",
     "failedCount_one": "{{count}} ошибка",
     "failedCount_few": "{{count}} ошибки",
     "failedCount_many": "{{count}} ошибок",
@@ -1600,9 +1598,7 @@
     "videoNoCodec": "Нет H.264",
     "videoCacheSize": "Видео",
     "videoCacheLimit": "Лимит кэша видео",
-    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели",
-    "offlineMode": "Офлайн-режим",
-    "offlineModeDesc": "Приложение не выходит в интернет. Скачанное и ваши файлы играют, скробблы и чаты ждут сети."
+    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели"
   },
   "effects": {
     "title": "Эффекты",

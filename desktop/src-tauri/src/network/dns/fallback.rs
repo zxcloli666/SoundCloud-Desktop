@@ -12,7 +12,6 @@ use super::cache::Cache;
 use super::{Config, DnsError, Scope, normalize, runtime, scope, wire};
 use crate::app::diagnostics;
 use crate::network::fail::{Fail, FailKind, Phase};
-use crate::network::offline::{self, Offline};
 
 const GARBAGE_DISTRUST: Duration = Duration::from_secs(600);
 const SYSTEM_PATIENCE: Duration = Duration::from_secs(8);
@@ -77,10 +76,6 @@ impl Fallback {
             return (self.0.config.system)(host.clone())
                 .await
                 .map_err(|fail| dns_error(&host, FailKind::Dns, fail.to_string()));
-        }
-        if offline::on() {
-            offline::note_refused();
-            return Err(dns_error(&host, FailKind::Dns, Offline.to_string()));
         }
         if let Some(hit) = self.memory().cache.fresh(&host, Instant::now()) {
             return Ok(hit);

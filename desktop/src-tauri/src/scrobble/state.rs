@@ -11,7 +11,6 @@ use super::lastfm::{self, Credentials};
 use super::listenbrainz::{self, ListenType};
 use super::store::{self, Accounts, Profile, Queue, Scrobble};
 use crate::app::diagnostics::log_native;
-use crate::network::offline;
 use crate::rt::AppHandle;
 
 const EVENT: &str = "scrobble:changed";
@@ -149,10 +148,7 @@ impl ScrobbleState {
             tokio::time::sleep(FIRST_FLUSH_AFTER).await;
             loop {
                 worker.flush_all().await;
-                tokio::select! {
-                    _ = tokio::time::sleep(FLUSH_EVERY) => {}
-                    _ = offline::resumed() => {}
-                }
+                tokio::time::sleep(FLUSH_EVERY).await;
             }
         });
         state
@@ -338,9 +334,6 @@ impl ScrobbleState {
     }
 
     pub async fn flush_all(&self) {
-        if offline::on() {
-            return;
-        }
         let _flush = self.flushing.lock().await;
         for service in SERVICES {
             self.flush(service).await;
@@ -367,9 +360,6 @@ impl ScrobbleState {
     }
 
     pub async fn now_playing(&self, track: Scrobble) {
-        if offline::on() {
-            return;
-        }
         for service in SERVICES {
             let auth = self.data.lock().await.auth(service);
             let result = match auth {
