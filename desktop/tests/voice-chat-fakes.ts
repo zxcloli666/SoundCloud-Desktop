@@ -10,6 +10,7 @@ import type {
   ToolEnv,
   ToolMark,
 } from '../src/lib/voice/chat/types';
+import type { Screen } from '../src/lib/voice/screen/shape';
 import type { Listed, TrackList } from '../src/lib/voice/track-lists';
 import type { Entity } from '../src/lib/voice/types';
 import { command } from './voice-fake-port.ts';
@@ -29,6 +30,8 @@ export interface FakeApp extends AppPort {
   found: Entity[];
   queue: Brief[];
   lists: Partial<Record<TrackList, Listed[]>>;
+  view: Screen;
+  rows: number;
 }
 
 export function fakeApp(): FakeApp {
@@ -38,6 +41,17 @@ export function fakeApp(): FakeApp {
     notes: [],
     found: [],
     lists: {},
+    rows: 3,
+    view: {
+      page: 'search',
+      title: 'Поиск',
+      tracks: [{ n: 1, title: 'gothrussia', artist: 'Psychosis', id: 'soundcloud:tracks:2' }],
+      controls: [
+        { ref: 'c1', role: 'tab', label: 'Треки', current: true },
+        { ref: 'c2', role: 'field', label: 'Поиск', value: 'гот раша' },
+      ],
+      more_below: true,
+    },
     queue: [{ title: 'Track 2', artist: 'Скриптонит' }],
     values: {
       theme: 'dark',
@@ -78,6 +92,30 @@ export function fakeApp(): FakeApp {
     listTracks: async (list, from, count) => {
       calls.push(`list:${list}:${from}:${count}`);
       return (app.lists[list] ?? []).slice(from - 1, from - 1 + count);
+    },
+    screen: async () => {
+      calls.push('screen');
+      return app.view;
+    },
+    press: (ref) => {
+      calls.push(`press:${ref}`);
+      return app.view.controls.some((c) => c.ref === ref);
+    },
+    typeInto: (ref, text, submit) => {
+      calls.push(`type:${ref}:${text}:${submit}`);
+      return app.view.controls.some((c) => c.ref === ref && c.role === 'field');
+    },
+    scroll: async (to) => {
+      calls.push(`scroll:${to}`);
+      return { ...app.view, more_below: to !== 'bottom' };
+    },
+    playRow: (n) => {
+      calls.push(`row:${n}`);
+      return n >= 1 && n <= app.rows;
+    },
+    openItem: (kind, id) => {
+      calls.push(`item:${kind}:${id}`);
+      return id.length > 0;
     },
     clearQueue: () => {
       calls.push('queue_clear');

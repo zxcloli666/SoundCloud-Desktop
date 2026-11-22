@@ -50,7 +50,7 @@ export const CoverTile = memo(function CoverTile({
   const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
   const artistDisplay = useArtistDisplay(track);
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, getQueue, onPlay);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, getQueue, onPlay);
   const previewing = useIsPreviewActive(track.urn);
   const onContextMenu = useTrackContextMenu(track);
 
@@ -73,7 +73,7 @@ export const CoverTile = memo(function CoverTile({
   };
 
   return (
-    <div
+    <div {...mark}
       className={`tg-tile group relative${kind === 'vibe' ? ' tg-vibe' : ''}`}
       onContextMenu={(e) => {
         hardStopHoverPreview();

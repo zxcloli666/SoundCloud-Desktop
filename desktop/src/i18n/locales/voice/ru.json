@@ -192,7 +192,13 @@
         "play_list": "Включить из списка",
         "add_to_playlist": "В плейлист",
         "remember": "Запомнить",
-        "forget": "Забыть"
+        "forget": "Забыть",
+        "screen": "Экран",
+        "press": "Нажать",
+        "type_text": "Ввод текста",
+        "scroll": "Прокрутка",
+        "play_screen": "Включить с экрана",
+        "open_item": "Открыть"
       }
     },
     "you": {

@@ -71,6 +71,7 @@ function idleContext(candidates: Entity[]) {
     next: [],
     candidates,
     page: 'home',
+    screen: null,
     now: new Date(2026, 10, 15, 23, 59),
     appLanguage: 'en',
   });
@@ -212,7 +213,7 @@ test('notes and tools are capped', () => {
   assert.equal(body.tools.length, TOOLS_MAX);
 });
 
-test('an oversized context drops the candidates, then the queue, then the track', () => {
+test('an oversized context drops the candidates, the queue, the screen, then the track', () => {
   const big = 'x'.repeat(BLOCK_BYTES);
   const offered = buildBody(
     input({ context: { playing: true, queue_next: ['next'], candidates: [big] } }),
@@ -220,6 +221,8 @@ test('an oversized context drops the candidates, then the queue, then the track'
   assert.deepEqual(offered.context, { playing: true, queue_next: ['next'] });
   const queue = buildBody(input({ context: { playing: true, queue_next: [big] } }));
   assert.deepEqual(queue.context, { playing: true });
+  const screen = buildBody(input({ context: { playing: true, queue_next: [], screen: big } }));
+  assert.deepEqual(screen.context, { playing: true });
   const track = buildBody(
     input({ context: { playing: true, queue_next: [], now_playing: { title: big } } }),
   );
@@ -265,6 +268,7 @@ test('the real tool list and a full context fit the request limits', () => {
     next: Array.from({ length: 9 }, (_, i) => ({ title: `T${i}`, artist: 'A' })),
     candidates: [],
     page: 'likes',
+    screen: fakeApp().view,
     now: new Date(2026, 10, 11, 8, 5),
     appLanguage: 'ru',
   });
@@ -280,6 +284,7 @@ test('the real tool list and a full context fit the request limits', () => {
   assert.equal(context.weekday, 'Wednesday');
   assert.equal(context.page, 'likes');
   assert.equal(context.app_language, 'ru');
+  assert.deepEqual(context.screen, fakeApp().view);
   assert.ok(!('user' in context));
   assert.ok(bytesOf(context) < BLOCK_BYTES);
   const idle = idleContext([]);

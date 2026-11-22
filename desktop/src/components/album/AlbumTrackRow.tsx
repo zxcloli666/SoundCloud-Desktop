@@ -24,7 +24,7 @@ interface AlbumTrackRowProps {
 }
 
 function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps) {
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const pick = useRowPick(track);
   const columns = useTrackColumns();
@@ -35,7 +35,7 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
   const hoverB = usePerfMode().blur(16);
 
   return (
-    <div
+    <div {...mark}
       onContextMenu={onContextMenu}
       {...pick}
       className="@container group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"

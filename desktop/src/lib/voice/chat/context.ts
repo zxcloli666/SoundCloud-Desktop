@@ -1,3 +1,4 @@
+import type { Screen } from '../screen/shape';
 import type { Entity, VoiceCommand } from '../types';
 import type { RepeatMode } from '../undo';
 
@@ -22,6 +23,7 @@ export interface ContextInput {
   next: Brief[];
   candidates: Entity[];
   page: string;
+  screen: Screen | null;
   now: Date;
   appLanguage: string;
 }
@@ -71,5 +73,6 @@ export function buildContext(input: ContextInput): Record<string, unknown> {
     weekday: WEEKDAYS[input.now.getDay()],
     app_language: input.appLanguage,
     ...(candidates.length > 0 ? { candidates } : {}),
+    ...(input.screen ? { screen: input.screen } : {}),
   };
 }

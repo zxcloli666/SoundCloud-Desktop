@@ -11,7 +11,7 @@ import { TrackTitleArtist } from '../music/TrackTitleArtist';
 export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: { track: Track }) {
   const { t } = useTranslation();
   const disliked = useDisliked(track.urn);
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track);
   const cover = art(track.artwork_url, 't200x200');
 
   const toggleDislike = () => {
@@ -20,7 +20,7 @@ export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: 
   };
 
   return (
-    <div
+    <div {...mark}
       className={`group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
         isThis
           ? 'bg-accent/[0.06] ring-1 ring-accent/20'

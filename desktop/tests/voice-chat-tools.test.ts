@@ -49,7 +49,16 @@ test('only the tools the model must hear back from ask for another round', () =>
   const { tools } = setup();
   assert.deepEqual(
     tools.filter((t) => t.returns).map((t) => t.name),
-    ['play', 'queue_add', 'search', 'list_tracks', 'get_settings', 'queue_list'],
+    [
+      'play',
+      'queue_add',
+      'search',
+      'list_tracks',
+      'get_settings',
+      'queue_list',
+      'screen',
+      'scroll',
+    ],
   );
 });
 
@@ -404,6 +413,47 @@ test('play_list jumps inside the queue and says so when the number is past its e
   assert.deepEqual(past.result, { ok: false, reason: 'not_found' });
   assert.equal(past.returns, true);
   assert.equal(env.stack.length, 1);
+});
+
+test('screen tools press, type and open through the app and fail on what is not there', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('screen')).result, { ok: true, screen: app.view });
+  assert.deepEqual((await run('press', { ref: 'c1' })).result, { ok: true });
+  assert.deepEqual((await run('press', { ref: 'c9' })).result, {
+    ok: false,
+    reason: 'unknown_ref',
+  });
+  const typed = await run('type_text', { ref: 'c2', text: 'психосис', submit: true });
+  assert.deepEqual(typed.result, { ok: true });
+  assert.equal((await run('type_text', { ref: 'c1', text: 'x' })).result.ok, false);
+  const scrolled = await run('scroll', { to: 'bottom' });
+  assert.equal(scrolled.returns, true);
+  assert.deepEqual(scrolled.result, { ok: true, screen: { ...app.view, more_below: false } });
+  assert.equal((await run('scroll', { to: 'left' })).result.ok, false);
+  assert.deepEqual((await run('open_item', { kind: 'artist', id: 'a9' })).result, { ok: true });
+  assert.equal((await run('open_item', { kind: 'artist', id: '' })).result.ok, false);
+  assert.deepEqual(app.calls, [
+    'screen',
+    'press:c1',
+    'press:c9',
+    'type:c2:психосис:true',
+    'type:c1:x:false',
+    'scroll:bottom',
+    'item:artist:a9',
+  ]);
+});
+
+test('play_screen plays a track of the screen, can be undone, and says when it is not there', async () => {
+  const { app, env, run } = setup();
+  const played = await run('play_screen', { n: 2 });
+  assert.deepEqual(played.result, { ok: true, started: 'Track 1' });
+  assert.equal(played.mark.intent, 'play');
+  assert.equal(env.stack.length, 1);
+  assert.equal(env.undo, true);
+  const missing = await run('play_screen', { n: 7 });
+  assert.deepEqual(missing.result, { ok: false, reason: 'not_on_screen' });
+  assert.equal(missing.returns, true);
+  assert.deepEqual(app.calls, ['row:2', 'row:7']);
 });
 
 test('remember and forget keep notes through the app', async () => {

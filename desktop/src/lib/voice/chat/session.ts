@@ -7,7 +7,7 @@ import { marked } from '../readings';
 import { type HudView, useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
 import type { Entity, HeardEvent, VoiceCommand, VoiceSource } from '../types';
-import { appPort, briefOf } from './app-port';
+import { appPort, briefOf, screenNow } from './app-port';
 import { buildBody } from './body';
 import { buildContext, candidatesOf, QUEUE_TAIL } from './context';
 import { dialogMessages, withExchange } from './dialog';
@@ -60,6 +60,7 @@ function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unkn
     next: appPort.upNext(QUEUE_TAIL),
     candidates,
     page: pageName(currentPage()),
+    screen: screenNow(),
     now: new Date(),
     appLanguage: useSettingsStore.getState().language,
   });

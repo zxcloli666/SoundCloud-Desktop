@@ -9,6 +9,7 @@ import { catalogTools } from './catalog.ts';
 import { listTools } from './lists.ts';
 import { memoryTools } from './memory.ts';
 import { playerTools } from './player.ts';
+import { screenTools } from './screen.ts';
 
 export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): ChatTool[] {
   return [
@@ -16,6 +17,7 @@ export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): 
     ...catalogTools(player, app, offered),
     ...listTools(player, app),
     ...appTools(player, app),
+    ...screenTools(player, app),
     ...memoryTools(app),
   ];
 }

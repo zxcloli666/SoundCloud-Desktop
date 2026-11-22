@@ -16,7 +16,7 @@ export const TOOLS_MAX = 64;
 export const BLOCK_BYTES = 8 * 1024;
 export const NAME_MAX = 40;
 export const OWN_MAX = 300;
-const SHED_FIRST = ['candidates', 'queue_next', 'now_playing'];
+const SHED_FIRST = ['candidates', 'queue_next', 'screen', 'now_playing'];
 const BREAKS = /[\p{Cc}\p{Zl}\p{Zp}]/gu;
 
 export interface BodyInput {

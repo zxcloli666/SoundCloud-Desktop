@@ -183,7 +183,13 @@
         "play_list": "Play from the list",
         "add_to_playlist": "Add to playlist",
         "remember": "Remember",
-        "forget": "Forget"
+        "forget": "Forget",
+        "screen": "Screen",
+        "press": "Press",
+        "type_text": "Type",
+        "scroll": "Scroll",
+        "play_screen": "Play from the screen",
+        "open_item": "Open"
       }
     },
     "you": {

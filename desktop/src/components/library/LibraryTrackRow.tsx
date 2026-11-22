@@ -31,7 +31,7 @@ export const LibraryTrackRow = React.memo(
     grip?: React.ReactNode;
   }) {
     const { t } = useTranslation();
-    const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
+    const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const columns = useTrackColumns();
     const pick = useRowPick(track);
@@ -39,7 +39,7 @@ export const LibraryTrackRow = React.memo(
     const cover = art(track.artwork_url, 't200x200');
 
     return (
-      <div
+      <div {...mark}
         onContextMenu={onContextMenu}
         {...pick}
         className={`@container group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${

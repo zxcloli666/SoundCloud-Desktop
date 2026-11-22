@@ -5,16 +5,20 @@ import { useSearchQueryStore } from '../../../stores/searchQuery';
 import { isLocalUrn } from '../../local-library';
 import { getAlbumTarget, getArtistTarget, getTrackDisplay } from '../../track-display';
 import { listTracks } from '../lists';
+import { openItem, playRow, press, scrollPage, typeInto } from '../screen/actions';
+import type { Screen, ScrollTo } from '../screen/shape';
+import { readScreen } from '../screen/snapshot';
 import { useVoiceStore } from '../store';
 import { applySetting, readSettings } from './app-settings';
 import type { Brief } from './context';
 import { chatIpc } from './ipc';
-import { goTo } from './navigator';
+import { currentPage, goTo } from './navigator';
 import { addNote, dropNote, type Forgot, type Kept } from './notes';
-import { type CurrentLinks, type Page, pageTarget, type SettingsSection } from './pages';
+import { type CurrentLinks, type Page, pageName, pageTarget, type SettingsSection } from './pages';
 import type { AppPort, OpenResult } from './ports';
 
 const CURRENT: Page[] = ['current_track', 'current_artist', 'current_album'];
+const SETTLE_MS = 300;
 
 export function briefOf(track: Track): Brief {
   const display = getTrackDisplay(track);
@@ -61,6 +65,24 @@ function showLyrics(shown: boolean) {
   else useLyricsStore.getState().close();
 }
 
+export function screenNow(): Screen {
+  return readScreen(pageName(currentPage()));
+}
+
+function settled(): Promise<void> {
+  return new Promise((done) => setTimeout(() => requestAnimationFrame(() => done()), SETTLE_MS));
+}
+
+async function screenAfter(): Promise<Screen> {
+  await settled();
+  return screenNow();
+}
+
+async function scroll(to: ScrollTo): Promise<Screen | null> {
+  if (!scrollPage(to)) return null;
+  return screenAfter();
+}
+
 function remember(note: string): Kept {
   const store = useVoiceStore.getState();
   const res = addNote(store.notes, note);
@@ -83,6 +105,12 @@ export const appPort: AppPort = {
   upNext,
   listTracks,
   clearQueue: () => usePlayerStore.getState().clearQueue(),
+  screen: screenAfter,
+  press,
+  typeInto,
+  scroll,
+  playRow,
+  openItem,
   pickPlaylist,
   settings: readSettings,
   applySetting,

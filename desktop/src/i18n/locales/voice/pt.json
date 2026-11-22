@@ -188,7 +188,13 @@
         "play_list": "Tocar da lista",
         "add_to_playlist": "Adicionar à playlist",
         "remember": "Memorizar",
-        "forget": "Esquecer"
+        "forget": "Esquecer",
+        "screen": "Tela",
+        "press": "Pressionar",
+        "type_text": "Digitar",
+        "scroll": "Rolar",
+        "play_screen": "Tocar da tela",
+        "open_item": "Abrir"
       }
     },
     "you": {

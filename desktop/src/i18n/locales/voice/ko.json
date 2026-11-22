@@ -180,7 +180,13 @@
         "play_list": "목록에서 재생",
         "add_to_playlist": "플레이리스트에 추가",
         "remember": "기억하기",
-        "forget": "잊기"
+        "forget": "잊기",
+        "screen": "화면",
+        "press": "누르기",
+        "type_text": "입력",
+        "scroll": "스크롤",
+        "play_screen": "화면에서 재생",
+        "open_item": "열기"
       }
     },
     "you": {

@@ -183,7 +183,13 @@
         "play_list": "Listeden çal",
         "add_to_playlist": "Çalma listesine ekle",
         "remember": "Hatırla",
-        "forget": "Unut"
+        "forget": "Unut",
+        "screen": "Ekran",
+        "press": "Bas",
+        "type_text": "Yaz",
+        "scroll": "Kaydır",
+        "play_screen": "Ekrandan çal",
+        "open_item": "Aç"
       }
     },
     "you": {
