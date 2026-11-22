@@ -40,7 +40,7 @@ function playList(player: PlayerPort): ChatTool {
   return {
     name: 'play_list',
     description:
-      'Play the track with number n of a list and go on with the list after it: queue jumps to that upcoming track, likes and superlikes play on from it, history plays that track.',
+      'Play the track with number n of a list and go on with the list after it: queue jumps to that upcoming track, likes and superlikes play on from it, history plays that track. A number said with a list ("the ninth in superlikes") is n, no need to list it first.',
     args: {
       type: 'object',
       properties: {

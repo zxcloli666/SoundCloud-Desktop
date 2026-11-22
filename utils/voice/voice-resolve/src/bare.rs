@@ -33,13 +33,16 @@ impl Bare {
     pub(crate) fn trusts(self, parsed: &Parsed, decision: &Decision) -> bool {
         match (self, decision) {
             (Bare::Popular, _) => true,
-            (Bare::Certain, Decision::Act { pick }) => certain(parsed, &pick.entity),
+            (Bare::Certain, Decision::Act { pick }) => {
+                !pick.fallback && certain(parsed, &pick.entity)
+            }
             (Bare::Certain, _) => false,
         }
     }
 
     pub(crate) fn leaves(self, decision: &Decision) -> bool {
-        self == Bare::Certain && !matches!(decision, Decision::Act { .. })
+        let whole = matches!(decision, Decision::Act { pick } if !pick.fallback);
+        self == Bare::Certain && !whole
     }
 
     pub(crate) fn hands_after(self, unsure: &Decision, ranked: Vec<Scored>) -> Vec<Entity> {

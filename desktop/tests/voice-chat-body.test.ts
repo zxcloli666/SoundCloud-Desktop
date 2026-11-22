@@ -9,6 +9,7 @@ import {
   NAME_MAX,
   NOTES_MAX,
   OWN_MAX,
+  RESULTS_MAX,
   TEXT_MAX,
   TOOLS_MAX,
 } from '../src/lib/voice/chat/body.ts';
@@ -251,6 +252,17 @@ test('results stay under the limit: the newest are kept, a huge one is replaced'
   assert.deepEqual(buildBody(input({ results: [huge] })).results, [
     { name: 'search', args: {}, result: { ok: false, reason: 'too_large' } },
   ]);
+});
+
+test('results keep only the newest ones the server takes', () => {
+  const many = Array.from({ length: RESULTS_MAX + 4 }, (_, n) => ({
+    name: 'next',
+    args: { n },
+    result: { ok: true },
+  }));
+  const kept = buildBody(input({ results: many })).results;
+  assert.equal(kept.length, RESULTS_MAX);
+  assert.deepEqual(kept[0].args, { n: 4 });
 });
 
 test('the real tool list and a full context fit the request limits', () => {

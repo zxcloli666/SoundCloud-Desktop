@@ -136,7 +136,6 @@ export async function chatStep(
   ctx: ExecuteContext,
 ): Promise<ChatStep> {
   const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
-  if (cmd.talk) early.drop(cmd.id);
   const offered = toolsOf(cmd, port, appPort);
   const quiet = voiced(cmd.source);
   const { tools, body } = bodyOf(cmd.heard, port, offered, candidatesOf(cmd), ctx.now, quiet);

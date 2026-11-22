@@ -501,12 +501,13 @@ test('undo reverts the last voice action and reports when there is none', async 
   assert.equal(env.stack.length, 0);
 });
 
-test('a phrase heard as talk is offered no tools, any other phrase is offered all of them', () => {
+test('every phrase is offered all the tools and the assistant decides what to do', () => {
   const all = chatTools(fakePort(), fakeApp(), []).map((t) => t.name);
-  const offered = (talk: boolean) => toolsOf(command('none', { talk }), fakePort(), fakeApp());
-  assert.deepEqual(offered(true), []);
-  assert.deepEqual(
-    offered(false).map((t) => t.name),
-    all,
-  );
+  for (const heard of ['не лайкай', 'включи психосис гот раша', 'привет']) {
+    const offered = toolsOf(command('none', { heard }), fakePort(), fakeApp());
+    assert.deepEqual(
+      offered.map((t) => t.name),
+      all,
+    );
+  }
 });

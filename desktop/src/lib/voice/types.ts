@@ -156,7 +156,6 @@ export interface VoiceCommand {
   kind_hint: EntityKind | null;
   number: number | null;
   decision: Decision | null;
-  talk?: boolean;
   chatless?: boolean;
   candidates?: Entity[];
   group?: string;

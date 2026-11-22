@@ -23,7 +23,7 @@ export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): 
 }
 
 export function toolsOf(cmd: VoiceCommand, player: PlayerPort, app: AppPort): ChatTool[] {
-  return cmd.talk ? [] : chatTools(player, app, candidatesOf(cmd));
+  return chatTools(player, app, candidatesOf(cmd));
 }
 
 function missed(name: string, reason: string, returns: boolean): Ran {
