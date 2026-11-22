@@ -1,0 +1,48 @@
+.deck-scene {
+  position: absolute;
+  inset: -28px -20px 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(
+    ellipse 62% 78% at 36% 40%,
+    rgb(var(--ink)) 8%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(ellipse 62% 78% at 36% 40%, rgb(var(--ink)) 8%, transparent 100%);
+}
+
+.deck-scene-wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 52% 62% at 32% 38%,
+      color-mix(in srgb, var(--scene-a, var(--color-accent)) 36%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 46% 56% at 58% 58%,
+      color-mix(in srgb, var(--scene-b, var(--color-accent)) 24%, transparent),
+      transparent 72%
+    );
+}
+
+[data-ui="deck-scene"][data-live="true"] .deck-scene-wash {
+  opacity: 0.5;
+}
+
+[data-ui="app"][data-wall] [data-ui="soundwave"],
+[data-ui="app"][data-wall] [data-ui="home-shelf"] {
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid var(--shell-line);
+  border-radius: 24px;
+  background: color-mix(in srgb, var(--shell) 62%, transparent);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+}
+
+[data-ui="app"][data-wall] .deck-scene {
+  inset: 0;
+}

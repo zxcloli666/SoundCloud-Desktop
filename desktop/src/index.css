@@ -2,6 +2,7 @@
 
 @import "./scheme.css";
 @import "./shell.css";
+@import "./home.css";
 
 @theme {
   --color-bg-primary: rgb(var(--paper) / 0.95);
