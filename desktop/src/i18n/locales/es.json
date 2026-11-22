@@ -3143,11 +3143,5 @@
     "ahead_one": "{{count}} delante",
     "ahead_other": "{{count}} delante",
     "saved": "Guardado"
-  },
-  "syncNow": {
-    "label": "Sincronizar",
-    "hint": "Volver a leer tus me gusta y listas de SoundCloud",
-    "next": "Próxima sincronización a las {{time}}",
-    "failed": "No se pudo iniciar, inténtalo más tarde"
   }
 }
