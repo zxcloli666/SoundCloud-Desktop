@@ -1,69 +1,13 @@
-import { type ReactNode, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AudioLines,
-  Bookmark,
-  ChartNoAxesColumn,
-  Clock,
-  Disc3,
-  Eye,
-  EyeOff,
-  HardDrive,
-  Heart,
-  LayoutDashboard,
-  ListMusic,
-  Lock,
-  RotateCcw,
-  Sparkles,
-  ThumbsDown,
-  Users,
-} from '../../../lib/icons';
-import {
-  isDefaultLayout,
-  LAYOUT_IDS,
-  type LayoutId,
-  type LayoutScope,
-  LOCKED_VISIBLE,
-  moveEntry,
-} from '../../../lib/layout';
+import { Eye, EyeOff, LayoutDashboard, Lock, RotateCcw } from '../../../lib/icons';
+import { isDefaultLayout, type LayoutScope, LOCKED_VISIBLE, moveEntry } from '../../../lib/layout';
 import { useLayout } from '../../../lib/use-layout';
 import { useSettingsStore } from '../../../stores/settings';
-import { NAV_ITEMS } from '../../layout/nav-items';
-import { SuperHeart } from '../../music/superlike/SuperHeart';
 import { Card, Segmented } from '../primitives';
 import { PinnedEditor, RiverSections } from './LayoutExtras';
 import { LayoutList, RowIconButton } from './LayoutList';
-
-type ItemMeta = { icon: ReactNode; label: string };
-
-const LIBRARY_ITEMS: Record<LayoutId<'library'>, ItemMeta> = {
-  fresh: { icon: <Sparkles size={16} />, label: 'library.freshFromFollowing' },
-  continue: { icon: <Clock size={16} />, label: 'library.continue' },
-  stats: { icon: <ChartNoAxesColumn size={16} />, label: 'stats.teaserTitle' },
-  playlists: { icon: <ListMusic size={16} />, label: 'library.yourPlaylists' },
-  likedPlaylists: { icon: <Bookmark size={16} />, label: 'library.likedPlaylists' },
-  likedAlbums: { icon: <Disc3 size={16} />, label: 'library.likedAlbums' },
-  local: { icon: <HardDrive size={16} />, label: 'local.libraryTitle' },
-  artists: { icon: <Users size={16} />, label: 'library.artists' },
-  superlikes: { icon: <SuperHeart size={16} />, label: 'superlikes.title' },
-  likes: { icon: <Heart size={16} />, label: 'library.likedTracks' },
-  dislikes: { icon: <ThumbsDown size={16} />, label: 'dislikes.title' },
-};
-
-const HOME_ITEMS: Record<LayoutId<'home'>, ItemMeta> = {
-  river: { icon: <AudioLines size={16} />, label: 'settings.layoutRiver' },
-  releases: { icon: <Sparkles size={16} />, label: 'releases.title' },
-  superlikes: { icon: <SuperHeart size={16} />, label: 'superlikes.title' },
-  likes: { icon: <Heart size={16} />, label: 'library.likedTracks' },
-  recommended: { icon: <Sparkles size={16} />, label: 'home.recommended' },
-};
-
-function itemMeta(scope: LayoutScope, id: string): ItemMeta {
-  if (scope === 'library') return LIBRARY_ITEMS[id as LayoutId<'library'>];
-  if (scope === 'home') return HOME_ITEMS[id as LayoutId<'home'>];
-  const nav = NAV_ITEMS[id as LayoutId<'sidebar'>];
-  return { icon: <nav.icon size={16} strokeWidth={1.9} />, label: nav.label };
-}
+import { itemMeta } from './layout-items';
 
 const SCOPES: Array<{ id: LayoutScope; labelKey: string }> = [
   { id: 'sidebar', labelKey: 'settings.layoutSidebar' },
@@ -125,8 +69,7 @@ export function LayoutCard() {
   const layout = useLayout(scope);
   const riverHidden = useSettingsStore((s) => s.riverHidden);
   const resetLayout = useSettingsStore((s) => s.resetLayout);
-  const pristine =
-    isDefaultLayout(layout, LAYOUT_IDS[scope]) && (scope !== 'home' || riverHidden.length === 0);
+  const pristine = isDefaultLayout(layout, scope) && (scope !== 'home' || riverHidden.length === 0);
 
   return (
     <Card

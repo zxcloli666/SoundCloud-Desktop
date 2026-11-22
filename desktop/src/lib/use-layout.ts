@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { selectChatInNav, useChatStore } from '../stores/chat';
 import { useSettingsStore } from '../stores/settings';
 import {
+  DEFAULT_HIDDEN,
   gatedIds,
   LAYOUT_IDS,
   type LayoutId,
@@ -19,6 +20,7 @@ export function useLayout<S extends LayoutScope>(scope: S): ResolvedEntry<Layout
         saved,
         LAYOUT_IDS[scope] as readonly LayoutId<S>[],
         gatedIds(chatShown),
+        DEFAULT_HIDDEN[scope],
       ),
     [saved, scope, chatShown],
   );
