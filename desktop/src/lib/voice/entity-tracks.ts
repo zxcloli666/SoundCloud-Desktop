@@ -30,12 +30,12 @@ async function artistTracks(id: string): Promise<EntityQueue> {
   return { tracks: page.collection };
 }
 
-async function albumTracks(id: string): Promise<EntityQueue> {
+export async function albumTracks(id: string): Promise<EntityQueue> {
   const album = await api<AlbumDetail>(`/albums/${encodeURIComponent(id)}`, QUIET);
   return { tracks: album.tracks.filter((t) => t.enrichment?.availability !== 'wanted') };
 }
 
-async function playlistTracks(id: string): Promise<EntityQueue> {
+export async function playlistTracks(id: string): Promise<EntityQueue> {
   const urn = toUrn('playlists', id) ?? id;
   const page = await api<PagedResponse<Track>>(
     pagedUrl(`/playlists/${encodeURIComponent(urn)}/tracks`, 0, PLAYLIST_FIRST_PAGE),

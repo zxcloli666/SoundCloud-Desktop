@@ -4,13 +4,16 @@ import { tauriStorage } from '../lib/tauri-storage';
 
 export type SearchMode = 'catalog' | 'vibe' | 'soundcloud';
 export type SearchView = 'covers' | 'moments';
+export type SearchLayout = 'tiles' | 'list';
 
 interface SearchPrefsState {
   mode: SearchMode;
   view: SearchView;
+  layout: SearchLayout;
   fromUrn: string | null;
   setMode: (mode: SearchMode) => void;
   setView: (view: SearchView) => void;
+  setLayout: (layout: SearchLayout) => void;
   toggleView: () => void;
   noteFrom: (urn: string) => void;
   momentsFrom: (urn: string) => void;
@@ -29,9 +32,11 @@ export const useSearchPrefsStore = create<SearchPrefsState>()(
     (set) => ({
       mode: 'catalog',
       view: 'covers',
+      layout: 'tiles',
       fromUrn: null,
       setMode: (mode) => set({ mode }),
       setView: (view) => set({ view }),
+      setLayout: (layout) => set({ layout }),
       toggleView: () => set((s) => ({ view: s.view === 'covers' ? 'moments' : 'covers' })),
       noteFrom: (urn) => set({ fromUrn: urn }),
       momentsFrom: (urn) => set({ view: 'moments', fromUrn: urn }),
@@ -41,7 +46,7 @@ export const useSearchPrefsStore = create<SearchPrefsState>()(
       version: 1,
       storage: createJSONStorage(() => tauriStorage),
       migrate: migrateSearchPrefs,
-      partialize: ({ mode, view }) => ({ mode, view }),
+      partialize: ({ mode, view, layout }) => ({ mode, view, layout }),
     },
   ),
 );

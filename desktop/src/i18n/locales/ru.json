@@ -227,7 +227,13 @@
       "unsupportedTitle": "Это не ссылка на трек, плейлист или профиль",
       "unreachableTitle": "Не удалось связаться с SoundCloud",
       "unreachableBody": "Попробуй ещё раз чуть позже."
-    }
+    },
+    "layout": {
+      "tiles": "Плитки",
+      "list": "Список"
+    },
+    "artists": "Артисты",
+    "artistsUsers": "Артисты и пользователи"
   },
   "sharing": {
     "public": "Публичный",

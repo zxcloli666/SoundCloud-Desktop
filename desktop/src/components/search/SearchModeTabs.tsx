@@ -3,6 +3,7 @@ import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type SearchMode, useSearchPrefsStore } from '../../stores/searchPrefs';
 import { PILL_ROW, PillTabs } from './PillTabs';
+import { SearchLayoutToggle } from './SearchLayoutToggle';
 import { SearchViewSwitch } from './SearchViewSwitch';
 
 const MODES = [
@@ -36,6 +37,7 @@ export const SearchModeTabs = memo(function SearchModeTabs({
         <PillTabs tabs={tabs} active={active} onSelect={setMode} />
       </div>
       {views && <SearchViewSwitch q={views} />}
+      {views && !compact && <SearchLayoutToggle />}
     </div>
   );
 });

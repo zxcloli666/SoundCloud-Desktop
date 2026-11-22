@@ -256,7 +256,13 @@
       "unsupportedTitle": "Parça, çalma listesi veya profil bağlantısı değil",
       "unreachableTitle": "SoundCloud'a ulaşılamadı",
       "unreachableBody": "Birazdan tekrar deneyin."
-    }
+    },
+    "layout": {
+      "tiles": "Kareler",
+      "list": "Liste"
+    },
+    "artists": "Sanatçılar",
+    "artistsUsers": "Sanatçılar ve kullanıcılar"
   },
   "sharing": {
     "public": "Herkese açık",

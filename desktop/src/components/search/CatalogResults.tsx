@@ -1,5 +1,5 @@
 import { Cloud, Database } from 'lucide-react';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -9,9 +9,11 @@ import {
   useRememberQuery,
 } from '../../lib/search';
 import { useSearchPrefsStore } from '../../stores/searchPrefs';
+import { CollectionList } from './CollectionList';
 import { EntityStrip } from './EntityStrip';
 import { albumChip, artistChip, playlistChip, userChip } from './entityChips';
 import { LyricsRow } from './LyricsRow';
+import { type ResultKind, ResultKindTabs } from './ResultKindTabs';
 import { SearchError, SearchState, SectionError, StripSkeleton } from './SearchState';
 import { TrackWall } from './TrackWall';
 
@@ -22,6 +24,9 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
   const navigate = useNavigate();
   const setMode = useSearchPrefsStore((s) => s.setMode);
   const remember = useRememberQuery(q);
+  const list = useSearchPrefsStore((s) => s.layout === 'list');
+  const [pickedKind, setKind] = useState<ResultKind>('tracks');
+  const kind = list ? pickedKind : 'tracks';
   const tracks = useCatalogTracks(q);
   const lyrics = useLyricsHits(q);
   const artists = useCatalogStrip('artists', q);
@@ -46,6 +51,13 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
     ],
     [artists.data, users.data, playlists.data, albums.data, open],
   );
+  const performerChips = useMemo(
+    () => [
+      ...(artists.data ?? []).map((a) => artistChip(a, open)),
+      ...(users.data ?? []).map((u) => userChip(u, open)),
+    ],
+    [artists.data, users.data, open],
+  );
   const stripsLoading = strips.some((s) => s.isLoading);
   const failedStrips = strips.filter((s) => s.isError);
   const retryStrips = () => {
@@ -63,8 +75,50 @@ export const CatalogResults = memo(function CatalogResults({ q }: { q: string })
     lyrics.items.length === 0 &&
     chips.length === 0;
 
+  const tabs = list && <ResultKindTabs active={kind} onSelect={setKind} />;
+
+  if (kind === 'albums' || kind === 'playlists') {
+    const strip = kind === 'albums' ? albums : playlists;
+    return (
+      <>
+        {tabs}
+        {strip.isError ? (
+          <SectionError onRetry={() => void strip.refetch()} />
+        ) : strip.isLoading ? (
+          <StripSkeleton />
+        ) : kind === 'albums' ? (
+          <CollectionList albums={albums.data ?? []} onOpen={open} />
+        ) : (
+          <CollectionList playlists={playlists.data ?? []} onOpen={open} />
+        )}
+      </>
+    );
+  }
+
+  if (kind === 'artists') {
+    return (
+      <>
+        {tabs}
+        {artists.isError && users.isError ? (
+          <SectionError onRetry={retryStrips} />
+        ) : stripsLoading ? (
+          <StripSkeleton />
+        ) : performerChips.length > 0 ? (
+          <EntityStrip items={performerChips} label={t('search.artists')} />
+        ) : (
+          <SearchState
+            icon={<Database size={26} />}
+            title={t('search.catalog.emptyTitle', { query: q })}
+            body={t('search.catalog.emptyBody')}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <>
+      {tabs}
       <div className="mb-2 max-w-[1100px] mx-auto w-full">
         {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
         {failedStrips.length > 0 && <SectionError onRetry={retryStrips} />}

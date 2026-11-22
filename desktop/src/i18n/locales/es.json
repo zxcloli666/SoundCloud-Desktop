@@ -227,7 +227,13 @@
       "unsupportedTitle": "No es un enlace de pista, playlist o perfil",
       "unreachableTitle": "No se pudo conectar con SoundCloud",
       "unreachableBody": "Inténtalo de nuevo en un momento."
-    }
+    },
+    "layout": {
+      "tiles": "Mosaico",
+      "list": "Lista"
+    },
+    "artists": "Artistas",
+    "artistsUsers": "Artistas y usuarios"
   },
   "sharing": {
     "public": "Pública",

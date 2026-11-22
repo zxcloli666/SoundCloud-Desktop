@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useDebouncedValue } from '../components/discover/useDebouncedValue';
 import { scrollMainToTop } from '../components/layout/ScrollReset';
-import { Atmosphere } from '../components/search/Atmosphere';
 import { CatalogResults } from '../components/search/CatalogResults';
 import { LinkOpen } from '../components/search/LinkOpen';
 import { SearchLanding } from '../components/search/SearchLanding';
@@ -57,7 +56,6 @@ export function Search() {
       data-tg-hidden={hidden ? '1' : '0'}
     >
       <style>{WALL_KEYFRAMES}</style>
-      {!moments && !(searching && mode === 'vibe') && <Atmosphere />}
       <div
         className={moments ? 'relative flex min-h-0 flex-1 flex-col pt-3' : 'relative pt-5'}
         style={{ isolation: 'isolate' }}

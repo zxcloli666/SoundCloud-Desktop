@@ -135,3 +135,40 @@
   background: var(--color-accent-contrast);
   transform: translateX(10px);
 }
+
+.chip-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 2rem;
+  padding: 2px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-fill);
+}
+
+.chip-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 100%;
+  min-width: 1.75rem;
+  padding: 0 0.625rem;
+  cursor: pointer;
+  border-radius: 999px;
+  color: rgb(var(--ink) / 0.5);
+  font-size: 12px;
+  font-weight: 500;
+  transition: color 150ms, background-color 150ms;
+}
+
+.chip-seg:hover {
+  color: rgb(var(--ink));
+}
+
+.chip-seg[aria-checked="true"],
+.chip-seg[aria-selected="true"] {
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}

@@ -22,7 +22,7 @@ export const SearchViewSwitch = memo(function SearchViewSwitch({ q }: { q: strin
       data-ui="search-view"
       onClick={toggleView}
       title={`${label} (M)`}
-      className="inline-flex h-9 cursor-pointer items-center gap-2.5 rounded-full border border-ink/10 bg-ink/[0.04] pl-2 pr-4 text-[12px] font-medium text-ink-80 transition-colors hover:bg-ink/[0.08] hover:text-ink"
+      className="chip-toggle pl-2"
     >
       {covers && items.length > 0 ? (
         <span className="flex items-center pl-2">
@@ -44,7 +44,7 @@ function CoverChip({ url, tilt }: { url: string | null | undefined; tilt: number
   const cover = art(url, 't67x67');
   return (
     <span
-      className="-ml-2 size-6 shrink-0 overflow-hidden rounded-[7px] ring-1 ring-ink/20 shadow-[0_3px_8px_rgb(var(--shade)/calc(0.5*var(--shade-alpha)))]"
+      className="-ml-2 size-6 shrink-0 overflow-hidden rounded-[7px] ring-1 ring-ink/20"
       style={{ transform: `rotate(${tilt}deg)` }}
     >
       {cover ? (

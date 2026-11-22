@@ -1,20 +1,27 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {cancelPreload, preloadTrack} from '../../lib/audio';
-import {art, dur, fc} from '../../lib/formatters';
-import {headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14,} from '../../lib/icons';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useRowPick} from '../../lib/useRowPick';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {useTrackColumns} from '../music/columns/TrackColumns';
-import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
-import {AlbumLinkButton} from '../music/AlbumLinkButton';
-import {LikeButton} from '../music/LikeButton';
-import {PlayNextButton} from '../music/PlayNextButton';
-import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
+import { useTranslation } from 'react-i18next';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
+import {
+  hardStopHoverPreview,
+  startHoverPreview,
+  stopHoverPreview,
+  useIsPreviewActive,
+} from '../../lib/audioPreview';
+import { art, dur, fc } from '../../lib/formatters';
+import { headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
+import { useRowPick } from '../../lib/useRowPick';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { AlbumLinkButton } from '../music/AlbumLinkButton';
+import { useTrackColumns } from '../music/columns/TrackColumns';
+import { LikeButton } from '../music/LikeButton';
+import { PlayNextButton } from '../music/PlayNextButton';
+import { SaveOfflineRowButton } from '../music/SaveOfflineButton';
+import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
+import { PreviewRing } from '../search/PreviewRing';
 
 export const LibraryTrackRow = React.memo(
   function LibraryTrackRow({
@@ -23,41 +30,70 @@ export const LibraryTrackRow = React.memo(
     queue,
     onPlay,
     grip,
+    previewOnHover = false,
+    alwaysShowPlay = false,
   }: {
     track: Track;
     index: number;
     queue: Track[] | (() => Track[]);
     onPlay?: () => void;
     grip?: React.ReactNode;
+    previewOnHover?: boolean;
+    alwaysShowPlay?: boolean;
   }) {
     const { t } = useTranslation();
     const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const columns = useTrackColumns();
     const pick = useRowPick(track);
+    const previewing = useIsPreviewActive(track.urn);
 
     const cover = art(track.artwork_url, 't200x200');
 
     return (
       <div
-        onContextMenu={onContextMenu}
+        onContextMenu={(event) => {
+          hardStopHoverPreview();
+          onContextMenu(event);
+        }}
+        onMouseEnter={
+          previewOnHover
+            ? () => {
+                preloadTrack(track);
+                startHoverPreview(track);
+              }
+            : undefined
+        }
+        onMouseLeave={
+          previewOnHover
+            ? () => {
+                cancelPreload();
+                stopHoverPreview();
+              }
+            : undefined
+        }
         {...pick}
-        className={`@container group flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
-          isThis
-            ? 'bg-accent/[0.06] ring-1 ring-accent/20 shadow-[inset_0_0_20px_rgba(255,85,0,0.05)]'
-            : 'hover:bg-ink/[0.04]'
+        className={`@container group flex items-center gap-4 px-4 py-3 rounded-2xl transition-colors duration-200 ${
+          isThis ? 'bg-accent/[0.07] ring-1 ring-accent/20' : 'hover:bg-ink/[0.04]'
         }`}
       >
         {grip}
         <div
           className="w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer"
-          onClick={togglePlay}
+          onClick={() => {
+            hardStopHoverPreview();
+            togglePlay();
+          }}
           onMouseEnter={() => preloadTrack(track)}
           onMouseLeave={cancelPreload}
         >
           {isThisPlaying ? (
-            <div className="w-8 h-8 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_15px_var(--color-accent-glow)] scale-100 animate-fade-in-up">
+            <div className="w-8 h-8 rounded-full bg-accent text-accent-contrast flex items-center justify-center">
               {pauseWhite14}
+            </div>
+          ) : alwaysShowPlay ? (
+            <div className="flex w-8 h-8 rounded-full bg-ink/10 items-center justify-center text-ink-75 hover:bg-ink/20 transition-colors">
+              {playWhite14}
             </div>
           ) : (
             <>
@@ -71,14 +107,21 @@ export const LibraryTrackRow = React.memo(
           )}
         </div>
 
-        <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08] shadow-md">
+        <div className="relative w-11 h-11 rounded-xl overflow-hidden shrink-0 ring-1 ring-ink/[0.08]">
           {cover ? (
-            <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" decoding="async" />
+            <img
+              data-ui="artwork"
+              src={cover}
+              alt=""
+              className="w-full h-full object-cover"
+              decoding="async"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ink/[0.05] to-transparent">
               <Music size={14} className="text-ink-20" />
             </div>
           )}
+          {previewing && <PreviewRing radius={12} />}
         </div>
 
         <TrackTitleArtist
@@ -159,6 +202,8 @@ export const LibraryTrackRow = React.memo(
     prev.grip === next.grip &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
+    prev.previewOnHover === next.previewOnHover &&
+    prev.alwaysShowPlay === next.alwaysShowPlay &&
     sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
     sameVideos(prev.track.videos, next.track.videos),
 );

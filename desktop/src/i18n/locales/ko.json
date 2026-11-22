@@ -227,7 +227,13 @@
       "unsupportedTitle": "트랙, 재생 목록, 프로필 링크가 아니에요",
       "unreachableTitle": "SoundCloud에 연결할 수 없어요",
       "unreachableBody": "잠시 후 다시 시도해 주세요."
-    }
+    },
+    "layout": {
+      "tiles": "타일",
+      "list": "목록"
+    },
+    "artists": "아티스트",
+    "artistsUsers": "아티스트 및 사용자"
   },
   "sharing": {
     "public": "공개",

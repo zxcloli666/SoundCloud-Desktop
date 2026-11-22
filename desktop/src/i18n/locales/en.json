@@ -227,7 +227,13 @@
       "unsupportedTitle": "Not a track, playlist or profile link",
       "unreachableTitle": "Couldn't reach SoundCloud",
       "unreachableBody": "Try again in a moment."
-    }
+    },
+    "layout": {
+      "tiles": "Tiles",
+      "list": "List"
+    },
+    "artists": "Artists",
+    "artistsUsers": "Artists and users"
   },
   "sharing": {
     "public": "Public",
