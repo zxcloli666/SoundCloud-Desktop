@@ -15,10 +15,11 @@ interface PlaylistCardProps {
   playlist: Playlist;
   /** Show play button, playlist type badge, likes count */
   showPlayback?: boolean;
+  rail?: boolean;
 }
 
 export const PlaylistCard = React.memo(
-  function PlaylistCard({ playlist, showPlayback }: PlaylistCardProps) {
+  function PlaylistCard({ playlist, showPlayback, rail = false }: PlaylistCardProps) {
     const navigate = useNavigate();
       const {t} = useTranslation();
     const releaseKind = releaseKindOf(playlist);
@@ -65,10 +66,10 @@ export const PlaylistCard = React.memo(
     return (
       <div
         data-ui="playlist-card"
-        className="group relative flex flex-col gap-3 cursor-pointer select-none"
+        className={`group relative flex flex-col cursor-pointer select-none ${rail ? 'gap-0' : 'gap-3'}`}
         onClick={() => navigate(`/playlist/${encodeURIComponent(playlist.urn)}`)}
       >
-        <div data-ui="artwork" className="relative aspect-square rounded-2xl overflow-hidden bg-ink/[0.02] ring-1 ring-ink/[0.06] shadow-lg group-hover:shadow-2xl group-hover:ring-ink/[0.15] transition-all duration-500 ease-[var(--ease-apple)]">
+        <div data-ui="artwork" className="relative aspect-square rounded-2xl overflow-hidden bg-ink/[0.02] ring-1 ring-ink/[0.08] group-hover:ring-ink/[0.2] transition-all duration-500 ease-[var(--ease-apple)]">
             <PlaylistCover
                 artworkUrl={playlist.artwork_url}
                 tracks={playlist.tracks}
@@ -137,8 +138,8 @@ export const PlaylistCard = React.memo(
           )}
         </div>
 
-        <div className="min-w-0 px-1">
-          <p className="text-[14px] font-semibold text-ink-90 truncate leading-snug group-hover:text-ink transition-colors duration-200">
+        <div className={`min-w-0 ${rail ? 'mt-3' : 'px-1'}`}>
+          <p className={`${rail ? 'text-[13px] font-medium' : 'text-[14px] font-semibold'} text-ink-90 truncate leading-snug group-hover:text-ink transition-colors duration-200`}>
             {playlist.title}
           </p>
           {showPlayback ? (
@@ -154,7 +155,7 @@ export const PlaylistCard = React.memo(
               )}
             </div>
           ) : (
-            <p className="text-[12px] text-ink-40 truncate mt-1">
+            <p className={`${rail ? 'text-[11px] text-ink-35 mt-0.5' : 'text-[12px] text-ink-40 mt-1'} truncate`}>
               {playlist.user?.username || 'Unknown'}
             </p>
           )}

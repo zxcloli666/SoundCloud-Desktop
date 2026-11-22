@@ -51,7 +51,7 @@ export const LibraryCollection = React.memo(() => {
 
     if (!user) {
         return (
-            <LibraryFrame sound={sound}>
+            <LibraryFrame>
                 <ProfileGate/>
             </LibraryFrame>
         );
@@ -76,7 +76,7 @@ export const LibraryCollection = React.memo(() => {
                             : undefined;
 
     return (
-        <LibraryFrame sound={sound} page={sec === 'history' ? 'history' : 'library'}>
+        <LibraryFrame page={sec === 'history' ? 'history' : 'library'}>
             <LibrarySubHeader
                 title={t(TITLE_KEY[sec])}
                 aura={sound.aura}

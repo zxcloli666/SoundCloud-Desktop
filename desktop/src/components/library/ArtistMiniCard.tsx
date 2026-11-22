@@ -1,38 +1,48 @@
-import {memo} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {art, fc} from '../../lib/formatters';
-import type {SCUser} from '../../lib/hooks';
-import {User, Users} from '../../lib/icons';
+import { memo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { art, fc } from '../../lib/formatters';
+import type { SCUser } from '../../lib/hooks';
+import { User, Users } from '../../lib/icons';
 
-/** Compact artist tile for the hub's "Artists" rail — round avatar + name. */
-export const ArtistMiniCard = memo(function ArtistMiniCard({user}: { user: SCUser }) {
-    const navigate = useNavigate();
-    const avatar = art(user.avatar_url, 't200x200');
-    return (
-        <button
-            type="button"
-            onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
-            className="group flex flex-col items-center gap-2.5 w-[112px] shrink-0 cursor-pointer"
+export const ArtistMiniCard = memo(function ArtistMiniCard({
+  user,
+  rail = false,
+}: {
+  user: SCUser;
+  rail?: boolean;
+}) {
+  const navigate = useNavigate();
+  const avatar = art(user.avatar_url, 't200x200');
+  return (
+    <button
+      type="button"
+      onClick={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
+      className={`group flex shrink-0 cursor-pointer flex-col ${rail ? 'w-[150px] items-start' : 'w-[112px] items-center gap-2.5'}`}
+    >
+      <div
+        className={`relative overflow-hidden ring-1 ring-ink/[0.08] transition-shadow duration-300 group-hover:ring-ink/20 ${rail ? 'aspect-square w-full rounded-2xl' : 'h-[88px] w-[88px] rounded-full'}`}
+      >
+        {avatar ? (
+          <img src={avatar} alt="" decoding="async" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-ink/5">
+            <User size={26} className="text-ink-20" />
+          </div>
+        )}
+      </div>
+      <div className={`w-full ${rail ? 'mt-3 text-left' : 'text-center'}`}>
+        <p
+          className={`truncate text-[13px] text-ink-85 transition-colors group-hover:text-ink ${rail ? 'font-medium' : 'font-semibold'}`}
         >
-            <div
-                className="relative w-[88px] h-[88px] rounded-full overflow-hidden ring-1 ring-ink/[0.08] group-hover:ring-ink/20 group-hover:scale-[1.04] transition-all duration-400 shadow-lg">
-                {avatar ? (
-                    <img src={avatar} alt="" decoding="async" className="w-full h-full object-cover"/>
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-ink/5">
-                        <User size={26} className="text-ink-20"/>
-                    </div>
-                )}
-            </div>
-            <div className="text-center w-full">
-                <p className="text-[13px] font-semibold text-ink-85 truncate group-hover:text-ink transition-colors">
-                    {user.username}
-                </p>
-                <span className="text-[10.5px] text-ink-30 flex items-center justify-center gap-1">
-          <Users size={9}/>
-                    {fc(user.followers_count)}
+          {user.username}
+        </p>
+        <span
+          className={`flex items-center gap-1 text-ink-35 ${rail ? 'mt-0.5 justify-start text-[11px]' : 'justify-center text-[10.5px]'}`}
+        >
+          <Users size={9} />
+          {fc(user.followers_count)}
         </span>
-            </div>
-        </button>
-    );
+      </div>
+    </button>
+  );
 });

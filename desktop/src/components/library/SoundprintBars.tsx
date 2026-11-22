@@ -53,18 +53,13 @@ export const SoundprintBars = memo(function SoundprintBars({
                                 opacity: hasSel && !isSel ? 0.45 : 1,
                             }}
                         >
-                            <div className="relative flex-1 flex items-end">
+                            <div className="relative flex w-full flex-1 items-end">
                                 <div
-                                    className="sp-breathe w-full rounded-t-[7px] transition-[filter,box-shadow] duration-300"
+                                    className="sp-breathe w-full rounded-t-[7px] transition-[filter] duration-300"
                                     style={{
                                         height: `${h}%`,
                                         transformOrigin: 'bottom',
                                         background: `linear-gradient(180deg, ${rgbCss(rgb)}, ${rgbaCss(rgb, 0.12)})`,
-                                        boxShadow: isSel
-                                            ? `0 0 26px ${rgbaCss(rgb, 0.6)}, inset 0 1px 0 ${rgbaCss(rgb, 0.85)}`
-                                            : perf.glow
-                                                ? `0 0 18px ${rgbaCss(rgb, 0.33)}, inset 0 1px 0 ${rgbaCss(rgb, 0.85)}`
-                                                : `inset 0 1px 0 ${rgbaCss(rgb, 0.85)}`,
                                         filter: isSel ? 'saturate(1.2) brightness(1.08)' : undefined,
                                         animation: breathe,
                                     }}

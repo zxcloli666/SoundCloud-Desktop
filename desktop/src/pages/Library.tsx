@@ -1,5 +1,6 @@
-import React, {Fragment, type ReactNode, useMemo, useState} from 'react';
+import React, {Fragment, type ReactNode, useEffect, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
+import {useLocation} from 'react-router-dom';
 import {ArtistMiniCard} from '../components/library/ArtistMiniCard';
 import {CollectionRail} from '../components/library/CollectionRail';
 import {ContinueRow} from '../components/library/ContinueRow';
@@ -10,11 +11,11 @@ import {LocalFilesRail} from '../components/library/LocalFilesRail';
 import {ProfileGate} from '../components/library/ProfileGate';
 import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
 import {StatsTeaser} from '../components/library/stats/StatsTeaser';
-import {RecapTeaser} from '../components/recap/RecapTeaser';
 import {SuperlikesRail} from '../components/library/superlikes/SuperlikesRail';
 import {useSoundprint} from '../components/library/useSoundprint';
 import {PlaylistCard} from '../components/music/PlaylistCard';
 import {TrackCard} from '../components/music/TrackCard';
+import {RecapTeaser} from '../components/recap/RecapTeaser';
 import type {WaitScope} from '../components/sync-wait/scope';
 import {WaitStrip} from '../components/sync-wait/WaitStrip';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
@@ -52,11 +53,16 @@ interface WaitQuery {
 export const Library = React.memo(() => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const {hash} = useLocation();
   const likesQuery = useLikedTracks();
   const likedTracks = likesQuery.tracks;
-  // Picked genre tag — retints the whole hub and filters its genre-aware shelves.
   const [genre, setGenre] = useState<string | null>(null);
   const sound = useSoundprint(likedTracks, genre);
+
+  useEffect(() => {
+    if (hash !== '#soundprint') return;
+    document.getElementById('soundprint')?.scrollIntoView({block: 'start'});
+  }, [hash]);
 
   const blocks = useVisibleBlocks('library');
   const showPlaylists = blocks.includes('playlists');
@@ -118,7 +124,7 @@ export const Library = React.memo(() => {
 
   if (!user) {
     return (
-      <LibraryFrame sound={sound}>
+      <LibraryFrame>
         <ProfileGate />
       </LibraryFrame>
     );
@@ -142,8 +148,8 @@ export const Library = React.memo(() => {
         to="/library/playlists"
       >
         {playlistPreview.map((p) => (
-          <div key={p.urn} className="w-[160px] shrink-0">
-            <PlaylistCard playlist={p} />
+          <div key={p.urn} className="w-[150px] shrink-0">
+            <PlaylistCard playlist={p} rail />
           </div>
         ))}
       </CollectionRail>
@@ -155,8 +161,8 @@ export const Library = React.memo(() => {
         to="/library/playlists"
       >
         {likedPreview.sets.map((p) => (
-          <div key={p.urn} className="w-[160px] shrink-0">
-            <PlaylistCard playlist={p} />
+          <div key={p.urn} className="w-[150px] shrink-0">
+            <PlaylistCard playlist={p} rail />
           </div>
         ))}
       </CollectionRail>
@@ -168,8 +174,8 @@ export const Library = React.memo(() => {
         to="/library/playlists"
       >
         {likedPreview.releases.map((p) => (
-          <div key={p.urn} className="w-[160px] shrink-0">
-            <PlaylistCard playlist={p} />
+          <div key={p.urn} className="w-[150px] shrink-0">
+            <PlaylistCard playlist={p} rail />
           </div>
         ))}
       </CollectionRail>
@@ -183,7 +189,7 @@ export const Library = React.memo(() => {
         to="/library/following"
       >
         {artistPreview.map((u) => (
-          <ArtistMiniCard key={u.urn} user={u} />
+          <ArtistMiniCard key={u.urn} user={u} rail />
         ))}
       </CollectionRail>
     ),
@@ -224,15 +230,16 @@ export const Library = React.memo(() => {
   });
 
   return (
-    <LibraryFrame sound={sound}>
+    <LibraryFrame>
       <div className="space-y-9">
+        <div id="soundprint">
         <SoundPrintMasthead
           user={user}
-          likedTracks={likedTracks}
           sound={sound}
           selected={genre}
           onSelect={setGenre}
         />
+        </div>
 
         {libraryEmpty && (
           <div className="py-6">

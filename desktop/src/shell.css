@@ -172,3 +172,37 @@
   background: var(--shell-fill-hi);
   color: rgb(var(--ink));
 }
+
+.panel {
+  border: 1px solid var(--shell-line);
+  border-radius: 1.25rem;
+  background: rgb(var(--ink) / 0.02);
+}
+
+.panel-fill {
+  border-radius: 0.875rem;
+  background: var(--shell-fill);
+}
+
+.chip-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-fill);
+  color: rgb(var(--ink) / 0.6);
+  font-size: 11px;
+  font-weight: 600;
+  transition: color 150ms, background-color 150ms, border-color 150ms;
+}
+
+a.chip-pill:hover,
+button.chip-pill:hover:not(:disabled) {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+  cursor: pointer;
+}
+
