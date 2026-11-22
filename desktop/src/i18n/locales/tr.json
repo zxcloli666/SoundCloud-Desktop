@@ -871,7 +871,8 @@
     "recommended": "Sizin İçin Önerilenler",
     "startListening": "Dinlemeye Başla",
     "startLikingTitle": "Parçaları beğenin — burada daha fazla müzik görünecek",
-    "startLikingDesc": "Ne kadar çok beğeni, o kadar iyi öneriler ve daha zengin ana sayfa"
+    "startLikingDesc": "Ne kadar çok beğeni, o kadar iyi öneriler ve daha zengin ana sayfa",
+    "shelf": "Raf"
   },
   "soundwave": {
     "tagline": "Kişisel radyon — tam sana göre",
@@ -1624,7 +1625,9 @@
     "videoCacheLimit": "Video önbellek limiti",
     "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir",
     "layoutPlayer": "Oynatıcı",
-    "layoutPlayerHint": "Düğmeleri değiştirmek için oynatıcıya sağ tıklayabilirsin"
+    "layoutPlayerHint": "Düğmeleri değiştirmek için oynatıcıya sağ tıklayabilirsin",
+    "liveBackground": "Canlı arka plan",
+    "liveBackgroundDesc": "Ana sayfada oynatıcının arkasında kapaktan gelen hareketli ışık"
   },
   "effects": {
     "title": "Efektler",
@@ -3120,5 +3123,26 @@
     "ahead_one": "{{count}} önde",
     "ahead_other": "{{count}} önde",
     "saved": "Alındı"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Şimdi çalıyor",
+    "paused": "Duraklatıldı",
+    "openPlayer": "Tam oynatıcıyı aç: {{title}}",
+    "upNext": "Sıradaki",
+    "emptyQueue": "Sırada henüz bir şey yok",
+    "waveSettings": "Dalga ayarları",
+    "vibe": "Vibe",
+    "vibeHint": "Havaya göre ara",
+    "idleTitle": "Senin dalgan",
+    "idleSub": "Sana özel, bitmeyen müzik",
+    "playWave": "Dalgayı çal",
+    "removeLiked": "Beğenilenlerden kaldır",
+    "followers": "{{count}} takipçi",
+    "collapse": "Daralt",
+    "expand": "Genişlet",
+    "emptyLiked": "Bir parçayı beğen, burada görünsün",
+    "emptyArtists": "Bir sanatçıyı takip et, burada görünsün",
+    "emptyPlaylists": "Bir çalma listesini beğen, burada görünsün",
+    "emptyHistory": "Bir parça çal, burada görünsün"
   }
 }

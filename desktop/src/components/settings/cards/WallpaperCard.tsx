@@ -16,7 +16,7 @@ import {
 } from '../../../lib/desktop-wallpaper';
 import {Check, Link, Loader2, Monitor, MonitorOff, Search, X} from '../../../lib/icons';
 import {useSettingsStore} from '../../../stores/settings';
-import {Card, RangeSlider} from '../primitives';
+import {Card, RangeSlider, Row, Toggle} from '../primitives';
 import {WallpaperSearch} from './WallpaperSearch';
 import {WallpaperSlideshow} from './WallpaperSlideshow';
 
@@ -35,6 +35,8 @@ export function WallpaperCard() {
     const rotationNames = useSettingsStore((s) => s.wallpaperRotationNames);
     const setRotationNames = useSettingsStore((s) => s.setWallpaperRotationNames);
     const rotationOrder = useSettingsStore((s) => s.wallpaperRotationOrder);
+    const liveBackground = useSettingsStore((s) => s.liveBackground);
+    const setLiveBackground = useSettingsStore((s) => s.setLiveBackground);
 
     const [wallpapers, setWallpapers] = useState<string[]>([]);
     const [loading, setLoading] = useState(true);
@@ -172,6 +174,9 @@ export function WallpaperCard() {
     return (
         <Card title={t('settings.backgroundImage')}>
             <div className="space-y-5">
+                <Row title={t('settings.liveBackground')} desc={t('settings.liveBackgroundDesc')}>
+                    <Toggle checked={liveBackground} onChange={() => setLiveBackground(!liveBackground)}/>
+                </Row>
                 <div className="flex flex-wrap gap-3">
                     <button
                         type="button"

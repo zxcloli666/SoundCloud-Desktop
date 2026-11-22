@@ -832,7 +832,8 @@
     "recommended": "나를 위한 추천",
     "startListening": "듣기 시작",
     "startLikingTitle": "트랙에 좋아요를 누르면 여기에 더 많은 음악이 나타나요",
-    "startLikingDesc": "좋아요가 많을수록 추천이 정확해지고 홈 화면이 풍성해져요"
+    "startLikingDesc": "좋아요가 많을수록 추천이 정확해지고 홈 화면이 풍성해져요",
+    "shelf": "선반"
   },
   "soundwave": {
     "tagline": "나만을 위해 고른 개인 라디오",
@@ -1555,7 +1556,9 @@
     "videoCacheLimit": "비디오 캐시 한도",
     "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요",
     "layoutPlayer": "플레이어",
-    "layoutPlayerHint": "플레이어를 우클릭해도 버튼을 바꿀 수 있어요"
+    "layoutPlayerHint": "플레이어를 우클릭해도 버튼을 바꿀 수 있어요",
+    "liveBackground": "라이브 배경",
+    "liveBackgroundDesc": "홈의 플레이어 뒤에 커버 색으로 움직이는 빛을 표시해요"
   },
   "effects": {
     "title": "효과",
@@ -3026,5 +3029,26 @@
     "ahead_one": "앞에 {{count}}",
     "ahead_other": "앞에 {{count}}",
     "saved": "저장됨"
+  },
+  "flowRedesign": {
+    "nowPlaying": "지금 재생 중",
+    "paused": "일시정지됨",
+    "openPlayer": "전체 플레이어 열기: {{title}}",
+    "upNext": "다음 곡",
+    "emptyQueue": "대기열이 비어 있어요",
+    "waveSettings": "웨이브 설정",
+    "vibe": "바이브",
+    "vibeHint": "분위기로 검색",
+    "idleTitle": "내 웨이브",
+    "idleSub": "취향에 맞춘 끝없는 음악",
+    "playWave": "웨이브 재생",
+    "removeLiked": "좋아요에서 제거",
+    "followers": "팔로워 {{count}}명",
+    "collapse": "접기",
+    "expand": "펼치기",
+    "emptyLiked": "트랙에 좋아요를 누르면 여기에 나타나요",
+    "emptyArtists": "아티스트를 팔로우하면 여기에 나타나요",
+    "emptyPlaylists": "플레이리스트에 좋아요를 누르면 여기에 나타나요",
+    "emptyHistory": "트랙을 재생하면 여기에 나타나요"
   }
 }

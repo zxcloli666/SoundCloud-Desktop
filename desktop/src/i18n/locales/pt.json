@@ -860,7 +860,8 @@
     "recommended": "Recomendadas para você",
     "startListening": "Começar a ouvir",
     "startLikingTitle": "Curta faixas — mais músicas aparecem aqui",
-    "startLikingDesc": "Quanto mais curtidas, melhores as recomendações e mais rica a página inicial"
+    "startLikingDesc": "Quanto mais curtidas, melhores as recomendações e mais rica a página inicial",
+    "shelf": "Prateleira"
   },
   "soundwave": {
     "tagline": "Sua rádio pessoal, escolhida só para você",
@@ -1614,7 +1615,9 @@
     "videoCacheLimit": "Limite do cache de vídeo",
     "videoCacheLimitDesc": "Vídeos que você não vê há mais tempo são apagados primeiro",
     "layoutPlayer": "Player",
-    "layoutPlayerHint": "Também dá para clicar com o botão direito no player para trocar os botões"
+    "layoutPlayerHint": "Também dá para clicar com o botão direito no player para trocar os botões",
+    "liveBackground": "Fundo animado",
+    "liveBackgroundDesc": "Brilho animado da capa atrás do player no Início"
   },
   "effects": {
     "title": "Efeitos",
@@ -3204,5 +3207,26 @@
     "ahead_one": "{{count}} à frente",
     "ahead_other": "{{count}} à frente",
     "saved": "Salvo"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Tocando agora",
+    "paused": "Em pausa",
+    "openPlayer": "Abrir player completo: {{title}}",
+    "upNext": "A seguir",
+    "emptyQueue": "Nada na fila ainda",
+    "waveSettings": "Ajustes da onda",
+    "vibe": "Vibe",
+    "vibeHint": "Buscar por clima",
+    "idleTitle": "Sua onda",
+    "idleSub": "Música sem fim escolhida para você",
+    "playWave": "Tocar a onda",
+    "removeLiked": "Remover dos curtidos",
+    "followers": "{{count}} seguidores",
+    "collapse": "Recolher",
+    "expand": "Expandir",
+    "emptyLiked": "Curta uma faixa e ela aparece aqui",
+    "emptyArtists": "Siga um artista e ele aparece aqui",
+    "emptyPlaylists": "Curta uma playlist e ela aparece aqui",
+    "emptyHistory": "Toque uma faixa e ela aparece aqui"
   }
 }

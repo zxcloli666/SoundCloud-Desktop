@@ -1255,5 +1255,15 @@
     "reconectar soundcloud",
     "desconectar acesso",
     "permissões extras"
+  ],
+  "settings.liveBackground": [
+    "fundo animado",
+    "brilho em movimento",
+    "fundo do player",
+    "fundo ao vivo",
+    "animação do início",
+    "desligar animação",
+    "fundo estático",
+    "luz da capa"
   ]
 }

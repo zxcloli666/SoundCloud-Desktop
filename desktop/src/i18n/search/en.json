@@ -1460,5 +1460,15 @@
     "unlink extended access",
     "high quality streams access",
     "extra soundcloud permissions"
+  ],
+  "settings.liveBackground": [
+    "animated background",
+    "moving glow",
+    "cover glow on home",
+    "webgl scene",
+    "live wallpaper",
+    "player background animation",
+    "background lights",
+    "static background"
   ]
 }

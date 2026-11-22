@@ -2,7 +2,12 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { useTranslation } from 'react-i18next';
 import { art } from '../../../lib/formatters';
 import { Check, ListMusic, X } from '../../../lib/icons';
-import { RIVER_SECTIONS, type RiverSectionId } from '../../../lib/layout';
+import {
+  RIVER_SECTIONS,
+  type RiverSectionId,
+  resolveRiverHidden,
+  toggleRiverSection,
+} from '../../../lib/layout';
 import { useSettingsStore } from '../../../stores/settings';
 import { LayoutList, RowIconButton } from './LayoutList';
 
@@ -61,11 +66,11 @@ export function PinnedEditor() {
 
 export function RiverSections() {
   const { t } = useTranslation();
-  const hidden = useSettingsStore((s) => s.riverHidden);
+  const saved = useSettingsStore((s) => s.riverHidden);
   const setHidden = useSettingsStore((s) => s.setRiverHidden);
+  const hidden = resolveRiverHidden(saved);
 
-  const toggle = (id: RiverSectionId) =>
-    setHidden(hidden.includes(id) ? hidden.filter((h) => h !== id) : [...hidden, id]);
+  const toggle = (id: RiverSectionId) => setHidden(toggleRiverSection(saved, id));
 
   return (
     <div data-ui="settings-row" className="space-y-2.5">
@@ -75,7 +80,7 @@ export function RiverSections() {
       />
       <div className="flex flex-wrap gap-2">
         {RIVER_SECTIONS.map((id) => {
-          const on = !hidden.includes(id);
+          const on = !hidden.has(id);
           return (
             <button
               key={id}

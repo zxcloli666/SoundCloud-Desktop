@@ -1428,5 +1428,15 @@
     "délier l'accès étendu",
     "accès aux flux haute qualité",
     "permissions supplémentaires soundcloud"
+  ],
+  "settings.liveBackground": [
+    "fond animé",
+    "halo en mouvement",
+    "fond du lecteur",
+    "fond vivant",
+    "animation de l'accueil",
+    "désactiver l'animation",
+    "fond statique",
+    "lumière de la pochette"
   ]
 }

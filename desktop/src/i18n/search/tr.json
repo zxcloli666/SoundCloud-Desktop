@@ -1267,5 +1267,15 @@
     "yeniden bağla",
     "bağlantıyı kes",
     "ek izinler"
+  ],
+  "settings.liveBackground": [
+    "hareketli arka plan",
+    "canlı arka plan",
+    "kapak ışığı",
+    "oynatıcı arka planı",
+    "ana sayfa animasyonu",
+    "animasyonu kapat",
+    "sabit arka plan",
+    "arka plan efekti"
   ]
 }

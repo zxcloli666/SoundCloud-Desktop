@@ -851,7 +851,8 @@
     "recommended": "Recommandé pour vous",
     "startListening": "Commencez à écouter",
     "startLikingTitle": "Aimez des titres, plus de musique apparaîtra ici",
-    "startLikingDesc": "Plus vous aimez de titres, meilleures sont les recommandations et plus riche est l'accueil"
+    "startLikingDesc": "Plus vous aimez de titres, meilleures sont les recommandations et plus riche est l'accueil",
+    "shelf": "Étagère"
   },
   "soundwave": {
     "tagline": "Votre radio personnelle, choisie pour vous",
@@ -1593,7 +1594,9 @@
     "videoCacheLimit": "Limite du cache vidéo",
     "videoCacheLimitDesc": "Les clips que vous n'avez pas regardés depuis le plus longtemps sont supprimés en premier",
     "layoutPlayer": "Lecteur",
-    "layoutPlayerHint": "Vous pouvez aussi faire un clic droit sur le lecteur pour changer les boutons"
+    "layoutPlayerHint": "Vous pouvez aussi faire un clic droit sur le lecteur pour changer les boutons",
+    "liveBackground": "Fond animé",
+    "liveBackgroundDesc": "Halo animé de la pochette derrière le lecteur sur l'accueil"
   },
   "effects": {
     "title": "Effets",
@@ -3154,5 +3157,26 @@
     "ahead_one": "{{count}} devant",
     "ahead_other": "{{count}} devant",
     "saved": "Enregistré"
+  },
+  "flowRedesign": {
+    "nowPlaying": "En lecture",
+    "paused": "En pause",
+    "openPlayer": "Ouvrir le lecteur complet : {{title}}",
+    "upNext": "À suivre",
+    "emptyQueue": "Rien dans la file pour l'instant",
+    "waveSettings": "Réglages de la vague",
+    "vibe": "Vibe",
+    "vibeHint": "Chercher par ambiance",
+    "idleTitle": "Ta vague",
+    "idleSub": "Une musique infinie choisie pour toi",
+    "playWave": "Lancer la vague",
+    "removeLiked": "Retirer des favoris",
+    "followers": "{{count}} abonnés",
+    "collapse": "Réduire",
+    "expand": "Développer",
+    "emptyLiked": "Aime un titre et il apparaîtra ici",
+    "emptyArtists": "Suis un artiste et il apparaîtra ici",
+    "emptyPlaylists": "Aime une playlist et elle apparaîtra ici",
+    "emptyHistory": "Écoute un titre et il apparaîtra ici"
   }
 }

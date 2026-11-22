@@ -842,7 +842,8 @@
     "recommended": "Recommended For You",
     "startListening": "Start Listening",
     "startLikingTitle": "Like tracks — more music will appear here",
-    "startLikingDesc": "The more likes, the better recommendations and richer home page"
+    "startLikingDesc": "The more likes, the better recommendations and richer home page",
+    "shelf": "Shelf"
   },
   "soundwave": {
     "tagline": "Your personal radio — picked just for you",
@@ -1572,7 +1573,9 @@
     "videoCacheLimit": "Video cache limit",
     "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first",
     "layoutPlayer": "Player",
-    "layoutPlayerHint": "You can also right-click the player to switch buttons"
+    "layoutPlayerHint": "You can also right-click the player to switch buttons",
+    "liveBackground": "Live background",
+    "liveBackgroundDesc": "Animated glow from the cover behind the player on Home"
   },
   "effects": {
     "title": "Effects",
@@ -3088,5 +3091,26 @@
     "ahead_one": "{{count}} ahead",
     "ahead_other": "{{count}} ahead",
     "saved": "Saved"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Now playing",
+    "paused": "Paused",
+    "openPlayer": "Open full player: {{title}}",
+    "upNext": "Up next",
+    "emptyQueue": "Nothing queued yet",
+    "waveSettings": "Wave settings",
+    "vibe": "Vibe",
+    "vibeHint": "Search by mood",
+    "idleTitle": "Your wave",
+    "idleSub": "Endless music picked for you",
+    "playWave": "Play the wave",
+    "removeLiked": "Remove from liked",
+    "followers": "{{count}} followers",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "emptyLiked": "Like a track and it shows up here",
+    "emptyArtists": "Follow an artist and they show up here",
+    "emptyPlaylists": "Like a playlist and it shows up here",
+    "emptyHistory": "Play a track and it shows up here"
   }
 }

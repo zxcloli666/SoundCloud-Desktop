@@ -13,7 +13,7 @@ import {
   type LayoutEntry,
   type LayoutScope,
   type LayoutState,
-  type RiverSectionId,
+  type RiverHiddenEntry,
 } from '../lib/layout';
 import type { PerfMode } from '../lib/perf';
 import type { SchemeChoice } from '../lib/scheme';
@@ -24,6 +24,7 @@ import type { VideoKind } from './player';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
+export type HomeShelfTab = 'liked' | 'artists' | 'playlists' | 'history';
 export type CloseAction = 'tray' | 'quit';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq' | 'uq';
@@ -194,7 +195,10 @@ export interface SettingsState {
   customCss: string;
   customCssEnabled: boolean;
   layouts: LayoutState;
-  riverHidden: RiverSectionId[];
+  riverHidden: RiverHiddenEntry[];
+  liveBackground: boolean;
+  homeShelfTab: HomeShelfTab;
+  homeShelfOpen: boolean;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -297,7 +301,10 @@ export interface SettingsState {
   setCustomCssEnabled: (v: boolean) => void;
   setLayout: (scope: LayoutScope, entries: LayoutEntry[]) => void;
   resetLayout: (scope: LayoutScope) => void;
-  setRiverHidden: (ids: RiverSectionId[]) => void;
+  setRiverHidden: (ids: RiverHiddenEntry[]) => void;
+  setLiveBackground: (v: boolean) => void;
+  setHomeShelfTab: (tab: HomeShelfTab) => void;
+  setHomeShelfOpen: (open: boolean) => void;
   resetTheme: () => void;
 }
 
@@ -400,7 +407,10 @@ const DEFAULTS = {
   customCss: '',
   customCssEnabled: true,
   layouts: EMPTY_LAYOUT,
-  riverHidden: [] as RiverSectionId[],
+  riverHidden: [] as RiverHiddenEntry[],
+  liveBackground: true,
+  homeShelfTab: 'liked' as HomeShelfTab,
+  homeShelfOpen: true,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -604,6 +614,9 @@ export const useSettingsStore = create<SettingsState>()(
           riverHidden: scope === 'home' ? [] : s.riverHidden,
         })),
       setRiverHidden: (riverHidden) => set({ riverHidden }),
+      setLiveBackground: (liveBackground) => set({ liveBackground }),
+      setHomeShelfTab: (homeShelfTab) => set({ homeShelfTab }),
+      setHomeShelfOpen: (homeShelfOpen) => set({ homeShelfOpen }),
       resetTheme: () =>
         set({
           scheme: DEFAULTS.scheme,
@@ -759,6 +772,9 @@ export const useSettingsStore = create<SettingsState>()(
         customCssEnabled: s.customCssEnabled,
         layouts: s.layouts,
         riverHidden: s.riverHidden,
+        liveBackground: s.liveBackground,
+        homeShelfTab: s.homeShelfTab,
+        homeShelfOpen: s.homeShelfOpen,
       }),
     },
   ),

@@ -851,7 +851,8 @@
     "recommended": "Recomendado para ti",
     "startListening": "Empieza a escuchar",
     "startLikingTitle": "Dale me gusta a pistas: aquí aparecerá más música",
-    "startLikingDesc": "Cuantos más me gusta, mejores recomendaciones y un inicio más rico"
+    "startLikingDesc": "Cuantos más me gusta, mejores recomendaciones y un inicio más rico",
+    "shelf": "Estante"
   },
   "soundwave": {
     "tagline": "Tu radio personal, elegida para ti",
@@ -1593,7 +1594,9 @@
     "videoCacheLimit": "Límite de la caché de vídeo",
     "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver",
     "layoutPlayer": "Reproductor",
-    "layoutPlayerHint": "También puedes hacer clic derecho en el reproductor para cambiar los botones"
+    "layoutPlayerHint": "También puedes hacer clic derecho en el reproductor para cambiar los botones",
+    "liveBackground": "Fondo animado",
+    "liveBackgroundDesc": "Brillo animado de la portada detrás del reproductor en Inicio"
   },
   "effects": {
     "title": "Efectos",
@@ -3154,5 +3157,26 @@
     "ahead_one": "{{count}} delante",
     "ahead_other": "{{count}} delante",
     "saved": "Guardado"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Reproduciendo",
+    "paused": "En pausa",
+    "openPlayer": "Abrir reproductor completo: {{title}}",
+    "upNext": "A continuación",
+    "emptyQueue": "Aún no hay nada en cola",
+    "waveSettings": "Ajustes de la ola",
+    "vibe": "Vibra",
+    "vibeHint": "Buscar por ánimo",
+    "idleTitle": "Tu ola",
+    "idleSub": "Música infinita elegida para ti",
+    "playWave": "Reproducir la ola",
+    "removeLiked": "Quitar de favoritos",
+    "followers": "{{count}} seguidores",
+    "collapse": "Contraer",
+    "expand": "Expandir",
+    "emptyLiked": "Dale me gusta a un tema y aparecerá aquí",
+    "emptyArtists": "Sigue a un artista y aparecerá aquí",
+    "emptyPlaylists": "Dale me gusta a una playlist y aparecerá aquí",
+    "emptyHistory": "Reproduce un tema y aparecerá aquí"
   }
 }

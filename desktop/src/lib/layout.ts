@@ -24,7 +24,7 @@ export const LAYOUT_IDS = {
     'likes',
     'dislikes',
   ],
-  home: ['river', 'releases', 'superlikes', 'likes', 'recommended'],
+  home: ['river', 'shelf', 'releases', 'superlikes', 'likes', 'recommended'],
   player: [
     'like',
     'dislike',
@@ -62,6 +62,25 @@ export const RIVER_SECTIONS = [
 
 export type RiverSectionId = (typeof RIVER_SECTIONS)[number];
 
+export type RiverHiddenEntry = RiverSectionId | 'custom';
+
+export function resolveRiverHidden(
+  saved: readonly RiverHiddenEntry[],
+): ReadonlySet<RiverSectionId> {
+  if (saved.length === 0) return new Set(RIVER_SECTIONS);
+  return new Set(saved.filter((id): id is RiverSectionId => id !== 'custom'));
+}
+
+export function toggleRiverSection(
+  saved: readonly RiverHiddenEntry[],
+  id: RiverSectionId,
+): RiverHiddenEntry[] {
+  const hidden = new Set(resolveRiverHidden(saved));
+  if (hidden.has(id)) hidden.delete(id);
+  else hidden.add(id);
+  return [...hidden, 'custom'];
+}
+
 export const LOCKED_VISIBLE: ReadonlySet<string> = new Set();
 
 const NO_IDS: ReadonlySet<string> = new Set();
@@ -69,7 +88,7 @@ const NO_IDS: ReadonlySet<string> = new Set();
 export const DEFAULT_HIDDEN: Record<LayoutScope, ReadonlySet<string>> = {
   sidebar: new Set(['search', 'discover', 'offline']),
   library: NO_IDS,
-  home: NO_IDS,
+  home: new Set(['releases', 'superlikes', 'likes', 'recommended']),
   player: new Set([
     'dislike',
     'addToPlaylist',

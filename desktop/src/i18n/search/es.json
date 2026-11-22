@@ -1428,5 +1428,15 @@
     "desvincular acceso ampliado",
     "acceso a streams de alta calidad",
     "permisos extra de soundcloud"
+  ],
+  "settings.liveBackground": [
+    "fondo animado",
+    "brillo en movimiento",
+    "fondo del reproductor",
+    "fondo en vivo",
+    "animación de inicio",
+    "desactivar animación",
+    "fondo estático",
+    "luz de la portada"
   ]
 }
