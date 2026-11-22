@@ -89,9 +89,11 @@ export function fakeApp(): FakeApp {
       calls.push(`lyrics:${open}`);
     },
     upNext: (limit) => app.queue.slice(0, limit),
-    listTracks: async (list, from, count) => {
-      calls.push(`list:${list}:${from}:${count}`);
-      return (app.lists[list] ?? []).slice(from - 1, from - 1 + count);
+    listTracks: async (list, from, count, artist) => {
+      calls.push(`list:${list}:${from}:${count}${artist ? `:${artist}` : ''}`);
+      const all = app.lists[list] ?? [];
+      const kept = artist ? all.filter((track) => track.artist === artist) : all;
+      return kept.slice(from - 1, from - 1 + count);
     },
     screen: async () => {
       calls.push('screen');

@@ -48,7 +48,34 @@ async function tracksUpTo(list: Exclude<TrackList, 'history'>, count: number): P
   return fetchAllSuperlikedTracks();
 }
 
-export async function listTracks(list: TrackList, from: number, count: number): Promise<Listed[]> {
+const SCANNED: Record<TrackList, number> = {
+  queue: 500,
+  likes: 3000,
+  superlikes: 3000,
+  history: 200,
+};
+
+function plain(text: string): string {
+  return text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+}
+
+function byArtist(artist: string): (listed: Listed) => boolean {
+  const wanted = plain(artist);
+  return (listed) => plain(listed.artist).includes(wanted) || plain(listed.title).includes(wanted);
+}
+
+export async function listTracks(
+  list: TrackList,
+  from: number,
+  count: number,
+  artist?: string,
+): Promise<Listed[]> {
+  if (!artist || plain(artist) === '') return listedRange(list, from, count);
+  const all = await listedRange(list, 1, SCANNED[list]);
+  return all.filter(byArtist(artist)).slice(from - 1, from - 1 + count);
+}
+
+async function listedRange(list: TrackList, from: number, count: number): Promise<Listed[]> {
   if (list === 'history') {
     const rows = await history(from, count);
     return rows.map((row, at) => ({

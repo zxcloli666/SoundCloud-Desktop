@@ -14,7 +14,7 @@ export interface AppPort {
   setSpeed(rate: number): number;
   showLyrics(open: boolean): void;
   upNext(limit: number): Brief[];
-  listTracks(list: TrackList, from: number, count: number): Promise<Listed[]>;
+  listTracks(list: TrackList, from: number, count: number, artist?: string): Promise<Listed[]>;
   clearQueue(): void;
   screen(): Promise<Screen>;
   press(ref: string): boolean;

@@ -72,7 +72,7 @@ function search(app: AppPort, found: Map<string, Entity>): ChatTool {
   return {
     name: 'search',
     description:
-      'Search by name the way the app search does, plus the likes and superlikes of the user matched by how the name sounds. Search the whole phrase when it holds more than one name. Returns up to 5 matches with kind, name, artist and id for play_found.',
+      'Search by name the way the app search does, plus the likes and superlikes of the user matched by how the name sounds. Search the whole phrase when it holds more than one name. Returns up to 5 matches with kind, name, artist and id for play_found. When the artist is found but no title fits, list_tracks with that artist reads their tracks in likes and superlikes.',
     args: BY_NAME,
     returns: true,
     run: async (args) => {

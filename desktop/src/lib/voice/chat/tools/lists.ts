@@ -16,13 +16,14 @@ function listTracks(app: AppPort): ChatTool {
   return {
     name: 'list_tracks',
     description:
-      'Read a list of the user with numbers: queue (1 is the next track), likes, superlikes or history (1 is the last played). Returns n, title, artist and id. from and count page through it.',
+      'Read a list of the user with numbers: queue (1 is the next track), likes, superlikes or history (1 is the last played). Returns n, title, artist and id. from and count page through it. artist keeps only the tracks of that artist with their numbers in the whole list: use it when search missed a title the user named for a known artist, then pick the title that sounds like what was heard.',
     args: {
       type: 'object',
       properties: {
         list: { type: 'string', enum: TRACK_LISTS },
         from: { type: 'number' },
         count: { type: 'number' },
+        artist: { type: 'string' },
       },
       required: ['list'],
     },
@@ -30,8 +31,9 @@ function listTracks(app: AppPort): ChatTool {
     run: async (args) => {
       const from = Math.max(1, whole(args.from, 1));
       const count = Math.min(MOST, Math.max(1, whole(args.count, SHOWN)));
-      const tracks = await app.listTracks(args.list as TrackList, from, count);
-      return { result: ok({ list: args.list, from, tracks }) };
+      const artist = typeof args.artist === 'string' ? args.artist : undefined;
+      const tracks = await app.listTracks(args.list as TrackList, from, count, artist);
+      return { result: ok({ list: args.list, from, ...(artist ? { artist } : {}), tracks }) };
     },
   };
 }

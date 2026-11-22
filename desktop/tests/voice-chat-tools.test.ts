@@ -390,6 +390,22 @@ test('list_tracks reads a numbered page of a list and goes back to the model', a
   assert.equal((await run('list_tracks', { list: 'playlists' })).result.ok, false);
 });
 
+test('list_tracks with an artist keeps only their tracks with numbers of the whole list', async () => {
+  const { app, run } = setup();
+  const other = { n: 2, title: 'грааль', artist: 'smerrrt', id: 'soundcloud:tracks:2' };
+  const wanted = { n: 3, title: 'gothrussia', artist: 'Psychosis', id: 'soundcloud:tracks:3' };
+  app.lists.likes = [{ ...wanted, n: 1, title: 'soldier' }, other, wanted];
+  const read = await run('list_tracks', { list: 'likes', artist: 'Psychosis' });
+  assert.deepEqual(read.result, {
+    ok: true,
+    list: 'likes',
+    from: 1,
+    artist: 'Psychosis',
+    tracks: [{ ...wanted, n: 1, title: 'soldier' }, wanted],
+  });
+  assert.deepEqual(app.calls, ['list:likes:1:10:Psychosis']);
+});
+
 test('play_list plays from a number of a list, and voice undo brings back what played', async () => {
   const { player, env, run } = setup();
   const played = await run('play_list', { list: 'superlikes', n: 9 });
