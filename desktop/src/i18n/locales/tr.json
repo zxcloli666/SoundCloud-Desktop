@@ -551,7 +551,9 @@
       "clear": "Temizle",
       "empty": "Bu kullanıcının içeriğinde eşleşme yok",
       "error": "Bu profilde arama yapılamadı"
-    }
+    },
+    "myMusic": "Müziğim",
+    "myMusicEmpty": "Birkaç parçayı beğen, ses izin burada görünsün."
   },
   "library": {
     "soundprint": "Ses iziniz",

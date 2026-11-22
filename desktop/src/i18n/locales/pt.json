@@ -532,7 +532,9 @@
       "clear": "Limpar busca",
       "empty": "Nada encontrado no conteúdo deste usuário",
       "error": "Não deu para buscar neste perfil"
-    }
+    },
+    "myMusic": "Minha música",
+    "myMusicEmpty": "Curta algumas faixas e sua impressão sonora aparecerá aqui."
   },
   "library": {
     "soundprint": "Sua impressão sonora",

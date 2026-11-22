@@ -225,35 +225,8 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
     <button
       type="button"
       onClick={() => navigate(`/artist/${encodeURIComponent(artist.id)}`)}
-      className="group relative shrink-0 w-[280px] h-[360px] rounded-[1.75rem] cursor-pointer overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.02]"
-      style={{
-        background: `radial-gradient(140% 90% at 30% 10%, ${auraRgba(aura, 0.55)} 0%, rgb(var(--surface) / 0.92) 65%, rgb(var(--paper) / 0.95) 100%)`,
-        boxShadow:
-          '0 30px 60px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.10)',
-      }}
+      className="group relative h-[360px] w-[280px] shrink-0 cursor-pointer overflow-hidden rounded-[1.75rem] border border-ink/[0.09] bg-ink/[0.03] transition-colors hover:border-ink/[0.2]"
     >
-        {perf.bloom && (
-            <div
-                className="absolute -inset-x-24 -top-32 h-72 pointer-events-none opacity-80"
-                style={{
-                    background: `radial-gradient(55% 55% at 50% 50%, ${auraRgba(aura, 0.65)}, transparent 70%)`,
-                    filter: `blur(${perf.blur(48)}px)`,
-                    mixBlendMode: 'screen',
-                }}
-            />
-        )}
-        {perf.bloom && (
-            <div
-                className="absolute inset-x-0 top-0 h-44 pointer-events-none opacity-40"
-                style={{
-                    background: `conic-gradient(from 220deg at 50% 0%, ${aura.orbs[0]}, ${aura.orbs[1]}, ${aura.orbs[2]}, ${aura.orbs[0]})`,
-                    filter: `blur(${perf.blur(60)}px)`,
-                    mixBlendMode: 'screen',
-                    animation: perf.idleAnim ? 'ring-rotate 30s linear infinite' : undefined,
-                }}
-            />
-        )}
-
       <div className="relative flex flex-col items-center pt-10 px-6">
         <div className="relative w-[120px] h-[120px]">
           {artist.star && (
@@ -264,7 +237,6 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
                 WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
                 WebkitMaskComposite: 'xor',
                 maskComposite: 'exclude',
-                filter: `drop-shadow(0 0 14px ${aura.orbs[0]}cc)`,
               }}
             >
               <div
@@ -280,7 +252,6 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
             className="relative w-full h-full rounded-full overflow-hidden ring-1 ring-ink/15"
             style={{
               background: `linear-gradient(135deg, ${g1} 0%, ${g2} 50%, ${g3} 100%)`,
-              boxShadow: `0 20px 40px ${auraRgba(aura, 0.5)}, inset 0 0 0 1px rgba(255,255,255,0.12)`,
             }}
           >
             {artist.avatar_url ? (
@@ -296,10 +267,7 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
               <div className="absolute inset-0 flex items-center justify-center">
                 <span
                   className="text-ink-95 font-black tracking-tight select-none"
-                  style={{
-                    fontSize: 'clamp(36px, 4vw, 44px)',
-                    textShadow: '0 6px 18px rgba(0,0,0,0.5)',
-                  }}
+                  style={{fontSize: 'clamp(36px, 4vw, 44px)'}}
                 >
                   {initials}
                 </span>
@@ -311,7 +279,6 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
               className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full flex items-center justify-center"
               style={{
                 background: `linear-gradient(135deg, ${auraRgba(aura, 0.75)}, ${auraRgba(aura, 0.2)})`,
-                boxShadow: `0 0 16px ${auraRgba(aura, 0.7)}, inset 0 0 0 1.5px ${auraRgba(aura, 0.85)}`,
               }}
             >
               <Star size={13} className="text-ink" fill="currentColor" />
@@ -319,10 +286,7 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
           )}
         </div>
 
-        <p
-          className="mt-5 text-[20px] font-black leading-tight tracking-tight text-ink text-center truncate w-full"
-          style={{ textShadow: '0 6px 20px rgba(0,0,0,0.6)' }}
-        >
+        <p className="mt-5 w-full truncate text-center text-[20px] font-black leading-tight tracking-tight text-ink">
           {artist.name}
         </p>
         {artist.country && (
@@ -356,22 +320,12 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
         </span>
         <span
           className="inline-flex items-center gap-1 text-[10px] font-bold tabular-nums px-2.5 py-1 rounded-full"
-          style={{
-            background: `linear-gradient(135deg, ${auraRgba(aura, 0.32)}, ${auraRgba(aura, 0.05)})`,
-            color: 'rgb(var(--ink))',
-            boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.4)}`,
-          }}
+          style={{background: auraRgba(aura, 0.16), color: 'rgb(var(--ink))'}}
         >
           {t('discover.trendValue', {value: Math.round(artist.popularity * 100)})}
         </span>
       </div>
 
-      <div
-        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.55)}, inset 0 0 70px ${auraRgba(aura, 0.3)}`,
-        }}
-      />
     </button>
   );
 });

@@ -2,7 +2,6 @@ import { CloudOff, RefreshCw } from 'lucide-react';
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import type { Aura } from '../../lib/aura';
 import { fc } from '../../lib/formatters';
 import {
   useInfiniteScroll,
@@ -18,6 +17,7 @@ import {usePerfMode} from '../../lib/perf';
 import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
 import { isWaitKind } from '../../lib/sync-wait';
 import { useAuthStore } from '../../stores/auth';
+import { TrackColumns } from '../music/columns/TrackColumns';
 import { PlaylistCard } from '../music/PlaylistCard';
 import { SearchState } from '../search/SearchState';
 import type { WaitScope } from '../sync-wait/scope';
@@ -25,7 +25,6 @@ import { Avatar } from '../ui/Avatar';
 import { type SyncedQuery, SyncNotice, syncNoticeOf } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
 import { VirtualList } from '../ui/VirtualList';
-import { TrackColumns } from '../music/columns/TrackColumns';
 import { ThemedTrackRow } from './ThemedTrackRow';
 import { useThemedShape } from './useThemedShape';
 
@@ -101,15 +100,15 @@ function TabWrapperImpl({
 
 export const TabWrapper = React.memo(TabWrapperImpl);
 
-export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
+export function UserTracksTab({ urn }: { urn: string }) {
   const q = useUserTracks(urn);
   const shape = useThemedShape(urn);
   const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
   const renderItem = useCallback(
     (track: (typeof q.tracks)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={q.tracks} aura={aura} />
+      <ThemedTrackRow track={track} index={i} queue={q.tracks} />
     ),
-    [aura, q.tracks],
+    [q.tracks],
   );
   return (
     <TabWrapper isLoading={q.isLoading} isEmpty={q.tracks.length === 0} query={q} ownerUrn={urn}>
@@ -130,15 +129,15 @@ export function UserTracksTab({ urn, aura }: { urn: string; aura: Aura }) {
   );
 }
 
-export function UserPopularTab({ urn, aura }: { urn: string; aura: Aura }) {
+export function UserPopularTab({ urn }: { urn: string }) {
   const popular = useUserPopularTracks(urn);
   const shape = useThemedShape(urn);
   const { tracks, isLoading } = popular;
   const renderItem = useCallback(
     (track: (typeof tracks)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={tracks} aura={aura} />
+      <ThemedTrackRow track={track} index={i} queue={tracks} />
     ),
-    [aura, tracks],
+    [tracks],
   );
   return (
     <TabWrapper isLoading={isLoading} isEmpty={tracks.length === 0} query={popular} ownerUrn={urn}>
@@ -187,15 +186,15 @@ export function UserPlaylistsTab({ urn }: { urn: string }) {
   );
 }
 
-export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
+export function UserLikesTab({ urn }: { urn: string }) {
   const q = useUserLikedTracks(urn);
   const shape = useThemedShape();
   const ref = useInfiniteScroll(!!q.hasNextPage, !!q.isFetchingNextPage, q.fetchNextPage);
   const renderItem = useCallback(
     (track: (typeof q.tracks)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={q.tracks} aura={aura} />
+      <ThemedTrackRow track={track} index={i} queue={q.tracks} />
     ),
-    [aura, q.tracks],
+    [q.tracks],
   );
   return (
     <TabWrapper
@@ -230,11 +229,9 @@ export function UserLikesTab({ urn, aura }: { urn: string; aura: Aura }) {
  */
 export function UserSearchTracksTab({
   urn,
-  aura,
   query,
 }: {
   urn: string;
-  aura: Aura;
   query: string;
 }) {
   const { t } = useTranslation();
@@ -247,9 +244,9 @@ export function UserSearchTracksTab({
   );
   const renderItem = useCallback(
     (track: (typeof q.items)[number], i: number) => (
-      <ThemedTrackRow track={track} index={i} queue={q.items} aura={aura} />
+      <ThemedTrackRow track={track} index={i} queue={q.items} />
     ),
-    [aura, q.items],
+    [q.items],
   );
   return (
     <TabWrapper

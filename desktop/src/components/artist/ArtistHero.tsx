@@ -1,10 +1,9 @@
 import {memo, useMemo, useState} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {type Aura, auraRgba} from '../../lib/aura';
+import type {Aura} from '../../lib/aura';
 import {Check, ChevronDown, Globe, ListMusic, MicVocal, Music, Users} from '../../lib/icons';
 import {userUrn} from '../../lib/ids';
-import {usePerfMode} from '../../lib/perf';
 import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
 import {artistTarget} from '../music/blocklist/targets';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
@@ -21,34 +20,19 @@ interface ArtistHeroProps {
   aura: Aura;
 }
 
-const SocialChip = memo(({kind, url, title}: { kind: string; url: string; title: string }) => {
-    const b = usePerfMode().blur(16);
-    return (
-        <a
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-ink-55 hover:text-ink transition-all duration-300 hover:scale-105"
-            style={{
-                background: b > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
-                border: '0.5px solid rgb(var(--ink) / 0.08)',
-                backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-                WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-            }}
-        >
-      <span className="text-ink-45 group-hover:text-ink">
-        <SocialIcon kind={kind} size={13}/>
-      </span>
-            <span className="truncate max-w-[140px]">{title}</span>
-        </a>
-    );
-});
+const SocialChip = memo(({kind, url, title}: { kind: string; url: string; title: string }) => (
+  <a href={url} target="_blank" rel="noreferrer" className="chip-pill">
+    <span className="text-ink-45">
+      <SocialIcon kind={kind} size={13}/>
+    </span>
+    <span className="max-w-[140px] truncate">{title}</span>
+  </a>
+));
 
 const ScAccountChip = memo(
   ({ scUserId, role, verified }: { scUserId: string; role: string; verified: boolean }) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-      const b = usePerfMode().blur(16);
     const label =
       role === 'main' ? t('artist.mainAccount') : role === 'demo' ? t('artist.demoAccount') : role;
     const urn = userUrn(scUserId);
@@ -56,13 +40,7 @@ const ScAccountChip = memo(
       <button
         type="button"
         onClick={() => urn && navigate(`/user/${encodeURIComponent(urn)}`)}
-        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold cursor-pointer transition-all duration-300 hover:scale-105 text-orange-200/85 hover:text-orange-100"
-        style={{
-          background: 'linear-gradient(135deg, rgba(255,85,0,0.16), rgba(255,0,128,0.06))',
-          border: '0.5px solid rgba(255,85,0,0.25)',
-            backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-            WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-        }}
+        className="chip-pill"
         title={role}
       >
         <SocialIcon kind="soundcloud" size={13} />
@@ -76,12 +54,10 @@ const ScAccountChip = memo(
 function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
   const { t } = useTranslation();
   const [bioExpanded, setBioExpanded] = useState(false);
-    const perf = usePerfMode();
-  const accent = auraRgba(aura, 0.18);
   const blockTarget = useMemo(() => artistTarget(artist), [artist]);
 
   return (
-    <GlassHeroPanel hasStar={hasStar} aura={aura} className="@container">
+    <GlassHeroPanel className="@container">
       <div data-ui="artist-hero" className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch">
         <AvatarArtifact
           username={artist.name}
@@ -113,10 +89,8 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                      animation: perf.idleAnim ? 'prismatic-shift 6s linear infinite' : undefined,
-                    filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
                   }
-                : { color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' }
+                : { color: 'rgb(var(--ink))' }
             }
           >
             {artist.name}
@@ -184,18 +158,15 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
           <StatOrb
             value={artist.track_count_primary}
             label={t('artist.statsTracks')}
-            accent={accent}
           />
           <StatOrb
             value={artist.track_count_featured}
             label={t('artist.statsFeatured')}
-            accent={accent}
           />
-          <StatOrb value={artist.album_count} label={t('artist.statsAlbums')} accent={accent} />
+          <StatOrb value={artist.album_count} label={t('artist.statsAlbums')} />
           <StatOrb
             value={artist.related_artists.length}
             label={t('artist.statsRelated')}
-            accent={accent}
           />
         </div>
       </div>
@@ -228,26 +199,13 @@ function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
 }
 
 const CompactStat = memo(
-    ({icon, value, label}: { icon: React.ReactNode; value: number; label: string }) => {
-        const b = usePerfMode().blur(20);
-        return (
-            <div
-                className="inline-flex items-baseline gap-2 px-3.5 py-2 rounded-xl"
-                style={{
-                    background: b > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
-                    border: '0.5px solid rgb(var(--ink) / 0.08)',
-                    backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-                    WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-                }}
-            >
-                <span className="text-ink-40">{icon}</span>
-                <span className="text-[15px] font-black tabular-nums text-ink">{value}</span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-35">
-          {label}
-        </span>
-            </div>
-        );
-    },
+  ({icon, value, label}: { icon: React.ReactNode; value: number; label: string }) => (
+    <div className="inline-flex items-baseline gap-2 rounded-xl border border-ink/[0.08] bg-ink/[0.04] px-3.5 py-2">
+      <span className="text-ink-40">{icon}</span>
+      <span className="text-[15px] font-bold tabular-nums text-ink">{value}</span>
+      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-ink-35">{label}</span>
+    </div>
+  ),
 );
 
 export const ArtistHero = memo(ArtistHeroImpl);

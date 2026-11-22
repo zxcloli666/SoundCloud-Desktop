@@ -158,6 +158,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="playlist-cover-editor"]` | Cover crop window |
 | `[data-ui="playlist-cover-crop"]` | Square frame you drag and zoom in that window |
 | `[data-ui="user-hero"]` | Top block of a profile page |
+| `[data-ui="my-music"]` | My music block on your own profile |
 | `[data-ui="user-banner"]` | Profile banner above that block |
 | `[data-ui="user-banner-glow"]` | Blurred banner behind the whole block |
 | `[data-ui="track-hero"]` | Top block of a track page |
@@ -172,6 +173,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="search-tabs"]` | Search mode tabs |
 | `[data-ui="search-strip"]` | Row with the search mode tabs and the view switch |
 | `[data-ui="search-view"]` | Covers / Moments switch in search |
+| `[data-ui="search-layout"]` | Tiles / list switch in search |
+| `[data-ui="search-kinds"]` | Result kind tabs in the list view of catalog search |
 | `[data-ui="search-moments"]` | Moments view inside search |
 | `[data-ui="search-wave-tail"]` | Last card of search moments: continue as a wave |
 | `[data-ui="moments-from-here"]` | "Moments from here" button on a search cover |

@@ -63,16 +63,16 @@ export const CuratorCard = React.memo(function CuratorCard({
                         {user.username}
                     </button>
                 </div>
-                {!isOwner && <FollowBtn userUrn={user.urn} aura={aura}/>}
+                {!isOwner && <FollowBtn userUrn={user.urn}/>}
             </div>
 
             {(followers != null || trackCount != null) && (
                 <div className="flex flex-wrap gap-2.5 mt-4">
                     {followers != null && (
-                        <StatOrb value={followers} label={t('user.followers')} accent={auraRgba(aura, 0.18)}/>
+                        <StatOrb value={followers} label={t('user.followers')}/>
                     )}
                     {trackCount != null && (
-                        <StatOrb value={trackCount} label={t('user.tracks')} accent={auraRgba(aura, 0.18)}/>
+                        <StatOrb value={trackCount} label={t('user.tracks')}/>
                     )}
                 </div>
             )}

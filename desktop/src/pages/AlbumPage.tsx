@@ -6,7 +6,6 @@ import { useAlbumDetail } from '../components/album/useAlbumData';
 import { useArtistStar } from '../components/artist/useArtistData';
 import { OfflineCopyLink } from '../components/offline/OfflineCopyLink';
 import { LoadErrorState } from '../components/ui/LoadErrorState';
-import { AuraField } from '../components/user/AuraField';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { albumScope } from '../lib/bulk-cache';
 import { Loader2 } from '../lib/icons';
@@ -42,15 +41,14 @@ export function AlbumPage() {
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
       <div data-ui="page" data-page="album" className="relative w-full min-h-screen">
-        <AuraField aura={aura} isStar={hasStar} />
 
         <div
-          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-8"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32 flex flex-col gap-8"
           style={{ isolation: 'isolate' }}
         >
           <AlbumHero album={data} hasStar={hasStar} aura={aura} />
-          <AlbumCast artists={data.artists} aura={aura} />
-          <AlbumTrackList tracks={data.tracks} aura={aura} />
+          <AlbumCast artists={data.artists} />
+          <AlbumTrackList tracks={data.tracks} />
         </div>
       </div>
     </>

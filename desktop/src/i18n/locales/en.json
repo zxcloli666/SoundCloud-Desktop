@@ -522,7 +522,9 @@
       "clear": "Clear search",
       "empty": "No matches in this user's content",
       "error": "Couldn't search this profile"
-    }
+    },
+    "myMusic": "My music",
+    "myMusicEmpty": "Like some tracks and your soundprint will appear here."
   },
   "library": {
     "soundprint": "Your soundprint",

@@ -527,7 +527,9 @@
       "clear": "Effacer la recherche",
       "empty": "Aucun résultat dans le contenu de cet utilisateur",
       "error": "Impossible de rechercher dans ce profil"
-    }
+    },
+    "myMusic": "Ma musique",
+    "myMusicEmpty": "Aimez quelques titres et votre empreinte sonore apparaîtra ici."
   },
   "library": {
     "soundprint": "Votre empreinte sonore",

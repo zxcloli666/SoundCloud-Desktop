@@ -15,7 +15,6 @@ import {PlaylistHero} from '../components/playlist/PlaylistHero';
 import {SequenceList} from '../components/playlist/SequenceList';
 import {SetRibbon} from '../components/playlist/SetRibbon';
 import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
-import {Atmosphere} from '../components/search/Atmosphere';
 import {WaitStrip} from '../components/sync-wait/WaitStrip';
 import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
 import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
@@ -28,10 +27,9 @@ import {
     useRemoveFromPlaylist,
     useUpdatePlaylistTracks,
 } from '../lib/hooks';
-import {usePlaylistDelivery} from '../lib/playlist-delivery';
 import {AlertCircle, Check, ChevronLeft, ListMusic, X} from '../lib/icons';
-import {usePerfMode} from '../lib/perf';
 import {rawPlaylistCover} from '../lib/playlist-cover';
+import {usePlaylistDelivery} from '../lib/playlist-delivery';
 import {armPlaylistContinuation} from '../lib/queue-continuation';
 import {isWaitKind} from '../lib/sync-wait';
 import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
@@ -60,7 +58,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   const { urn } = useParams<{ urn: string }>();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const perf = usePerfMode();
   const myUrn = useAuthStore((s) => s.user?.urn);
 
   const {
@@ -398,7 +395,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   if (!playlist && playlistFailed) {
     return (
       <div className="relative min-h-full w-full flex flex-col items-center justify-center gap-5">
-        {perf.atmosphere && <Atmosphere />}
         <LoadErrorState
           error={playlistError}
           retrying={playlistFetching}
@@ -413,7 +409,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     return (
       <div className="relative min-h-full w-full">
         <style>{PLAYLIST_KEYFRAMES}</style>
-        {perf.atmosphere && <Atmosphere />}
         <div
           className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
           style={{ isolation: 'isolate' }}
@@ -453,12 +448,6 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   return (
     <div data-ui="page" data-page="playlist" className="relative min-h-full w-full">
       <style>{PLAYLIST_KEYFRAMES}</style>
-      {perf.atmosphere && (
-        <Atmosphere
-          tint={aura.tint}
-          energy={isPlayingFromThis ? Math.min(1, aura.energy + 0.12) : aura.energy}
-        />
-      )}
 
       <div
         className="relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"

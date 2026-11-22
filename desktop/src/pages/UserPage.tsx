@@ -2,9 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { LoadErrorState, RefreshPendingHint } from '../components/ui/LoadErrorState';
-import { AuraField } from '../components/user/AuraField';
 import { IdentityHub } from '../components/user/IdentityHub';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
+import { MyMusic } from '../components/user/MyMusic';
 import { TabDock, type TabId } from '../components/user/TabDock';
 import { UserSearchBox } from '../components/user/UserSearchBox';
 import {
@@ -18,11 +18,10 @@ import {
 } from '../components/user/UserTabs';
 import { useEditableUserAura, useUserAura } from '../components/user/useUserAura';
 import { useUser, useUserSubscription, useUserWebProfiles } from '../lib/hooks';
-import { tierOfSince, useOwnTenure } from '../lib/star-tenure';
 import { Loader2 } from '../lib/icons';
 import { likedTracksCount } from '../lib/likes';
-import {usePerfMode} from '../lib/perf';
 import { MIN_SEARCH_QUERY } from '../lib/search';
+import { tierOfSince, useOwnTenure } from '../lib/star-tenure';
 import { useSubscription } from '../lib/subscription';
 import { useAuthStore } from '../stores/auth';
 
@@ -43,7 +42,6 @@ function searchableScopeLabelKey(tab: TabId): string {
 export function UserPage() {
   const { urn } = useParams<{ urn: string }>();
   const { t } = useTranslation();
-    const perf = usePerfMode();
   const currentUser = useAuthStore((s) => s.user);
 
   const [activeTab, setActiveTab] = useState<TabId>('popular');
@@ -128,10 +126,9 @@ export function UserPage() {
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
       <div data-ui="page" data-page="user" className="relative w-full min-h-screen">
-        <AuraField aura={aura} isStar={hasStar} />
 
         <div
-          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32"
           style={{ isolation: 'isolate' }}
         >
           <IdentityHub
@@ -146,8 +143,10 @@ export function UserPage() {
             onPickCustom={editable.onPickCustom}
           />
 
+          {isOwnProfile && <MyMusic />}
+
           <div className="mt-10 mb-6 flex flex-col @min-[980px]:flex-row @min-[980px]:items-center @min-[980px]:justify-between gap-4">
-            <TabDock tabs={tabs} active={activeTab} onChange={setActiveTab} aura={aura} />
+            <TabDock tabs={tabs} active={activeTab} onChange={setActiveTab} />
             <div className="w-full @min-[980px]:w-auto @min-[980px]:flex-1 @min-[980px]:min-w-56 @min-[980px]:max-w-80">
               <UserSearchBox
                 value={searchInput}
@@ -158,34 +157,20 @@ export function UserPage() {
             </div>
           </div>
 
-          <div
-            className="rounded-[2rem] p-3 md:p-5"
-            style={{
-              background:
-                  perf.blur(28) > 0
-                      ? 'linear-gradient(180deg, rgb(var(--ink) / 0.035) 0%, rgb(var(--ink) / 0.015) 100%)'
-                      : 'rgb(var(--surface) / 0.85)',
-                backdropFilter:
-                    perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
-                WebkitBackdropFilter:
-                    perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
-              boxShadow:
-                '0 30px 80px rgb(var(--shade) / calc(0.30 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
-          >
+          <div className="panel p-3 md:p-5">
             {(() => {
               const searching =
                 debouncedSearch.length >= MIN_SEARCH_QUERY && isSearchableScope(activeTab);
               if (searching && (activeTab === 'tracks' || activeTab === 'popular')) {
-                return <UserSearchTracksTab urn={urn!} aura={aura} query={debouncedSearch} />;
+                return <UserSearchTracksTab urn={urn!} query={debouncedSearch} />;
               }
               if (searching && activeTab === 'playlists') {
                 return <UserSearchPlaylistsTab urn={urn!} query={debouncedSearch} />;
               }
-              if (activeTab === 'popular') return <UserPopularTab urn={urn!} aura={aura} />;
-              if (activeTab === 'tracks') return <UserTracksTab urn={urn!} aura={aura} />;
+              if (activeTab === 'popular') return <UserPopularTab urn={urn!} />;
+              if (activeTab === 'tracks') return <UserTracksTab urn={urn!} />;
               if (activeTab === 'playlists') return <UserPlaylistsTab urn={urn!} />;
-              if (activeTab === 'likes') return <UserLikesTab urn={urn!} aura={aura} />;
+              if (activeTab === 'likes') return <UserLikesTab urn={urn!} />;
               if (activeTab === 'followers')
                 return <UserConnectionsTab urn={urn!} mode="followers" />;
               if (activeTab === 'following')

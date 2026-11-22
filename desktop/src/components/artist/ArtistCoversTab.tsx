@@ -1,6 +1,5 @@
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Aura } from '../../lib/aura';
 import { Loader2, Music } from '../../lib/icons';
 import type { Track } from '../../stores/player';
 import { VirtualList } from '../ui/VirtualList';
@@ -9,12 +8,11 @@ import { useArtistCovers } from './useArtistData';
 
 interface ArtistCoversTabProps {
   artistId: string;
-  aura: Aura;
 }
 
 const ROW_HEIGHT = 72;
 
-function ArtistCoversTabImpl({ artistId, aura }: ArtistCoversTabProps) {
+function ArtistCoversTabImpl({ artistId }: ArtistCoversTabProps) {
   const { t } = useTranslation();
   const query = useArtistCovers(artistId);
   const tracks = useMemo(() => query.data ?? [], [query.data]);
@@ -40,7 +38,7 @@ function ArtistCoversTabImpl({ artistId, aura }: ArtistCoversTabProps) {
       rowHeight={ROW_HEIGHT}
       getItemKey={(t) => t.urn}
       renderItem={(track, index) => (
-        <ThemedTrackRow track={track} index={index} queue={tracks} aura={aura} />
+        <ThemedTrackRow track={track} index={index} queue={tracks} />
       )}
     />
   );

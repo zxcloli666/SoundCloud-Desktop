@@ -8,7 +8,6 @@ import {DiscoverPrism} from '../components/discover/DiscoverPrism';
 import { DiscoverSpotlight } from '../components/discover/DiscoverSpotlight';
 import {FeaturedHero} from '../components/discover/FeaturedHero';
 import { useDebouncedValue } from '../components/discover/useDebouncedValue';
-import { AuraField } from '../components/user/AuraField';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { type TabDescriptor, TabDock } from '../components/user/TabDock';
 import { fetchDiscoverRandom, useDiscoverSummary } from '../lib/discover';
@@ -62,14 +61,12 @@ export const Discover = memo(function Discover() {
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
       <div data-ui="page" data-page="discover" className="relative w-full min-h-screen">
-        <AuraField aura={aura} isStar={false} />
 
         <div
-          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-10"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32 flex flex-col gap-10"
           style={{ isolation: 'isolate' }}
         >
           <DiscoverHero
-            aura={aura}
             artistsCount={summary?.artists_count ?? null}
             albumsCount={summary?.albums_count ?? null}
             freshCount={summary?.fresh_count ?? null}
@@ -86,7 +83,7 @@ export const Discover = memo(function Discover() {
 
           <div className="flex flex-col gap-6">
             <div className="flex items-center justify-center gap-4 flex-wrap">
-              <TabDock<DiscoverTabId> tabs={tabs} active={tab} onChange={setTab} aura={aura} />
+              <TabDock<DiscoverTabId> tabs={tabs} active={tab} onChange={setTab} />
               <SearchInput value={query} onChange={setQuery} />
             </div>
 

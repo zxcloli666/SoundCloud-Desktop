@@ -1,10 +1,10 @@
 import {useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgb, auraRgba} from '../../lib/aura';
+import {type Aura, auraRgb} from '../../lib/aura';
 import {userEmbed} from '../../lib/chat/embed-snapshot';
 import {Calendar, Globe, Sparkles} from '../../lib/icons';
 import {likedTracksCount} from '../../lib/likes';
-import {usePerfMode} from '../../lib/perf';
+import type { StarTier } from '../../lib/star-tenure';
 import {MessageButton} from '../chat/share/MessageButton';
 import {ShareButton} from '../chat/share/ShareButton';
 import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
@@ -15,7 +15,6 @@ import {PinArtistButton} from '../ui/PinArtistButton';
 import {RichText} from '../ui/RichText';
 import {UploadTrackButton} from '../upload/UploadTrackButton';
 import {AuraPicker} from './AuraPicker';
-import type { StarTier } from '../../lib/star-tenure';
 import {AvatarArtifact} from './AvatarArtifact';
 import {FollowBtn} from './FollowBtn';
 import {ProfileBanner} from './ProfileBanner';
@@ -73,14 +72,12 @@ export function IdentityHub({
   onPickCustom,
 }: IdentityHubProps) {
   const { t } = useTranslation();
-    const perf = usePerfMode();
-    const lb = perf.blur(16);
   const formattedDate = dateFormattedLong(user.created_at);
   const blockTarget = useMemo(() => userTarget(user), [user]);
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
 
   return (
-    <GlassHeroPanel hasStar={hasStar} aura={aura} className="@container">
+    <GlassHeroPanel className="@container">
       {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} hasStar={hasStar} />}
       <div data-ui="user-hero" className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch">
         <AvatarArtifact
@@ -113,10 +110,8 @@ export function IdentityHub({
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
-                        animation: perf.idleAnim ? 'prismatic-shift 6s linear infinite' : undefined,
-                      filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
                     }
-                  : { color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' }
+                  : { color: 'rgb(var(--ink))' }
               }
             >
               {user.username}
@@ -141,13 +136,7 @@ export function IdentityHub({
                   href={link.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold text-ink-55 hover:text-ink transition-all duration-300 hover:scale-105"
-                  style={{
-                      background: lb > 0 ? 'rgb(var(--ink) / 0.04)' : 'rgb(var(--surface-hi) / 0.85)',
-                    border: '0.5px solid rgb(var(--ink) / 0.08)',
-                      backdropFilter: lb > 0 ? `blur(${lb}px)` : undefined,
-                      WebkitBackdropFilter: lb > 0 ? `blur(${lb}px)` : undefined,
-                  }}
+                  className="chip-pill"
                 >
                   <span className="text-ink-45">{getWebIcon(link.service)}</span>
                   <span className="truncate max-w-[160px]">{link.title}</span>
@@ -157,7 +146,7 @@ export function IdentityHub({
           )}
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center @min-[720px]:justify-start">
-            {!isOwnProfile && <FollowBtn userUrn={user.urn} aura={aura} />}
+            {!isOwnProfile && <FollowBtn userUrn={user.urn} />}
             {!isOwnProfile && <MessageButton userUrn={user.urn} name={user.username} />}
             {!isOwnProfile && (
               <PinArtistButton
@@ -192,22 +181,18 @@ export function IdentityHub({
           <StatOrb
             value={user.followers_count}
             label={t('user.followers')}
-            accent={auraRgba(aura, 0.2)}
           />
           <StatOrb
             value={user.followings_count}
             label={t('user.following')}
-            accent={auraRgba(aura, 0.16)}
           />
           <StatOrb
             value={user.track_count}
             label={t('user.tracks')}
-            accent={auraRgba(aura, 0.14)}
           />
           <StatOrb
             value={likedTracksCount(user)}
             label={t('user.likes')}
-            accent={auraRgba(aura, 0.12)}
           />
         </div>
       </div>
@@ -216,18 +201,15 @@ export function IdentityHub({
         <StatOrb
           value={user.followers_count}
           label={t('user.followers')}
-          accent={auraRgba(aura, 0.2)}
         />
         <StatOrb
           value={user.followings_count}
           label={t('user.following')}
-          accent={auraRgba(aura, 0.16)}
         />
-        <StatOrb value={user.track_count} label={t('user.tracks')} accent={auraRgba(aura, 0.14)} />
+        <StatOrb value={user.track_count} label={t('user.tracks')} />
         <StatOrb
           value={likedTracksCount(user)}
           label={t('user.likes')}
-          accent={auraRgba(aura, 0.12)}
         />
       </div>
     </GlassHeroPanel>

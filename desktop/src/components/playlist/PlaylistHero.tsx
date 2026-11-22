@@ -8,8 +8,8 @@ import {releaseKindOf} from '../../lib/playlist-kind';
 import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
 import {GlassHeroPanel} from '../ui/GlassHeroPanel';
-import {PlaylistCover} from './cover/PlaylistCover';
 import {CuratorCard} from './CuratorCard';
+import {PlaylistCover} from './cover/PlaylistCover';
 import {PlaylistActions} from './PlaylistActions';
 import type {PlaylistAura} from './usePlaylistAura';
 
@@ -90,7 +90,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
         : {color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))'};
 
     return (
-        <GlassHeroPanel hasStar={false} aura={aura.aura} className="@container">
+        <GlassHeroPanel className="@container">
             <div data-ui="playlist-hero" className="p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start">
                 <PlaylistCover
                     playlist={playlist}

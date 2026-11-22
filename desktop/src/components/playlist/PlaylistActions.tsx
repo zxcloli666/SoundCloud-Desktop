@@ -6,7 +6,6 @@ import {playlistScope} from '../../lib/bulk-cache';
 import {playlistEmbed} from '../../lib/chat/embed-snapshot';
 import {fc} from '../../lib/formatters';
 import {fetchAllPlaylistTracks, type Playlist} from '../../lib/hooks';
-import {patchLikedCollections} from '../../lib/liked-collections';
 import {
     Check,
     Copy,
@@ -20,6 +19,7 @@ import {
     Shuffle,
     Trash2,
 } from '../../lib/icons';
+import {patchLikedCollections} from '../../lib/liked-collections';
 import {rawPlaylistCover} from '../../lib/playlist-cover';
 import type {ArrangeMode} from '../../lib/track-order';
 import type {Track} from '../../stores/player';
@@ -83,7 +83,7 @@ export const PlaylistLikeBtn = React.memo(function PlaylistLikeBtn({
             aria-pressed={liked}
             className={`inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold tabular-nums transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer border active:scale-[0.96] ${
                 liked
-                    ? 'bg-accent/15 text-accent border-accent/30 shadow-[0_0_18px_var(--color-accent-glow)]'
+                    ? 'bg-accent/15 text-accent border-accent/30'
                     : 'bg-ink/[0.04] border-ink/[0.07] text-ink-65 hover:bg-ink/[0.07] hover:text-ink-90 hover:border-ink/[0.12]'
             }`}
         >

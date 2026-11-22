@@ -1,17 +1,15 @@
 import {memo, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgba} from '../../lib/aura';
 import {dur, fc} from '../../lib/formatters';
 import {Calendar, ListMusic, Loader2, Music} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
 import {TrackColumns} from '../music/columns/TrackColumns';
 import {TrackStatusBadges} from '../music/TrackStatusBadges';
 import {VirtualList} from '../ui/VirtualList';
 import {ThemedTrackRow} from '../user/ThemedTrackRow';
-import type {TracksSort} from './types';
 import {useThemedShape} from '../user/useThemedShape';
+import type {TracksSort} from './types';
 import {useArtistTracks} from './useArtistData';
 
 export type TracksView = 'list' | 'years';
@@ -19,7 +17,6 @@ export type TracksView = 'list' | 'years';
 interface ArtistTracksTabProps {
   artistId: string;
   role: 'primary' | 'featured';
-  aura: Aura;
   sort: TracksSort;
   onSortChange: (s: TracksSort) => void;
   view: TracksView;
@@ -80,7 +77,6 @@ function groupByYear(tracks: Track[]): YearBucket[] {
 function ArtistTracksTabImpl({
   artistId,
   role,
-  aura,
   sort,
   onSortChange,
   view,
@@ -129,13 +125,7 @@ function ArtistTracksTabImpl({
   if (tracks.length === 0) {
     return (
       <div className="py-24 flex flex-col items-center gap-4">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{
-            background: 'rgb(var(--ink) / 0.03)',
-            boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-          }}
-        >
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink/[0.03] ring-1 ring-ink/[0.07]">
           <Music size={24} className="text-ink-15" />
         </div>
         <p className="text-ink-30 text-sm">
@@ -150,13 +140,8 @@ function ArtistTracksTabImpl({
       {showSort && (
         <div className="flex flex-wrap items-center justify-between gap-3 px-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <SortToggle
-              sort={sort}
-              onChange={onSortChange}
-              aura={aura}
-              disabled={view === 'years'}
-            />
-            <ViewToggle view={view} onChange={onViewChange} aura={aura} />
+            <SortToggle sort={sort} onChange={onSortChange} disabled={view === 'years'} />
+            <ViewToggle view={view} onChange={onViewChange} />
           </div>
           <span className="text-[11px] text-ink-30 font-bold uppercase tracking-[0.18em] tabular-nums">
             {fc(tracks.length)} · {dur(totalDuration)}
@@ -176,7 +161,7 @@ function ArtistTracksTabImpl({
             className="flex flex-col gap-1"
             getItemKey={(track) => track.urn}
             renderItem={(track, i) => (
-              <ThemedTrackRow track={track} index={i} queue={available} aura={aura} />
+              <ThemedTrackRow track={track} index={i} queue={available} />
             )}
           />
         </TrackColumns>
@@ -185,12 +170,7 @@ function ArtistTracksTabImpl({
       {view === 'years' && yearBuckets.length > 0 && (
         <div className="@container flex flex-col gap-10">
           {yearBuckets.map((bucket, idx) => (
-            <YearBlock
-              key={bucket.year ?? `unknown-${idx}`}
-              bucket={bucket}
-              queue={yearsQueue}
-              aura={aura}
-            />
+            <YearBlock key={bucket.year ?? `unknown-${idx}`} bucket={bucket} queue={yearsQueue} />
           ))}
         </div>
       )}
@@ -198,14 +178,7 @@ function ArtistTracksTabImpl({
       {wanted.length > 0 && (
         <div className="space-y-3 pt-4">
           <div className="flex items-center gap-3 px-2">
-            <span
-              className="text-[10px] font-bold uppercase tracking-[0.22em] px-3 py-1 rounded-full"
-              style={{
-                background: auraRgba(aura, 0.16),
-                color: 'rgb(var(--ink))',
-                boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
-              }}
-            >
+            <span className="rounded-full bg-accent/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink ring-1 ring-accent/30">
               {t('artist.comingSoon')}
             </span>
             <span className="text-[11px] text-ink-30 tabular-nums">{fc(wanted.length)}</span>
@@ -223,7 +196,7 @@ function ArtistTracksTabImpl({
 }
 
 const YearBlock = memo(
-  ({ bucket, queue, aura }: { bucket: YearBucket; queue: Track[]; aura: Aura }) => {
+  ({ bucket, queue }: { bucket: YearBucket; queue: Track[] }) => {
     const { t } = useTranslation();
     const shape = useThemedShape(bucket.items[0]?.user?.urn);
     const total = bucket.items.reduce((acc, x) => acc + (x.duration ?? 0), 0);
@@ -232,16 +205,7 @@ const YearBlock = memo(
         {/* Year marker — same look as albums timeline */}
         <div className="@4xl:w-[200px] @4xl:shrink-0 flex @4xl:flex-col @4xl:items-end items-center @4xl:sticky @4xl:top-24 self-start">
           <div className="flex items-baseline gap-3 @4xl:flex-col @4xl:items-end @4xl:gap-1 min-w-0 max-w-full">
-            <span
-              className="font-black leading-none tabular-nums tracking-tight whitespace-nowrap text-[clamp(48px,7vw,80px)]"
-              style={{
-                background: `linear-gradient(180deg, ${auraRgba(aura, 0.95)}, ${auraRgba(aura, 0.4)})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                filter: `drop-shadow(0 4px 24px ${auraRgba(aura, 0.35)})`,
-              }}
-            >
+            <span className="whitespace-nowrap text-[clamp(44px,6vw,72px)] font-bold leading-none tabular-nums tracking-tight text-ink-90">
               {bucket.year ?? '∞'}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 @4xl:text-right whitespace-nowrap">
@@ -256,7 +220,7 @@ const YearBlock = memo(
           <TrackColumns shape={shape} header={false}>
             <div className="flex flex-col gap-1">
               {bucket.items.map((track, i) => (
-                <ThemedTrackRow key={track.urn} track={track} index={i} queue={queue} aura={aura} />
+                <ThemedTrackRow key={track.urn} track={track} index={i} queue={queue} />
               ))}
             </div>
           </TrackColumns>
@@ -270,116 +234,61 @@ const SortToggle = memo(
   ({
     sort,
     onChange,
-    aura,
     disabled,
   }: {
     sort: TracksSort;
     onChange: (s: TracksSort) => void;
-    aura: Aura;
     disabled?: boolean;
   }) => {
     const { t } = useTranslation();
-    const b = usePerfMode().blur(20);
     const options: Array<{ id: TracksSort; label: string }> = [
       { id: 'popular', label: t('artist.sortPopular') },
       { id: 'recent', label: t('artist.sortRecent') },
     ];
     return (
       <div
-        className={`inline-flex items-center gap-1 p-1 rounded-2xl transition-opacity ${disabled ? 'opacity-40 pointer-events-none' : ''}`}
-        style={{
-          background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
-          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-          backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-          WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-        }}
+        role="radiogroup"
+        className={`chip-group ${disabled ? 'pointer-events-none opacity-40' : ''}`}
       >
-        {options.map((o) => {
-          const active = o.id === sort;
-          return (
-            <button
-              key={o.id}
-              type="button"
-              onClick={() => onChange(o.id)}
-              className={`relative px-4 h-8 rounded-xl text-[12px] font-semibold cursor-pointer transition-all ${
-                active ? 'text-ink' : 'text-ink-40 hover:text-ink-70'
-              }`}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(180deg, ${auraRgba(aura, 0.22)}, ${auraRgba(aura, 0.06)})`,
-                      boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.35)}, 0 4px 12px ${auraRgba(aura, 0.2)}`,
-                    }
-                  : undefined
-              }
-            >
-              {o.label}
-            </button>
-          );
-        })}
+        {options.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            role="radio"
+            aria-checked={o.id === sort}
+            onClick={() => onChange(o.id)}
+            className="chip-seg"
+          >
+            {o.label}
+          </button>
+        ))}
       </div>
     );
   },
 );
 
 const ViewToggle = memo(
-  ({
-    view,
-    onChange,
-    aura,
-  }: {
-    view: TracksView;
-    onChange: (v: TracksView) => void;
-    aura: Aura;
-  }) => {
+  ({ view, onChange }: { view: TracksView; onChange: (v: TracksView) => void }) => {
     const { t } = useTranslation();
-    const b = usePerfMode().blur(20);
     const options: Array<{ id: TracksView; label: string; icon: React.ReactNode }> = [
-      {
-        id: 'list',
-        label: t('artist.viewList'),
-        icon: <ListMusic size={13} />,
-      },
-      {
-        id: 'years',
-        label: t('artist.viewYears'),
-        icon: <Calendar size={13} />,
-      },
+      { id: 'list', label: t('artist.viewList'), icon: <ListMusic size={13} /> },
+      { id: 'years', label: t('artist.viewYears'), icon: <Calendar size={13} /> },
     ];
     return (
-      <div
-        className="inline-flex items-center gap-1 p-1 rounded-2xl"
-        style={{
-          background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
-          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-          backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-          WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-        }}
-      >
-        {options.map((o) => {
-          const active = o.id === view;
-          return (
-            <button
-              key={o.id}
-              type="button"
-              onClick={() => onChange(o.id)}
-              className={`relative inline-flex items-center gap-1.5 px-3 h-8 rounded-xl text-[12px] font-semibold cursor-pointer transition-all ${
-                active ? 'text-ink' : 'text-ink-40 hover:text-ink-70'
-              }`}
-              style={
-                active
-                  ? {
-                      background: `linear-gradient(180deg, ${auraRgba(aura, 0.22)}, ${auraRgba(aura, 0.06)})`,
-                      boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.35)}, 0 4px 12px ${auraRgba(aura, 0.2)}`,
-                    }
-                  : undefined
-              }
-            >
-              {o.icon}
-              {o.label}
-            </button>
-          );
-        })}
+      <div role="radiogroup" className="chip-group">
+        {options.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            role="radio"
+            aria-checked={o.id === view}
+            onClick={() => onChange(o.id)}
+            className="chip-seg"
+          >
+            {o.icon}
+            {o.label}
+          </button>
+        ))}
       </div>
     );
   },
@@ -389,20 +298,11 @@ const WantedRow = memo(({ track, index }: { track: Track; index: number }) => {
   const displayTitle = useDisplayTitle(track);
   const artistDisplay = useArtistDisplay(track);
   return (
-    <div
-      className="@container flex items-center gap-4 px-4 py-2.5 rounded-2xl opacity-50"
-      style={{ background: 'rgb(var(--ink) / 0.015)' }}
-    >
+    <div className="@container flex items-center gap-4 rounded-2xl px-4 py-2.5 opacity-50">
       <div className="w-10 h-10 flex items-center justify-center shrink-0">
         <span className="text-[12px] text-ink-20 tabular-nums font-semibold">{index + 1}</span>
       </div>
-      <div
-        className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-        style={{
-          background: 'rgb(var(--ink) / 0.03)',
-          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.06)',
-        }}
-      >
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-ink/[0.03] ring-1 ring-ink/[0.07]">
         <Music size={16} className="text-ink-20" />
       </div>
       <div className="flex-1 min-w-0">

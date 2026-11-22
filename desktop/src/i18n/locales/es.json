@@ -527,7 +527,9 @@
       "clear": "Borrar búsqueda",
       "empty": "No hay coincidencias en el contenido de este usuario",
       "error": "No se pudo buscar en este perfil"
-    }
+    },
+    "myMusic": "Mi música",
+    "myMusicEmpty": "Dale me gusta a algunas canciones y aquí aparecerá tu huella sonora."
   },
   "library": {
     "soundprint": "Tu huella sonora",

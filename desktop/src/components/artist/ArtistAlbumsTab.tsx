@@ -1,15 +1,12 @@
 import {memo, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {type Aura, auraRgba} from '../../lib/aura';
 import {Disc3, Loader2} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
 import type {ArtistAlbum} from './types';
 import {useArtistAlbums} from './useArtistData';
 
 interface ArtistAlbumsTabProps {
   artistId: string;
-  aura: Aura;
 }
 
 type Bucket = { year: number | null; items: ArtistAlbum[] };
@@ -33,7 +30,7 @@ function bucketByYear(items: ArtistAlbum[]): Bucket[] {
   return known;
 }
 
-function ArtistAlbumsTabImpl({ artistId, aura }: ArtistAlbumsTabProps) {
+function ArtistAlbumsTabImpl({ artistId }: ArtistAlbumsTabProps) {
   const { t } = useTranslation();
   const query = useArtistAlbums(artistId);
   const items = query.data ?? [];
@@ -50,13 +47,7 @@ function ArtistAlbumsTabImpl({ artistId, aura }: ArtistAlbumsTabProps) {
   if (items.length === 0) {
     return (
       <div className="py-24 flex flex-col items-center gap-4">
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{
-            background: 'rgb(var(--ink) / 0.03)',
-            border: '0.5px solid rgb(var(--ink) / 0.06)',
-          }}
-        >
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-ink/[0.03] ring-1 ring-ink/[0.07]">
           <Disc3 size={24} className="text-ink-15" />
         </div>
         <p className="text-ink-30 text-sm">{t('artist.noAlbums')}</p>
@@ -67,35 +58,21 @@ function ArtistAlbumsTabImpl({ artistId, aura }: ArtistAlbumsTabProps) {
   return (
     <div className="flex flex-col gap-12 py-2">
       {buckets.map((bucket, idx) => (
-        <YearGroup
-          key={bucket.year ?? `unknown-${idx}`}
-          year={bucket.year}
-          items={bucket.items}
-          aura={aura}
-        />
+        <YearGroup key={bucket.year ?? `unknown-${idx}`} year={bucket.year} items={bucket.items} />
       ))}
     </div>
   );
 }
 
 const YearGroup = memo(
-  ({ year, items, aura }: { year: number | null; items: ArtistAlbum[]; aura: Aura }) => {
+  ({ year, items }: { year: number | null; items: ArtistAlbum[] }) => {
     const { t } = useTranslation();
     return (
         <div className="flex flex-col md:flex-row md:gap-8 gap-4">
         {/* Year marker */}
         <div className="md:w-[200px] md:shrink-0 flex md:flex-col md:items-end items-center md:sticky md:top-24 self-start">
           <div className="flex items-baseline gap-3 md:flex-col md:items-end md:gap-1 min-w-0 max-w-full">
-            <span
-              className="font-black leading-none tabular-nums tracking-tight whitespace-nowrap text-[clamp(48px,7vw,80px)]"
-              style={{
-                background: `linear-gradient(180deg, ${auraRgba(aura, 0.95)}, ${auraRgba(aura, 0.4)})`,
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                filter: `drop-shadow(0 4px 24px ${auraRgba(aura, 0.35)})`,
-              }}
-            >
+            <span className="whitespace-nowrap text-[clamp(44px,6vw,72px)] font-bold leading-none tabular-nums tracking-tight text-ink-90">
               {year ?? '∞'}
             </span>
             <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 md:text-right whitespace-nowrap">
@@ -107,7 +84,7 @@ const YearGroup = memo(
         {/* Albums grid */}
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
           {items.map((al) => (
-            <AlbumCard key={al.id} album={al} aura={aura} />
+            <AlbumCard key={al.id} album={al} />
           ))}
         </div>
       </div>
@@ -115,56 +92,35 @@ const YearGroup = memo(
   },
 );
 
-const AlbumCard = memo(({ album, aura }: { album: ArtistAlbum; aura: Aura }) => {
+const AlbumCard = memo(({ album }: { album: ArtistAlbum }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-    const perf = usePerfMode();
   const kind = (album.type ?? 'album').toLowerCase();
   const kindLabel = t(`artist.kind.${kind}`, { defaultValue: kind });
-    const cb = perf.blur(20);
-    const badgeB = perf.blur(12);
 
   return (
     <button
       type="button"
       onClick={() => navigate(`/album/${encodeURIComponent(album.id)}`)}
-      className="group relative flex flex-col gap-2 text-left p-3 rounded-2xl cursor-pointer transition-all duration-500 hover:scale-[1.03]"
-      style={{
-          background: cb > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
-        border: '0.5px solid rgb(var(--ink) / 0.06)',
-          backdropFilter: cb > 0 ? `blur(${cb}px)` : undefined,
-          WebkitBackdropFilter: cb > 0 ? `blur(${cb}px)` : undefined,
-      }}
+      className="group relative flex cursor-pointer flex-col gap-2 rounded-2xl border border-ink/[0.07] p-3 text-left transition-colors duration-200 hover:bg-ink/[0.05]"
     >
-      <div
-        className="aspect-square rounded-xl overflow-hidden relative"
-        style={{
-          background: `linear-gradient(135deg, ${auraRgba(aura, 0.22)}, rgb(var(--ink) / 0.04))`,
-          border: '0.5px solid rgb(var(--ink) / 0.08)',
-        }}
-      >
+      <div className="relative aspect-square overflow-hidden rounded-xl bg-ink/[0.04] ring-1 ring-ink/[0.08]">
         {album.cover_url ? (
           <img
             src={album.cover_url}
             alt={album.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            className="h-full w-full object-cover"
             decoding="async"
             loading="lazy"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div className="flex h-full w-full items-center justify-center">
             <Disc3 size={40} className="text-ink-15" />
           </div>
         )}
         <div
-          className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.18em]"
-          style={{
-            background: 'rgba(0,0,0,0.55)',
-            color: 'rgb(var(--ink))',
-              backdropFilter: badgeB > 0 ? `blur(${badgeB}px)` : undefined,
-              WebkitBackdropFilter: badgeB > 0 ? `blur(${badgeB}px)` : undefined,
-            border: '0.5px solid rgb(var(--ink) / 0.12)',
-          }}
+          data-scheme="dark"
+          className="absolute left-2 top-2 rounded-full bg-shade-60 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.16em] text-ink"
         >
           {kindLabel}
         </div>

@@ -3,7 +3,6 @@ import React, {useCallback, useEffect, useMemo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate, useParams} from 'react-router-dom';
 import {SoundWaveSimilarBlock} from '../components/music/soundwave';
-import {Atmosphere} from '../components/search/Atmosphere';
 import {ROOM_KEYFRAMES} from '../components/track/keyframes';
 import {LinerNotes} from '../components/track/LinerNotes';
 import {RoomHero} from '../components/track/RoomHero';
@@ -23,7 +22,6 @@ import {
 } from '../lib/hooks';
 import {ChevronLeft} from '../lib/icons';
 import {setLikedUrn} from '../lib/likes';
-import {usePerfMode} from '../lib/perf';
 import {seedSuperliked} from '../lib/superlikes';
 import {useAuthStore} from '../stores/auth';
 import {type Track, usePlayerStore} from '../stores/player';
@@ -50,7 +48,6 @@ export const TrackPage = React.memo(function TrackPage() {
   const { urn } = useParams<{ urn: string }>();
   const { t } = useTranslation();
   const navigate = useNavigate();
-    const perf = usePerfMode();
 
     const {
         data: track,
@@ -123,7 +120,6 @@ export const TrackPage = React.memo(function TrackPage() {
     return (
         <div className="relative min-h-full w-full">
             <style>{ROOM_KEYFRAMES}</style>
-            <Atmosphere/>
             <div
                 className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
                 style={{isolation: 'isolate'}}
@@ -138,8 +134,7 @@ export const TrackPage = React.memo(function TrackPage() {
     if (!track) {
         return (
             <div className="relative min-h-full w-full flex items-center justify-center">
-                <Atmosphere/>
-                <LoadErrorState error={error} retrying={isFetching} onRetry={() => void refetch()}/>
+                    <LoadErrorState error={error} retrying={isFetching} onRetry={() => void refetch()}/>
             </div>
         );
     }
@@ -149,13 +144,6 @@ export const TrackPage = React.memo(function TrackPage() {
     return (
         <div data-ui="page" data-page="track" className="relative min-h-full w-full">
             <style>{ROOM_KEYFRAMES}</style>
-            {perf.atmosphere && (
-                <Atmosphere
-                    tint={aura.tint}
-                    energy={isThisPlaying ? Math.min(1, aura.energy + 0.12) : aura.energy}
-                />
-            )}
-
             <div
                 className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"
                 style={{isolation: 'isolate'}}

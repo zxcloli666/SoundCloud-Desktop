@@ -91,20 +91,18 @@ export const LinerNotes = React.memo(function LinerNotes({
     return (
         <section className="glass rounded-[2rem] p-6 @min-[512px]:p-7 space-y-6">
             <div className="flex flex-wrap gap-2.5">
-                <StatOrb value={track.playback_count} label={t('track.plays')} accent={aura.accentGlow}/>
+                <StatOrb value={track.playback_count} label={t('track.plays')}/>
                 <StatOrb
                     value={track.favoritings_count ?? track.likes_count}
                     label={t('track.likes')}
-                    accent={aura.accentGlow}
                 />
                 {track.reposts_count != null && (
                     <StatOrb
                         value={track.reposts_count}
                         label={t('track.reposts')}
-                        accent={aura.accentGlow}
                     />
                 )}
-                <StatOrb value={track.comment_count} label={t('track.comments')} accent={aura.accentGlow}/>
+                <StatOrb value={track.comment_count} label={t('track.comments')}/>
             </div>
 
             {desc && (
