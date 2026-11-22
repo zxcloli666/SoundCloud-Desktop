@@ -12,6 +12,7 @@ import { type Track, usePlayerStore } from '../../../stores/player';
 import { AltUploadMark } from '../../music/AltUploadMark';
 import { ArtistNameLinks } from '../../music/ArtistNameLinks';
 import { UploadKindDot } from '../../music/UploadKindDot';
+import { Marquee } from '../../ui/Marquee';
 import { NowPlayingNameCard } from '../NowPlayingNameCard';
 import { loadPercent } from './load-progress';
 
@@ -104,14 +105,14 @@ const PillTrackBody = React.memo(function PillTrackBody({
               : navigate(`/track/${encodeURIComponent(track.urn)}`)
           }
         >
-          {displayTitle}
+          <Marquee label={displayTitle}>{displayTitle}</Marquee>
         </span>
         <span className={`npb-sub${hasArtistLink ? ' is-link' : ''}`}>
           <AltUploadMark urn={track.urn} />
           <UploadKindDot kind={artistDisplay.uploadKind} />
-          <span>
+          <Marquee label={artistLinks.map((item) => item.name).join(', ')} durationSec={12}>
             <ArtistNameLinks items={artistLinks} />
-          </span>
+          </Marquee>
         </span>
       </NowPlayingNameCard>
     </div>

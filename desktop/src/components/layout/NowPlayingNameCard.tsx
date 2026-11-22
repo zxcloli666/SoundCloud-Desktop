@@ -17,9 +17,7 @@ type CopyKind = 'title' | 'artist' | 'label' | 'link';
 
 function isClipped(root: HTMLElement | null): boolean {
   if (!root) return false;
-  return Array.from(root.querySelectorAll<HTMLElement>('.npb-ttl, .npb-sub span')).some(
-    (el) => el.scrollWidth > el.clientWidth + 1,
-  );
+  return root.querySelector('[data-overflow="true"]') !== null;
 }
 
 function CopyChip({

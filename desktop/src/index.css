@@ -1372,20 +1372,21 @@ select,
     height: 44px;
     margin: 0 3px;
     place-items: center;
-    border: 0;
+    border: 1px solid rgb(var(--ink) / 0.28);
     border-radius: 50%;
-    background: var(--color-accent);
-    color: var(--color-accent-contrast);
+    background: rgb(var(--ink) / 0.1);
+    color: rgb(var(--ink));
     cursor: pointer;
-    transition: background-color 0.15s, filter 0.15s;
+    transition: background-color 0.15s, border-color 0.15s;
 }
 
 .npb-play:hover {
-    filter: brightness(1.1);
+    border-color: rgb(var(--ink) / 0.4);
+    background: rgb(var(--ink) / 0.17);
 }
 
 .npb-play:active {
-    filter: brightness(0.92);
+    background: rgb(var(--ink) / 0.07);
 }
 
 /* progress lane: time, waveform, time */
