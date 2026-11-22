@@ -117,12 +117,20 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      CARGO_NET_GIT_FETCH_WITH_CLI: "true"
     defaults:
       run:
         shell: bash
         working-directory: desktop/src-tauri
     steps:
       - uses: actions/checkout@v7
+
+      - name: Backend access
+        working-directory: .
+        env:
+          TOKEN: ${{ secrets.INTERNAL_PAT }}
+        run: git config --global url."https://x-access-token:${TOKEN}@github.com/zxcloli666/SoundCloud-Backend".insteadOf https://github.com/zxcloli666/SoundCloud-Backend
 
       - name: SeaweedFS
         if: runner.os == 'Linux'
