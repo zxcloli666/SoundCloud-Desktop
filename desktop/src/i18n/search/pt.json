@@ -170,6 +170,14 @@
     "chat da comunidade",
     "reportar bug"
   ],
+  "settings.helpTelegram": [
+    "canal no telegram",
+    "novidades do app",
+    "anúncios",
+    "canal do autor",
+    "acompanhar atualizações",
+    "telegram"
+  ],
   "settings.android": [
     "app de android",
     "ouvir no celular",

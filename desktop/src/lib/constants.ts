@@ -25,6 +25,7 @@ export const THEMES_RAW_BASE =
   `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}`;
 export const THEMES_GUIDE_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/blob/main/themes`;
 export const DISCORD_URL = 'https://discord.gg/xQcGBP8fGG';
+export const TELEGRAM_URL = 'https://t.me/soundcloud_desktop';
 export const BOOSTY_URL = 'https://boosty.to/lolinamide';
 export const ANDROID_CLIENT_URL = 'https://github.com/okeydw/SoundCloud-Android';
 export const ANDROID_CLIENT_RELEASES_URL = `${ANDROID_CLIENT_URL}/releases/latest`;
