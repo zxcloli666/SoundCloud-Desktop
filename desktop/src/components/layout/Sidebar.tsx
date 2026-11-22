@@ -139,7 +139,7 @@ export const Sidebar = React.memo(() => {
         transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
       }}
     >
-      <nav className="flex flex-col gap-0.5 px-2 pt-3">
+      <nav className="flex flex-col gap-2 px-2 pt-3">
         <SortableStack ids={navIds} onMove={moveNav}>
           {navIds.map((id) => {
             const item = NAV_ITEMS[id];

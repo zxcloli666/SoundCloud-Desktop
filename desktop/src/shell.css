@@ -61,20 +61,39 @@
   color: rgb(var(--ink));
 }
 
+.nav-row {
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
+[data-ui="sidebar"] nav .nav-row {
+  height: 42px;
+  background: rgb(var(--ink) / 0.025);
+}
+
+[data-ui="sidebar"] nav .nav-row:hover:not([aria-current="page"]) {
+  border-color: rgb(var(--ink) / 0.08);
+  background: rgb(var(--ink) / 0.05);
+}
+
 .nav-row[aria-current="page"] {
-  background: var(--shell-fill-hi);
+  border-color: rgb(var(--ink) / 0.2);
+  background: linear-gradient(90deg, rgb(var(--ink) / 0.1), rgb(var(--ink) / 0.04));
+  box-shadow:
+    inset 0 1px rgb(var(--ink) / 0.08),
+    0 8px 20px rgb(var(--shade) / calc(0.25 * var(--shade-alpha)));
   color: rgb(var(--ink));
 }
 
 .nav-row[aria-current="page"]::before {
   content: "";
   position: absolute;
-  left: 0;
+  left: 4px;
   top: 50%;
   width: 3px;
   height: 18px;
-  border-radius: 0 3px 3px 0;
-  background: var(--color-accent);
+  border-radius: 999px;
+  background: rgb(var(--ink));
   transform: translateY(-50%);
 }
 
