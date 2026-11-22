@@ -6,6 +6,7 @@ import {
   type ReadingsAnswer,
   readNames,
   spokenNames,
+  withAsked,
   withReadings,
 } from '../src/lib/voice/library-readings.ts';
 
@@ -38,21 +39,21 @@ test('names are asked again while the server reads more of them', async () => {
   const heard = await readNames('ru', ['gothrussia', 'x-ray', 'Psychosis'], async (_, names) => {
     asked.push(names);
     const left = lefts[asked.length - 1];
-    const readings = left === 2 ? [{ name: 'gothrussia', said: 'гот раша' }] : [];
+    const readings = left === 2 ? [{ name: 'gothrussia', said: ['гот раша'] }] : [];
     return { readings, left } satisfies ReadingsAnswer;
   });
   assert.equal(asked.length, 3);
-  assert.deepEqual(heard, { gothrussia: 'гот раша' });
+  assert.deepEqual(heard, { gothrussia: ['гот раша'] });
 });
 
 test('a refused or stuck ask stops the reading with what was heard', async () => {
   let calls = 0;
   const stuck = await readNames('ru', ['gothrussia'], async () => {
     calls += 1;
-    return { readings: [{ name: 'GothRussia', said: 'гот раша' }], left: 3 };
+    return { readings: [{ name: 'GothRussia', said: ['гот раша'] }], left: 3 };
   });
   assert.equal(calls, 2);
-  assert.deepEqual(stuck, { gothrussia: 'гот раша' });
+  assert.deepEqual(stuck, { gothrussia: ['гот раша'] });
   const refused = await readNames('ru', ['gothrussia'], async () => {
     throw new Error('403');
   });
@@ -70,15 +71,30 @@ test('a big library is asked for in parts the server takes', async () => {
   assert.deepEqual(sizes, [500, 500, 200]);
 });
 
-test('a track carries the readings of its title and its artist', () => {
-  const heard = { gothrussia: 'гот раша', psychosis: 'психосис' };
+test('a track carries every reading of its title and its artist', () => {
+  const heard = { gothrussia: ['гот раша'], psychosis: ['сайкоусис', 'психосис'] };
   const [first, second] = withReadings(OWNED, heard);
-  assert.deepEqual([first.said, first.artistSaid], [['гот раша'], ['психосис']]);
-  assert.deepEqual([second.said, second.artistSaid], [[], ['психосис']]);
+  assert.deepEqual([first.said, first.artistSaid], [['гот раша'], ['сайкоусис', 'психосис']]);
+  assert.deepEqual([second.said, second.artistSaid], [[], ['сайкоусис', 'психосис']]);
+});
+
+test('what the listener said goes first among the server readings, once', () => {
+  const heard = { psychosis: ['сайкоусис', 'психосис'], 'x-ray': ['экс рей'] };
+  const asked = { psychosis: 'психосис', soldier: 'солджер' };
+  assert.deepEqual(withAsked(heard, asked), {
+    psychosis: ['психосис', 'сайкоусис'],
+    'x-ray': ['экс рей'],
+    soldier: ['солджер'],
+  });
+  assert.deepEqual(withAsked({}, {}), {});
 });
 
 test('the spoken names put what the listener asked for first, then artists and favourite titles', () => {
-  const heard = { gothrussia: 'гот раша', psychosis: 'психосис', 'lil peep': 'лил пип' };
+  const heard = {
+    gothrussia: ['гот раша'],
+    psychosis: ['психосис', 'сайкоусис'],
+    'lil peep': ['лил пип'],
+  };
   const asked = { soldier: 'солджер', psychosis: 'психосис' };
   const spoken = spokenNames(
     'ru',
@@ -87,5 +103,5 @@ test('the spoken names put what the listener asked for first, then artists and f
     OWNED.slice(0, 2),
     heard,
   );
-  assert.deepEqual(spoken, ['психосис', 'солджер', 'КРЕСТ', 'лил пип', 'гот раша']);
+  assert.deepEqual(spoken, ['психосис', 'солджер', 'сайкоусис', 'КРЕСТ', 'лил пип', 'гот раша']);
 });

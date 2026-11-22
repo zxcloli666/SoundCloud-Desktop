@@ -8,8 +8,10 @@ const MOST_SPOKEN = 200;
 const LATIN = /[a-z]/i;
 const CYRILLIC = /[а-яё]/i;
 
+export type Heard = Record<string, string[]>;
+
 export interface ReadingsAnswer {
-  readings: { name: string; said: string }[];
+  readings: { name: string; said: string[] }[];
   left: number;
 }
 
@@ -44,8 +46,8 @@ export async function readNames(
   language: VoiceLanguage,
   names: string[],
   ask: AskReadings,
-): Promise<Readings> {
-  const heard: Readings = {};
+): Promise<Heard> {
+  const heard: Heard = {};
   let rounds = 0;
   for (let at = 0; at < names.length && rounds < MOST_ASKS; at += NAMES_PER_ASK) {
     const part = names.slice(at, at + NAMES_PER_ASK);
@@ -62,8 +64,16 @@ export async function readNames(
   return heard;
 }
 
-export function withReadings(tracks: OwnedTrack[], heard: Readings): OwnedTrack[] {
-  const of = (name: string) => (heard[keyOf(name)] ? [heard[keyOf(name)]] : []);
+export function withAsked(heard: Heard, asked: Readings): Heard {
+  const joined: Heard = { ...heard };
+  for (const [key, said] of Object.entries(asked)) {
+    joined[key] = [...new Set([said, ...(heard[key] ?? [])])];
+  }
+  return joined;
+}
+
+export function withReadings(tracks: OwnedTrack[], heard: Heard): OwnedTrack[] {
+  const of = (name: string) => heard[keyOf(name)] ?? [];
   return tracks.map((track) => ({ ...track, said: of(track.name), artistSaid: of(track.artist) }));
 }
 
@@ -72,11 +82,15 @@ export function spokenNames(
   asked: Readings,
   artists: string[],
   favourite: OwnedTrack[],
-  heard: Readings,
+  heard: Heard,
 ): string[] {
-  const said = (name: string) => (unspoken(language, name) ? heard[keyOf(name)] : name);
+  const said = (name: string) => (unspoken(language, name) ? (heard[keyOf(name)] ?? []) : [name]);
   const recent = Object.values(asked).reverse();
-  const named = [...recent, ...artists.map(said), ...favourite.map((track) => said(track.name))];
+  const named = [
+    ...recent,
+    ...artists.flatMap(said),
+    ...favourite.flatMap((track) => said(track.name)),
+  ];
   const kept = named.filter((name): name is string => Boolean(name?.trim()));
   return [...new Set(kept)].slice(0, MOST_SPOKEN);
 }

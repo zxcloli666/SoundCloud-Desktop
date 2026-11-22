@@ -13,6 +13,7 @@ import {
   type ReadingsAnswer,
   readNames,
   spokenNames,
+  withAsked,
   withReadings,
 } from './library-readings';
 import { changesLikedArtists, likedArtists } from './liked-artists';
@@ -84,12 +85,12 @@ async function readLibrary() {
   const owned = ownedTracks(superliked, liked.collection);
   const { language } = useVoiceStore.getState().config;
   const learned = () => (language === 'ru' ? useVoiceStore.getState().readings : {});
-  await voiceIpc.library(withReadings(owned, learned()));
+  await voiceIpc.library(withReadings(owned, withAsked({}, learned())));
   const artists = likedArtists([...superliked, ...liked.collection], followed.collection);
   boost({ artists });
   const heard = await readNames(language, libraryNames(language, artists, owned), askReadings);
   const asked = learned();
-  const known = { ...heard, ...asked };
+  const known = withAsked(heard, asked);
   await voiceIpc.library(withReadings(owned, known));
   boost({ spoken: spokenNames(language, asked, artists, ownedTracks(superliked), known) });
 }
