@@ -42,6 +42,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
   playlist,
   tracks,
   genres,
+  glow,
   isOwner,
   isPlaying,
   isPinned,
@@ -59,6 +60,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
   playlist: Playlist;
   tracks: Track[];
   genres: GenreShare[];
+  glow: readonly string[];
   isOwner: boolean;
   isPlaying: boolean;
   isPinned: boolean;
@@ -78,7 +80,7 @@ export const PlaylistHero = React.memo(function PlaylistHero({
   const changeCover = useCallback(() => coverInput.current?.click(), []);
   const kl = kindLabelKey(releaseKindOf(playlist) ?? playlist.kind);
   return (
-    <GlassHeroPanel className="@container">
+    <GlassHeroPanel className="@container" glow={glow}>
       <div
         data-ui="playlist-hero"
         className="p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start"

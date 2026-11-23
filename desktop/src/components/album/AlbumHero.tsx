@@ -17,6 +17,7 @@ interface AlbumHeroProps {
   album: AlbumDetail;
   hasStar: boolean;
   aura: Aura;
+  glow: readonly string[];
 }
 
 const ROLE_LABEL_KEY: Record<string, string> = {
@@ -60,7 +61,7 @@ const ArtistChip = memo(function ArtistChip({
   );
 });
 
-function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
+function AlbumHeroImpl({ album, hasStar, aura, glow }: AlbumHeroProps) {
   const { t } = useTranslation();
   const kind = (album.type ?? 'album').toLowerCase();
   const kindLabel = t(`artist.kind.${kind}`, { defaultValue: kind });
@@ -78,7 +79,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
   }, [album.tracks, album.artists]);
 
   return (
-    <GlassHeroPanel className="@container">
+    <GlassHeroPanel className="@container" glow={glow} star={hasStar}>
       <div
         data-ui="album-hero"
         className="relative p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start"

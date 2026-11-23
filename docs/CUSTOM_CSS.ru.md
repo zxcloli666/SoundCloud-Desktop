@@ -39,6 +39,7 @@
 | `[data-ui="star-card"]` | Карточка STAR в левом меню |
 | `[data-ui="profile"]` | Ваш профиль внизу левого меню |
 | `[data-ui="main"]` | Прокручиваемая область страниц |
+| `[data-ui="page-glow"]` | Мягкий свет за областью страниц, в цветах обложки, жанра или ауры. `data-level`: `calm`, `page`, `star` (профиль со STAR; на странице пользователя и артиста со звёздами) или `off`. `opacity` приглушает, `display: none` выключает |
 | `[data-ui="back-to-top"]` | Плавающая кнопка «наверх» над областью страниц |
 | `[data-ui="page"]` | Страница. Её имя в `data-page`: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |
 | `[data-ui="modal"]` | Диалоговое окно |
@@ -209,6 +210,7 @@
 | `[data-ui="button"]` | Стеклянная кнопка |
 | `[data-ui="glass-card"]` | Стеклянная карточка |
 | `[data-ui="hero"]` | Большая стеклянная панель |
+| `[data-ui="hero"][data-star]` | Эта панель на странице участника STAR, его артиста или альбома |
 | `[data-ui="avatar"]` | Аватар |
 | `[data-ui="skeleton"]` | Заглушка загрузки |
 | `[data-ui="error-state"]` | Ошибка с кнопкой повтора |

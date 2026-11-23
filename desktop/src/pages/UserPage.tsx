@@ -20,6 +20,7 @@ import { useEditableUserAura, useUserAura } from '../components/user/useUserAura
 import { useUser, useUserSubscription, useUserWebProfiles } from '../lib/hooks';
 import { Loader2 } from '../lib/icons';
 import { likedTracksCount } from '../lib/likes';
+import { usePageGlow } from '../lib/page-glow';
 import { MIN_SEARCH_QUERY } from '../lib/search';
 import { tierOfSince, useOwnTenure } from '../lib/star-tenure';
 import { useSubscription } from '../lib/subscription';
@@ -88,6 +89,7 @@ export function UserPage() {
 
   const aura = isOwnProfile ? editable.aura : readonly.aura;
   const customHex = isOwnProfile ? editable.customHex : readonly.customHex;
+  const glow = usePageGlow(aura.orbs, hasStar ? 'star' : 'page', hasStar ? aura : null);
 
   const tabs = useMemo(() => {
     if (!user) return [] as const;
@@ -137,6 +139,7 @@ export function UserPage() {
             starTier={starTier}
             webProfiles={webProfiles}
             aura={aura}
+            glow={glow}
             isOwnProfile={isOwnProfile}
             customHex={customHex}
             onPickAura={editable.onPickAura}

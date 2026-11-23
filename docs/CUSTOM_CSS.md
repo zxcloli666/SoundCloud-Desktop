@@ -39,6 +39,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
+| `[data-ui="page-glow"]` | Soft light behind the page area, in the colours of the cover, genre or aura. `data-level` is `calm`, `page`, `star` (STAR profile; stars on user and artist pages) or `off`. `opacity` dims it, `display: none` turns it off |
 | `[data-ui="back-to-top"]` | Floating back-to-top button over the page area |
 | `[data-ui="page"]` | A page. `data-page` names it: `home`, `search`, `library`, `history`, `discover`, `star`, `track`, `playlist`, `user`, `artist`, `album`, `offline`, `recap`, `settings`, `login` |
 | `[data-ui="modal"]` | Dialog window |
@@ -209,6 +210,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="button"]` | Glass button |
 | `[data-ui="glass-card"]` | Glass card |
 | `[data-ui="hero"]` | Large glass panel |
+| `[data-ui="hero"][data-star]` | That panel on the page of a STAR member, their artist page or album |
 | `[data-ui="avatar"]` | Avatar |
 | `[data-ui="skeleton"]` | Loading placeholder |
 | `[data-ui="error-state"]` | Error message with a retry button |

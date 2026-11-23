@@ -18,6 +18,7 @@ import { LoadErrorState } from '../components/ui/LoadErrorState';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { type TabDescriptor, TabDock } from '../components/user/TabDock';
 import { Loader2 } from '../lib/icons';
+import { usePageGlow } from '../lib/page-glow';
 
 export function ArtistPage() {
   const { id } = useParams<{ id: string }>();
@@ -27,6 +28,7 @@ export function ArtistPage() {
   const artist = detail.data;
 
   const { hasStar, aura } = useArtistStar(id);
+  const glow = usePageGlow(aura.orbs, hasStar ? 'star' : 'page', hasStar ? aura : null);
 
   const [tab, setTab] = useState<ArtistTabId>('tracks');
   const [primarySort, setPrimarySort] = useState<TracksSort>('popular');
@@ -91,7 +93,7 @@ export function ArtistPage() {
           className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32"
           style={{ isolation: 'isolate' }}
         >
-          <ArtistHero artist={artist} hasStar={hasStar} aura={aura} />
+          <ArtistHero artist={artist} hasStar={hasStar} aura={aura} glow={glow} />
 
           <div className="mt-8">
             <ArtistSoundWave artistId={artist.id} artistName={artist.name} />

@@ -6,6 +6,7 @@
 @import "./settings.css";
 @import "./marquee.css";
 @import "./queue.css";
+@import "./glow.css";
 
 @theme {
   --color-bg-primary: rgb(var(--paper) / 0.95);

@@ -9,12 +9,14 @@ import { LoadErrorState } from '../components/ui/LoadErrorState';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { albumScope } from '../lib/bulk-cache';
 import { Loader2 } from '../lib/icons';
+import { usePageGlow } from '../lib/page-glow';
 
 export function AlbumPage() {
   const { id } = useParams<{ id: string }>();
   const album = useAlbumDetail(id);
   const data = album.data;
   const { hasStar, aura } = useArtistStar(data?.primary_artist?.id);
+  const glow = usePageGlow(aura.orbs, hasStar ? 'star' : 'page');
 
   if (album.isLoading || (!data && !album.error)) {
     return (
@@ -45,7 +47,7 @@ export function AlbumPage() {
           className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32 flex flex-col gap-8"
           style={{ isolation: 'isolate' }}
         >
-          <AlbumHero album={data} hasStar={hasStar} aura={aura} />
+          <AlbumHero album={data} hasStar={hasStar} aura={aura} glow={glow} />
           <AlbumCast artists={data.artists} />
           <AlbumTrackList tracks={data.tracks} />
         </div>

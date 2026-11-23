@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { SoundWaveSimilarBlock } from '../components/music/soundwave';
+import { genreColor } from '../components/search/utils';
 import { ROOM_KEYFRAMES } from '../components/track/keyframes';
 import { LinerNotes } from '../components/track/LinerNotes';
 import { RoomHero } from '../components/track/RoomHero';
@@ -21,6 +22,7 @@ import {
 } from '../lib/hooks';
 import { ChevronLeft } from '../lib/icons';
 import { setLikedUrn } from '../lib/likes';
+import { usePageGlow } from '../lib/page-glow';
 import { seedSuperliked } from '../lib/superlikes';
 import { useAuthStore } from '../stores/auth';
 import { type Track, usePlayerStore } from '../stores/player';
@@ -85,6 +87,7 @@ export const TrackPage = React.memo(function TrackPage() {
   const isThisPlaying = usePlayerStore((s) => isThis && s.isPlaying);
 
   const myUrn = useAuthStore((s) => s.user?.urn);
+  const glow = usePageGlow(track?.genre ? [genreColor(track.genre)] : [], 'page');
 
   useEffect(() => {
     if (track?.user_favorite && track.urn) setLikedUrn(track.urn, true);
@@ -159,6 +162,7 @@ export const TrackPage = React.memo(function TrackPage() {
           isThis={isThis}
           isThisPlaying={isThisPlaying}
           isOwner={isOwner}
+          glow={glow}
           comments={comments}
           onPlay={handlePlay}
           onSeek={jumpTo}

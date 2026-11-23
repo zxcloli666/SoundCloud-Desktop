@@ -28,6 +28,7 @@ import {
   useUpdatePlaylistTracks,
 } from '../lib/hooks';
 import { AlertCircle, Check, ChevronLeft, ListMusic, X } from '../lib/icons';
+import { usePageGlow } from '../lib/page-glow';
 import { rawPlaylistCover } from '../lib/playlist-cover';
 import { usePlaylistDelivery } from '../lib/playlist-delivery';
 import { armPlaylistContinuation } from '../lib/queue-continuation';
@@ -180,6 +181,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
   );
 
   const genres = usePlaylistGenres(ownTracks, playlist?.genre);
+  const glow = usePageGlow(
+    genres.map((g) => g.color),
+    'page',
+  );
   const scrollRef = useInfiniteScroll(hasNextPage ?? false, isFetchingNextPage, fetchNextPage);
 
   const handleDragEnd = useCallback(
@@ -466,6 +471,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           playlist={playlist}
           tracks={ownTracks}
           genres={genres}
+          glow={glow}
           isOwner={isOwner}
           isPlaying={isPlayingFromThis}
           isPinned={isPinned}

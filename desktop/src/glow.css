@@ -1,0 +1,207 @@
+@property --glow-a {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --glow-b {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+@property --glow-c {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: transparent;
+}
+
+[data-ui="page-glow"] {
+  --glow-k: 1;
+  --orb-a: 0.12;
+  --orb-b: 0.07;
+  --orb-c: 0.09;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  contain: strict;
+}
+
+[data-ui="page-glow"][data-level="page"] {
+  --orb-a: 0.3;
+  --orb-b: 0.16;
+  --orb-c: 0.14;
+}
+
+[data-ui="page-glow"][data-level="star"] {
+  --orb-a: 0.42;
+  --orb-b: 0.32;
+  --orb-c: 0.26;
+}
+
+[data-ui="page-glow"][data-level="off"] {
+  --glow-k: 0;
+}
+
+[data-scheme="white"] [data-ui="page-glow"]:not([data-level="off"]) {
+  --glow-k: 0.6;
+}
+
+[data-ui="app"][data-wall] [data-ui="page-glow"]:not([data-level="off"]) {
+  --glow-k: 0.55;
+}
+
+[data-scheme="white"] [data-ui="app"][data-wall] [data-ui="page-glow"]:not([data-level="off"]) {
+  --glow-k: 0.35;
+}
+
+[data-ui="page-glow"][data-animate] {
+  transition:
+    --glow-a 1.4s var(--ease-apple),
+    --glow-b 1.4s var(--ease-apple),
+    --glow-c 1.4s var(--ease-apple);
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    var(--orb) 0%,
+    color-mix(in srgb, var(--orb) 78%, transparent) 18%,
+    color-mix(in srgb, var(--orb) 48%, transparent) 40%,
+    color-mix(in srgb, var(--orb) 22%, transparent) 62%,
+    color-mix(in srgb, var(--orb) 7%, transparent) 82%,
+    transparent 100%
+  );
+}
+
+[data-ui="page-glow"][data-animate] .glow-orb {
+  transition: opacity 0.9s ease;
+}
+
+.glow-orb-a {
+  --orb: var(--glow-a);
+  top: calc(8% - 34vmax);
+  left: calc(30% - 34vmax);
+  width: 68vmax;
+  height: 68vmax;
+  opacity: calc(var(--orb-a) * var(--glow-k));
+}
+
+.glow-orb-b {
+  --orb: var(--glow-b);
+  top: calc(30% - 32vmax);
+  left: calc(98% - 32vmax);
+  width: 64vmax;
+  height: 64vmax;
+  opacity: calc(var(--orb-b) * var(--glow-k));
+}
+
+.glow-orb-c {
+  --orb: var(--glow-c);
+  top: calc(108% - 38vmax);
+  left: calc(56% - 38vmax);
+  width: 76vmax;
+  height: 76vmax;
+  opacity: calc(var(--orb-c) * var(--glow-k));
+}
+
+[data-ui="page-glow"][data-drift] .glow-orb {
+  will-change: transform;
+  animation: glow-drift 30s ease-in-out infinite;
+}
+
+[data-ui="page-glow"][data-drift] .glow-orb-b {
+  animation-duration: 38s;
+  animation-delay: -12s;
+}
+
+[data-ui="page-glow"][data-drift] .glow-orb-c {
+  animation-duration: 46s;
+  animation-delay: -24s;
+}
+
+[data-ui="page-glow"][data-level="off"] .glow-orb,
+[data-app-idle="1"] [data-ui="page-glow"] .glow-orb {
+  animation-play-state: paused;
+}
+
+@keyframes glow-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  33% {
+    transform: translate3d(3%, 4%, 0);
+  }
+  66% {
+    transform: translate3d(-3%, 2%, 0);
+  }
+}
+
+@keyframes star-twinkle {
+  0% {
+    opacity: var(--min, 0.2);
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: var(--max, 0.9);
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: var(--min, 0.2);
+    transform: scale(0.85);
+  }
+}
+
+.lit {
+  --lit-mix: 20%;
+  --lit-star-mix: 30%;
+  isolation: isolate;
+}
+
+[data-scheme="white"] .lit {
+  --lit-mix: 14%;
+  --lit-star-mix: 20%;
+}
+
+.lit::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    45% 85% at 15% 26%,
+    color-mix(in srgb, var(--lit) var(--lit-mix), transparent),
+    transparent 72%
+  );
+}
+
+.lit[data-star] {
+  border-color: color-mix(in srgb, var(--lit) 34%, transparent);
+  box-shadow: 0 30px 90px -40px color-mix(in srgb, var(--lit) 70%, transparent);
+}
+
+.lit[data-star]::before {
+  background:
+    radial-gradient(
+      55% 95% at 14% 22%,
+      color-mix(in srgb, var(--lit) var(--lit-star-mix), transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      50% 80% at 92% 100%,
+      color-mix(in srgb, var(--lit-b, var(--lit)) var(--lit-mix), transparent),
+      transparent 70%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-ui="page-glow"] .glow-orb {
+    animation: none;
+  }
+}

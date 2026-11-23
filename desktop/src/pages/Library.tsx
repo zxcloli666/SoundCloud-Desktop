@@ -24,6 +24,7 @@ import { useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists } 
 import { Bookmark, Disc3, Heart, ListMusic, Users } from '../lib/icons';
 import type { LayoutId } from '../lib/layout';
 import { likedTracksCount } from '../lib/likes';
+import { usePageGlow } from '../lib/page-glow';
 import { splitReleases } from '../lib/playlist-kind';
 import { armLikesContinuation } from '../lib/queue-continuation';
 import { recapYear } from '../lib/recap-window';
@@ -58,6 +59,7 @@ export const Library = React.memo(() => {
   const likedTracks = likesQuery.tracks;
   const [genre, setGenre] = useState<string | null>(null);
   const sound = useSoundprint(likedTracks, genre);
+  usePageGlow(sound.tint);
 
   useEffect(() => {
     if (hash !== '#soundprint') return;
