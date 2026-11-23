@@ -2,7 +2,7 @@
 
 [Русская версия](CUSTOM_CSS.ru.md)
 
-Settings > Appearance > Custom CSS lets you restyle the app with your own CSS. Changes apply as you type, in the main window and in the tray mini player. The switch in the card header turns the styles off without deleting them.
+Settings > Advanced > Custom CSS lets you restyle the app with your own CSS. Changes apply as you type, in the main window and in the tray mini player. The switch in the card header turns the styles off without deleting them.
 
 Custom CSS sits on top of a theme from the catalog, so your rules win.
 
@@ -212,8 +212,12 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="kbd"]` | Key hint |
 | `[data-ui="card"]` | Settings cards |
 | `[data-ui="settings-nav"]` | Section list in Settings |
-| `[data-ui="settings-nav-item"]` | A section in that list |
+| `[data-ui="settings-nav-item"]` | A section in that list, `[aria-current="page"]` on the open one |
+| `[data-ui="settings-header"]` | Title of the open Settings section |
+| `[data-ui="settings-tabs"]` | Tabs of a section with several pages, like Advanced |
+| `[data-ui="settings-tab"]` | One of those tabs, `[aria-selected="true"]` on the open one |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="settings-info"]` | Info mark next to a setting, shows a hint on hover |
 | `[data-ui="mobile-access-badge"]` | Extended access status in Settings; `data-state` is `off`, `active` or `relink` |
 | `[data-ui="mobile-link"]` | Extended access link dialog; `data-phase` is `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` or `expired` |
 | `[data-ui="mobile-link-account"]` | Account being linked, in that dialog |
@@ -400,7 +404,7 @@ A plain background needs no CSS:
 
 Use this when the image belongs to one part of the window: the sidebar, the player, the cards. Works the same on Windows, macOS and Linux.
 
-1. Open Settings > Appearance > Custom CSS > **Your images**.
+1. Open Settings > Advanced > Custom CSS > **Your images**.
 2. Click **Add image** and pick a file: PNG, JPG, WebP, GIF, SVG or AVIF, up to 10 MB. The app copies it into its own folder, the original stays where it was.
 3. Click the copy button next to the file and paste the result into your CSS. It looks like `url("sc-assets/bg.webp")`.
 4. The trash button deletes the file. A rule that points to a deleted file just shows nothing.
