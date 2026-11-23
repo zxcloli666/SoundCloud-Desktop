@@ -54,9 +54,11 @@ runs:
             echo "::warning::$repo:$tag did not unpack, building cold"
           fi
           rm -rf "$pack"
+          mkdir -p .ci && touch .ci/restored
           exit 0
         done
         rm -rf "$pack"
+        mkdir -p .ci && touch .ci/restored
         echo "no snapshot for $NAME in $repo, building cold"
 
     - name: Save
@@ -77,6 +79,7 @@ runs:
         repo=ghcr.io/$owner/cache/desktop-ci
         toolchain=$(sed -n 's/^channel *= *"\(.*\)"/\1/p' rust-toolchain.toml)
         exact=$NAME-$toolchain-$(git rev-parse "HEAD:$LOCK" | cut -c1-12)
+        bash scripts/ci-prune.sh "$TARGET" "$RUNNER_TEMP/build.json" "$(git rev-parse "HEAD:$LOCK")"
         find "$TARGET" -type f -size +20M ! -path '*/build/*' \( -name '*.exe' -o -name '*.pdb' -o \( -perm -u+x ! -name '*.*' \) \) -delete
         pack=$RUNNER_TEMP/target-cache
         rm -rf "$pack" && mkdir -p "$pack"
