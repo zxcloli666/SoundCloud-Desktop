@@ -20,7 +20,7 @@
   }
 
   [data-ui="app"][data-wall] [data-page="settings"] {
-    --set-panel: color-mix(in srgb, var(--shell) 70%, transparent);
+    --set-panel: var(--shell-pane);
   }
 
   .set-layout {

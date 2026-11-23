@@ -44,7 +44,7 @@
   padding: 20px;
   border: 1px solid var(--shell-line);
   border-radius: 24px;
-  background: color-mix(in srgb, var(--shell) 62%, transparent);
+  background: var(--shell-pane);
   backdrop-filter: blur(var(--glass-blur-soft));
   -webkit-backdrop-filter: blur(var(--glass-blur-soft));
 }
