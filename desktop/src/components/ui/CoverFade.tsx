@@ -2,12 +2,12 @@ export function CoverFade({
   value,
   onChange,
   label,
-  ui,
+  'data-ui': ui,
 }: {
   value: number;
   onChange: (value: number) => void;
   label: string;
-  ui: string;
+  'data-ui': string;
 }) {
   return (
     <div

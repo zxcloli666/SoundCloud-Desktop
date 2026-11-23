@@ -112,7 +112,7 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
             value={coverOpacity}
             onChange={setCoverOpacity}
             label={t('settings.videoCoverOpacity')}
-            ui="lyrics-cover-fade"
+            data-ui="lyrics-cover-fade"
           />
         )}
       </div>

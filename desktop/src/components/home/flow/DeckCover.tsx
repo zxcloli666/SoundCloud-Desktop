@@ -61,7 +61,7 @@ export function DeckFrame({ track, children }: { track: Track | null; children: 
         value={opacity}
         onChange={setOpacity}
         label={t('settings.deckCoverOpacity')}
-        ui="deck-cover-fade"
+        data-ui="deck-cover-fade"
       />
     </div>
   );
