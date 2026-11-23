@@ -1,25 +1,25 @@
-import {useMemo} from 'react';
-import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgb} from '../../lib/aura';
-import {userEmbed} from '../../lib/chat/embed-snapshot';
-import {Calendar, Globe, Sparkles} from '../../lib/icons';
-import {likedTracksCount} from '../../lib/likes';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { type Aura, auraRgb } from '../../lib/aura';
+import { userEmbed } from '../../lib/chat/embed-snapshot';
+import { Calendar, Globe, Sparkles } from '../../lib/icons';
+import { likedTracksCount } from '../../lib/likes';
 import type { StarTier } from '../../lib/star-tenure';
-import {MessageButton} from '../chat/share/MessageButton';
-import {ShareButton} from '../chat/share/ShareButton';
-import {BlockArtistButton} from '../music/blocklist/BlockArtistButton';
-import {userTarget} from '../music/blocklist/targets';
-import {CopyLinkButton} from '../ui/CopyLinkButton';
-import {GlassHeroPanel} from '../ui/GlassHeroPanel';
-import {PinArtistButton} from '../ui/PinArtistButton';
-import {RichText} from '../ui/RichText';
-import {UploadTrackButton} from '../upload/UploadTrackButton';
-import {AuraPicker} from './AuraPicker';
-import {AvatarArtifact} from './AvatarArtifact';
-import {FollowBtn} from './FollowBtn';
-import {ProfileBanner} from './ProfileBanner';
-import {StatOrb} from './StatOrb';
-import {getWebIcon, InfoChip, ProChip, VerifiedBadge} from './UserChips';
+import { MessageButton } from '../chat/share/MessageButton';
+import { ShareButton } from '../chat/share/ShareButton';
+import { BlockArtistButton } from '../music/blocklist/BlockArtistButton';
+import { userTarget } from '../music/blocklist/targets';
+import { CopyLinkButton } from '../ui/CopyLinkButton';
+import { GlassHeroPanel } from '../ui/GlassHeroPanel';
+import { PinArtistButton } from '../ui/PinArtistButton';
+import { RichText } from '../ui/RichText';
+import { UploadTrackButton } from '../upload/UploadTrackButton';
+import { AuraPicker } from './AuraPicker';
+import { AvatarArtifact } from './AvatarArtifact';
+import { FollowBtn } from './FollowBtn';
+import { ProfileBanner } from './ProfileBanner';
+import { StatOrb } from './StatOrb';
+import { getWebIcon, InfoChip, ProChip, VerifiedBadge } from './UserChips';
 
 function dateFormattedLong(dateStr: string | null | undefined) {
   if (!dateStr) return null;
@@ -78,8 +78,11 @@ export function IdentityHub({
 
   return (
     <GlassHeroPanel className="@container">
-      {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} hasStar={hasStar} />}
-      <div data-ui="user-hero" className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch">
+      {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} />}
+      <div
+        data-ui="user-hero"
+        className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch"
+      >
         <AvatarArtifact
           username={user.username}
           avatarUrl={user.avatar_url}
@@ -123,8 +126,8 @@ export function IdentityHub({
           </div>
 
           {user.description && (
-              <p className="selectable text-[14px] @lg:text-[15px] text-ink-65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
-              <RichText text={user.description} accent={auraRgb(aura)}/>
+            <p className="selectable text-[14px] @lg:text-[15px] text-ink-65 leading-relaxed max-w-2xl line-clamp-3 hover:line-clamp-none transition-all duration-700 cursor-help">
+              <RichText text={user.description} accent={auraRgb(aura)} />
             </p>
           )}
 
@@ -158,7 +161,7 @@ export function IdentityHub({
                 }}
               />
             )}
-            {isOwnProfile && <UploadTrackButton aura={aura} />}
+            {isOwnProfile && <UploadTrackButton />}
             {user.permalink_url && <CopyLinkButton url={user.permalink_url} />}
             <ShareButton
               embed={userEmbed(user)}
@@ -178,39 +181,18 @@ export function IdentityHub({
         </div>
 
         <div className="hidden @min-[960px]:flex flex-col gap-3 self-stretch min-w-[160px]">
-          <StatOrb
-            value={user.followers_count}
-            label={t('user.followers')}
-          />
-          <StatOrb
-            value={user.followings_count}
-            label={t('user.following')}
-          />
-          <StatOrb
-            value={user.track_count}
-            label={t('user.tracks')}
-          />
-          <StatOrb
-            value={likedTracksCount(user)}
-            label={t('user.likes')}
-          />
+          <StatOrb value={user.followers_count} label={t('user.followers')} />
+          <StatOrb value={user.followings_count} label={t('user.following')} />
+          <StatOrb value={user.track_count} label={t('user.tracks')} />
+          <StatOrb value={likedTracksCount(user)} label={t('user.likes')} />
         </div>
       </div>
 
       <div className="@min-[960px]:hidden flex flex-wrap gap-2 px-6 @lg:px-10 pb-6 @lg:pb-8 justify-center @min-[720px]:justify-start">
-        <StatOrb
-          value={user.followers_count}
-          label={t('user.followers')}
-        />
-        <StatOrb
-          value={user.followings_count}
-          label={t('user.following')}
-        />
+        <StatOrb value={user.followers_count} label={t('user.followers')} />
+        <StatOrb value={user.followings_count} label={t('user.following')} />
         <StatOrb value={user.track_count} label={t('user.tracks')} />
-        <StatOrb
-          value={likedTracksCount(user)}
-          label={t('user.likes')}
-        />
+        <StatOrb value={likedTracksCount(user)} label={t('user.likes')} />
       </div>
     </GlassHeroPanel>
   );

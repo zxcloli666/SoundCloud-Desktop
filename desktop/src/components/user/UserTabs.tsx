@@ -13,7 +13,6 @@ import {
   useUserTracks,
 } from '../../lib/hooks';
 import { Loader2, Music } from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
 import { useCatalogPlaylists, useCatalogTracks } from '../../lib/search';
 import { isWaitKind } from '../../lib/sync-wait';
 import { useAuthStore } from '../../stores/auth';
@@ -80,16 +79,10 @@ function TabWrapperImpl({
         />
       ) : isEmpty ? (
         <div className="py-24 flex flex-col items-center gap-4">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center"
-            style={{
-              background: 'rgb(var(--ink) / 0.03)',
-              border: '0.5px solid rgb(var(--ink) / 0.06)',
-            }}
-          >
-            <Music size={24} className="text-ink-15" />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-ink/[0.05] text-ink-35">
+            <Music size={24} />
           </div>
-          <p className="text-ink-30 text-sm">{emptyText ?? t('common.empty')}</p>
+          <p className="text-[13px] text-ink-45">{emptyText ?? t('common.empty')}</p>
         </div>
       ) : (
         <div className="animate-in fade-in duration-500">{children}</div>
@@ -221,19 +214,7 @@ export function UserLikesTab({ urn }: { urn: string }) {
   );
 }
 
-/**
- * Поиск треков юзера в нашей базе (`/search/db/tracks?user_urn=...`). Идёт
- * только локально — на SC нет API "tracks этого юзера с подстрочным q=".
- * Рендер совместим с обычным UserTracksTab, чтобы UI не "прыгал" при
- * включении/выключении поиска.
- */
-export function UserSearchTracksTab({
-  urn,
-  query,
-}: {
-  urn: string;
-  query: string;
-}) {
+export function UserSearchTracksTab({ urn, query }: { urn: string; query: string }) {
   const { t } = useTranslation();
   const q = useCatalogTracks(query.trim(), urn);
   const shape = useThemedShape(urn);
@@ -273,9 +254,6 @@ export function UserSearchTracksTab({
   );
 }
 
-/**
- * Поиск плейлистов юзера в нашей базе. Та же логика, что и Tracks-вариант.
- */
 export function UserSearchPlaylistsTab({ urn, query }: { urn: string; query: string }) {
   const { t } = useTranslation();
   const q = useCatalogPlaylists(query.trim(), urn);
@@ -321,7 +299,6 @@ export function UserConnectionsTab({
 }) {
   const { t } = useTranslation();
   const nav = useNavigate();
-    const cardB = usePerfMode().blur(20);
   const followers = useUserFollowers(mode === 'followers' ? urn : undefined);
   const followings = useUserFollowings(mode === 'followings' ? urn : undefined);
   const q = mode === 'followers' ? followers : followings;
@@ -332,15 +309,9 @@ export function UserConnectionsTab({
       <button
         type="button"
         onClick={() => nav(`/user/${encodeURIComponent(user.urn)}`)}
-        className="group relative h-full w-full flex flex-col items-center gap-3 p-6 rounded-3xl transition-transform duration-500 cursor-pointer overflow-hidden hover:scale-[1.02]"
-        style={{
-            background: cardB > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.85)',
-          border: '0.5px solid rgb(var(--ink) / 0.06)',
-            backdropFilter: cardB > 0 ? `blur(${cardB}px)` : undefined,
-            WebkitBackdropFilter: cardB > 0 ? `blur(${cardB}px)` : undefined,
-        }}
+        className="group relative h-full w-full flex flex-col items-center gap-3 p-6 rounded-3xl border border-ink/[0.08] bg-ink/[0.025] transition-colors duration-200 cursor-pointer overflow-hidden hover:border-ink/[0.14] hover:bg-ink/[0.04]"
       >
-        <div className="w-20 h-20 rounded-full overflow-hidden ring-2 ring-ink/10 group-hover:ring-ink/30 transition-all duration-500">
+        <div className="w-20 h-20 rounded-full overflow-hidden ring-1 ring-ink/10 group-hover:ring-ink/20 transition-shadow duration-200">
           <Avatar src={user.avatar_url} alt={user.username} size={80} />
         </div>
         <div className="text-center min-w-0 w-full">
@@ -355,7 +326,7 @@ export function UserConnectionsTab({
         </div>
       </button>
     ),
-      [nav, t, cardB],
+    [nav, t],
   );
 
   const emptyText = mode === 'followers' ? t('user.noFollowers') : t('user.noFollowings');
