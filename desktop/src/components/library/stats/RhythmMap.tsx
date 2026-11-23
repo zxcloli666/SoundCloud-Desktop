@@ -1,8 +1,6 @@
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Aura, auraRgb, auraRgba } from '../../../lib/aura';
 import { Calendar, Clock, Moon, Sun, Sunrise, Sunset } from '../../../lib/icons';
-import { usePerfMode } from '../../../lib/perf';
 import { StatsPanel } from './StatsPanel';
 import { buildRhythm, hourLabel, type ListenerKind, weekdayNames } from './stats-utils';
 import type { RhythmCell } from './useListeningStats';
@@ -19,15 +17,12 @@ const AXIS_HOURS = [0, 6, 12, 18];
 
 export const RhythmMap = memo(function RhythmMap({
   cells,
-  aura,
   delay,
 }: {
   cells: RhythmCell[];
-  aura: Aura;
   delay?: number;
 }) {
   const { t } = useTranslation();
-  const perf = usePerfMode();
   const fmt = useStatsFormat();
   const rhythm = useMemo(() => buildRhythm(cells), [cells]);
   const shortDays = useMemo(() => weekdayNames(fmt.locale, 'short'), [fmt.locale]);
@@ -41,7 +36,6 @@ export const RhythmMap = memo(function RhythmMap({
 
   return (
     <StatsPanel
-      aura={aura}
       icon={<Clock size={14} />}
       title={t('stats.rhythm')}
       delay={delay}
@@ -60,18 +54,11 @@ export const RhythmMap = memo(function RhythmMap({
       <div className="flex flex-col xl:flex-row gap-6">
         <div className="xl:w-[230px] shrink-0 flex flex-row xl:flex-col gap-4 flex-wrap">
           <div className="flex items-center gap-3.5 min-w-[220px]">
-            <span
-              className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
-              style={{
-                color: auraRgb(aura),
-                background: auraRgba(aura, 0.14),
-                boxShadow: perf.glow ? `0 0 26px ${auraRgba(aura, 0.35)}` : undefined,
-              }}
-            >
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink/[0.06] text-ink-70">
               <KindIcon size={22} />
             </span>
             <div className="min-w-0">
-              <p className="text-[17px] font-black tracking-tight text-ink-95 leading-tight">
+              <p className="text-[17px] leading-tight font-bold tracking-tight text-ink-95">
                 {t(`stats.kind.${rhythm.kind}`)}
               </p>
               <p className="text-[12px] text-ink-45 mt-0.5">
@@ -83,7 +70,7 @@ export const RhythmMap = memo(function RhythmMap({
           </div>
           <div className="flex gap-6">
             <div>
-              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-40">
+              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-40">
                 <Clock size={11} />
                 {t('stats.peakHour')}
               </p>
@@ -92,7 +79,7 @@ export const RhythmMap = memo(function RhythmMap({
               </p>
             </div>
             <div>
-              <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-40">
+              <p className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-40">
                 <Calendar size={11} />
                 {t('stats.peakDay')}
               </p>
@@ -119,19 +106,14 @@ export const RhythmMap = memo(function RhythmMap({
                     <span
                       key={hour}
                       onMouseEnter={() => setHover({ day, hour })}
-                      className="aspect-square rounded-[4px] transition-transform duration-200"
-                      style={{
-                        background:
-                          plays > 0
-                            ? auraRgba(aura, 0.12 + 0.88 * level ** 0.75)
-                            : 'rgb(var(--ink) / 0.035)',
-                        boxShadow:
-                          isHover || (perf.glow && level > 0.7)
-                            ? `0 0 12px ${auraRgba(aura, 0.55)}`
-                            : undefined,
-                        transform: isHover ? 'scale(1.25)' : undefined,
-                        outline: isHover ? '1px solid rgb(var(--ink) / 0.6)' : undefined,
-                      }}
+                      className={`aspect-square rounded-[4px] ${isHover ? 'bg-accent' : ''}`}
+                      style={
+                        isHover
+                          ? undefined
+                          : {
+                              background: `rgb(var(--ink) / ${plays > 0 ? (0.1 + 0.55 * level ** 0.75).toFixed(3) : 0.04})`,
+                            }
+                      }
                     />
                   );
                 })}
@@ -141,7 +123,7 @@ export const RhythmMap = memo(function RhythmMap({
             {Array.from({ length: 24 }, (_, hour) => (
               <span
                 key={hour}
-                className="pt-1.5 text-[9.5px] text-ink-30 tabular-nums leading-none"
+                className="pt-1.5 text-[9.5px] leading-none tabular-nums text-ink-35"
               >
                 {AXIS_HOURS.includes(hour) ? String(hour).padStart(2, '0') : ''}
               </span>

@@ -1,44 +1,44 @@
-import React, {Fragment, type ReactNode, useEffect, useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useLocation} from 'react-router-dom';
-import {ArtistMiniCard} from '../components/library/ArtistMiniCard';
-import {CollectionRail} from '../components/library/CollectionRail';
-import {ContinueRow} from '../components/library/ContinueRow';
-import {DislikesLink} from '../components/library/DislikesLink';
-import {FreshDrops} from '../components/library/FreshDrops';
-import {LibraryFrame} from '../components/library/LibraryFrame';
-import {LocalFilesRail} from '../components/library/LocalFilesRail';
-import {ProfileGate} from '../components/library/ProfileGate';
-import {SoundPrintMasthead} from '../components/library/SoundPrintMasthead';
-import {StatsTeaser} from '../components/library/stats/StatsTeaser';
-import {SuperlikesRail} from '../components/library/superlikes/SuperlikesRail';
-import {useSoundprint} from '../components/library/useSoundprint';
-import {PlaylistCard} from '../components/music/PlaylistCard';
-import {TrackCard} from '../components/music/TrackCard';
-import {RecapTeaser} from '../components/recap/RecapTeaser';
-import type {WaitScope} from '../components/sync-wait/scope';
-import {WaitStrip} from '../components/sync-wait/WaitStrip';
-import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
-import type {CollectionSyncInfo} from '../lib/collection-sync';
-import {useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists} from '../lib/hooks';
-import {Bookmark, Disc3, Heart, ListMusic, Users} from '../lib/icons';
-import type {LayoutId} from '../lib/layout';
-import {likedTracksCount} from '../lib/likes';
-import {splitReleases} from '../lib/playlist-kind';
-import {armLikesContinuation} from '../lib/queue-continuation';
-import {recapYear} from '../lib/recap-window';
-import {waitKindOf} from '../lib/sync-wait';
-import {useVisibleBlocks} from '../lib/use-layout';
-import {useAuthStore} from '../stores/auth';
+import React, { Fragment, type ReactNode, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
+import { ArtistMiniCard } from '../components/library/ArtistMiniCard';
+import { CollectionRail } from '../components/library/CollectionRail';
+import { ContinueRow } from '../components/library/ContinueRow';
+import { DislikesLink } from '../components/library/DislikesLink';
+import { FreshDrops } from '../components/library/FreshDrops';
+import { LibraryFrame } from '../components/library/LibraryFrame';
+import { LocalFilesRail } from '../components/library/LocalFilesRail';
+import { ProfileGate } from '../components/library/ProfileGate';
+import { SoundPrintMasthead } from '../components/library/SoundPrintMasthead';
+import { StatsTeaser } from '../components/library/stats/StatsTeaser';
+import { SuperlikesRail } from '../components/library/superlikes/SuperlikesRail';
+import { useSoundprint } from '../components/library/useSoundprint';
+import { PlaylistCard } from '../components/music/PlaylistCard';
+import { TrackCard } from '../components/music/TrackCard';
+import { RecapTeaser } from '../components/recap/RecapTeaser';
+import type { WaitScope } from '../components/sync-wait/scope';
+import { WaitStrip } from '../components/sync-wait/WaitStrip';
+import { SyncNotice, syncNoticeOf } from '../components/ui/SyncNotice';
+import type { CollectionSyncInfo } from '../lib/collection-sync';
+import { useLikedTracks, useMyFollowings, useMyLikedPlaylists, useMyPlaylists } from '../lib/hooks';
+import { Bookmark, Disc3, Heart, ListMusic, Users } from '../lib/icons';
+import type { LayoutId } from '../lib/layout';
+import { likedTracksCount } from '../lib/likes';
+import { splitReleases } from '../lib/playlist-kind';
+import { armLikesContinuation } from '../lib/queue-continuation';
+import { recapYear } from '../lib/recap-window';
+import { waitKindOf } from '../lib/sync-wait';
+import { useVisibleBlocks } from '../lib/use-layout';
+import { useAuthStore } from '../stores/auth';
 
 type RailId = 'playlists' | 'likedPlaylists' | 'likedAlbums' | 'artists' | 'likes';
 
-const WAIT_RAILS: Record<RailId, {Icon: typeof Heart; title: string; scope: WaitScope}> = {
-  playlists: {Icon: ListMusic, title: 'library.yourPlaylists', scope: 'playlists'},
-  likedPlaylists: {Icon: Bookmark, title: 'library.likedPlaylists', scope: 'playlists'},
-  likedAlbums: {Icon: Disc3, title: 'library.likedAlbums', scope: 'playlists'},
-  artists: {Icon: Users, title: 'library.artists', scope: 'followings'},
-  likes: {Icon: Heart, title: 'library.likedTracks', scope: 'likes'},
+const WAIT_RAILS: Record<RailId, { Icon: typeof Heart; title: string; scope: WaitScope }> = {
+  playlists: { Icon: ListMusic, title: 'library.yourPlaylists', scope: 'playlists' },
+  likedPlaylists: { Icon: Bookmark, title: 'library.likedPlaylists', scope: 'playlists' },
+  likedAlbums: { Icon: Disc3, title: 'library.likedAlbums', scope: 'playlists' },
+  artists: { Icon: Users, title: 'library.artists', scope: 'followings' },
+  likes: { Icon: Heart, title: 'library.likedTracks', scope: 'likes' },
 };
 
 interface WaitQuery {
@@ -53,7 +53,7 @@ interface WaitQuery {
 export const Library = React.memo(() => {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
-  const {hash} = useLocation();
+  const { hash } = useLocation();
   const likesQuery = useLikedTracks();
   const likedTracks = likesQuery.tracks;
   const [genre, setGenre] = useState<string | null>(null);
@@ -61,7 +61,7 @@ export const Library = React.memo(() => {
 
   useEffect(() => {
     if (hash !== '#soundprint') return;
-    document.getElementById('soundprint')?.scrollIntoView({block: 'start'});
+    document.getElementById('soundprint')?.scrollIntoView({ block: 'start' });
   }, [hash]);
 
   const blocks = useVisibleBlocks('library');
@@ -134,12 +134,7 @@ export const Library = React.memo(() => {
   const sections: Record<LayoutId<'library'>, ReactNode> = {
     fresh: <FreshDrops genre={genre} />,
     continue: <ContinueRow genre={genre} />,
-    stats:
-      recap && !genre ? (
-        <RecapTeaser aura={sound.aura} year={recap} />
-      ) : (
-        <StatsTeaser aura={sound.aura} genre={genre} />
-      ),
+    stats: recap && !genre ? <RecapTeaser year={recap} /> : <StatsTeaser genre={genre} />,
     playlists: playlistPreview.length > 0 && (
       <CollectionRail
         icon={<ListMusic size={16} />}
@@ -216,7 +211,7 @@ export const Library = React.memo(() => {
   };
   waitingRails.forEach((id, index) => {
     const query = railQueries[id]!;
-    const {Icon, title, scope} = WAIT_RAILS[id];
+    const { Icon, title, scope } = WAIT_RAILS[id];
     sections[id] = (
       <WaitStrip
         kind={waitKindOf(query)!}
@@ -233,12 +228,7 @@ export const Library = React.memo(() => {
     <LibraryFrame>
       <div className="space-y-9">
         <div id="soundprint">
-        <SoundPrintMasthead
-          user={user}
-          sound={sound}
-          selected={genre}
-          onSelect={setGenre}
-        />
+          <SoundPrintMasthead user={user} sound={sound} selected={genre} onSelect={setGenre} />
         </div>
 
         {libraryEmpty && (

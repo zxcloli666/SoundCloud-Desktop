@@ -6,7 +6,7 @@ import { type Track, usePlayerStore } from '../../stores/player';
 const LOOKS = {
   loud: {
     row: 'gap-2',
-    play: 'h-9 gap-2 bg-accent px-4 text-[12.5px] font-bold text-accent-contrast shadow-[0_6px_20px_-6px_var(--color-accent-glow)] transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97]',
+    play: 'h-9 gap-2 bg-accent px-4 text-[12.5px] font-semibold text-accent-contrast transition-colors hover:bg-accent-hover',
     queue:
       'size-9 border border-ink/[0.1] bg-ink/[0.05] text-ink-70 transition-colors hover:bg-ink/[0.1] hover:text-ink',
     label: '',

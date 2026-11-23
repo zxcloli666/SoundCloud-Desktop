@@ -1,11 +1,9 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { type Aura, auraRgb, auraRgba } from '../../../lib/aura';
 import { art } from '../../../lib/formatters';
 import { useUser } from '../../../lib/hooks';
 import { Crown, User as UserIcon, Users } from '../../../lib/icons';
-import { usePerfMode } from '../../../lib/perf';
 import { StatsPanel } from './StatsPanel';
 import type { TopArtist } from './useListeningStats';
 import { useStatsFormat } from './useStatsFormat';
@@ -29,10 +27,9 @@ const Avatar = memo(function Avatar({ url, className }: { url: string | null; cl
   );
 });
 
-const LeadArtist = memo(function LeadArtist({ artist, aura }: { artist: TopArtist; aura: Aura }) {
+const LeadArtist = memo(function LeadArtist({ artist }: { artist: TopArtist }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const perf = usePerfMode();
   const fmt = useStatsFormat();
   const picture = useArtistPicture(artist, 't300x300');
   const open = () => artist.artistUrn && navigate(`/user/${encodeURIComponent(artist.artistUrn)}`);
@@ -41,60 +38,22 @@ const LeadArtist = memo(function LeadArtist({ artist, aura }: { artist: TopArtis
       type="button"
       onClick={open}
       disabled={!artist.artistUrn}
-      className="group relative w-full flex items-center gap-5 p-4 rounded-[1.5rem] overflow-hidden text-left cursor-pointer disabled:cursor-default mb-3"
-      style={{
-        border: `0.5px solid ${auraRgba(aura, 0.3)}`,
-        background: `linear-gradient(120deg, ${auraRgba(aura, 0.16)}, rgb(var(--ink) / 0.015) 65%)`,
-      }}
+      className="group mb-3 flex w-full cursor-pointer items-center gap-5 rounded-2xl bg-ink/[0.04] p-4 text-left transition-colors enabled:hover:bg-ink/[0.06] disabled:cursor-default"
     >
-      {picture && perf.bloom && (
-        <img
-          src={picture}
-          alt=""
-          aria-hidden
-          decoding="async"
-          className="absolute -right-10 -top-10 w-56 h-56 object-cover rounded-full opacity-25 pointer-events-none"
-          style={{ filter: perf.glow ? 'blur(28px) saturate(150%)' : 'blur(16px)' }}
-        />
-      )}
       <div className="relative shrink-0">
-        <div
-          className="absolute -inset-2 rounded-full pointer-events-none"
-          style={{ background: `radial-gradient(circle, ${auraRgba(aura, 0.5)}, transparent 70%)` }}
-        />
-        <Avatar
-          url={picture}
-          className="relative w-[84px] h-[84px] ring-1 ring-ink/15 transition-transform duration-500 group-hover:scale-[1.04]"
-        />
-        <span
-          className="absolute -top-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center"
-          style={{
-            background: `radial-gradient(125% 125% at 30% 22%, ${aura.orbs[1]}, ${aura.orbs[0]} 70%)`,
-            boxShadow: `0 4px 14px ${auraRgba(aura, 0.55)}`,
-          }}
-        >
-          <Crown size={13} className="text-ink" />
+        <Avatar url={picture} className="h-[84px] w-[84px] ring-1 ring-ink/[0.1]" />
+        <span className="absolute -top-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-paper text-ink-80 ring-1 ring-ink/[0.12]">
+          <Crown size={13} />
         </span>
       </div>
-      <div className="relative min-w-0 flex-1">
-        <p
-          className="text-[10px] font-bold uppercase tracking-[0.24em] mb-1"
-          style={{ color: auraRgb(aura) }}
-        >
+      <div className="min-w-0 flex-1">
+        <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-45">
           {t('stats.topArtist')}
         </p>
-        <p
-          className="text-[24px] font-black tracking-tight leading-tight truncate"
-          style={{
-            backgroundImage: aura.nameGradient,
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-          }}
-        >
+        <p className="truncate text-[24px] leading-tight font-bold tracking-tight text-ink">
           {artist.artistName}
         </p>
-        <p className="text-[12px] text-ink-50 mt-1 tabular-nums truncate">
+        <p className="mt-1 truncate text-[12px] tabular-nums text-ink-50">
           {t('stats.playsCount', { count: artist.plays, formatted: fmt.number(artist.plays) })}
           {' · '}
           {t('stats.tracksCount', { count: artist.tracks, formatted: fmt.number(artist.tracks) })}
@@ -110,12 +69,10 @@ const ArtistRow = memo(function ArtistRow({
   artist,
   rank,
   max,
-  aura,
 }: {
   artist: TopArtist;
   rank: number;
   max: number;
-  aura: Aura;
 }) {
   const navigate = useNavigate();
   const fmt = useStatsFormat();
@@ -128,9 +85,7 @@ const ArtistRow = memo(function ArtistRow({
       disabled={!artist.artistUrn}
       className="group w-full flex items-center gap-3 px-2 py-2 rounded-2xl text-left hover:bg-ink/[0.04] transition-colors cursor-pointer disabled:cursor-default"
     >
-      <span className="w-5 text-right text-[12px] font-bold tabular-nums text-ink-30">
-        {rank}
-      </span>
+      <span className="w-5 text-right text-[12px] font-bold tabular-nums text-ink-30">{rank}</span>
       <Avatar url={picture} className="w-9 h-9 ring-1 ring-ink/[0.08]" />
       <div className="min-w-0 flex-1">
         <p className="text-[13.5px] font-semibold text-ink-85 group-hover:text-ink truncate transition-colors">
@@ -138,11 +93,8 @@ const ArtistRow = memo(function ArtistRow({
         </p>
         <div className="mt-1.5 h-[3px] rounded-full bg-ink/[0.06] overflow-hidden">
           <div
-            className="h-full rounded-full"
-            style={{
-              width: `${Math.max(4, (artist.plays / max) * 100)}%`,
-              background: `linear-gradient(90deg, ${auraRgba(aura, 0.35)}, ${auraRgb(aura)})`,
-            }}
+            className="h-full rounded-full bg-ink/[0.3]"
+            style={{ width: `${Math.max(4, (artist.plays / max) * 100)}%` }}
           />
         </div>
       </div>
@@ -155,19 +107,17 @@ const ArtistRow = memo(function ArtistRow({
 
 export const TopArtists = memo(function TopArtists({
   artists,
-  aura,
   delay,
 }: {
   artists: TopArtist[];
-  aura: Aura;
   delay?: number;
 }) {
   const { t } = useTranslation();
   if (artists.length === 0) return null;
   const [lead, ...rest] = artists;
   return (
-    <StatsPanel aura={aura} icon={<Users size={14} />} title={t('stats.topArtists')} delay={delay}>
-      <LeadArtist artist={lead} aura={aura} />
+    <StatsPanel icon={<Users size={14} />} title={t('stats.topArtists')} delay={delay}>
+      <LeadArtist artist={lead} />
       <div className="flex flex-col">
         {rest.map((artist, i) => (
           <ArtistRow
@@ -175,7 +125,6 @@ export const TopArtists = memo(function TopArtists({
             artist={artist}
             rank={i + 2}
             max={lead.plays}
-            aura={aura}
           />
         ))}
       </div>

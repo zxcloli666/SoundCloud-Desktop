@@ -1,14 +1,11 @@
 import { memo } from 'react';
-import { type Aura, auraRgb, auraRgba } from '../../../lib/aura';
 import { TrendingDown, TrendingUp } from '../../../lib/icons';
 
 export const DeltaChip = memo(function DeltaChip({
   value,
-  aura,
   label,
 }: {
   value: number | null;
-  aura: Aura;
   label?: string;
 }) {
   if (value == null) return null;
@@ -17,12 +14,9 @@ export const DeltaChip = memo(function DeltaChip({
   return (
     <span
       title={label}
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums"
-      style={
-        up
-          ? { color: auraRgb(aura), background: auraRgba(aura, 0.14) }
-          : { color: 'rgb(var(--ink) / calc(0.5 * (1 + var(--ink-lift) * (1 - 0.5))))', background: 'rgb(var(--ink) / 0.06)' }
-      }
+      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold tabular-nums ${
+        up ? 'bg-ok/10 text-ok' : 'bg-ink/[0.06] text-ink-50'
+      }`}
     >
       <Icon size={12} />
       {up ? '+' : '−'}
