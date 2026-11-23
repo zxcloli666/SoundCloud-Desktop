@@ -6,11 +6,11 @@ import { onApiWrite } from '../api-writes';
 import { type PagedResponse, pagedUrl, type SCUser } from '../hooks';
 import { fetchAllSuperlikedTracks } from '../superlikes';
 import { voiceIpc } from './ipc';
-import { listedReadings, type SingleReadingsAnswer } from './legacy/readings';
 import { ownedTracks } from './library';
 import {
   type AskReadings,
   libraryNames,
+  type ReadingsAnswer,
   readNames,
   spokenNames,
   withAsked,
@@ -29,12 +29,12 @@ const READINGS_PATH = '/voice/readings';
 const READINGS_SILENT = [403, 404, 429, 503];
 
 const askReadings: AskReadings = (language, names) =>
-  api<SingleReadingsAnswer>(READINGS_PATH, {
+  api<ReadingsAnswer>(READINGS_PATH, {
     method: 'POST',
     body: JSON.stringify({ language, names }),
     silentStatuses: READINGS_SILENT,
     quiet: true,
-  }).then(listedReadings);
+  });
 
 function push() {
   loadVoiceLocales()
