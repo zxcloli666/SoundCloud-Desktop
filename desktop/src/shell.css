@@ -13,6 +13,19 @@
 [data-ui="app"][data-wall] {
   --shell-side: color-mix(in srgb, var(--shell-side-solid) 56%, transparent);
   --shell-top: color-mix(in srgb, var(--shell) 38%, transparent);
+  --shell-veil: color-mix(in srgb, var(--shell) 24%, transparent);
+  --shell-pane: color-mix(in srgb, var(--shell) 64%, transparent);
+}
+
+[data-ui="app"][data-wall] [data-ui="main"] {
+  background: var(--shell-veil);
+}
+
+[data-ui="app"][data-wall] .glass,
+[data-ui="app"][data-wall] .glass-flat,
+[data-ui="app"][data-wall] .glass-featured,
+[data-ui="app"][data-wall] .panel {
+  background: var(--shell-pane);
 }
 
 [data-ui="app"][data-wall] [data-ui="sidebar"],
