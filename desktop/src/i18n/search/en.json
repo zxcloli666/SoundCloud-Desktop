@@ -427,6 +427,16 @@
     "pinned",
     "playlist shortcuts"
   ],
+  "settings.layoutPlacement": [
+    "move player buttons",
+    "rearrange player controls",
+    "where the buttons sit",
+    "shuffle next to play",
+    "buttons in the bottom bar",
+    "player controls position",
+    "put like on the left",
+    "buttons on home player"
+  ],
   "settings.layoutRiverSections": [
     "infinite mix",
     "home sections",

@@ -57,7 +57,9 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="marquee"]` | A long name that scrolls; `data-moving="true"` while it moves |
 | `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
-| `[data-ui="player-transport"]` | Shuffle, previous, play, next, repeat group in the player |
+| `[data-ui="player-transport"]` | Previous, play, next and the before and after play zones around them |
+| `[data-ui="player-zone"]` | A group of player buttons. `data-zone` is `left`, `before`, `after`, `right` or `title` (Home deck only); `data-drop` is `open` on every zone while a button is dragged and `over` on the one under it |
+| `[data-ui="player-zone-chip"]` | The button that follows the pointer while it is dragged |
 | `[data-ui="player-seek"]` | Waveform seek bar in the player |
 | `[data-ui="player-like"]` | Like button in the player |
 | `[data-ui="player-dislike"]` | Dislike button in the player |
@@ -135,9 +137,10 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="deck-artist"]` | Artist names in the Home deck |
 | `[data-ui="deck-frame"]` | Square around the big cover that holds the glow |
 | `[data-ui="deck-cover"]` | Big cover in the Home deck |
-| `[data-ui="deck-title"]` | Track title in the Home deck, next to the queue button |
+| `[data-ui="deck-title"]` | Track title in the Home deck with its `title` button zone |
 | `[data-ui="deck-seek"]` | Seek capsule with the waveform and the time inside |
-| `[data-ui="deck-controls"]` | Player buttons in the Home deck |
+| `[data-ui="deck-controls"]` | Player buttons in the Home deck; `data-fit` is `flank` with the side zones beside the seek capsule or `tray` with them in a row under the buttons |
+| `[data-ui="deck-tray"]` | Row of the left and right zones under the Home deck buttons in a narrow window |
 | `[data-ui="deck-lyrics"]` | Current and next lyric lines under the player in a narrow window |
 | `[data-ui="deck-lyric-current"]` | Current lyric line under the wave list in a wide window |
 | `[data-ui="deck-lyric-next"]` | Next lyric line under the wave settings in a wide window |
@@ -218,6 +221,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-tabs"]` | Tabs of a section with several pages, like Advanced |
 | `[data-ui="settings-tab"]` | One of those tabs, `[aria-selected="true"]` on the open one |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="player-zones"]` | Button placement map in Settings, `data-surface` is `player` (bottom player) or `deck` (Home); each zone has `data-zone`, its list `data-drop` while dragging |
 | `[data-ui="settings-info"]` | Info mark next to a setting, shows a hint on hover |
 | `[data-ui="mobile-access-badge"]` | Extended access status in Settings; `data-state` is `off`, `active` or `relink` |
 | `[data-ui="mobile-link"]` | Extended access link dialog; `data-phase` is `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` or `expired` |

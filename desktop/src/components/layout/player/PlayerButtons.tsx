@@ -1,159 +1,101 @@
-import React, { type ReactNode } from 'react';
-import type { LayoutId } from '../../../lib/layout';
-import { useLayout } from '../../../lib/use-layout';
-import { EffectsBtn } from '../../music/effects/EffectsBtn';
-import { TogetherButton } from '../../together/TogetherButton';
-import { VoiceMicButton } from '../../voice/VoiceMicButton';
-import { SleepTimerButton } from '../SleepTimerButton';
-import { VolumeFlyout, VolumeLabel, VolumeSlider } from '../VolumeControls';
-import { playerBtn } from './button-class';
-import { LikeBtn } from './LikeBtn';
-import { AddToPlaylistBtn, AlbumBtn, BlockBtn, DislikeBtn, QualityBadge } from './reactions';
-import { EqBtn, LyricsBtn, QueueBtn } from './tools';
-import { AbLoopBtn, NextBtn, PlayPauseBtn, PrevBtn, RepeatBtn, ShuffleBtn } from './transport';
-import { TuningBtn } from './tuning';
+import { useDroppable } from '@dnd-kit/core';
+import { horizontalListSortingStrategy, SortableContext, useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import React, { type MouseEventHandler, type ReactNode } from 'react';
+import type { PlayerButtonId, Surface, Zone as ZoneId } from '../../../lib/player-zones';
+import { usePlacement } from '../../../lib/use-layout';
+import { zoneKey } from '../../../lib/use-zone-drag';
+import { BUTTONS, type PlayerContext } from './buttons';
+import { NextBtn, PlayPauseBtn, PrevBtn } from './transport';
+import { useBoard } from './zone-board';
 
-export type PlayerButtonId = LayoutId<'player'>;
+export type { PlayerContext } from './buttons';
 
-export interface PlayerContext {
-  onQueueToggle: () => void;
-  queueOpen: boolean;
-}
-
-const VolumeGroup = React.memo(() => (
-  <>
-    <VolumeFlyout />
-    <div className="npb-vol-slider flex items-center gap-2 pl-1">
-      <VolumeSlider className="w-[72px]" />
-      <VolumeLabel />
-    </div>
-  </>
-));
-
-const BUTTONS: Record<PlayerButtonId, (ctx: PlayerContext) => ReactNode> = {
-  like: () => <LikeBtn />,
-  dislike: () => <DislikeBtn />,
-  addToPlaylist: () => <AddToPlaylistBtn />,
-  album: () => <AlbumBtn />,
-  block: () => <BlockBtn />,
-  quality: () => <QualityBadge />,
-  shuffle: () => <ShuffleBtn />,
-  repeat: () => <RepeatBtn />,
-  abLoop: () => <AbLoopBtn />,
-  together: () => <TogetherButton />,
-  mic: () => <VoiceMicButton className={playerBtn} />,
-  sleep: () => <SleepTimerButton className={playerBtn} />,
-  tuning: () => <TuningBtn />,
-  eq: () => <EqBtn />,
-  effects: () => <EffectsBtn className={playerBtn} />,
-  lyrics: () => <LyricsBtn />,
-  queue: (ctx) => <QueueBtn onClick={ctx.onQueueToggle} active={ctx.queueOpen} />,
-  volume: () => <VolumeGroup />,
-};
-
-const TRACK_IDS: readonly PlayerButtonId[] = [
-  'like',
-  'dislike',
-  'addToPlaylist',
-  'album',
-  'block',
-  'quality',
-];
-const TRANSPORT_IDS: readonly PlayerButtonId[] = ['shuffle', 'repeat', 'abLoop'];
 const POPOVER_IDS: readonly PlayerButtonId[] = ['mic', 'sleep', 'tuning', 'eq', 'effects'];
 
-function useVisible(): ReadonlySet<PlayerButtonId> {
-  const layout = useLayout('player');
-  return React.useMemo(() => new Set(layout.filter((e) => !e.hidden).map((e) => e.id)), [layout]);
+function ZoneItem({ id, motion, children }: { id: string; motion: boolean; children: ReactNode }) {
+  const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({
+    id,
+    transition: motion ? undefined : null,
+  });
+  return (
+    <div
+      ref={setNodeRef}
+      {...listeners}
+      className="zone-item"
+      data-lifted={isDragging ? 'true' : undefined}
+      style={{ transform: CSS.Translate.toString(transform), transition }}
+    >
+      {children}
+    </div>
+  );
 }
 
-function usePlayerOrder(): PlayerButtonId[] {
-  const layout = useLayout('player');
-  return React.useMemo(() => layout.map((e) => e.id), [layout]);
-}
-
-function Group({
-  ids,
+export function Zone({
+  zone,
   ctx,
   className,
+  onContextMenu,
 }: {
-  ids: readonly PlayerButtonId[];
+  zone: ZoneId;
   ctx: PlayerContext;
   className: string;
+  onContextMenu?: MouseEventHandler;
 }) {
-  const visible = useVisible();
-  const order = usePlayerOrder();
-  const shown = order.filter((id) => ids.includes(id) && visible.has(id));
-  if (shown.length === 0) return null;
+  const board = useBoard();
+  const ids = board.ids[zone];
+  const { setNodeRef } = useDroppable({ id: zoneKey(zone) });
+  if (ids.length === 0 && !board.dragging) return null;
+  const drop = board.dragging ? (board.over === zone ? 'over' : 'open') : undefined;
   return (
-    <div className={className}>
-      {shown.map((id) => (
-        <React.Fragment key={id}>{BUTTONS[id](ctx)}</React.Fragment>
-      ))}
+    <div
+      ref={setNodeRef}
+      data-ui="player-zone"
+      data-zone={zone}
+      data-drop={drop}
+      onContextMenu={onContextMenu}
+      className={className}
+    >
+      <SortableContext id={zone} items={ids} strategy={horizontalListSortingStrategy}>
+        {ids.map((id) => (
+          <ZoneItem key={id} id={id} motion={board.motion}>
+            {BUTTONS[id as PlayerButtonId](ctx)}
+          </ZoneItem>
+        ))}
+      </SortableContext>
+      {ids.length === 0 && <span aria-hidden className="zone-slot" />}
     </div>
   );
 }
 
-const NO_IDS: readonly PlayerButtonId[] = [];
+export const TransportButtons = React.memo(({ ctx }: { ctx: PlayerContext }) => (
+  <div
+    className="grid max-w-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-0.5"
+    data-ui="player-transport"
+  >
+    <div className="flex min-w-0 items-center justify-end gap-[inherit]">
+      <Zone zone="before" ctx={ctx} className="zone-near justify-end" />
+      <PrevBtn />
+    </div>
+    <PlayPauseBtn />
+    <div className="flex min-w-0 items-center justify-start gap-[inherit]">
+      <NextBtn />
+      <Zone zone="after" ctx={ctx} className="zone-near" />
+    </div>
+  </div>
+));
 
-interface ToolProps {
-  ctx: PlayerContext;
-  omit?: readonly PlayerButtonId[];
-  className?: string;
-}
-
-export const TrackButtons = React.memo(
-  ({ ctx, className = 'npb-track-btns' }: { ctx: PlayerContext; className?: string }) => (
-    <Group ids={TRACK_IDS} ctx={ctx} className={className} />
-  ),
-);
-
-export const ToolButtons = React.memo(
-  ({ ctx, omit = NO_IDS, className = 'npb-tool-btns' }: ToolProps) => {
-    const rest = React.useMemo(
-      () =>
-        (Object.keys(BUTTONS) as PlayerButtonId[]).filter(
-          (id) => !TRACK_IDS.includes(id) && !TRANSPORT_IDS.includes(id) && !omit.includes(id),
-        ),
-      [omit],
+export const HiddenPopovers = React.memo(
+  ({ surface, ctx }: { surface: Surface; ctx: PlayerContext }) => {
+    const layout = usePlacement(surface);
+    const hidden = POPOVER_IDS.filter((id) => layout.some((e) => e.id === id && e.hidden));
+    if (hidden.length === 0) return null;
+    return (
+      <div aria-hidden className="npb-ghosts" data-ui="player-ghosts">
+        {hidden.map((id) => (
+          <React.Fragment key={id}>{BUTTONS[id](ctx)}</React.Fragment>
+        ))}
+      </div>
     );
-    return <Group ids={rest} ctx={ctx} className={className} />;
   },
 );
-
-export const QueueSlot = React.memo(({ ctx }: { ctx: PlayerContext }) => {
-  const visible = useVisible();
-  return visible.has('queue') ? BUTTONS.queue(ctx) : null;
-});
-
-export const TransportButtons = React.memo(({ ctx }: { ctx: PlayerContext }) => {
-  const visible = useVisible();
-  const order = usePlayerOrder();
-  const after = order.filter(
-    (id) => id !== 'shuffle' && TRANSPORT_IDS.includes(id) && visible.has(id),
-  );
-  return (
-    <div className="flex items-center gap-0.5" data-ui="player-transport">
-      {visible.has('shuffle') && BUTTONS.shuffle(ctx)}
-      <PrevBtn />
-      <PlayPauseBtn />
-      <NextBtn />
-      {after.map((id) => (
-        <React.Fragment key={id}>{BUTTONS[id](ctx)}</React.Fragment>
-      ))}
-    </div>
-  );
-});
-
-export const HiddenPopovers = React.memo(({ ctx }: { ctx: PlayerContext }) => {
-  const visible = useVisible();
-  const hidden = POPOVER_IDS.filter((id) => !visible.has(id));
-  if (hidden.length === 0) return null;
-  return (
-    <div aria-hidden className="npb-ghosts" data-ui="player-ghosts">
-      {hidden.map((id) => (
-        <React.Fragment key={id}>{BUTTONS[id](ctx)}</React.Fragment>
-      ))}
-    </div>
-  );
-});

@@ -37,3 +37,15 @@ export function findTarget(result: SettingsResult): Target {
   const scope = card ?? document.querySelector('[data-ui="main"]');
   return { element: scope ? findRow(result.titles, scope) : null, fallback: card };
 }
+
+export function openHoldingTab(card: HTMLElement, titles: string[]): boolean {
+  for (const tab of card.querySelectorAll<HTMLElement>('[data-search-holds]')) {
+    if (tab.dataset.active === 'true') continue;
+    const holds = (tab.dataset.searchHolds ?? '').split('\n');
+    if (holds.some((title) => titles.includes(title))) {
+      tab.click();
+      return true;
+    }
+  }
+  return false;
+}

@@ -9,6 +9,7 @@ import {
 } from '../lib/hotkeys/actions';
 import type { InterfaceFont } from '../lib/interface-font';
 import {
+  deckFromPlayer,
   EMPTY_LAYOUT,
   type LayoutEntry,
   type LayoutScope,
@@ -637,7 +638,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 24,
+      version: 25,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -667,6 +668,9 @@ export const useSettingsStore = create<SettingsState>()(
         }
         if (version < 24) {
           next.hoverPreviewDuringPlayback = prev.hoverPreviewDuringPlayback ?? false;
+        }
+        if (version < 25) {
+          next.layouts = deckFromPlayer(next.layouts);
         }
         return next;
       },

@@ -364,6 +364,14 @@
     "kenar çubuğu listeleri",
     "favori listelerim"
   ],
+  "settings.layoutPlacement": [
+    "oynatıcı düğmelerini taşı",
+    "kontrolleri yeniden düzenle",
+    "karıştır oynat yanında",
+    "oynatıcıyı özelleştir",
+    "alt çubuk düğmeleri",
+    "ana sayfa düğmeleri"
+  ],
   "settings.layoutRiverSections": [
     "akış bölümleri",
     "ana sayfada ne görünsün",

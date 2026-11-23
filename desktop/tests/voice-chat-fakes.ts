@@ -1,6 +1,13 @@
+import {
+  arrange,
+  defaultPlacement,
+  type Placed,
+  placementMap,
+  type Surface,
+} from '../src/lib/player-zones.ts';
 import type { Brief } from '../src/lib/voice/chat/context';
 import { addNote, dropNote } from '../src/lib/voice/chat/notes.ts';
-import type { AppPort } from '../src/lib/voice/chat/ports';
+import type { AppPort, ButtonPlace } from '../src/lib/voice/chat/ports';
 import type { SettingKey, SettingValue } from '../src/lib/voice/chat/settings';
 import type {
   ChatBody,
@@ -34,7 +41,11 @@ export interface FakeApp extends AppPort {
   lists: Partial<Record<TrackList, Listed[]>>;
   view: Screen;
   rows: number;
+  looking: ButtonPlace;
+  placed: Record<ButtonPlace, Placed[]>;
 }
+
+const SURFACES: Record<ButtonPlace, Surface> = { bar: 'player', home: 'deck' };
 
 export function fakeApp(): FakeApp {
   const calls: string[] = [];
@@ -46,6 +57,8 @@ export function fakeApp(): FakeApp {
     found: [],
     lists: {},
     rows: 3,
+    looking: 'bar',
+    placed: { bar: defaultPlacement('player'), home: defaultPlacement('deck') },
     view: {
       page: 'search',
       title: 'Поиск',
@@ -180,6 +193,24 @@ export function fakeApp(): FakeApp {
     openRooms: async () => {
       calls.push('open_rooms');
       return [{ host: 'Mira', track: 'Faded - Psychosis', listeners: 3, capacity: 8, full: false }];
+    },
+    buttons: () => ({
+      bar: placementMap(app.placed.bar, 'player'),
+      home: placementMap(app.placed.home, 'deck'),
+    }),
+    placeButton: ({ place, button, act, zone, position }) => {
+      const where = place ?? app.looking;
+      calls.push(`button:${where}:${button}:${act}:${zone ?? ''}:${position ?? ''}`);
+      const done = arrange(app.placed[where], SURFACES[where], button, act, zone, position);
+      if (done.state !== 'ok') return done;
+      app.placed[where] = done.entries;
+      return {
+        state: 'ok',
+        place: where,
+        zone: done.zone,
+        position: done.position,
+        hidden: done.hidden,
+      };
     },
   };
   return app;

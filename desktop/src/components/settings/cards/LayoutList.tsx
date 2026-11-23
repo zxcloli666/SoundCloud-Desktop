@@ -14,7 +14,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import type { ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GripVertical } from '../../../lib/icons';
 import { lockX } from '../../layout/SortableStack';
@@ -28,37 +28,11 @@ export interface LayoutListItem {
   trailing?: ReactNode;
 }
 
-function LayoutRow({ item }: { item: LayoutListItem }) {
-  const { t } = useTranslation();
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: item.id,
-  });
+const LIFTED_SHADOW = '0 12px 30px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)))';
 
+function RowFace({ item }: { item: LayoutListItem }) {
   return (
-    <div
-      ref={setNodeRef}
-      className={`relative flex h-11 items-center gap-2.5 rounded-[10px] border pr-1.5 pl-1 transition-[background-color,border-color] duration-150 ${
-        isDragging
-          ? 'z-10 border-accent bg-[rgb(var(--surface))]'
-          : 'border-transparent bg-[var(--set-well)] hover:bg-[var(--set-well-hi)]'
-      }`}
-      style={{
-        transform: CSS.Translate.toString(transform),
-        transition,
-        boxShadow: isDragging
-          ? '0 12px 30px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)))'
-          : undefined,
-      }}
-    >
-      <button
-        type="button"
-        aria-label={t('settings.layoutDrag')}
-        className="flex h-9 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-ink-30 transition-colors hover:text-ink-70 active:cursor-grabbing"
-        {...attributes}
-        {...listeners}
-      >
-        <GripVertical size={15} />
-      </button>
+    <>
       <span
         className={`flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[8px] transition-colors duration-150 [&>svg]:h-[15px] [&>svg]:w-[15px] ${
           item.dimmed ? 'bg-ink/[0.04] text-ink-30' : 'bg-accent/[0.12] text-[var(--color-accent)]'
@@ -77,6 +51,60 @@ function LayoutRow({ item }: { item: LayoutListItem }) {
         {item.hint && <div className="truncate text-[11.5px] text-ink-40">{item.hint}</div>}
       </div>
       {item.trailing}
+    </>
+  );
+}
+
+function Grip(props: HTMLAttributes<HTMLButtonElement>) {
+  const { t } = useTranslation();
+  return (
+    <button
+      type="button"
+      aria-label={t('settings.layoutDrag')}
+      className="flex h-9 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-ink-30 transition-colors hover:text-ink-70 active:cursor-grabbing"
+      {...props}
+    >
+      <GripVertical size={15} />
+    </button>
+  );
+}
+
+export function LayoutRow({ item, ghost = false }: { item: LayoutListItem; ghost?: boolean }) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+  });
+  const lifted = isDragging && !ghost;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`relative flex h-11 items-center gap-2.5 rounded-[10px] border pr-1.5 pl-1 transition-[background-color,border-color,opacity] duration-150 ${
+        lifted
+          ? 'z-10 border-accent bg-[rgb(var(--surface))]'
+          : isDragging
+            ? 'border-dashed border-ink/20 bg-transparent opacity-50'
+            : 'border-transparent bg-[var(--set-well)] hover:bg-[var(--set-well-hi)]'
+      }`}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        transition,
+        boxShadow: lifted ? LIFTED_SHADOW : undefined,
+      }}
+    >
+      <Grip {...attributes} {...listeners} />
+      <RowFace item={item} />
+    </div>
+  );
+}
+
+export function LiftedRow({ item }: { item: LayoutListItem }) {
+  return (
+    <div
+      className="flex h-11 cursor-grabbing items-center gap-2.5 rounded-[10px] border border-accent bg-[rgb(var(--surface))] pr-1.5 pl-1"
+      style={{ boxShadow: LIFTED_SHADOW }}
+    >
+      <Grip tabIndex={-1} />
+      <RowFace item={item} />
     </div>
   );
 }

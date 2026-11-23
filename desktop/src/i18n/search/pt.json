@@ -359,6 +359,14 @@
     "playlists favoritas",
     "pin"
   ],
+  "settings.layoutPlacement": [
+    "mover botões do player",
+    "reorganizar controles",
+    "aleatório ao lado do play",
+    "personalizar o player",
+    "botões da barra inferior",
+    "botões na tela inicial"
+  ],
   "settings.layoutRiverSections": [
     "seções do feed",
     "o que aparece na home",

@@ -1,5 +1,5 @@
 import type { SettingsResult } from '../../../lib/settings-search/useSettingsSearch';
-import { findTarget } from './findTarget';
+import { findTarget, openHoldingTab } from './findTarget';
 
 const WAIT_MS = 1500;
 const CARD_GRACE_MS = 400;
@@ -49,10 +49,15 @@ export async function revealResult(result: SettingsResult) {
   const run = ++current;
   const started = performance.now();
   let cardSeen = 0;
+  let tabOpened = false;
   while (run === current && performance.now() - started < WAIT_MS) {
     await new Promise((done) => setTimeout(done, POLL_MS));
     if (run !== current) return;
     const { element, fallback } = findTarget(result);
+    if (!element && fallback && !tabOpened && result.kind === 'row') {
+      tabOpened = openHoldingTab(fallback, result.titles);
+      if (tabOpened) continue;
+    }
     const now = performance.now();
     if (fallback && cardSeen === 0) cardSeen = now;
     const target = element ?? (fallback && now - cardSeen > CARD_GRACE_MS ? fallback : null);

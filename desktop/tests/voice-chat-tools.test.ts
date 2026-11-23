@@ -58,6 +58,7 @@ test('only the tools the model must hear back from ask for another round', () =>
       'queue_list',
       'screen',
       'scroll',
+      'player_buttons',
       'together',
       'open_rooms',
     ],
@@ -400,6 +401,87 @@ test('the sleep timer needs something playing, but turning it off never does', a
   );
   assert.equal((await run('sleep_timer', { when: 'off' })).result.ok, true);
   assert.deepEqual(app.calls, ['sleep:off']);
+});
+
+test('player buttons list each zone of the bar and the Home deck', async () => {
+  const { run } = setup();
+  const ran = await run('player_buttons');
+  assert.equal(ran.returns, true);
+  const { bar, home } = ran.result as unknown as Record<string, Record<string, string[]>>;
+  assert.deepEqual(bar.left, ['like']);
+  assert.deepEqual(bar.before, ['shuffle']);
+  assert.deepEqual(bar.after, ['repeat']);
+  assert.deepEqual(bar.right, ['together', 'lyrics', 'queue', 'volume']);
+  assert.equal(bar.title, undefined);
+  assert.deepEqual(home.title, ['queue']);
+  assert.deepEqual(home.right, ['together', 'lyrics', 'volume']);
+  assert.ok(bar.hidden.includes('eq'));
+});
+
+test('a player button moves, hides and shows on the bar or the Home deck', async () => {
+  const { app, run } = setup();
+  const moved = await run('player_button', {
+    button: 'like',
+    act: 'move',
+    zone: 'after',
+    position: 1,
+  });
+  assert.equal(moved.returns, false);
+  assert.deepEqual(moved.result, {
+    ok: true,
+    place: 'bar',
+    zone: 'after',
+    position: 1,
+    hidden: false,
+  });
+  assert.deepEqual(app.buttons().bar.after, ['like', 'repeat']);
+  assert.deepEqual(app.buttons().bar.left, []);
+  const titled = await run('player_button', {
+    button: 'lyrics',
+    act: 'move',
+    place: 'home',
+    zone: 'title',
+  });
+  assert.deepEqual(titled.result, {
+    ok: true,
+    place: 'home',
+    zone: 'title',
+    position: 2,
+    hidden: false,
+  });
+  assert.deepEqual(app.buttons().bar.right, ['together', 'lyrics', 'queue', 'volume']);
+  const hidden = await run('player_button', { button: 'volume', act: 'hide' });
+  assert.deepEqual(hidden.result, { ok: true, place: 'bar', zone: 'right', hidden: true });
+  assert.ok(app.buttons().bar.hidden.includes('volume'));
+  await run('player_button', { button: 'eq', act: 'show', zone: 'before', position: 1 });
+  assert.deepEqual(app.buttons().bar.before, ['eq', 'shuffle']);
+  app.looking = 'home';
+  await run('player_button', { button: 'queue', act: 'move', zone: 'right' });
+  assert.deepEqual(app.buttons().home.right, ['together', 'volume', 'queue']);
+});
+
+test('a player button move is refused without a zone, outside its place or for fixed buttons', async () => {
+  const { app, run } = setup();
+  const nowhere = await run('player_button', { button: 'like', act: 'move' });
+  assert.deepEqual(nowhere.result, { ok: false, reason: 'no_zone' });
+  assert.equal(nowhere.returns, true);
+  const title = await run('player_button', {
+    button: 'like',
+    act: 'move',
+    place: 'bar',
+    zone: 'title',
+  });
+  assert.equal(title.result.reason, 'bad_zone');
+  assert.equal(
+    (await run('player_button', { button: 'play', act: 'hide' })).result.reason,
+    'bad_args:button',
+  );
+  assert.equal(
+    (await run('player_button', { button: 'like', act: 'move', zone: 'right', position: 0 })).result
+      .reason,
+    'bad_position',
+  );
+  assert.deepEqual(app.buttons().bar.left, ['like']);
 });
 
 test('effects switch by name and an unknown effect is refused before the app', async () => {

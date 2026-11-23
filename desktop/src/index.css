@@ -991,13 +991,99 @@ select,
 .npb-track-btns,
 .npb-tool-btns {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
+    justify-content: flex-end;
     flex: 0 0 auto;
+    max-width: 100%;
+    min-width: 0;
     gap: 2px;
 }
 
 .npb-tool-btns {
     justify-self: end;
+}
+
+.zone-near {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-width: 0;
+    gap: inherit;
+}
+
+.zone-item {
+    display: flex;
+    align-items: center;
+    gap: inherit;
+}
+
+.zone-item[data-lifted="true"] {
+    opacity: 0.3;
+}
+
+[data-ui="player-zone"] {
+    position: relative;
+    isolation: isolate;
+}
+
+[data-ui="player-zone"][data-drop]::before {
+    content: "";
+    position: absolute;
+    inset: var(--zone-pad, -4px);
+    z-index: -1;
+    border-radius: 999px;
+    background: rgb(var(--ink) / 0.05);
+    box-shadow: inset 0 0 0 1px rgb(var(--ink) / 0.12);
+    pointer-events: none;
+    transition: background-color 160ms ease, box-shadow 160ms ease;
+}
+
+[data-ui="player-zone"][data-drop="over"]::before {
+    background: color-mix(in srgb, var(--color-accent) 14%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-accent) 60%, transparent);
+}
+
+.zone-near[data-drop] {
+    --zone-pad: -3px -1px;
+}
+
+.zone-slot {
+    width: var(--zone-slot, 34px);
+    height: var(--zone-slot, 34px);
+    flex: 0 0 auto;
+    border: 1px dashed rgb(var(--ink) / 0.28);
+    border-radius: 999px;
+}
+
+.zone-chip {
+    display: grid;
+    width: 100%;
+    min-width: 34px;
+    height: 100%;
+    min-height: 34px;
+    place-items: center;
+    border: 1px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+    border-radius: 999px;
+    background: rgb(var(--surface));
+    color: var(--color-accent);
+    box-shadow: 0 12px 28px rgb(var(--shade) / calc(0.45 * var(--shade-alpha)));
+    cursor: grabbing;
+}
+
+html[data-zone-drag],
+html[data-zone-drag] * {
+    cursor: grabbing;
+}
+
+[data-perf="light"] [data-ui="player-zone"][data-drop]::before {
+    transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-ui="player-zone"][data-drop]::before {
+        transition: none;
+    }
 }
 
 .npb-ghosts {

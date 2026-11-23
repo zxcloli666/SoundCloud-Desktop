@@ -7,14 +7,9 @@ import { useChatDockWidth } from '../chat/shell/useChatDockWidth';
 import { useLayoutMenu } from './LayoutMenu';
 import { DockLoadingRing, useLoadProgress } from './player/load-progress';
 import { PillTrack } from './player/PillTrack';
-import {
-  HiddenPopovers,
-  type PlayerContext,
-  ToolButtons,
-  TrackButtons,
-  TransportButtons,
-} from './player/PlayerButtons';
+import { HiddenPopovers, type PlayerContext, TransportButtons, Zone } from './player/PlayerButtons';
 import { WaveSeek } from './player/WaveSeek';
+import { ZoneBoard } from './player/zone-board';
 import { sidebarWidth, useSidebarCollapsed } from './SidebarChrome';
 
 const TimeNow = React.memo(() => {
@@ -98,14 +93,16 @@ export const NowPlayingBar = React.memo(
           <DockLoadingRing progress={loadProgress} />
 
           <div className="npb-content">
-            <div className="npb-row">
-              <div className="npb-left">
-                <PillTrack loadProgress={loadProgress} />
-                <TrackButtons ctx={ctx} />
+            <ZoneBoard surface="player">
+              <div className="npb-row">
+                <div className="npb-left">
+                  <PillTrack loadProgress={loadProgress} />
+                  <Zone zone="left" ctx={ctx} className="npb-track-btns" />
+                </div>
+                <TransportButtons ctx={ctx} />
+                <Zone zone="right" ctx={ctx} className="npb-tool-btns" />
               </div>
-              <TransportButtons ctx={ctx} />
-              <ToolButtons ctx={ctx} />
-            </div>
+            </ZoneBoard>
 
             <div className="npb-lane">
               <TimeNow />
@@ -113,7 +110,7 @@ export const NowPlayingBar = React.memo(
               <TimeTotal />
             </div>
           </div>
-          <HiddenPopovers ctx={ctx} />
+          <HiddenPopovers surface="player" ctx={ctx} />
         </div>
         {layoutMenu.menu}
       </div>

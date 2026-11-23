@@ -13,7 +13,7 @@ import type { ReactNode } from 'react';
 
 export const lockX: Modifier = ({ transform }) => ({ ...transform, x: 0 });
 
-function swallowNextClick() {
+export function swallowNextClick() {
   const swallow = (event: MouseEvent) => {
     event.preventDefault();
     event.stopPropagation();

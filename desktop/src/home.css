@@ -158,13 +158,50 @@
   height: 48px;
 }
 
-.deck-round
-  :is([data-ui="player-shuffle"], [data-ui="player-repeat"], [data-ui="player-abloop"]).pbtn {
-  width: 40px;
-  height: 40px;
+.deck-round [data-zone] {
+  --zone-slot: var(--deck-btn, 46px);
+  --zone-pad: -6px;
+}
+
+.deck-round :is([data-zone="before"], [data-zone="after"]) {
+  --zone-slot: var(--deck-near, 40px);
+  --zone-pad: -4px;
+  gap: var(--deck-near-gap, 20px);
+}
+
+.deck-round :is([data-zone="before"], [data-zone="after"]) .pbtn {
+  width: var(--deck-near, 40px);
+  height: var(--deck-near, 40px);
   border-color: transparent;
   background: transparent;
   box-shadow: none;
+}
+
+.deck-round :is([data-zone="before"], [data-zone="after"]) [data-ui="player-quality"] {
+  width: calc(var(--deck-near, 40px) * 2);
+  height: var(--deck-near, 40px);
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.deck-round .zone-item:has(> [data-ui="player-quality"]:empty) {
+  display: none;
+}
+
+.deck-title [data-zone] {
+  --zone-slot: 30px;
+  max-width: 50%;
+  flex-wrap: wrap;
+}
+
+.deck-title [data-ui="player-quality"] {
+  width: auto;
+  height: 30px;
+}
+
+.deck-title [data-ui="player-quality"]:empty {
+  display: none;
 }
 
 .deck-round .npb-play {
@@ -187,10 +224,10 @@
   height: 28px;
 }
 
-.deck-round .npb-vol-slider {
+:is(.deck-round, .deck-title) .npb-vol-slider {
   display: none;
 }
 
-.deck-round .npb-vol:is(:hover, :focus-within) .npb-vol-pop {
+:is(.deck-round, .deck-title) .npb-vol:is(:hover, :focus-within) .npb-vol-pop {
   display: block;
 }

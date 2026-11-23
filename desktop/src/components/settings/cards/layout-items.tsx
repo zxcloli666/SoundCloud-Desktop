@@ -88,7 +88,7 @@ export function itemMeta(scope: LayoutScope, id: string): ItemMeta {
   if (scope === 'quick') return QUICK_ITEMS[id as LayoutId<'quick'>];
   if (scope === 'library') return LIBRARY_ITEMS[id as LayoutId<'library'>];
   if (scope === 'home') return HOME_ITEMS[id as LayoutId<'home'>];
-  if (scope === 'player') return PLAYER_ITEMS[id as LayoutId<'player'>];
+  if (scope === 'player' || scope === 'deck') return PLAYER_ITEMS[id as LayoutId<'player'>];
   const nav = NAV_ITEMS[id as LayoutId<'sidebar'>];
   return { icon: <nav.icon size={16} strokeWidth={1.9} />, label: nav.label };
 }

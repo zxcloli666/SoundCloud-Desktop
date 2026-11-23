@@ -1,10 +1,22 @@
 import { selectChatInNav, useChatStore } from '../stores/chat';
+import {
+  isDefaultPlacement,
+  isSurface,
+  PLAYER_HIDDEN,
+  PLAYER_IDS,
+  type Placed,
+  type PlayerButtonId,
+  placeZones,
+  type Surface,
+  type Zone,
+} from './player-zones';
 
-export type LayoutScope = 'sidebar' | 'quick' | 'library' | 'home' | 'player';
+export type LayoutScope = 'sidebar' | 'quick' | 'library' | 'home' | 'player' | 'deck';
 
 export interface LayoutEntry {
   id: string;
   hidden: boolean;
+  zone?: Zone;
 }
 
 export type LayoutState = Record<LayoutScope, LayoutEntry[]>;
@@ -26,26 +38,8 @@ export const LAYOUT_IDS = {
     'dislikes',
   ],
   home: ['river', 'shelf', 'releases', 'superlikes', 'likes', 'recommended'],
-  player: [
-    'like',
-    'dislike',
-    'addToPlaylist',
-    'album',
-    'block',
-    'quality',
-    'shuffle',
-    'repeat',
-    'abLoop',
-    'together',
-    'mic',
-    'sleep',
-    'tuning',
-    'eq',
-    'effects',
-    'lyrics',
-    'queue',
-    'volume',
-  ],
+  player: PLAYER_IDS,
+  deck: PLAYER_IDS,
 } as const satisfies Record<LayoutScope, readonly string[]>;
 
 export type LayoutId<S extends LayoutScope> = (typeof LAYOUT_IDS)[S][number];
@@ -91,20 +85,8 @@ export const DEFAULT_HIDDEN: Record<LayoutScope, ReadonlySet<string>> = {
   quick: new Set(['playlists', 'following', 'stats', 'dislikes']),
   library: NO_IDS,
   home: new Set(['releases', 'superlikes', 'likes', 'recommended']),
-  player: new Set([
-    'dislike',
-    'addToPlaylist',
-    'album',
-    'block',
-    'quality',
-    'abLoop',
-    'together',
-    'mic',
-    'sleep',
-    'tuning',
-    'eq',
-    'effects',
-  ]),
+  player: PLAYER_HIDDEN,
+  deck: PLAYER_HIDDEN,
 };
 
 export const EMPTY_LAYOUT: LayoutState = {
@@ -113,7 +95,14 @@ export const EMPTY_LAYOUT: LayoutState = {
   library: [],
   home: [],
   player: [],
+  deck: [],
 };
+
+export function deckFromPlayer(layouts: Partial<LayoutState> | undefined): LayoutState {
+  const all = { ...EMPTY_LAYOUT, ...layouts };
+  if (all.deck.length > 0 || all.player.length === 0) return all;
+  return { ...all, deck: all.player.map(({ id, hidden }) => ({ id, hidden })) };
+}
 
 const NONE_GATED: ReadonlySet<string> = new Set();
 const CHATS_GATED: ReadonlySet<string> = new Set(['chats']);
@@ -129,6 +118,7 @@ function currentGated(): ReadonlySet<string> {
 export interface ResolvedEntry<T extends string> {
   id: T;
   hidden: boolean;
+  zone?: Zone;
 }
 
 export function resolveLayout<T extends string>(
@@ -143,7 +133,11 @@ export function resolveLayout<T extends string>(
   for (const entry of saved ?? []) {
     if (!known.has(entry.id) || seen.has(entry.id)) continue;
     seen.add(entry.id);
-    out.push({ id: entry.id as T, hidden: !!entry.hidden });
+    out.push({
+      id: entry.id as T,
+      hidden: !!entry.hidden,
+      ...(entry.zone ? { zone: entry.zone } : {}),
+    });
   }
   ids.forEach((id, index) => {
     if (!known.has(id) || seen.has(id)) return;
@@ -171,7 +165,15 @@ export function moveEntry<T extends { id: string }>(list: readonly T[], from: st
   return next;
 }
 
+export function resolvePlacement(
+  saved: readonly LayoutEntry[] | undefined,
+  surface: Surface,
+): Placed<PlayerButtonId>[] {
+  return placeZones(surface, resolveLayout(saved, PLAYER_IDS, NONE_GATED, PLAYER_HIDDEN));
+}
+
 export function isDefaultLayout(entries: readonly LayoutEntry[], scope: LayoutScope) {
+  if (isSurface(scope)) return isDefaultPlacement(placeZones(scope, entries), scope);
   const gated = currentGated();
   const visible = LAYOUT_IDS[scope].filter((id) => !gated.has(id));
   return entries.every(
