@@ -183,6 +183,7 @@ export function Segmented<T extends string>({
             aria-checked={active}
             disabled={o.disabled}
             data-ui="segment"
+            data-value={o.id}
             data-active={active ? 'true' : 'false'}
             onClick={() => onChange(o.id)}
             className="set-seg-item"

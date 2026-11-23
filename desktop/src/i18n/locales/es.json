@@ -2413,7 +2413,8 @@
       "provisioning": "registrando",
       "active": "activo",
       "failed": "error"
-    }
+    },
+    "desc": "Mientras está activo, nuestros servidores envían solicitudes a SoundCloud a través de tu conexión a internet"
   },
   "artist": {
     "title": "Artista",

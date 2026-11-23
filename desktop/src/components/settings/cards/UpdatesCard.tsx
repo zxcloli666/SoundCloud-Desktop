@@ -108,11 +108,7 @@ export function UpdatesCard() {
         {info && (
           <div className="flex min-w-0 flex-col items-end gap-1">
             <span className="set-chip">{t(`update.kind.${info.kind}`)}</span>
-            <span
-              className={`text-right text-[12px] leading-snug ${
-                info.selfUpdate ? 'text-[var(--color-accent)]' : 'text-ink-45'
-              }`}
-            >
+            <span className="text-right text-[12px] leading-snug text-ink-50">
               {t(info.selfUpdate ? 'settings.oneClickUpdates' : 'settings.manualUpdates')}
             </span>
           </div>

@@ -2209,7 +2209,8 @@
       "provisioning": "등록 중",
       "active": "활성",
       "failed": "실패"
-    }
+    },
+    "desc": "켜 두면 저희 서버가 이 컴퓨터의 인터넷 연결로 SoundCloud에 요청을 보내요"
   },
   "artist": {
     "title": "아티스트",

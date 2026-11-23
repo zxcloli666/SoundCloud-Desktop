@@ -74,6 +74,7 @@ export const CallProxySection: React.FC = React.memo(() => {
   return (
     <Card
       title={t('call.title')}
+      desc={t('call.desc')}
       icon={<Users size={17} />}
       action={
         <button

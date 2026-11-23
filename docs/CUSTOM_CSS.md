@@ -232,7 +232,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-search-clear"]` | Clear button in the search field |
 | `[data-ui="switch"]` | On/off switch |
 | `[data-ui="segmented"]` | Group of options |
-| `[data-ui="segment"]` | One option in a group |
+| `[data-ui="segment"]` | One option in a group, `data-value` is its id |
 
 States are in attributes too: `aria-current="page"` on the open link or section, `aria-checked` on switches, `aria-selected` or `data-active="true"` on tabs, chips and options. `html[data-perf="beauty"]`, `"medium"` or `"light"` is the performance mode.
 

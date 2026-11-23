@@ -1,7 +1,7 @@
+import { categories, entries } from 'virtual:settings-index';
 import i18next from 'i18next';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { categories, entries } from 'virtual:settings-index';
 import { buildDocs } from './docs';
 import { pointers } from './pointers';
 import { buildSearchIndex, search } from './search-index';
@@ -15,7 +15,7 @@ export interface SettingsResult {
   kind: SettingsEntry['kind'] | 'section';
   category: string;
   title: string;
-  path: string;
+  path: string[];
   desc: string;
   descMatched: boolean;
   titles: string[];
@@ -118,7 +118,7 @@ function toSection(category: string, language: string): SettingsResult {
     kind: 'section',
     category,
     title,
-    path: '',
+    path: [],
     desc: '',
     descMatched: false,
     titles: [title],
@@ -140,16 +140,16 @@ function toResult(
   const titles = ui(entry.title);
   const host = entry.kind === 'row' ? byId.get(entry.card) : undefined;
   const cardTitles = host ? ui(host.title) : [];
-  const label =
-    ui([entry.place ?? categories.find((item) => item.id === entry.category)?.labelKey ?? ''])[0] ??
-    '';
+  const page = categories.find((item) => item.id === entry.category);
+  const placeKeys = entry.place ? [entry.place] : [page?.parentKey, page?.labelKey];
+  const places = placeKeys.flatMap((key) => (key ? ui([key]).slice(0, 1) : []));
   const descMatched = kind === 'desc' || kind === 'option';
   return {
     id: entry.id,
     kind: entry.kind,
     category: entry.category,
     title: titles[0] ?? '',
-    path: cardTitles[0] ? `${label} › ${cardTitles[0]}` : label,
+    path: [...new Set([...places, ...cardTitles.slice(0, 1)])],
     desc: descMatched ? hitText : (ui(entry.desc)[0] ?? ''),
     descMatched,
     titles,

@@ -1,4 +1,4 @@
-import { memo, type ReactNode } from 'react';
+import { Fragment, memo, type ReactNode } from 'react';
 import { ChevronRight, ExternalLink } from '../../../lib/icons';
 import type { SettingsResult } from '../../../lib/settings-search/useSettingsSearch';
 import { Highlighted } from './Highlighted';
@@ -52,8 +52,15 @@ export const ResultRow = memo(function ResultRow({
         >
           <Highlighted text={result.title} query={query} />
         </span>
-        {!section && (
-          <span className="mt-0.5 block truncate text-[11.5px] text-ink-40">{result.path}</span>
+        {!section && result.path.length > 0 && (
+          <span className="mt-0.5 flex min-w-0 items-center gap-1 text-[11.5px] text-ink-40">
+            {result.path.map((part, index) => (
+              <Fragment key={part}>
+                {index > 0 && <ChevronRight size={11} className="shrink-0 text-ink-25" />}
+                <span className="truncate">{part}</span>
+              </Fragment>
+            ))}
+          </span>
         )}
         {result.desc !== '' && (
           <span className="mt-0.5 line-clamp-1 text-[12px] text-ink-50">

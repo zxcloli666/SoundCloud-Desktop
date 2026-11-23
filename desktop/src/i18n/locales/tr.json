@@ -2300,7 +2300,8 @@
       "provisioning": "kaydediliyor",
       "active": "aktif",
       "failed": "hata"
-    }
+    },
+    "desc": "Açıkken sunucularımız SoundCloud isteklerini sizin internet bağlantınız üzerinden gönderir"
   },
   "artist": {
     "title": "Sanatçı",

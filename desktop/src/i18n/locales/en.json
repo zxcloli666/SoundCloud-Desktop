@@ -2376,7 +2376,8 @@
       "provisioning": "registering",
       "active": "active",
       "failed": "failed"
-    }
+    },
+    "desc": "While it is on, our servers send SoundCloud requests through your internet connection"
   },
   "artist": {
     "title": "Artist",

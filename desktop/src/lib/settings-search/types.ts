@@ -32,4 +32,5 @@ export interface SettingsEntry {
 export interface SettingsCategoryInfo {
   id: string;
   labelKey: string;
+  parentKey?: string;
 }

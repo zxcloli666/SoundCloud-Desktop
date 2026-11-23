@@ -232,7 +232,7 @@
 | `[data-ui="settings-search-clear"]` | Кнопка очистки в поле поиска |
 | `[data-ui="switch"]` | Переключатель |
 | `[data-ui="segmented"]` | Группа вариантов |
-| `[data-ui="segment"]` | Вариант в группе |
+| `[data-ui="segment"]` | Вариант в группе, его id в `data-value` |
 
 Состояния тоже в атрибутах: `aria-current="page"` у открытой ссылки или раздела, `aria-checked` у переключателей, `aria-selected` или `data-active="true"` у вкладок, чипов и вариантов. `html[data-perf="beauty"]`, `"medium"` или `"light"` показывает режим производительности.
 
