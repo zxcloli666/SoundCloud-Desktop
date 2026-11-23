@@ -15,6 +15,7 @@
   --shell-top: color-mix(in srgb, var(--shell) 38%, transparent);
   --shell-veil: color-mix(in srgb, var(--shell) 24%, transparent);
   --shell-pane: color-mix(in srgb, var(--shell) 64%, transparent);
+  --shell-pane-hi: color-mix(in srgb, var(--shell-pane) 94%, rgb(var(--ink)));
 }
 
 [data-ui="app"][data-wall] [data-ui="main"] {
@@ -206,15 +207,17 @@
   color: rgb(var(--ink));
 }
 
-.panel {
-  border: 1px solid var(--shell-line);
-  border-radius: 1.25rem;
-  background: rgb(var(--ink) / 0.02);
-}
+@layer components {
+  .panel {
+    border: 1px solid var(--shell-line);
+    border-radius: 1.25rem;
+    background: rgb(var(--ink) / 0.02);
+  }
 
-.panel-fill {
-  border-radius: 0.875rem;
-  background: var(--shell-fill);
+  .panel-fill {
+    border-radius: 0.875rem;
+    background: var(--shell-fill);
+  }
 }
 
 .chip-pill {
@@ -247,4 +250,8 @@ button.chip-pill:hover:not(:disabled) {
 [data-ui="app"][data-wall] .glass-featured,
 [data-ui="app"][data-wall] .panel {
   background: var(--shell-pane);
+}
+
+[data-ui="app"][data-wall] :is(a, button).panel:hover {
+  background: var(--shell-pane-hi);
 }
