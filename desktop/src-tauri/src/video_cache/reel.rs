@@ -1,13 +1,15 @@
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, MutexGuard};
+use std::time::Duration;
 
 use tokio::sync::watch;
+use tokio::time::Instant;
 
 use super::ranges::Ranges;
 
 const NEAR: u64 = 384 * 1024;
-const RUN_MIN: u64 = 1024 * 1024;
+const STARVED: Duration = Duration::from_secs(2);
 
 pub struct Reel {
     pub name: String,
@@ -22,6 +24,7 @@ struct State {
     total: Option<u64>,
     have: Ranges,
     waiting: Vec<Waiter>,
+    served: u64,
     end: Option<Result<(), String>>,
 }
 
@@ -29,6 +32,7 @@ struct State {
 struct Waiter {
     reader: u64,
     at: u64,
+    since: Instant,
 }
 
 pub struct Gap {
@@ -53,12 +57,27 @@ impl Drop for Waiting<'_> {
 }
 
 impl State {
-    fn newest(&self) -> Option<Waiter> {
+    fn next(&self) -> Option<Waiter> {
+        let newest = self.unserved().max_by_key(|waiter| waiter.reader);
+        let fresh = newest.filter(|waiter| waiter.reader > self.served);
+        let starved = self
+            .unserved()
+            .filter(Waiter::starved)
+            .min_by_key(|waiter| waiter.since);
+        fresh.or(starved).or(newest)
+    }
+
+    fn unserved(&self) -> impl Iterator<Item = Waiter> {
         self.waiting
             .iter()
             .filter(|waiter| self.have.run_end(waiter.at).is_none())
-            .max_by_key(|waiter| waiter.reader)
             .copied()
+    }
+}
+
+impl Waiter {
+    fn starved(&self) -> bool {
+        self.since.elapsed() >= STARVED
     }
 }
 
@@ -96,25 +115,29 @@ impl Reel {
         if let Some(end) = have {
             return Ok(end);
         }
-        self.state().waiting.push(Waiter { reader, at });
+        self.state().waiting.push(Waiter {
+            reader,
+            at,
+            since: Instant::now(),
+        });
         let _waiting = Waiting { reel: self, reader };
         asked();
         self.wait(|state| state.have.run_end(at)).await
     }
 
     pub fn asks_elsewhere(&self, gap: &Gap, at: u64) -> bool {
-        let Some(waiter) = self.state().newest() else {
-            return false;
-        };
-        let near = (at..at + NEAR).contains(&waiter.at);
-        !near && (waiter.reader > gap.reader || at >= gap.start + RUN_MIN)
+        self.state().unserved().any(|waiter| {
+            let near = (at..at + NEAR).contains(&waiter.at);
+            !near && (waiter.reader > gap.reader || waiter.starved())
+        })
     }
 
     pub fn gap(&self) -> Option<Gap> {
-        let state = self.state();
-        let newest = state.newest();
-        let reader = newest.map_or(0, |waiter| waiter.reader);
-        let from = newest.map_or(0, |waiter| waiter.at);
+        let mut state = self.state();
+        let next = state.next();
+        let from = next.map_or(0, |waiter| waiter.at);
+        state.served = next.map_or(0, |waiter| waiter.reader.max(state.served));
+        let reader = state.served;
         let Some(total) = state.total else {
             return Some(Gap {
                 start: 0,
@@ -197,7 +220,7 @@ mod tests {
 
     use tokio::task::JoinHandle;
 
-    use super::{NEAR, RUN_MIN, Reel};
+    use super::{NEAR, Reel, STARVED};
 
     fn reel(test: &str) -> (PathBuf, Arc<Reel>) {
         let dir = std::env::temp_dir().join(format!("video-reel-{test}-{}", std::process::id()));
@@ -268,7 +291,7 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
     }
 
-    #[tokio::test]
+    #[tokio::test(start_paused = true)]
     async fn a_newer_reader_far_away_takes_the_loader_and_an_older_one_waits_its_turn() {
         let (dir, reel) = reel("jump");
         reel.learn(1 << 30).unwrap();
@@ -286,7 +309,16 @@ mod tests {
         assert_eq!((second.start, second.reader), (NEAR * 40, 3));
         reel.landed(NEAR * 40..NEAR * 41);
         assert!(!reel.asks_elsewhere(&second, NEAR * 41));
-        assert!(reel.asks_elsewhere(&second, second.start + RUN_MIN));
+        tokio::time::sleep(STARVED).await;
+        let _tail = reader(&reel, 3, NEAR * 41).await;
+        assert!(reel.asks_elsewhere(&second, NEAR * 41));
+
+        let third = reel.gap().unwrap();
+        assert_eq!((third.start, third.reader), (0, 3));
+        assert!(!reel.asks_elsewhere(&third, 0));
+        let _newest = reader(&reel, 4, NEAR * 80).await;
+        assert!(reel.asks_elsewhere(&third, 0));
+        assert_eq!(reel.gap().unwrap().start, NEAR * 80);
         std::fs::remove_dir_all(&dir).ok();
     }
 
