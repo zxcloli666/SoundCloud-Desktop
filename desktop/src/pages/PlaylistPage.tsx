@@ -40,7 +40,7 @@ import { useSettingsStore } from '../stores/settings';
 
 function HeroSkeleton() {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-6 @min-[512px]:p-10">
+    <div className="panel relative overflow-hidden rounded-3xl p-6 @min-[512px]:p-10">
       <div className="flex flex-col @min-[740px]:flex-row gap-10">
         <div className="w-[150px] h-[150px] @min-[512px]:w-[200px] @min-[512px]:h-[200px] rounded-[1.7rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start" />
         <div className="flex-1 space-y-4 w-full">
@@ -484,7 +484,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
         <CrateLedger playlist={playlist} tracks={ownTracks} />
 
         {tracks.length > 1 && (
-          <div className="rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-5 md:p-6">
+          <div className="panel rounded-3xl p-5 md:p-6">
             <div className="flex items-center gap-2 mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-45">
               {t('playlist.theSet')}
             </div>

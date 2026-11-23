@@ -117,7 +117,7 @@ export const SequenceList = React.memo(function SequenceList({
     ) : undefined;
 
   return (
-    <div className="rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-3 md:p-4">
+    <div className="panel rounded-3xl p-3 md:p-4">
       <Header count={visible.length} total={tracks.length} filter={filter} toolbar={toolbar} />
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">

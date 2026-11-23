@@ -128,7 +128,7 @@ const ArtistSpotlightCard = memo(function ArtistSpotlightCard({
     <button
       type="button"
       onClick={() => navigate(`/artist/${encodeURIComponent(artist.id)}`)}
-      className="group relative flex h-[340px] w-[260px] shrink-0 cursor-pointer flex-col items-center overflow-hidden rounded-3xl border border-ink/[0.08] bg-ink/[0.025] px-6 pt-10 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.04]"
+      className="panel group relative flex h-[340px] w-[260px] shrink-0 cursor-pointer flex-col items-center overflow-hidden rounded-3xl px-6 pt-10 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.04]"
     >
       <div className="relative h-[116px] w-[116px]">
         {ring && (
