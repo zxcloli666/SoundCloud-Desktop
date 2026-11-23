@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Film } from '../../../lib/icons';
+import { isLocalUrn } from '../../../lib/local-library';
 import { forgetVideoFails, useFailedKinds } from '../../../lib/video-cache';
 import { canPlayH264 } from '../../../lib/video-element';
 import { useVideoLoad } from '../../../lib/video-load';
@@ -82,5 +83,5 @@ function useVideoState(track: Track): VideoState {
   if (loading) return 'loading';
   if (picked) return 'on';
   if (failed.size > 0) return 'failed';
-  return videos === undefined ? 'on' : 'none';
+  return videos === undefined && !isLocalUrn(track.urn) ? 'on' : 'none';
 }
