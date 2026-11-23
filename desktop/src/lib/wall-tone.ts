@@ -5,6 +5,8 @@ type Tone = { lo: number; hi: number };
 const SAMPLE_W = 64;
 const SAMPLE_H = 36;
 const OPACITY_WEIGHT = 0.2;
+const CLASH_FROM = 0.4;
+const CLASH_SPAN = 0.3;
 
 const tones = new Map<string, Promise<Tone | null>>();
 
@@ -15,14 +17,28 @@ export function useWallTone(url: string | null, dim: number, opacity: number): v
     void wallTone(url).then((tone) => {
       if (!live || !tone) return;
       const open = (1 - dim) * (1 - opacity * OPACITY_WEIGHT);
+      const dark = clash(tone.hi * open);
+      const white = clash((1 - tone.lo) * open);
       const root = document.documentElement.style;
-      root.setProperty('--wall-bright', (tone.hi * open).toFixed(3));
-      root.setProperty('--wall-dark', ((1 - tone.lo) * open).toFixed(3));
+      root.setProperty('--veil-dark', percent(22 + 28 * dark));
+      root.setProperty('--veil-white', percent(22 + 28 * white));
+      root.setProperty('--pane-dark', percent(34 + 40 * dark));
+      root.setProperty('--pane-white', percent(34 + 40 * white));
+      root.setProperty('--lift-dark', (0.5 * dark).toFixed(3));
+      root.setProperty('--lift-white', (0.6 + 0.25 * white).toFixed(3));
     });
     return () => {
       live = false;
     };
   }, [url, dim, opacity]);
+}
+
+function clash(value: number): number {
+  return Math.min(1, Math.max(0, (value - CLASH_FROM) / CLASH_SPAN));
+}
+
+function percent(value: number): string {
+  return `${value.toFixed(1)}%`;
 }
 
 function wallTone(url: string): Promise<Tone | null> {
