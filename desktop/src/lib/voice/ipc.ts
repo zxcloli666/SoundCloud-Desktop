@@ -12,6 +12,7 @@ export const voiceIpc = {
   answer: (choice: string) => invoke<void>('voice_answer', { choice }),
   done: (id: string, outcome: Outcome) => invoke<void>('voice_done', { id, outcome }),
   reread: (id: string) => invoke<void>('voice_reread', { id }),
+  learnHeadset: (on: boolean) => invoke<void>('voice_headset_learn', { on }),
   devices: () => invoke<Devices>('voice_devices'),
   meter: (on: boolean) => invoke<void>('voice_meter', { on }),
   models: () => invoke<Model[]>('voice_models'),

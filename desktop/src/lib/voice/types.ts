@@ -1,5 +1,5 @@
 export type VoiceLanguage = 'ru' | 'en';
-export type HeadsetGesture = 'off' | 'double' | 'triple';
+export type HeadsetGesture = 'off' | 'double' | 'triple' | 'next' | 'previous';
 export type ListenMode = 'chosen' | 'where_i_speak' | 'everywhere';
 export type SpeakMode = 'with_music' | 'device' | 'where_i_listen';
 export type EchoMode = 'auto' | 'on' | 'off';

@@ -5,7 +5,10 @@ use std::time::Duration;
 
 use common::{Offline, Rig, models_ready, models_root, refusing, rig, rig_with, silent, timing};
 use voice_audio::{CaptureError, ErrorCode};
-use voice_engine::{Command, Config, DecisionEvent, Event, Press, Presses, Source, State};
+use voice_engine::{
+    Command, Config, DecisionEvent, Event, Headset, Learned, Learner, Press, Presses, Signal,
+    Source, State,
+};
 use voice_resolve::FixtureCatalog;
 
 fn rig_without_chat() -> Rig {
@@ -232,6 +235,51 @@ fn headset_presses_count_inside_the_window() {
     assert_eq!(presses.press(3, at(0)), Press::First);
     assert_eq!(presses.press(3, at(500)), Press::First);
     assert_eq!(presses.press(0, at(600)), Press::More);
+}
+
+#[test]
+fn the_learner_binds_what_the_headset_sends_for_the_press() {
+    let start = std::time::Instant::now();
+    let at = |ms: u64| start + Duration::from_millis(ms);
+    let mut learner = Learner::new(at(0));
+    assert_eq!(
+        learner.push(Signal::Next, at(100)),
+        Some(Learned::Bound(Headset::Next))
+    );
+    assert_eq!(
+        learner.push(Signal::Previous, at(200)),
+        Some(Learned::Bound(Headset::Previous))
+    );
+    assert_eq!(learner.push(Signal::Toggle, at(1000)), None);
+    assert_eq!(learner.push(Signal::Toggle, at(1300)), None);
+    assert_eq!(learner.settle(at(1500)), None);
+    assert_eq!(
+        learner.settle(at(1800)),
+        Some(Learned::Bound(Headset::Double))
+    );
+    assert_eq!(learner.settle(at(2500)), None);
+    for ms in [3000, 3300, 3600, 3900] {
+        assert_eq!(learner.push(Signal::Toggle, at(ms)), None);
+    }
+    assert_eq!(
+        learner.settle(at(4400)),
+        Some(Learned::Bound(Headset::Triple))
+    );
+    assert_eq!(learner.push(Signal::Toggle, at(5000)), None);
+    assert_eq!(learner.settle(at(5500)), Some(Learned::Single));
+    assert!(learner.live(at(19_000)));
+    assert!(!learner.live(at(20_000)));
+}
+
+#[test]
+fn only_a_skip_bound_to_the_assistant_calls_it() {
+    assert!(Headset::Next.calls_on(Signal::Next));
+    assert!(!Headset::Next.calls_on(Signal::Previous));
+    assert!(Headset::Previous.calls_on(Signal::Previous));
+    assert!(!Headset::Double.calls_on(Signal::Next));
+    assert!(!Headset::Off.calls_on(Signal::Toggle));
+    assert_eq!(Headset::Next.presses(), 0);
+    assert_eq!(Headset::Triple.presses(), 3);
 }
 
 #[test]

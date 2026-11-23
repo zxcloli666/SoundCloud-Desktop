@@ -5,6 +5,7 @@ pub mod commands;
 mod devices;
 mod events;
 mod fetch;
+mod headset;
 mod models;
 mod output;
 mod previews;
@@ -20,12 +21,16 @@ use std::time::Duration;
 use tauri::Manager;
 use tokio::runtime::Handle;
 use voice_audio::{Capture, DeviceList, RefTap};
-use voice_engine::{Command, Config, Deps, Engine, ErrorEvent, Event, Source, State, Timing};
+use voice_engine::{
+    Command, Config, Deps, Engine, ErrorEvent, Event, Learner, Source, State, Timing,
+};
 use voice_models::{Cancel, Store};
 use voice_resolve::Library;
 
 use crate::audio::AudioState;
 use crate::rt::AppHandle;
+
+pub use headset::{headset_calls, headset_gesture, headset_learn, headset_presses, headset_signal};
 
 pub const MAIN: &str = "main";
 const MODELS_DIR: &str = "voice-models";
@@ -44,6 +49,8 @@ pub struct Voice {
     pub progress: Mutex<HashMap<String, (u64, u64)>>,
     pub rounds: chat::Rounds,
     pub library: Arc<RwLock<Library>>,
+    pub learning: Mutex<Option<Learner>>,
+    pub rt: Handle,
 }
 
 pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, premium: bool) {
@@ -73,7 +80,7 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         voice: None,
         server: Some(Arc::new(server::ApiServer {
             app: app.clone(),
-            rt,
+            rt: rt.clone(),
         })),
     };
     let (engine, events) = Engine::start(deps);
@@ -90,6 +97,8 @@ pub fn init(app: &AppHandle, data_dir: &Path, cache_dir: &Path, rt: Handle, prem
         progress: Mutex::new(HashMap::new()),
         rounds: chat::Rounds::default(),
         library,
+        learning: Mutex::new(None),
+        rt,
     });
     events::forward(app.clone(), events);
 }
@@ -161,20 +170,4 @@ pub fn hotkey(app: &AppHandle, pressed: bool) {
         Command::Release(Source::Hotkey)
     };
     voice.engine.send(command);
-}
-
-pub fn headset_presses(app: &AppHandle) -> u8 {
-    let Some(voice) = app.try_state::<Voice>() else {
-        return 0;
-    };
-    if !voice.active() {
-        return 0;
-    }
-    voice.config.lock().unwrap().activation.headset.presses()
-}
-
-pub fn headset_gesture(app: &AppHandle) {
-    if let Some(voice) = app.try_state::<Voice>() {
-        voice.engine.send(Command::Start(Source::Headset));
-    }
 }

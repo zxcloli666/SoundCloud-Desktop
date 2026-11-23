@@ -77,16 +77,17 @@
       "hold": "누르고 있기",
       "tap": "누르기",
       "headset": "헤드셋 버튼",
-      "gesture": {
-        "off": "끔",
-        "double": "2회",
-        "triple": "3회"
+      "learnNow": "호출할 방식대로 헤드셋 버튼을 누르세요",
+      "learnSingle": "한 번 누르면 일시정지돼요. 2번이나 3번 누르세요",
+      "learnMissed": "누름이 전달되지 않았어요",
+      "rebind": "다시",
+      "bound": {
+        "double": "2번 누르기",
+        "triple": "3번 누르기",
+        "next": "\"다음 트랙\" 누르기",
+        "previous": "\"이전 트랙\" 누르기"
       },
-      "headsetHow_other": "버튼을 연속 {{count}}회 누르세요",
-      "test": "테스트",
-      "pressNow_other": "지금 {{count}}회 누르세요",
       "stopTest": "중지",
-      "headsetWorks": "작동함",
       "again": "다시",
       "wake": "이름으로 부르기",
       "names": "반응하는 이름",

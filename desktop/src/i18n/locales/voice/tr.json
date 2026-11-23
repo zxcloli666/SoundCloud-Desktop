@@ -77,18 +77,17 @@
       "hold": "Basılı tut",
       "tap": "Bas",
       "headset": "Kulaklıktan çağır",
-      "gesture": {
-        "off": "Kapalı",
-        "double": "2×",
-        "triple": "3×"
+      "learnNow": "Çağıracağın gibi kulaklığa bas",
+      "learnSingle": "Tek basış duraklatır. 2 ya da 3 kez bas",
+      "learnMissed": "Basış gelmedi",
+      "rebind": "Yeniden",
+      "bound": {
+        "double": "2 basış",
+        "triple": "3 basış",
+        "next": "\"Sonraki parça\" basışı",
+        "previous": "\"Önceki parça\" basışı"
       },
-      "headsetHow_one": "Düğmeye {{count}} kez basın",
-      "headsetHow_other": "Düğmeye art arda {{count}} kez basın",
-      "test": "Dene",
-      "pressNow_one": "{{count}} kez basın",
-      "pressNow_other": "Şimdi {{count}} kez basın",
       "stopTest": "Dur",
-      "headsetWorks": "Çalışıyor",
       "again": "Tekrar",
       "wake": "İsimle",
       "names": "Şu isimlere yanıt verir",

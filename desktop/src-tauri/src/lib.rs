@@ -321,6 +321,7 @@ pub fn run() {
             voice::commands::voice_text,
             voice::commands::voice_answer,
             voice::commands::voice_done,
+            voice::commands::voice_headset_learn,
             voice::commands::voice_reread,
             voice::commands::voice_chat,
             voice::commands::voice_chat_cancel,

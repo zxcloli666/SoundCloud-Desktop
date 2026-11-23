@@ -10,7 +10,6 @@ import { GLOBAL_HOTKEY_ACTIONS, withDefaults } from '../../../lib/hotkeys/action
 import { Keyboard, X } from '../../../lib/icons';
 import { isMac, isWindows } from '../../../lib/platform';
 import { useVoiceStore } from '../../../lib/voice/store';
-import type { HeadsetGesture } from '../../../lib/voice/types';
 import { useSettingsStore } from '../../../stores/settings';
 import { HotkeyRecorder } from '../../settings/cards/HotkeyRecorder';
 import { Card, Segmented, Toggle } from '../../settings/primitives';
@@ -18,8 +17,6 @@ import { Hand, Headset, WandSparkles } from '../icons';
 import { Block } from './Block';
 import { HeadsetTester } from './HeadsetTester';
 import { WakeBlock } from './WakeBlock';
-
-const GESTURES: HeadsetGesture[] = ['off', 'double', 'triple'];
 
 function superKeyName(): string {
   if (isMac()) return '⌘';
@@ -34,6 +31,8 @@ export function ActivationCard() {
   const globalOn = useSettingsStore((s) => s.globalHotkeysEnabled);
   const globalKeys = withDefaults(useSettingsStore((s) => s.globalHotkeys));
   const [problem, setProblem] = useState<string | null>(null);
+  const [binding, setBinding] = useState(false);
+  const headsetOn = activation.headset !== 'off' || binding;
 
   const describe = (p: ChordProblem) => t(`hotkeys.problem.${p}`, { super: superKeyName() });
 
@@ -92,17 +91,24 @@ export function ActivationCard() {
           icon={<Headset size={14} />}
           title={t('voice.activation.headset')}
           control={
-            <div className="w-[196px]">
-              <Segmented
-                value={activation.headset}
-                options={GESTURES.map((id) => ({ id, label: t(`voice.activation.gesture.${id}`) }))}
-                onChange={(headset) => patchActivation({ headset })}
-              />
-            </div>
+            <Toggle
+              checked={headsetOn}
+              onChange={() => {
+                setBinding(!headsetOn);
+                if (headsetOn) patchActivation({ headset: 'off' });
+              }}
+              label={t('voice.activation.headset')}
+            />
           }
         >
-          {activation.headset !== 'off' && (
-            <HeadsetTester key={activation.headset} gesture={activation.headset} />
+          {headsetOn && (
+            <HeadsetTester
+              bound={activation.headset}
+              onBind={(headset) => {
+                setBinding(false);
+                patchActivation({ headset });
+              }}
+            />
           )}
         </Block>
         <Block

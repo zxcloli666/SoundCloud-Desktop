@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+use crate::gesture::Signal;
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Language {
@@ -15,6 +17,8 @@ pub enum Headset {
     Off,
     Double,
     Triple,
+    Next,
+    Previous,
 }
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Deserialize)]
@@ -146,9 +150,26 @@ impl Default for Config {
 impl Headset {
     pub fn presses(self) -> u8 {
         match self {
-            Headset::Off => 0,
             Headset::Double => 2,
             Headset::Triple => 3,
+            Headset::Off | Headset::Next | Headset::Previous => 0,
+        }
+    }
+
+    pub fn calls_on(self, signal: Signal) -> bool {
+        matches!(
+            (self, signal),
+            (Headset::Next, Signal::Next) | (Headset::Previous, Signal::Previous)
+        )
+    }
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Headset::Off => "off",
+            Headset::Double => "double",
+            Headset::Triple => "triple",
+            Headset::Next => "next",
+            Headset::Previous => "previous",
         }
     }
 }

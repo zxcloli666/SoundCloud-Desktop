@@ -77,18 +77,17 @@
       "hold": "Hold",
       "tap": "Tap",
       "headset": "Headset button",
-      "gesture": {
-        "off": "Off",
-        "double": "2×",
-        "triple": "3×"
+      "learnNow": "Press the headset the way you will call",
+      "learnSingle": "One press pauses. Press 2 or 3 times",
+      "learnMissed": "No press came through",
+      "rebind": "Redo",
+      "bound": {
+        "double": "2 presses",
+        "triple": "3 presses",
+        "next": "\"Next track\" press",
+        "previous": "\"Previous track\" press"
       },
-      "headsetHow_one": "Press the button {{count}} time",
-      "headsetHow_other": "Press the button {{count}} times in a row",
-      "test": "Test",
-      "pressNow_one": "Press {{count}} time",
-      "pressNow_other": "Press {{count}} times now",
       "stopTest": "Stop",
-      "headsetWorks": "Works",
       "again": "Again",
       "wake": "By name",
       "names": "Responds to",

@@ -87,6 +87,11 @@ pub fn voice_done(voice: Managed<'_, Voice>, id: String, outcome: Outcome) {
 }
 
 #[tauri::command]
+pub fn voice_headset_learn(app: AppHandle, on: bool) {
+    super::headset_learn(&app, on);
+}
+
+#[tauri::command]
 pub fn voice_reread(voice: Managed<'_, Voice>, id: String) {
     voice.rounds.settle(&id);
     voice.engine.send(Command::Reread(id));
