@@ -12,6 +12,7 @@ interface Props {
   dimmed?: boolean;
   coverLabel: string;
   onOpen: () => void;
+  mark?: Record<string, string>;
   overlay?: ReactNode;
   action?: ReactNode;
 }
@@ -26,11 +27,13 @@ export function ShelfCard({
   dimmed,
   coverLabel,
   onOpen,
+  mark,
   overlay,
   action,
 }: Props) {
   return (
     <div
+      {...mark}
       data-ui="shelf-card"
       data-scroll-key={scrollKey}
       style={{ width: SHELF_CARD_WIDTH }}

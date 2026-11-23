@@ -19,7 +19,7 @@ interface CardProps {
 function TrackShelfCard({ track, queue, onPlay, removable }: CardProps) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { isThisPlaying, isThis, togglePlay } = useTrackPlay(track, queue, onPlay);
+  const { isThisPlaying, isThis, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
   return (
     <ShelfCard
       scrollKey={track.urn}
@@ -29,6 +29,7 @@ function TrackShelfCard({ track, queue, onPlay, removable }: CardProps) {
       active={isThis}
       coverLabel={track.title}
       onOpen={togglePlay}
+      mark={mark}
       overlay={
         <span
           data-scheme="dark"

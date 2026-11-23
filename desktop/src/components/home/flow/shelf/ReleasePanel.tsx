@@ -42,7 +42,7 @@ function ReleaseShelfCard({
   queue: Track[];
   heard: boolean;
 }) {
-  const { isThisPlaying, isThis, togglePlay } = useTrackPlay(track, queue);
+  const { isThisPlaying, isThis, togglePlay, mark } = useTrackPlay(track, queue);
   const age = ago(track.created_at || track.release_date);
   return (
     <ShelfCard
@@ -54,6 +54,7 @@ function ReleaseShelfCard({
       dimmed={heard && !isThis}
       coverLabel={track.title}
       onOpen={togglePlay}
+      mark={mark}
       overlay={
         <>
           <span
