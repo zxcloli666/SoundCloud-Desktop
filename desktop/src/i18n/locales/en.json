@@ -917,23 +917,15 @@
       "waveDesc": "Infinite mix from your taste graph — picks, neighbours, fresh drops, anti-skips.",
       "cluster": {
         "wave": "Wave",
-        "waveDesc": "Infinite mix — recent likes, artist graph and AI-recs from tracks. Gets sharper the more you listen.",
         "for_you": "For you",
         "for_youDesc": "Best matches for your taste.",
         "top_artists": "Your favourites",
-        "top_artistsDesc": "Artists you play most — one fresh track from each.",
         "adjacent": "Adjacent worlds",
-        "adjacentDesc": "Artists played alongside the ones you love.",
         "fresh_drops": "Fresh drops",
-        "fresh_dropsDesc": "Recent additions from artists you follow.",
         "same_vibe": "Same vibe",
-        "same_vibeDesc": "Sound in your emotional spectrum.",
         "deep_cuts": "Deeper",
-        "deep_cutsDesc": "Off the beaten path — but in your key.",
         "discover": "Discover",
-        "discoverDesc": "Fresh and popular tracks to start from.",
-        "moments": "Moments",
-        "momentsDesc": "The best 30 seconds of tracks from your wave. Swipe through."
+        "moments": "Moments"
       }
     },
     "similar": {
@@ -961,9 +953,6 @@
       "adapts": "the current adapts to you",
       "queueInf": "the river refills your queue — the current never stops",
       "playWave": "Ride the current",
-      "freshBadge": "NEW",
-      "relToday": "today",
-      "relYesterday": "yesterday",
       "deltaNote": "the current goes on — the queue refills itself",
       "archiveTitle": "Backwaters",
       "archiveWhy": "your likes and picks for you — still water off the current"
@@ -1478,8 +1467,7 @@
     "layoutPinnedEmpty": "Pin a playlist from its page and it shows up here",
     "layoutUnpin": "Unpin",
     "layoutRiver": "Wave river",
-    "layoutRiverSections": "River sections",
-    "layoutRiverSectionsDesc": "the river keeps its shape, hidden shelves just drop out",
+    "layoutStations": "Wave stations",
     "layoutSidebarHint": "You can also drag items and pinned playlists right in the sidebar",
     "layoutPageHint": "Empty blocks hide themselves until there is something to show",
     "obs": "OBS & streaming",

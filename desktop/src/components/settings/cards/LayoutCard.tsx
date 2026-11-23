@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LayoutDashboard, Lock, RotateCcw } from '../../../lib/icons';
-import { isDefaultLayout, type LayoutScope, LOCKED_VISIBLE, moveEntry } from '../../../lib/layout';
+import { isDefaultLayout, isLocked, type LayoutScope, moveEntry } from '../../../lib/layout';
 import type { Surface } from '../../../lib/player-zones';
 import { useLayout, useToggleLayoutEntry } from '../../../lib/use-layout';
 import { useSettingsStore } from '../../../stores/settings';
 import { Block, Card, Segmented } from '../primitives';
-import { PinnedEditor, RiverSections, SubHeading } from './LayoutExtras';
+import { PinnedEditor, SubHeading } from './LayoutExtras';
 import { LayoutList, RowIconButton } from './LayoutList';
 import { itemMeta } from './layout-items';
 import { PlacementEditor } from './PlacementEditor';
@@ -20,7 +20,7 @@ const SCOPES: Array<{ id: LayoutScope; labelKey: string }> = [
 
 const TAB_ROWS: Partial<Record<LayoutScope, readonly string[]>> = {
   sidebar: ['sidebar.quickAccess', 'settings.layoutPinned'],
-  home: ['settings.layoutRiverSections'],
+  home: ['settings.layoutStations'],
   player: ['settings.layoutPlacement'],
 };
 
@@ -29,6 +29,7 @@ const HINTS: Record<LayoutScope, string> = {
   quick: 'settings.layoutSidebarHint',
   library: 'settings.layoutPageHint',
   home: 'settings.layoutPageHint',
+  stations: 'settings.layoutPageHint',
   player: 'settings.layoutPlayerHint',
   deck: 'settings.layoutPlayerHint',
 };
@@ -41,7 +42,7 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
 
   const items = layout.map((entry) => {
     const meta = itemMeta(scope, entry.id);
-    const locked = LOCKED_VISIBLE.has(`${scope}:${entry.id}`);
+    const locked = isLocked(scope, entry.id);
     const offlineHint = scope === 'sidebar' && entry.id === 'offline' && entry.hidden;
     return {
       id: entry.id,
@@ -49,6 +50,7 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
       label: t(meta.label),
       hint: offlineHint ? t('settings.layoutOfflineAuto') : undefined,
       dimmed: entry.hidden,
+      fixed: locked,
       trailing: locked ? (
         <span
           title={t('settings.layoutAlwaysVisible')}
@@ -83,15 +85,16 @@ export function LayoutCard() {
   const scope = tab === 'player' ? surface : tab;
   const layout = useLayout(scope);
   const quick = useLayout('quick');
-  const riverHidden = useSettingsStore((s) => s.riverHidden);
+  const stations = useLayout('stations');
   const resetLayout = useSettingsStore((s) => s.resetLayout);
   const pristine =
     isDefaultLayout(layout, scope) &&
-    (scope !== 'home' || riverHidden.length === 0) &&
+    (scope !== 'home' || isDefaultLayout(stations, 'stations')) &&
     (scope !== 'sidebar' || isDefaultLayout(quick, 'quick'));
   const reset = () => {
     resetLayout(scope);
     if (scope === 'sidebar') resetLayout('quick');
+    if (scope === 'home') resetLayout('stations');
   };
 
   return (
@@ -134,7 +137,12 @@ export function LayoutCard() {
         </div>
       )}
       {scope === 'sidebar' && <PinnedEditor />}
-      {scope === 'home' && <RiverSections />}
+      {scope === 'home' && (
+        <div data-ui="settings-row" className="set-row space-y-2.5 py-3">
+          <SubHeading title={t('settings.layoutStations')} />
+          <BlocksEditor scope="stations" />
+        </div>
+      )}
     </Card>
   );
 }

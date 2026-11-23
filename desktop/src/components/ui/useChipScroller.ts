@@ -34,7 +34,7 @@ export function useChipScroller(ref: RefObject<HTMLElement | null>) {
 }
 
 export function revealChip(row: HTMLElement | null, smooth: boolean) {
-  const chip = row?.querySelector<HTMLElement>('[aria-pressed="true"]');
+  const chip = row?.querySelector<HTMLElement>('[aria-pressed="true"], [aria-selected="true"]');
   if (!row || !chip) return;
   const start = chip.offsetLeft - PEEK;
   const end = chip.offsetLeft + chip.offsetWidth + PEEK - row.clientWidth;

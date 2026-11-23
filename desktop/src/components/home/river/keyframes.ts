@@ -2,8 +2,4 @@
  *  transform/opacity only. Орбы атмосферы берут tg-orb-drift из WaveFrame. */
 export const RIVER_KEYFRAMES = `
 @keyframes riv-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
-@keyframes riv-eq { from { transform: scaleY(0.35); } to { transform: scaleY(1); } }
-@media (prefers-reduced-motion: reduce) {
-  .riv-anim { animation: none !important; }
-}
 `;

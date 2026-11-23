@@ -11,7 +11,7 @@ import {
   type Zone,
 } from './player-zones';
 
-export type LayoutScope = 'sidebar' | 'quick' | 'library' | 'home' | 'player' | 'deck';
+export type LayoutScope = 'sidebar' | 'quick' | 'library' | 'home' | 'stations' | 'player' | 'deck';
 
 export interface LayoutEntry {
   id: string;
@@ -37,46 +37,29 @@ export const LAYOUT_IDS = {
     'likes',
     'dislikes',
   ],
-  home: ['river', 'shelf', 'releases', 'superlikes', 'likes', 'recommended'],
+  home: ['river', 'moments', 'shelf', 'releases', 'superlikes', 'likes', 'recommended'],
+  stations: [
+    'wave',
+    'same_vibe',
+    'deep_cuts',
+    'adjacent',
+    'top_artists',
+    'fresh_drops',
+    'discover',
+  ],
   player: PLAYER_IDS,
   deck: PLAYER_IDS,
 } as const satisfies Record<LayoutScope, readonly string[]>;
 
 export type LayoutId<S extends LayoutScope> = (typeof LAYOUT_IDS)[S][number];
 
-export const RIVER_SECTIONS = [
-  'wave',
-  'moments',
-  'top_artists',
-  'fresh_drops',
-  'same_vibe',
-  'adjacent',
-  'deep_cuts',
-  'discover',
-] as const;
+export type StationId = LayoutId<'stations'>;
 
-export type RiverSectionId = (typeof RIVER_SECTIONS)[number];
+const LOCKED: ReadonlySet<string> = new Set(['stations:wave']);
 
-export type RiverHiddenEntry = RiverSectionId | 'custom';
-
-export function resolveRiverHidden(
-  saved: readonly RiverHiddenEntry[],
-): ReadonlySet<RiverSectionId> {
-  if (saved.length === 0) return new Set(RIVER_SECTIONS);
-  return new Set(saved.filter((id): id is RiverSectionId => id !== 'custom'));
+export function isLocked(scope: LayoutScope, id: string) {
+  return LOCKED.has(`${scope}:${id}`);
 }
-
-export function toggleRiverSection(
-  saved: readonly RiverHiddenEntry[],
-  id: RiverSectionId,
-): RiverHiddenEntry[] {
-  const hidden = new Set(resolveRiverHidden(saved));
-  if (hidden.has(id)) hidden.delete(id);
-  else hidden.add(id);
-  return [...hidden, 'custom'];
-}
-
-export const LOCKED_VISIBLE: ReadonlySet<string> = new Set();
 
 const NO_IDS: ReadonlySet<string> = new Set();
 
@@ -84,7 +67,8 @@ export const DEFAULT_HIDDEN: Record<LayoutScope, ReadonlySet<string>> = {
   sidebar: new Set(['search', 'discover', 'offline']),
   quick: new Set(['playlists', 'following', 'stats', 'dislikes']),
   library: NO_IDS,
-  home: new Set(['releases', 'superlikes', 'likes', 'recommended']),
+  home: new Set(['moments', 'releases', 'superlikes', 'likes', 'recommended']),
+  stations: new Set(['top_artists', 'fresh_drops']),
   player: PLAYER_HIDDEN,
   deck: PLAYER_HIDDEN,
 };
@@ -94,6 +78,7 @@ export const EMPTY_LAYOUT: LayoutState = {
   quick: [],
   library: [],
   home: [],
+  stations: [],
   player: [],
   deck: [],
 };

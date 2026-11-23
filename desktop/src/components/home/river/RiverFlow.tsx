@@ -1,20 +1,13 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { RIVER_SECTIONS, resolveRiverHidden } from '../../../lib/layout';
 import { isUrnLiked, likedTracksCount, useLiked } from '../../../lib/likes';
-import { useMomentsTeaser } from '../../../lib/moments/teaser';
 import { useAuthStore } from '../../../stores/auth';
 import type { Track } from '../../../stores/player';
 import { usePlayerStore } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
-import {
-  type ClusterHydrated,
-  type ClusterId,
-  useClusterWave,
-  waveQueue,
-} from '../../music/cluster';
+import { type ClusterHydrated, useClusterWave, waveQueue } from '../../music/cluster';
 import { useInfiniteWave } from '../../music/soundwave/use-infinite-wave';
 import { FlowDeck } from '../flow/FlowDeck';
-import { RiverSections } from './RiverSections';
+import type { WaveFeed, WaveTrouble } from '../flow/wave/stations';
 
 const WAVE_CARDS = 5;
 const NO_TRACKS: Track[] = [];
@@ -26,14 +19,6 @@ export const RiverFlow = React.memo(function RiverFlow() {
   const genres = useSettingsStore((s) => s.soundwaveGenres);
   const hideLiked = useSettingsStore((s) => s.soundwaveHideLiked);
   const hideListened = useSettingsStore((s) => s.soundwaveHideListened);
-  const savedHidden = useSettingsStore((s) => s.riverHidden);
-  const hidden = useMemo(() => resolveRiverHidden(savedHidden), [savedHidden]);
-  const sectionsShown = RIVER_SECTIONS.some((id) => !hidden.has(id));
-  const teaser = useMomentsTeaser(isAuthenticated && !hidden.has('moments'));
-  const moments = useMemo(
-    () => teaser.filter((track) => Boolean(track.user?.avatar_url)),
-    [teaser],
-  );
   const currentTrack = usePlayerStore((s) => s.currentTrack);
   const [refreshing, setRefreshing] = useState(false);
   const [liveWave, setLiveWave] = useState<Track[]>(NO_TRACKS);
@@ -84,7 +69,7 @@ export const RiverFlow = React.memo(function RiverFlow() {
   }, [rawClusters, keepTrack, likesVersion]);
 
   const clusterById = useMemo(
-    () => new Map(clusters.map((cluster) => [cluster.id as ClusterId, cluster])),
+    () => new Map<string, ClusterHydrated>(clusters.map((cluster) => [cluster.id, cluster])),
     [clusters],
   );
   const waveCluster = clusterById.get('wave') ?? null;
@@ -108,6 +93,21 @@ export const RiverFlow = React.memo(function RiverFlow() {
     return source.slice(0, WAVE_CARDS);
   }, [liveWave, playQueue]);
 
+  const empty = !isLoading && clusters.length === 0;
+  const trouble = empty
+    ? troubleOf(isError || !data, rawClusters.length > 0, likesCount > 0)
+    : null;
+  const feed = useMemo<WaveFeed>(
+    () => ({
+      tracks: shownWave,
+      clusters: clusterById,
+      loading: isLoading,
+      trouble,
+      onRetry: () => void refetch(),
+    }),
+    [shownWave, clusterById, isLoading, trouble, refetch],
+  );
+
   if (!isAuthenticated) return null;
 
   const refresh = async () => {
@@ -124,38 +124,19 @@ export const RiverFlow = React.memo(function RiverFlow() {
     usePlayerStore.getState().play(playQueue[0], playQueue);
   };
 
-  const empty = !isLoading && clusters.length === 0;
-  const cold = !empty
-    ? null
-    : isError
-      ? 'error'
-      : rawClusters.length > 0
-        ? 'allLiked'
-        : likesCount > 0
-          ? 'building'
-          : 'cold';
-
   return (
-    <div>
-      <FlowDeck
-        waveTracks={shownWave}
-        canPlay={playQueue.length > 0}
-        onPlayWave={playWave}
-        spinning={refreshing || isFetching}
-        onRefresh={() => void refresh()}
-      />
-      {sectionsShown && (
-        <div className="pt-12">
-          <RiverSections
-            loading={isLoading}
-            cold={cold}
-            onRetry={() => void refetch()}
-            clusters={clusterById}
-            hidden={hidden}
-            moments={moments}
-          />
-        </div>
-      )}
-    </div>
+    <FlowDeck
+      feed={feed}
+      canPlay={playQueue.length > 0}
+      onPlayWave={playWave}
+      spinning={refreshing || isFetching}
+      onRefresh={() => void refresh()}
+    />
   );
 });
+
+function troubleOf(failed: boolean, filteredOut: boolean, hasLikes: boolean): WaveTrouble {
+  if (failed) return 'error';
+  if (filteredOut) return 'allLiked';
+  return hasLikes ? 'building' : 'cold';
+}

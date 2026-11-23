@@ -983,23 +983,15 @@
       "waveDesc": "Zevk grafiğine göre sonsuz karışım — seçmeler, komşular, taze parçalar.",
       "cluster": {
         "wave": "Dalga",
-        "waveDesc": "Sonsuz karışım — son beğeniler, sanatçı grafiği ve parça bazlı AI önerileri. Dinledikçe keskinleşir.",
         "for_you": "Sana özel",
         "for_youDesc": "Zevkine en uygun parçalar.",
         "top_artists": "Favorilerin",
-        "top_artistsDesc": "En çok çaldığın sanatçılar — her birinden taze bir parça.",
         "adjacent": "Komşu dünyalar",
-        "adjacentDesc": "Sevdiklerinle birlikte dinlenen sanatçılar.",
         "fresh_drops": "Taze parçalar",
-        "fresh_dropsDesc": "Takip ettiğin sanatçılardan yeni eklenenler.",
         "same_vibe": "Aynı vibe",
-        "same_vibeDesc": "Duygusal spektrumundaki sesler.",
         "deep_cuts": "Derin kazılar",
-        "deep_cutsDesc": "Patika dışı — ama senin tonunda.",
         "discover": "Keşfet",
-        "discoverDesc": "Başlamak için taze ve popüler parçalar.",
-        "moments": "Anlar",
-        "momentsDesc": "Dalgandaki parçaların en iyi 30 saniyesi. Kaydır."
+        "moments": "Anlar"
       }
     },
     "river": {
@@ -1008,9 +1000,6 @@
       "adapts": "akıntı sana uyum sağlar",
       "queueInf": "nehir kuyruğu doldurur — akıntı durmaz",
       "playWave": "Akıntıya bırak",
-      "freshBadge": "NEW",
-      "relToday": "bugün",
-      "relYesterday": "dün",
       "deltaNote": "akıntı devam eder — kuyruk kendi dolar",
       "archiveTitle": "Koylar",
       "archiveWhy": "beğenilerin ve sana seçilenler — akıntı dışı durgun su"
@@ -1530,8 +1519,7 @@
     "layoutPinnedEmpty": "Bir çalma listesini kendi sayfasından sabitle, burada görünsün",
     "layoutUnpin": "Sabitlemeyi kaldır",
     "layoutRiver": "Dalga nehri",
-    "layoutRiverSections": "Nehir bölümleri",
-    "layoutRiverSectionsDesc": "nehir şeklini korur, gizlenen raflar sadece kaybolur",
+    "layoutStations": "Wave istasyonları",
     "layoutSidebarHint": "Öğeleri ve sabitlenmiş çalma listelerini doğrudan kenar çubuğunda da sürükleyebilirsin",
     "layoutPageHint": "Boş bloklar gösterecek bir şey olana kadar kendiliğinden gizlenir",
     "obs": "OBS ve yayın",

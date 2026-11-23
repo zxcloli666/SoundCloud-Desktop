@@ -2,7 +2,7 @@ import { memo, type ReactNode, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
-import { revealChip, useChipScroller } from './useChipScroller';
+import { revealChip, useChipScroller } from '../../ui/useChipScroller';
 import './chips.css';
 
 const PAGE_SHARE = 0.7;
