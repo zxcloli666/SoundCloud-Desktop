@@ -17,10 +17,7 @@ export const MomentsStation = React.memo(function MomentsStation({ tracks }: { t
   const fan = tracks.slice(0, FAN);
 
   return (
-    <div
-      data-ui="moments-station"
-      className="relative overflow-hidden rounded-[20px] border border-ink/[0.08] bg-ink/[0.025] p-5 md:p-6"
-    >
+    <div data-ui="moments-station" className="panel relative overflow-hidden p-5 md:p-6">
       <div className="relative flex flex-col items-center gap-6 md:flex-row md:justify-between">
         <div className="flex items-end pl-6" onMouseLeave={stopHoverPreview}>
           {fan.map((track, i) => (
