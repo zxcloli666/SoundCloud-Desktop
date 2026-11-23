@@ -51,7 +51,8 @@
       "hush": "Замолчать",
       "downloading": "Голос: качаю модели",
       "openModels": "Открыть модели",
-      "askOne": "Это оно?"
+      "askOne": "Это оно?",
+      "talk": "Беседа"
     },
     "error": {
       "mic_denied": "Нет доступа к микрофону",
@@ -80,24 +81,27 @@
       "hold": "Удерживать",
       "tap": "Нажать",
       "headset": "Кнопка гарнитуры",
-      "gesture": {
-        "off": "Выкл",
-        "double": "2×",
-        "triple": "3×"
+      "learnNow": "Нажмите на гарнитуре, как будете вызывать",
+      "learnSingle": "Одно нажатие ставит паузу. Нажмите 2 или 3 раза",
+      "learnMissed": "Нажатие не дошло",
+      "rebind": "Заново",
+      "bound": {
+        "double": "2 нажатия",
+        "triple": "3 нажатия",
+        "next": "Кнопка «следующий трек»",
+        "previous": "Кнопка «предыдущий трек»"
       },
-      "headsetHow_one": "Нажмите кнопку {{count}} раз подряд",
-      "headsetHow_few": "Нажмите кнопку {{count}} раза подряд",
-      "headsetHow_many": "Нажмите кнопку {{count}} раз подряд",
-      "headsetHow_other": "Нажмите кнопку {{count}} раза подряд",
-      "test": "Проверить",
-      "pressNow_one": "Жмите {{count}} раз",
-      "pressNow_few": "Жмите {{count}} раза",
-      "pressNow_many": "Жмите {{count}} раз",
-      "pressNow_other": "Жмите {{count}} раза",
       "stopTest": "Стоп",
-      "headsetWorks": "Работает",
       "again": "Ещё раз",
       "wake": "По имени",
+      "follow": "Слушать после ответа",
+      "followOff": "Выкл",
+      "talk": "Беседа до тишины",
+      "talkHow": "Скажите «давай поболтаем», и дальше можно без зова",
+      "seconds_one": "{{count}} с",
+      "seconds_few": "{{count}} с",
+      "seconds_many": "{{count}} с",
+      "seconds_other": "{{count}} с",
       "names": "Отзывается на",
       "needsEcho": "Без эхоподавления срабатывает от музыки",
       "echoOn": "Включить",
@@ -188,9 +192,25 @@
         "lyrics": "Текст песни",
         "queue_list": "Очередь",
         "queue_clear": "Очистить очередь",
+        "list_tracks": "Списки",
+        "play_list": "Включить из списка",
         "add_to_playlist": "В плейлист",
         "remember": "Запомнить",
-        "forget": "Забыть"
+        "forget": "Забыть",
+        "screen": "Экран",
+        "press": "Нажать",
+        "type_text": "Ввод текста",
+        "scroll": "Прокрутка",
+        "play_screen": "Включить с экрана",
+        "open_item": "Открыть",
+        "sleep_timer": "Таймер сна",
+        "effect": "Эффект",
+        "dislike": "Дизлайк",
+        "superlike": "Суперлайк",
+        "together": "Вместе",
+        "open_rooms": "Открытые комнаты",
+        "ask_user": "Слушаю",
+        "talk_mode": "Беседа"
       }
     },
     "you": {
@@ -268,7 +288,8 @@
       },
       "voice": "Голос: {{name}}",
       "name": {
-        "qwen-codec": "Декодер голоса"
+        "qwen-codec": "Декодер голоса",
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "Точное распознавание"
       }
     },
     "credits": {

@@ -13,6 +13,7 @@ use crate::voices::{self, Voice};
 pub const VAD: &str = "silero-vad";
 pub const ASR_RU: &str = "sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16";
 pub const ASR_EN: &str = "sherpa-onnx-zipformer-gigaspeech-2023-12-12";
+pub const EXACT_RU: &str = "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16";
 
 const PROGRAM: &str = if cfg!(windows) {
     "scd-qwen.exe"
@@ -24,6 +25,13 @@ pub fn asr(language: Language) -> (&'static str, Model) {
     match language {
         Language::Ru => (ASR_RU, Model::Streaming),
         Language::En => (ASR_EN, Model::Batch),
+    }
+}
+
+pub fn exact(language: Language) -> Option<&'static str> {
+    match language {
+        Language::Ru => Some(EXACT_RU),
+        Language::En => None,
     }
 }
 
@@ -43,8 +51,10 @@ fn parts<'a>(voice: &'a Voice, store: &'a Store) -> Option<Vec<&'a str>> {
         .then_some(ids)
 }
 
-pub fn hearing(config: &Config) -> [&'static str; 2] {
-    [VAD, asr(config.language).0]
+pub fn hearing(config: &Config) -> Vec<&'static str> {
+    let mut ids = vec![VAD, asr(config.language).0];
+    ids.extend(exact(config.language));
+    ids
 }
 
 pub fn required(config: &Config, store: &Store) -> Vec<String> {

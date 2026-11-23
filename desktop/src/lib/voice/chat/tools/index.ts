@@ -6,20 +6,32 @@ import type { AppPort } from '../ports';
 import type { ChatTool, Ran, ToolEnv, ToolRun } from '../types';
 import { appTools } from './app.ts';
 import { catalogTools } from './catalog.ts';
+import { listTools } from './lists.ts';
 import { memoryTools } from './memory.ts';
 import { playerTools } from './player.ts';
+import { screenTools } from './screen.ts';
+import { soundTools } from './sound.ts';
+import { talkTools } from './talk.ts';
+import { tasteTools } from './taste.ts';
+import { togetherTools } from './together.ts';
 
 export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): ChatTool[] {
   return [
     ...playerTools(player, app),
     ...catalogTools(player, app, offered),
+    ...listTools(player, app),
     ...appTools(player, app),
+    ...screenTools(player, app),
+    ...soundTools(player, app),
+    ...tasteTools(app),
+    ...togetherTools(app),
+    ...talkTools(),
     ...memoryTools(app),
   ];
 }
 
 export function toolsOf(cmd: VoiceCommand, player: PlayerPort, app: AppPort): ChatTool[] {
-  return cmd.talk ? [] : chatTools(player, app, candidatesOf(cmd));
+  return chatTools(player, app, candidatesOf(cmd));
 }
 
 function missed(name: string, reason: string, returns: boolean): Ran {

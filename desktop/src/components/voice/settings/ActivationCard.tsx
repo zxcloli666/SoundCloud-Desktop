@@ -7,19 +7,19 @@ import {
   toAccelerator,
 } from '../../../lib/hotkeys/accelerator';
 import { GLOBAL_HOTKEY_ACTIONS, withDefaults } from '../../../lib/hotkeys/actions';
-import { Keyboard, X } from '../../../lib/icons';
+import { Keyboard, MessageCircle, X } from '../../../lib/icons';
 import { isMac, isWindows } from '../../../lib/platform';
 import { useVoiceStore } from '../../../lib/voice/store';
-import type { HeadsetGesture } from '../../../lib/voice/types';
 import { useSettingsStore } from '../../../stores/settings';
 import { HotkeyRecorder } from '../../settings/cards/HotkeyRecorder';
 import { Card, Segmented, Toggle } from '../../settings/primitives';
-import { Hand, Headset, WandSparkles } from '../icons';
+import { Ear, Hand, Headset, WandSparkles } from '../icons';
 import { Block } from './Block';
 import { HeadsetTester } from './HeadsetTester';
 import { WakeBlock } from './WakeBlock';
 
-const GESTURES: HeadsetGesture[] = ['off', 'double', 'triple'];
+const FOLLOW_AFTER = [0, 5, 10];
+const TALK_SILENCE = [10, 20, 40];
 
 function superKeyName(): string {
   if (isMac()) return '⌘';
@@ -31,9 +31,15 @@ export function ActivationCard() {
   const activation = useVoiceStore((s) => s.config.activation);
   const patchActivation = useVoiceStore((s) => s.patchActivation);
   const patchWake = useVoiceStore((s) => s.patchWake);
+  const follow = useVoiceStore((s) => s.config.follow);
+  const patch = useVoiceStore((s) => s.patch);
+  const seconds = (n: number) =>
+    n === 0 ? t('voice.activation.followOff') : t('voice.activation.seconds', { count: n });
   const globalOn = useSettingsStore((s) => s.globalHotkeysEnabled);
   const globalKeys = withDefaults(useSettingsStore((s) => s.globalHotkeys));
   const [problem, setProblem] = useState<string | null>(null);
+  const [binding, setBinding] = useState(false);
+  const headsetOn = activation.headset !== 'off' || binding;
 
   const describe = (p: ChordProblem) => t(`hotkeys.problem.${p}`, { super: superKeyName() });
 
@@ -92,17 +98,24 @@ export function ActivationCard() {
           icon={<Headset size={14} />}
           title={t('voice.activation.headset')}
           control={
-            <div className="w-[196px]">
-              <Segmented
-                value={activation.headset}
-                options={GESTURES.map((id) => ({ id, label: t(`voice.activation.gesture.${id}`) }))}
-                onChange={(headset) => patchActivation({ headset })}
-              />
-            </div>
+            <Toggle
+              checked={headsetOn}
+              onChange={() => {
+                setBinding(!headsetOn);
+                if (headsetOn) patchActivation({ headset: 'off' });
+              }}
+              label={t('voice.activation.headset')}
+            />
           }
         >
-          {activation.headset !== 'off' && (
-            <HeadsetTester key={activation.headset} gesture={activation.headset} />
+          {headsetOn && (
+            <HeadsetTester
+              bound={activation.headset}
+              onBind={(headset) => {
+                setBinding(false);
+                patchActivation({ headset });
+              }}
+            />
           )}
         </Block>
         <Block
@@ -119,6 +132,35 @@ export function ActivationCard() {
         >
           {activation.wake.on && <WakeBlock />}
         </Block>
+        <Block
+          data-ui="settings-row"
+          icon={<Ear size={14} />}
+          title={t('voice.activation.follow')}
+          control={
+            <div className="w-[196px]">
+              <Segmented
+                value={String(follow.after)}
+                options={FOLLOW_AFTER.map((n) => ({ id: String(n), label: seconds(n) }))}
+                onChange={(v) => patch({ follow: { ...follow, after: Number(v) } })}
+              />
+            </div>
+          }
+        />
+        <Block
+          data-ui="settings-row"
+          icon={<MessageCircle size={14} />}
+          title={t('voice.activation.talk')}
+          desc={t('voice.activation.talkHow')}
+          control={
+            <div className="w-[196px]">
+              <Segmented
+                value={String(follow.talk)}
+                options={TALK_SILENCE.map((n) => ({ id: String(n), label: seconds(n) }))}
+                onChange={(v) => patch({ follow: { ...follow, talk: Number(v) } })}
+              />
+            </div>
+          }
+        />
       </div>
     </Card>
   );

@@ -330,6 +330,8 @@ pub fn timing() -> Timing {
         server: Duration::from_secs(5),
         release: Duration::from_millis(80),
         opening: Duration::from_millis(150),
+        pause: Duration::ZERO,
+        unfinished_pause: Duration::ZERO,
     }
 }
 
@@ -478,6 +480,20 @@ impl Rig {
         }
     }
 
+    pub fn state_event(&self) -> voice_engine::StateEvent {
+        match self.next() {
+            Event::State(s) => s,
+            other => panic!("expected a state, got {other:?}"),
+        }
+    }
+
+    pub fn finish(&self, id: &str, outcome: voice_engine::Outcome) {
+        self.engine.send(Command::Done {
+            id: id.into(),
+            outcome,
+        });
+    }
+
     pub fn state(&self) -> (State, Source) {
         match self.next() {
             Event::State(s) => (s.state, s.source),
@@ -531,7 +547,7 @@ impl Rig {
                 ok: true,
                 speech: speech.into(),
                 display: speech.into(),
-                undo: false,
+                ..voice_engine::Outcome::default()
             },
         });
     }

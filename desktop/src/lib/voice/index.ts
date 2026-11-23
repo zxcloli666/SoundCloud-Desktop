@@ -1,5 +1,5 @@
 import { listenVoiceEvents } from './events';
-import { refreshEngine, startConfigSync, startLikedArtists } from './sync';
+import { refreshEngine, startConfigSync, startLibrary } from './sync';
 
 let started = false;
 
@@ -8,6 +8,6 @@ export function initVoice() {
   started = true;
   listenVoiceEvents();
   startConfigSync();
-  startLikedArtists();
+  startLibrary();
   refreshEngine();
 }

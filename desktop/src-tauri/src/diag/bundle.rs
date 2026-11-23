@@ -1,11 +1,11 @@
 use std::path::PathBuf;
 
-use backend_contracts::diag::{
+use chrono::{TimeZone, Utc};
+use sc_diag::diag::{
     App, Attempt as WireAttempt, BUNDLE_KIND, BUNDLE_VERSION, Bundle, ErrorKind, MAX_BUNDLE_BYTES,
     MAX_ERROR_CHARS, MAX_LOG_LINE_CHARS, MAX_LOG_LINES, MAX_NETCHECK_CHARS, MAX_PATH_CHARS,
     Session, Trigger, TriggerKind,
 };
-use chrono::{TimeZone, Utc};
 
 use super::attempt::Attempt;
 use super::caps;
@@ -123,7 +123,7 @@ pub fn build(inputs: Inputs, attempts: Vec<Attempt>, errors: Vec<ErrorEntry>) ->
 mod tests {
     use std::collections::BTreeMap;
 
-    use backend_contracts::diag::{EventsBody, Service};
+    use sc_diag::diag::{EventsBody, Service};
     use serde_json::Value;
 
     use super::*;

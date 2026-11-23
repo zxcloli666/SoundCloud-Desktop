@@ -9,6 +9,7 @@ import {
   NAME_MAX,
   NOTES_MAX,
   OWN_MAX,
+  RESULTS_MAX,
   TEXT_MAX,
   TOOLS_MAX,
 } from '../src/lib/voice/chat/body.ts';
@@ -71,6 +72,7 @@ function idleContext(candidates: Entity[]) {
     next: [],
     candidates,
     page: 'home',
+    screen: null,
     now: new Date(2026, 10, 15, 23, 59),
     appLanguage: 'en',
   });
@@ -212,7 +214,7 @@ test('notes and tools are capped', () => {
   assert.equal(body.tools.length, TOOLS_MAX);
 });
 
-test('an oversized context drops the candidates, then the queue, then the track', () => {
+test('an oversized context drops the candidates, the queue, the screen, then the track', () => {
   const big = 'x'.repeat(BLOCK_BYTES);
   const offered = buildBody(
     input({ context: { playing: true, queue_next: ['next'], candidates: [big] } }),
@@ -220,6 +222,8 @@ test('an oversized context drops the candidates, then the queue, then the track'
   assert.deepEqual(offered.context, { playing: true, queue_next: ['next'] });
   const queue = buildBody(input({ context: { playing: true, queue_next: [big] } }));
   assert.deepEqual(queue.context, { playing: true });
+  const screen = buildBody(input({ context: { playing: true, queue_next: [], screen: big } }));
+  assert.deepEqual(screen.context, { playing: true });
   const track = buildBody(
     input({ context: { playing: true, queue_next: [], now_playing: { title: big } } }),
   );
@@ -250,6 +254,17 @@ test('results stay under the limit: the newest are kept, a huge one is replaced'
   ]);
 });
 
+test('results keep only the newest ones the server takes', () => {
+  const many = Array.from({ length: RESULTS_MAX + 4 }, (_, n) => ({
+    name: 'next',
+    args: { n },
+    result: { ok: true },
+  }));
+  const kept = buildBody(input({ results: many })).results;
+  assert.equal(kept.length, RESULTS_MAX);
+  assert.deepEqual(kept[0].args, { n: 4 });
+});
+
 test('the real tool list and a full context fit the request limits', () => {
   const tools = chatTools(fakePort(), fakeApp(), []);
   assert.ok(bytesOf(tools) < 16 * 1024);
@@ -265,6 +280,7 @@ test('the real tool list and a full context fit the request limits', () => {
     next: Array.from({ length: 9 }, (_, i) => ({ title: `T${i}`, artist: 'A' })),
     candidates: [],
     page: 'likes',
+    screen: fakeApp().view,
     now: new Date(2026, 10, 11, 8, 5),
     appLanguage: 'ru',
   });
@@ -280,11 +296,51 @@ test('the real tool list and a full context fit the request limits', () => {
   assert.equal(context.weekday, 'Wednesday');
   assert.equal(context.page, 'likes');
   assert.equal(context.app_language, 'ru');
+  assert.deepEqual(context.screen, fakeApp().view);
   assert.ok(!('user' in context));
   assert.ok(bytesOf(context) < BLOCK_BYTES);
   const idle = idleContext([]);
   assert.equal(idle.now_playing, null);
   assert.equal(idle.weekday, 'Sunday');
+});
+
+test('the context shows the sleep timer, the effect, the room and a rated track only when set', () => {
+  const base = {
+    track: { title: 'Положение', artist: 'Скриптонит' },
+    liked: true,
+    position: 10,
+    duration: 200,
+    playing: true,
+    volume: 80,
+    shuffle: false,
+    repeat: 'off' as const,
+    next: [],
+    candidates: [],
+    page: 'home',
+    screen: null,
+    now: new Date(2026, 10, 11, 8, 5),
+    appLanguage: 'ru',
+  };
+  const plain = buildContext({
+    ...base,
+    extras: { disliked: false, superliked: false, sleep: null, effect: null, room: null },
+  });
+  for (const key of ['sleep_timer', 'effect', 'together']) assert.ok(!(key in plain), key);
+  assert.ok(!('superliked' in (plain.now_playing as object)));
+  const set = buildContext({
+    ...base,
+    extras: {
+      disliked: false,
+      superliked: true,
+      sleep: { minutes_left: 12 },
+      effect: 'slowed_reverb',
+      room: { role: 'host', code: 'K7M2QP', listeners: 2 },
+    },
+  });
+  assert.equal((set.now_playing as { superliked?: boolean }).superliked, true);
+  assert.deepEqual(set.sleep_timer, { minutes_left: 12 });
+  assert.equal(set.effect, 'slowed_reverb');
+  assert.deepEqual(set.together, { role: 'host', code: 'K7M2QP', listeners: 2 });
 });
 
 test('a command with candidates sends them in the context, best first, five at most', async () => {

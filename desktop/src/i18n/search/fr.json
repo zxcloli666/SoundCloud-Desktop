@@ -182,6 +182,14 @@
     "salon des développeurs",
     "rejoindre discord"
   ],
+  "settings.helpTelegram": [
+    "chaîne telegram",
+    "actus de l'appli",
+    "annonces",
+    "chaîne de l'auteur",
+    "suivre les nouveautés",
+    "telegram"
+  ],
   "settings.android": [
     "android",
     "iphone",
@@ -1124,6 +1132,20 @@
     "moriarty",
     "appeler moriarty",
     "sound joue"
+  ],
+  "voice.activation.follow": [
+    "répondre sans mot d'éveil",
+    "continuer à écouter",
+    "continuer la conversation",
+    "micro ouvert après la réponse",
+    "ne pas rappeler"
+  ],
+  "voice.activation.talk": [
+    "mode conversation",
+    "discuter avec l'assistante",
+    "dialogue continu",
+    "parler sans bouton",
+    "longue conversation"
   ],
   "voice.mics.title": [
     "microphone",

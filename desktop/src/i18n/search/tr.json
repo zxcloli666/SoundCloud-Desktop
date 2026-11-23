@@ -175,6 +175,14 @@
     "topluluk sohbeti",
     "bug bildir"
   ],
+  "settings.helpTelegram": [
+    "telegram kanalı",
+    "uygulama haberleri",
+    "duyurular",
+    "geliştirici kanalı",
+    "güncellemeleri takip et",
+    "tg kanalı"
+  ],
   "settings.android": [
     "android uygulaması",
     "telefonda dinle",
@@ -1012,6 +1020,20 @@
     "mori",
     "moriarty",
     "moriarty'yi çağır"
+  ],
+  "voice.activation.follow": [
+    "uyandırma sözü olmadan cevap",
+    "yanıttan sonra dinlemeye devam",
+    "konuşmaya devam",
+    "mikrofon açık kalsın",
+    "tekrar çağırma"
+  ],
+  "voice.activation.talk": [
+    "sohbet modu",
+    "asistanla sohbet",
+    "kesintisiz diyalog",
+    "düğmesiz konuşma",
+    "uzun sohbet"
   ],
   "voice.mics.title": [
     "mikrofon",

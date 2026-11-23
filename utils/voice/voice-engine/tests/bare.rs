@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use common::{Rig, rig_with, silent, timing};
 use serde_json::json;
-use voice_engine::{Chat, Command, CommandEvent, Config, DecisionEvent, Source, State};
+use voice_engine::{Chat, Command, CommandEvent, Config, DecisionEvent, State};
 use voice_resolve::FixtureCatalog;
 
 const CATALOG: &str = "kind\tname\tartist\tpopularity\taliases

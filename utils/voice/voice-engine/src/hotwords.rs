@@ -1,7 +1,19 @@
 const MAX: usize = 200;
+const MAX_RUSSIAN: usize = 40;
 
 pub const RUSSIAN_SCORE: f32 = 1.5;
+pub const RUSSIAN_EXACT_SCORE: f32 = 0.5;
 pub const ENGLISH_SCORE: f32 = 2.0;
+
+const RUSSIAN_WORDS: [&str; 7] = [
+    "суперлайки",
+    "суперлайках",
+    "лайки",
+    "лайках",
+    "очередь",
+    "волна",
+    "плейлист",
+];
 
 const COMMANDS: [&str; 24] = [
     "PLAY", "PAUSE", "STOP", "RESUME", "CONTINUE", "NEXT", "PREVIOUS", "SKIP", "TRACK", "SONG",
@@ -12,14 +24,17 @@ const COMMANDS: [&str; 24] = [
 const BETWEEN_WORDS: [char; 5] = ['-', '/', ',', '.', ':'];
 
 pub fn russian(names: &[String]) -> Vec<String> {
+    let words = RUSSIAN_WORDS.iter().map(|word| word.to_string()).collect();
     let cased = |name: &str| name.to_lowercase().replace('ё', "е");
-    named(names, Vec::new(), cased, |c| ('а'..='я').contains(&c))
+    named(names, words, MAX_RUSSIAN, cased, |c| {
+        ('а'..='я').contains(&c)
+    })
 }
 
 pub fn english(names: &[String]) -> Vec<String> {
     let commands = COMMANDS.iter().map(|word| word.to_string()).collect();
     let cased = |name: &str| name.to_uppercase().replace('&', " AND ");
-    named(names, commands, cased, |c| {
+    named(names, commands, MAX, cased, |c| {
         c == '\'' || c.is_ascii_uppercase()
     })
 }
@@ -27,10 +42,11 @@ pub fn english(names: &[String]) -> Vec<String> {
 fn named(
     names: &[String],
     mut out: Vec<String>,
+    most: usize,
     cased: fn(&str) -> String,
     spelled: fn(char) -> bool,
 ) -> Vec<String> {
-    let limit = out.len() + MAX;
+    let limit = out.len() + most;
     for name in names {
         let text = cased(name).replace(BETWEEN_WORDS, " ");
         let text = text.split_whitespace().collect::<Vec<_>>().join(" ");
@@ -64,7 +80,28 @@ mod tests {
             "Мот-Мот",
             "Кино",
         ]));
-        assert_eq!(got, ["кино", "король и шут", "елка", "мот мот"]);
+        assert_eq!(got[..RUSSIAN_WORDS.len()], RUSSIAN_WORDS);
+        assert_eq!(
+            got[RUSSIAN_WORDS.len()..],
+            ["кино", "король и шут", "елка", "мот мот"]
+        );
+    }
+
+    #[test]
+    fn russian_keeps_the_interface_words_once_and_few_names() {
+        let mut said = vec!["Волна".to_string(), "гот раша".to_string()];
+        said.extend((0..100).map(|at| {
+            let letters: String = at
+                .to_string()
+                .chars()
+                .filter_map(|digit| char::from_u32('а' as u32 + digit.to_digit(10)?))
+                .collect();
+            format!("группа {letters}")
+        }));
+        let got = russian(&said);
+        assert_eq!(got[..RUSSIAN_WORDS.len()], RUSSIAN_WORDS);
+        assert_eq!(got[RUSSIAN_WORDS.len()], "гот раша");
+        assert_eq!(got.len(), RUSSIAN_WORDS.len() + MAX_RUSSIAN);
     }
 
     #[test]

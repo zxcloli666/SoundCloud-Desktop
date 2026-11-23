@@ -1,6 +1,9 @@
 use crate::entity::Entity;
-use crate::keys::{Keys, QueryKeys, best_sim};
+use crate::keys::Keys;
+use crate::library::nearest;
 use voice_nlu::{Kind, Variant};
+
+const KEPT: usize = 40;
 
 pub trait Catalog {
     fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity>;
@@ -73,15 +76,6 @@ impl FixtureCatalog {
 
 impl Catalog for FixtureCatalog {
     fn candidates(&self, variants: &[Variant], kinds: &[Kind]) -> Vec<Entity> {
-        let queries: Vec<QueryKeys> = QueryKeys::list(variants);
-        let mut hits: Vec<(f32, &Entity)> = self
-            .rows
-            .iter()
-            .filter(|(e, _)| kinds.contains(&e.kind))
-            .map(|(e, k)| (best_sim(k, &queries), e))
-            .filter(|(s, _)| *s >= 0.5)
-            .collect();
-        hits.sort_by(|a, b| b.0.total_cmp(&a.0));
-        hits.into_iter().take(40).map(|(_, e)| e.clone()).collect()
+        nearest(&self.rows, variants, kinds, KEPT)
     }
 }

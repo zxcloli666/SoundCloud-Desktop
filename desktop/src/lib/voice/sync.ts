@@ -4,15 +4,37 @@ import type { Track } from '../../stores/player';
 import { api } from '../api';
 import { onApiWrite } from '../api-writes';
 import { type PagedResponse, pagedUrl, type SCUser } from '../hooks';
+import { fetchAllSuperlikedTracks } from '../superlikes';
 import { voiceIpc } from './ipc';
+import { listedReadings, type SingleReadingsAnswer } from './legacy/readings';
+import { ownedTracks } from './library';
+import {
+  type AskReadings,
+  libraryNames,
+  readNames,
+  spokenNames,
+  withAsked,
+  withReadings,
+} from './library-readings';
 import { changesLikedArtists, likedArtists } from './liked-artists';
 import { engineConfig } from './names';
 import { useVoiceRuntime } from './runtime';
 import { useVoiceStore } from './store';
+import type { VoiceConfig } from './types';
 
 const APPLY_DEBOUNCE_MS = 120;
 const LIKED_PAGE = 200;
 const LIKED_SETTLE_MS = 5_000;
+const READINGS_PATH = '/voice/readings';
+const READINGS_SILENT = [403, 404, 429, 503];
+
+const askReadings: AskReadings = (language, names) =>
+  api<SingleReadingsAnswer>(READINGS_PATH, {
+    method: 'POST',
+    body: JSON.stringify({ language, names }),
+    silentStatuses: READINGS_SILENT,
+    quiet: true,
+  }).then(listedReadings);
 
 function push() {
   loadVoiceLocales()
@@ -54,43 +76,60 @@ export function startConfigSync() {
 
 let likedOf: string | null = null;
 
-async function readLikedArtists() {
-  const [liked, followed] = await Promise.all([
+async function readLibrary() {
+  const [liked, followed, superliked] = await Promise.all([
     api<PagedResponse<Track>>(pagedUrl('/me/likes/tracks', 0, LIKED_PAGE)),
     api<PagedResponse<SCUser>>(pagedUrl('/me/followings', 0, LIKED_PAGE)),
+    fetchAllSuperlikedTracks().catch((): Track[] => []),
   ]);
-  const artists = likedArtists(liked.collection, followed.collection);
-  const { config, patch } = useVoiceStore.getState();
-  if (artists.join('\n') !== config.boosts.artists.join('\n')) patch({ boosts: { artists } });
+  const owned = ownedTracks(superliked, liked.collection);
+  const { language } = useVoiceStore.getState().config;
+  const learned = () => (language === 'ru' ? useVoiceStore.getState().readings : {});
+  await voiceIpc.library(withReadings(owned, withAsked({}, learned())));
+  const artists = likedArtists([...superliked, ...liked.collection], followed.collection);
+  boost({ artists });
+  const heard = await readNames(language, libraryNames(language, artists, owned), askReadings);
+  const asked = learned();
+  const known = withAsked(heard, asked);
+  await voiceIpc.library(withReadings(owned, known));
+  boost({ spoken: spokenNames(language, asked, artists, ownedTracks(superliked), known) });
 }
 
-function followLikedArtists() {
+function boost(change: Partial<VoiceConfig['boosts']>) {
+  const { config, patch } = useVoiceStore.getState();
+  const boosts = { ...config.boosts, ...change };
+  const same = (key: keyof VoiceConfig['boosts']) =>
+    boosts[key].join('\n') === config.boosts[key].join('\n');
+  if (!same('artists') || !same('spoken')) patch({ boosts });
+}
+
+function followLibrary() {
   const owner = useAuthStore.getState().user?.urn ?? null;
   if (!owner || likedOf === owner || !useVoiceStore.getState().config.enabled) return;
   likedOf = owner;
-  readLikedArtists().catch(() => {
+  readLibrary().catch(() => {
     likedOf = null;
   });
 }
 
 let settling: ReturnType<typeof setTimeout> | null = null;
 
-function rereadLikedArtists() {
+function rereadLibrary() {
   settling = null;
   const owner = useAuthStore.getState().user?.urn ?? null;
   if (!owner || likedOf !== owner || !useVoiceStore.getState().config.enabled) return;
-  readLikedArtists().catch(() => {});
+  readLibrary().catch(() => {});
 }
 
-function followLikeWrites(path: string) {
+function followLibraryWrites(path: string) {
   if (!changesLikedArtists(path)) return;
   if (settling) clearTimeout(settling);
-  settling = setTimeout(rereadLikedArtists, LIKED_SETTLE_MS);
+  settling = setTimeout(rereadLibrary, LIKED_SETTLE_MS);
 }
 
-export function startLikedArtists() {
-  followLikedArtists();
-  useAuthStore.subscribe(followLikedArtists);
-  useVoiceStore.subscribe(followLikedArtists);
-  onApiWrite(followLikeWrites);
+export function startLibrary() {
+  followLibrary();
+  useAuthStore.subscribe(followLibrary);
+  useVoiceStore.subscribe(followLibrary);
+  onApiWrite(followLibraryWrites);
 }

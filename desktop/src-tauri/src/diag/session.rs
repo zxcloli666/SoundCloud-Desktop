@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::sync::{Mutex, OnceLock};
 use std::time::Instant;
 
-use backend_contracts::diag::{Service, Session};
+use sc_diag::diag::{Service, Session};
 
 use super::attempt::Attempt;
 use crate::network::edge::Tier;

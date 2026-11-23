@@ -1,4 +1,5 @@
 import { trackedInvoke as invoke } from '../diagnostics';
+import type { OwnedTrack } from './library';
 import type { Devices, EngineConfig, Model, Outcome, StartSource, Status } from './types';
 
 export const voiceIpc = {
@@ -11,10 +12,12 @@ export const voiceIpc = {
   answer: (choice: string) => invoke<void>('voice_answer', { choice }),
   done: (id: string, outcome: Outcome) => invoke<void>('voice_done', { id, outcome }),
   reread: (id: string) => invoke<void>('voice_reread', { id }),
+  learnHeadset: (on: boolean) => invoke<void>('voice_headset_learn', { on }),
   devices: () => invoke<Devices>('voice_devices'),
   meter: (on: boolean) => invoke<void>('voice_meter', { on }),
   models: () => invoke<Model[]>('voice_models'),
   modelGet: (id: string) => invoke<void>('voice_model_get', { id }),
   modelDelete: (id: string) => invoke<void>('voice_model_delete', { id }),
   preview: (voiceId: string) => invoke<void>('voice_preview', { voiceId }),
+  library: (tracks: OwnedTrack[]) => invoke<void>('voice_library', { tracks }),
 };

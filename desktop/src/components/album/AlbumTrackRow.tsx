@@ -1,18 +1,18 @@
-import {memo} from 'react';
-import {cancelPreload, preloadTrack} from '../../lib/audio';
-import {art, dur, fc} from '../../lib/formatters';
-import {headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14,} from '../../lib/icons';
-import {useRowPick} from '../../lib/useRowPick';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
-import {useTrackColumns} from '../music/columns/TrackColumns';
-import {LikeButton} from '../music/LikeButton';
-import {PlayNextButton} from '../music/PlayNextButton';
-import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
+import { memo } from 'react';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
+import { art, dur, fc } from '../../lib/formatters';
+import { headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
+import { useRowPick } from '../../lib/useRowPick';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { useTrackColumns } from '../music/columns/TrackColumns';
+import { LikeButton } from '../music/LikeButton';
+import { PlayNextButton } from '../music/PlayNextButton';
+import { SaveOfflineRowButton } from '../music/SaveOfflineButton';
+import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 interface AlbumTrackRowProps {
   track: Track;
@@ -21,7 +21,7 @@ interface AlbumTrackRowProps {
 }
 
 function AlbumTrackRowImpl({ track, position, queue }: AlbumTrackRowProps) {
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const pick = useRowPick(track);
   const columns = useTrackColumns();
@@ -29,6 +29,7 @@ function AlbumTrackRowImpl({ track, position, queue }: AlbumTrackRowProps) {
 
   return (
     <div
+      {...mark}
       onContextMenu={onContextMenu}
       {...pick}
       className={`@container group flex select-none items-center gap-4 rounded-2xl px-4 py-2.5 transition-colors duration-200 ${isThis ? 'bg-accent/[0.07] ring-1 ring-accent/20' : 'hover:bg-ink/[0.04]'}`}
@@ -57,11 +58,15 @@ function AlbumTrackRowImpl({ track, position, queue }: AlbumTrackRowProps) {
         )}
       </div>
 
-      <div
-        className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-ink/[0.08]"
-      >
+      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-ink/[0.08]">
         {cover ? (
-          <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img
+            data-ui="artwork"
+            src={cover}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
             <Music size={14} className="text-ink-20" />
@@ -103,7 +108,10 @@ function AlbumTrackRowImpl({ track, position, queue }: AlbumTrackRowProps) {
         </span>
       )}
 
-      <div className="flex shrink-0 items-center justify-end gap-0.5" style={{ width: columns.actions }}>
+      <div
+        className="flex shrink-0 items-center justify-end gap-0.5"
+        style={{ width: columns.actions }}
+      >
         <LikeButton track={track} />
         <SaveOfflineRowButton track={track} />
         <AddToPlaylistDialog trackUrns={[track.urn]}>
@@ -131,7 +139,7 @@ const areEqual = (prev: AlbumTrackRowProps, next: AlbumTrackRowProps) =>
   prev.track.urn === next.track.urn &&
   prev.position === next.position &&
   prev.track.user_favorite === next.track.user_favorite &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
-    sameVideos(prev.track.videos, next.track.videos);
+  sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+  sameVideos(prev.track.videos, next.track.videos);
 
 export const AlbumTrackRow = memo(AlbumTrackRowImpl, areEqual);

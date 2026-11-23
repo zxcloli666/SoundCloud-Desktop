@@ -198,6 +198,16 @@
     "developers channel",
     "join discord"
   ],
+  "settings.helpTelegram": [
+    "telegram",
+    "telegram channel",
+    "app news",
+    "announcements",
+    "author's channel",
+    "dev updates",
+    "follow updates",
+    "tg channel"
+  ],
   "settings.android": [
     "android",
     "iphone",
@@ -1158,6 +1168,22 @@
     "moriarty",
     "call moriarty",
     "sound play"
+  ],
+  "voice.activation.follow": [
+    "reply without the wake word",
+    "keep listening after answer",
+    "follow up question",
+    "continue talking",
+    "mic stays open",
+    "no need to call again"
+  ],
+  "voice.activation.talk": [
+    "conversation mode",
+    "chat with the assistant",
+    "continuous dialog",
+    "talk without button",
+    "long conversation",
+    "when the conversation ends"
   ],
   "voice.mics.title": [
     "microphone",

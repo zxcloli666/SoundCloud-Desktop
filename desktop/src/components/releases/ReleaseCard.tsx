@@ -20,13 +20,13 @@ export const ReleaseCard = memo(function ReleaseCard({
   heard: boolean;
 }) {
   const { t } = useTranslation();
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't300x300');
   const age = ago(track.created_at || track.release_date);
 
   return (
-    <div
+    <div {...mark}
       data-ui="track-card"
       onContextMenu={onContextMenu}
       onMouseEnter={() => preloadTrack(track)}

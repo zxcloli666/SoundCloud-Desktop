@@ -182,13 +182,14 @@ export const SortableSequenceRow = React.memo(
     onRemove: (urn: string) => void;
     onPlay?: () => void;
   }) {
-    const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
+    const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const pick = useRowPick(track);
     const sortable = useSortableRow(track.urn);
 
     return (
       <div
+        {...mark}
         ref={sortable.ref}
         onContextMenu={onContextMenu}
         {...pick}
@@ -260,11 +261,16 @@ export const SequenceRow = React.memo(
     onRemove?: (urn: string) => void;
     onPlay?: () => void;
   }) {
-    const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
+    const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const pick = useRowPick(track);
     return (
-      <div className={`${ROW_BASE} ${activeCls(isThis)}`} onContextMenu={onContextMenu} {...pick}>
+      <div
+        {...mark}
+        className={`${ROW_BASE} ${activeCls(isThis)}`}
+        onContextMenu={onContextMenu}
+        {...pick}
+      >
         <RowBody
           track={track}
           index={index}

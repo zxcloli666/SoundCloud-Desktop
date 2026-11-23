@@ -8,6 +8,15 @@ export interface ChatStep {
   end: TurnEnd;
   stack: UndoEntry[];
   undo: boolean;
+  ask: boolean;
+  talk: boolean | null;
+}
+
+function after(step: ChatStep) {
+  return {
+    ...(step.ask ? { ask: true } : {}),
+    ...(typeof step.talk === 'boolean' ? { talk: step.talk } : {}),
+  };
 }
 
 export function refusal(res: StepResult): string | null {
@@ -30,5 +39,6 @@ export function chatResult(cmd: VoiceCommand, step: ChatStep, ignored: StepResul
     return { kind, outcome: { ok: false, speech: '', display: '', undo }, ...base };
   }
   if (!end.say.trim() && end.marks.length === 0) return { ...ignored, stack };
-  return { kind: 'chat', outcome: { ok: true, speech: '', display: end.say, undo }, ...base };
+  const outcome = { ok: true, speech: '', display: end.say, undo, ...after(step) };
+  return { kind: 'chat', outcome, ...base };
 }

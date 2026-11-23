@@ -13,13 +13,13 @@ import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 export const RelatedRow = React.memo(
   function RelatedRow({ track, queue }: { track: Track; queue: Track[] | (() => Track[]) }) {
-    const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+    const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
     const onContextMenu = useTrackContextMenu(track);
     const pick = useRowPick(track);
     const cover = art(track.artwork_url, 't200x200');
 
     return (
-      <div
+      <div {...mark}
         className={`group flex items-center gap-3 p-2.5 rounded-2xl transition-all duration-300 ease-[var(--ease-apple)] ${
           isThis ? 'bg-accent/[0.05] ring-1 ring-accent/20' : 'hover:bg-ink/[0.04]'
         }`}

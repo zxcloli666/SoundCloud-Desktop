@@ -49,7 +49,8 @@
       "hush": "Hush",
       "downloading": "Voice: downloading models",
       "openModels": "Open models",
-      "askOne": "Is this it?"
+      "askOne": "Is this it?",
+      "talk": "Conversation"
     },
     "error": {
       "mic_denied": "No microphone access",
@@ -77,20 +78,25 @@
       "hold": "Hold",
       "tap": "Tap",
       "headset": "Headset button",
-      "gesture": {
-        "off": "Off",
-        "double": "2×",
-        "triple": "3×"
+      "learnNow": "Press the headset the way you will call",
+      "learnSingle": "One press pauses. Press 2 or 3 times",
+      "learnMissed": "No press came through",
+      "rebind": "Redo",
+      "bound": {
+        "double": "2 presses",
+        "triple": "3 presses",
+        "next": "\"Next track\" press",
+        "previous": "\"Previous track\" press"
       },
-      "headsetHow_one": "Press the button {{count}} time",
-      "headsetHow_other": "Press the button {{count}} times in a row",
-      "test": "Test",
-      "pressNow_one": "Press {{count}} time",
-      "pressNow_other": "Press {{count}} times now",
       "stopTest": "Stop",
-      "headsetWorks": "Works",
       "again": "Again",
       "wake": "By name",
+      "follow": "Listen after a reply",
+      "followOff": "Off",
+      "talk": "Conversation until silence",
+      "talkHow": "Say \"let's chat\" and keep talking without the wake word",
+      "seconds_one": "{{count}} s",
+      "seconds_other": "{{count}} s",
       "names": "Responds to",
       "needsEcho": "Without echo cancellation music sets it off",
       "echoOn": "Turn on",
@@ -179,9 +185,25 @@
         "lyrics": "Lyrics",
         "queue_list": "Queue",
         "queue_clear": "Clear queue",
+        "list_tracks": "Lists",
+        "play_list": "Play from the list",
         "add_to_playlist": "Add to playlist",
         "remember": "Remember",
-        "forget": "Forget"
+        "forget": "Forget",
+        "screen": "Screen",
+        "press": "Press",
+        "type_text": "Type",
+        "scroll": "Scroll",
+        "play_screen": "Play from the screen",
+        "open_item": "Open",
+        "sleep_timer": "Sleep timer",
+        "effect": "Effect",
+        "dislike": "Dislike",
+        "superlike": "Superlike",
+        "together": "Together",
+        "open_rooms": "Open rooms",
+        "ask_user": "Listening",
+        "talk_mode": "Conversation"
       }
     },
     "you": {
@@ -256,7 +278,8 @@
       },
       "voice": "Voice: {{name}}",
       "name": {
-        "qwen-codec": "Voice decoder"
+        "qwen-codec": "Voice decoder",
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "Accurate recognition"
       }
     },
     "credits": {

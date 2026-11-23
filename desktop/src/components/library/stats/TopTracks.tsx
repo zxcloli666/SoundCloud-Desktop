@@ -26,10 +26,11 @@ const TrackRow = memo(function TrackRow({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const fmt = useStatsFormat();
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const cover = art(entry.artworkUrl, 't200x200');
   return (
     <div
+      {...mark}
       className={`group relative flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors ${isThis ? 'bg-ink/[0.06]' : 'hover:bg-ink/[0.04]'}`}
     >
       <span

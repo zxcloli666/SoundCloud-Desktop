@@ -140,17 +140,33 @@ impl Stat {
     }
 }
 
+fn handed(o: &Outcome) -> bool {
+    o.intent == Intent::None
+        && o.decision.is_none()
+        && o.parsed.intent.needs_entity()
+        && !o.candidates.is_empty()
+}
+
+fn meant(o: &Outcome) -> Intent {
+    if handed(o) { o.parsed.intent } else { o.intent }
+}
+
 fn top_entity(o: &Outcome) -> Option<&voice_resolve::Entity> {
-    match o.decision.as_ref()? {
-        Decision::Act { pick } => Some(&pick.entity),
-        Decision::Ask { first, .. } => Some(&first.entity),
-        Decision::NotFound => None,
+    match o.decision.as_ref() {
+        Some(Decision::Act { pick }) => Some(&pick.entity),
+        Some(Decision::Ask { first, .. }) => Some(&first.entity),
+        Some(Decision::NotFound) => None,
+        None => o.candidates.first().filter(|_| handed(o)),
     }
 }
 
 fn joined(os: &[Outcome]) -> String {
+    joined_by(os, |o| o.intent)
+}
+
+fn joined_by(os: &[Outcome], intent: impl Fn(&Outcome) -> Intent) -> String {
     os.iter()
-        .map(|o| o.intent.name())
+        .map(|o| intent(o).name())
         .collect::<Vec<_>>()
         .join("+")
 }
@@ -171,8 +187,8 @@ fn alt_intents(r: &Row) -> Vec<&str> {
 }
 
 fn intent_ok(r: &Row, os: &[Outcome]) -> bool {
-    let got = joined(os);
-    if got != r.intent && !alt_intents(r).contains(&got.as_str()) {
+    let wanted = |got: &str| got == r.intent || alt_intents(r).contains(&got);
+    if !wanted(&joined(os)) && !wanted(&joined_by(os, meant)) {
         return false;
     }
     r.number.is_empty()
@@ -192,7 +208,7 @@ fn entity_ok(r: &Row, os: &[Outcome]) -> bool {
         (0..os.len()).collect()
     } else {
         os.iter()
-            .position(|o| o.intent.needs_entity())
+            .position(|o| meant(o).needs_entity())
             .into_iter()
             .collect()
     };
@@ -494,6 +510,10 @@ fn named_alone(o: &Outcome) -> bool {
     o.parsed.intent == Intent::None && o.intent == Intent::Play
 }
 
+fn partly_named(o: &Outcome) -> bool {
+    matches!(&o.decision, Some(Decision::Act { pick }) if pick.fallback)
+}
+
 fn asked(o: &Outcome) -> bool {
     matches!(o.decision, Some(Decision::Ask { .. }))
 }
@@ -510,7 +530,7 @@ fn understood(os: &[Outcome]) -> Vec<String> {
 }
 
 #[test]
-fn leaving_names_said_alone_and_unsure_names_to_the_listener_changes_nothing_else() {
+fn leaving_names_alone_unsure_names_and_partial_names_to_the_listener_changes_nothing_else() {
     let catalog = FixtureCatalog::from_tsv(include_str!("data/catalog.tsv"), true);
     let mut union = BTreeMap::new();
     let mut left = Vec::new();
@@ -533,21 +553,27 @@ fn leaving_names_said_alone_and_unsure_names_to_the_listener_changes_nothing_els
             }
             let unsure_alone = matches!(popular.as_slice(), [only] if unsure(only));
             if let ([was], [now]) = (popular.as_slice(), certain.as_slice())
-                && unsure(was)
+                && (unsure(was) || partly_named(was))
             {
                 assert_eq!(now.intent, Intent::None, "{}", row.phrase);
                 assert!(!asked(was) || !now.candidates.is_empty(), "{}", row.phrase);
+                assert!(
+                    !partly_named(was) || top_entity(now) == top_entity(was),
+                    "{}",
+                    row.phrase
+                );
             }
             if understood(&popular) == understood(&certain) {
                 continue;
             }
-            let differs = unsure_alone || popular.iter().any(named_alone);
+            let partly_alone = matches!(popular.as_slice(), [only] if partly_named(only));
+            let differs = unsure_alone || partly_alone || popular.iter().any(named_alone);
             assert!(differs, "{}", row.phrase);
             left.push(format!("{} [{}] {:?}", set.name, row.category, row.phrase));
         }
     }
     println!(
-        "names said alone and unsure names are left to the listener, all sets\n{}",
+        "names said alone, unsure names and partial names are left to the listener, all sets\n{}",
         report(&union)
     );
     println!("{} phrases are understood differently", left.len());

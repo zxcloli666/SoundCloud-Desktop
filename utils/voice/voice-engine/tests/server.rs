@@ -231,7 +231,10 @@ fn with_the_server_voice_on_the_local_voice_model_is_not_required() {
     config.speak.server = true;
     assert_eq!(
         required(&config, &store),
-        hearing(&config).map(String::from)
+        hearing(&config)
+            .into_iter()
+            .map(String::from)
+            .collect::<Vec<_>>()
     );
     config.speak.voice = "af_heart".into();
     assert!(required(&config, &store).iter().any(|id| id == KOKORO));

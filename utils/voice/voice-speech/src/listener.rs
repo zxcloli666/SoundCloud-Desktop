@@ -5,6 +5,7 @@ use sherpa_onnx::{SileroVadModelConfig, VadModelConfig, VoiceActivityDetector};
 
 use crate::SAMPLE_RATE;
 use crate::batch::Batch;
+use crate::exact::Exact;
 use crate::streaming::Streaming;
 
 const PREROLL: usize = SAMPLE_RATE as usize / 2;
@@ -23,6 +24,9 @@ pub struct Options {
     pub threads: i32,
     pub hotwords: Vec<String>,
     pub hotwords_score: f32,
+    pub exact_dir: Option<PathBuf>,
+    pub exact_hotwords_score: f32,
+    pub exact_threads: i32,
 }
 
 #[derive(Debug, PartialEq)]
@@ -39,6 +43,7 @@ enum Asr {
 pub struct Listener {
     vad: VoiceActivityDetector,
     asr: Asr,
+    exact: Option<Exact>,
     preroll: VecDeque<f32>,
     last_partial: String,
 }
@@ -76,12 +81,27 @@ impl Listener {
                 options.hotwords_score,
             )?),
         };
+        let exact = match &options.exact_dir {
+            Some(dir) => Some(Exact::open(
+                dir,
+                options.exact_threads,
+                &options.hotwords,
+                options.exact_hotwords_score,
+            )?),
+            None => None,
+        };
         Ok(Self {
             vad,
             asr,
+            exact,
             preroll: VecDeque::new(),
             last_partial: String::new(),
         })
+    }
+
+    pub fn exact(&self, samples: &[f32]) -> Option<String> {
+        let text = self.exact.as_ref()?.hear(samples);
+        (!text.is_empty()).then_some(text)
     }
 
     pub fn in_speech(&self) -> bool {

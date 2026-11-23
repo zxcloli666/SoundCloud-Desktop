@@ -117,7 +117,8 @@ test('an action the app did not run again leaves no result, no mark and no furth
 
 test('rounds stop at the limit even when tools keep returning', async () => {
   const again: Step[] = [{ kind: 'action', name: 'search', args: {} }, { kind: 'done' }];
-  const { link, done } = turn([again, again, again, again], { search: ranOf('search', true) });
+  const rounds = Array.from({ length: MAX_ROUNDS + 2 }, () => again);
+  const { link, done } = turn(rounds, { search: ranOf('search', true) });
   const end = await done;
   assert.equal(end.status, 'ok');
   assert.equal(link.requests.length, MAX_ROUNDS);

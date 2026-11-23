@@ -7,7 +7,7 @@
 <h1 align="center"><a href="https://getsoundcloud.app/">SoundCloud Desktop</a></h1>
 
 <p align="center">
-<b>[<a href="https://github.com/okeydw/SoundCloud-Android">Android</a>] · iOS в разработке</b><br>
+<b>[<a href="https://github.com/okeydw/SoundCloud-Android">Android</a>] · [<a href="https://github.com/okeydw/SoundCloud-IOS">iOS</a>]</b><br>
 <b>Нативное десктопное приложение для SoundCloud</b><br>
 Без рекламы · Без капчи · Без цензуры · Доступно в России
 </p>
@@ -33,6 +33,9 @@
 </a>
 <a href="https://github.com/zxcloli666/SoundCloud-Desktop-EN">
 <img src="https://img.shields.io/badge/English-README-0066FF?style=for-the-badge" alt="English"/>
+</a>
+<a href="https://t.me/soundcloud_desktop">
+<img src="https://img.shields.io/badge/Telegram-Канал-26A5E4?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram"/>
 </a>
 </p>
 
@@ -151,6 +154,11 @@ chmod +x soundcloud-desktop_*.AppImage
 > ```
 > После этого приложение запустится нормально.
 
+### Android и iPhone
+
+- **Android**: `.apk` со [страницы релизов](https://github.com/okeydw/SoundCloud-Android/releases/latest), [инструкция](https://docs.getsoundcloud.app/install/android)
+- **iPhone**: `.ipa` со [страницы релизов](https://github.com/okeydw/SoundCloud-IOS/releases/latest), ставится через SideStore: [инструкция](https://docs.getsoundcloud.app/install/ios)
+
 ---
 
 ## zapret, VPN и списки доменов
@@ -233,6 +241,7 @@ chmod +x soundcloud-desktop_*.AppImage
 
 | | |
 |---|---|
+| Telegram-канал | [@soundcloud_desktop](https://t.me/soundcloud_desktop) |
 | Предложить идею | [Обсуждение #121](https://github.com/zxcloli666/SoundCloud-Desktop/discussions/121) |
 | Что значит ошибка? | [Справка по ошибкам](docs/ERRORS.ru.md) |
 | Свой CSS | [Как писать темы](docs/CUSTOM_CSS.ru.md) |

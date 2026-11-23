@@ -33,7 +33,7 @@ interface ThemedTrackRowProps {
 
 function ThemedTrackRowImpl({ track, index, queue }: ThemedTrackRowProps) {
     const {t} = useTranslation();
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const pick = useRowPick(track);
   const cover = art(track.artwork_url, 't200x200');
@@ -41,7 +41,7 @@ function ThemedTrackRowImpl({ track, index, queue }: ThemedTrackRowProps) {
   const isOwner = useAuthStore((s) => !!s.user?.urn && s.user.urn === track.user?.urn);
 
   return (
-    <div
+    <div {...mark}
       onContextMenu={onContextMenu}
       {...pick}
       className={`@container group flex select-none items-center gap-4 rounded-2xl px-4 py-2.5 transition-colors duration-200 ${isThis ? 'bg-accent/[0.07] ring-1 ring-accent/20' : 'hover:bg-ink/[0.04]'}`}

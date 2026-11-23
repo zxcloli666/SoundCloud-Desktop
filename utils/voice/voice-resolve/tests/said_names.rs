@@ -286,21 +286,29 @@ fn a_name_introduced_as_a_name_is_found_without_the_introduction() {
     ]);
 }
 
+fn left_with_the_artist_first(cases: &[(&str, &str)]) {
+    for (text, artist) in cases {
+        assert_eq!(
+            heard(text, Bare::Popular),
+            format!("play {artist}"),
+            "{text}"
+        );
+        assert_eq!(first_left(&CATALOG, text), *artist, "{text}");
+    }
+}
+
 #[test]
-fn an_unknown_title_after_an_artist_of_three_words_falls_back_to_the_artist() {
-    heard_either_way(&[
-        (
-            "включи короля и шута проклятый старый дом",
-            "play Король и Шут",
-        ),
-        ("включи короля и шута дом", "play Король и Шут"),
+fn an_unknown_title_after_an_artist_of_three_words_plays_the_artist_or_goes_to_the_assistant() {
+    left_with_the_artist_first(&[
+        ("включи короля и шута проклятый старый дом", "Король и Шут"),
+        ("включи короля и шута дом", "Король и Шут"),
         (
             "включи miyagi и эндшпиль самурай в огне",
-            "play Miyagi & Эндшпиль",
+            "Miyagi & Эндшпиль",
         ),
-        ("включи руки вверх чужие губы", "play Руки Вверх"),
-        ("включи на ютубе тот ролик про скриптонита", "none"),
+        ("включи руки вверх чужие губы", "Руки Вверх"),
     ]);
+    heard_either_way(&[("включи на ютубе тот ролик про скриптонита", "none")]);
 }
 
 #[test]
@@ -540,7 +548,7 @@ artist\tDua Lipa\t\t40000000\t
 }
 
 #[test]
-fn a_long_unknown_title_after_a_known_artist_plays_the_artist() {
+fn a_long_unknown_title_after_a_known_artist_plays_the_artist_or_goes_to_the_assistant() {
     let rows = "kind\tname\tartist\tpopularity\taliases
 artist\tQueen\t\t50000000\t
 artist\tEd Sheeran\t\t45000000\t
@@ -548,18 +556,22 @@ artist\tVolume\t\t18000\t
 playlist\tWorkout\t\t700000\t
 playlist\tWorkout Hits\t\t120000\t
 ";
+    let catalog = FixtureCatalog::from_tsv(rows, true);
     let said = [
-        ("play queen another one bites the dust", "play Queen"),
-        (
-            "i want to hear ed sheeran castle on the hill",
-            "play Ed Sheeran",
-        ),
-        ("play workout hits playlist", "play Workout Hits"),
+        ("play queen another one bites the dust", "Queen"),
+        ("i want to hear ed sheeran castle on the hill", "Ed Sheeran"),
     ];
+    for (text, artist) in said {
+        assert_eq!(
+            heard_in(rows, text, Bare::Popular),
+            format!("play {artist}"),
+            "{text}"
+        );
+        assert_eq!(first_left(&catalog, text), artist, "{text}");
+    }
     for bare in BOTH {
-        for (text, read) in said {
-            assert_eq!(heard_in(rows, text, bare), read, "{text}");
-        }
+        let text = "play workout hits playlist";
+        assert_eq!(heard_in(rows, text, bare), "play Workout Hits", "{text}");
         assert_eq!(heard_in(rows, "turn the volume up on the tv", bare), "none");
     }
 }

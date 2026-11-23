@@ -127,14 +127,19 @@ const FeaturedCard = React.memo(
   function FeaturedCard({ item, queue }: { item: FeedItem; queue: Track[] }) {
     const { t } = useTranslation();
     const track = item.origin as Track;
-    const { isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+    const { isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
     const navigate = useNavigate();
     const isRepost = item.type.includes('repost');
     const cover = art(track.artwork_url);
     const avatar = art(track.user.avatar_url, 'small');
 
     return (
-      <div className={CARD} onMouseEnter={() => preloadTrack(track)} onMouseLeave={cancelPreload}>
+      <div
+        {...mark}
+        className={CARD}
+        onMouseEnter={() => preloadTrack(track)}
+        onMouseLeave={cancelPreload}
+      >
         <div className={COVER} onClick={togglePlay}>
           {cover ? (
             <img src={cover} alt="" className="h-full w-full object-cover" decoding="async" />

@@ -1,4 +1,4 @@
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use voice_nlu::Intent;
 use voice_resolve::{Decision, Outcome as Understood, Scored, answer_ask};
@@ -17,6 +17,8 @@ pub struct Plan {
     pub speech: Vec<String>,
     pub asking: Option<(usize, Scored, Option<Scored>)>,
     pub ahead: Option<String>,
+    pub chatted: bool,
+    pub asked: bool,
 }
 
 pub fn voiced(source: Source) -> bool {
@@ -85,6 +87,8 @@ impl Core {
             speech: Vec::new(),
             asking: None,
             ahead,
+            chatted: false,
+            asked: false,
         });
         self.advance();
     }
@@ -215,6 +219,13 @@ impl Core {
             return;
         }
         plan.waiting = None;
+        plan.asked |= outcome.ask;
+        if let Some(on) = outcome.talk {
+            self.talking = on;
+        }
+        let Some(plan) = self.plan.as_mut() else {
+            return;
+        };
         let speech = outcome.speech.trim();
         if !speech.is_empty() {
             plan.speech.push(speech.to_string());
@@ -231,6 +242,24 @@ impl Core {
         if !text.is_empty() && self.config.speak.replies && voiced(plan.origin.source) {
             self.say(text);
         }
+        self.follow = self.follow_window(&plan);
         self.settle();
+    }
+
+    fn follow_window(&self, plan: &Plan) -> Option<Duration> {
+        if !voiced(plan.origin.source) {
+            return None;
+        }
+        let follow = &self.config.follow;
+        let seconds = if self.talking {
+            follow.talk
+        } else if plan.asked {
+            follow.after.max(self.deps.timing.ask.as_secs_f32())
+        } else if plan.chatted {
+            follow.after
+        } else {
+            0.0
+        };
+        (seconds > 0.0).then(|| Duration::from_secs_f32(seconds))
     }
 }

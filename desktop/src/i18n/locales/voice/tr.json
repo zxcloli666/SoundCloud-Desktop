@@ -49,7 +49,8 @@
       "hush": "Sus",
       "downloading": "Ses: modeller iniyor",
       "openModels": "Modelleri aç",
-      "askOne": "Bu mu?"
+      "askOne": "Bu mu?",
+      "talk": "Sohbet"
     },
     "error": {
       "mic_denied": "Mikrofon izni yok",
@@ -77,20 +78,25 @@
       "hold": "Basılı tut",
       "tap": "Bas",
       "headset": "Kulaklıktan çağır",
-      "gesture": {
-        "off": "Kapalı",
-        "double": "2×",
-        "triple": "3×"
+      "learnNow": "Çağıracağın gibi kulaklığa bas",
+      "learnSingle": "Tek basış duraklatır. 2 ya da 3 kez bas",
+      "learnMissed": "Basış gelmedi",
+      "rebind": "Yeniden",
+      "bound": {
+        "double": "2 basış",
+        "triple": "3 basış",
+        "next": "\"Sonraki parça\" basışı",
+        "previous": "\"Önceki parça\" basışı"
       },
-      "headsetHow_one": "Düğmeye {{count}} kez basın",
-      "headsetHow_other": "Düğmeye art arda {{count}} kez basın",
-      "test": "Dene",
-      "pressNow_one": "{{count}} kez basın",
-      "pressNow_other": "Şimdi {{count}} kez basın",
       "stopTest": "Dur",
-      "headsetWorks": "Çalışıyor",
       "again": "Tekrar",
       "wake": "İsimle",
+      "follow": "Yanıttan sonra dinle",
+      "followOff": "Kapalı",
+      "talk": "Sessizliğe kadar sohbet",
+      "talkHow": "\"Hadi sohbet edelim\" de, sonra uyandırma sözü olmadan konuş",
+      "seconds_one": "{{count}} sn",
+      "seconds_other": "{{count}} sn",
       "names": "Şu isimlere yanıt verir",
       "needsEcho": "Yankı giderme olmadan müzik tetikler",
       "echoOn": "Aç",
@@ -179,9 +185,25 @@
         "lyrics": "Şarkı sözleri",
         "queue_list": "Sıra",
         "queue_clear": "Sırayı temizle",
+        "list_tracks": "Listeler",
+        "play_list": "Listeden çal",
         "add_to_playlist": "Çalma listesine ekle",
         "remember": "Hatırla",
-        "forget": "Unut"
+        "forget": "Unut",
+        "screen": "Ekran",
+        "press": "Bas",
+        "type_text": "Yaz",
+        "scroll": "Kaydır",
+        "play_screen": "Ekrandan çal",
+        "open_item": "Aç",
+        "sleep_timer": "Uyku zamanlayıcı",
+        "effect": "Efekt",
+        "dislike": "Beğenmedim",
+        "superlike": "Süper beğeni",
+        "together": "Birlikte",
+        "open_rooms": "Açık odalar",
+        "ask_user": "Dinliyorum",
+        "talk_mode": "Sohbet"
       }
     },
     "you": {
@@ -256,7 +278,8 @@
       },
       "voice": "Ses: {{name}}",
       "name": {
-        "qwen-codec": "Ses çözücü"
+        "qwen-codec": "Ses çözücü",
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "Hassas tanıma"
       }
     },
     "credits": {

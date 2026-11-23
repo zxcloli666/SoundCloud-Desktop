@@ -33,13 +33,14 @@ const FreshLead = memo(function FreshLead({
   heard: boolean;
 }) {
   const { t } = useTranslation();
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't500x500');
   const when = whenLabel(track);
 
   return (
     <div
+      {...mark}
       onContextMenu={onContextMenu}
       className="panel relative flex items-center gap-5 rounded-3xl p-4"
     >
@@ -101,13 +102,14 @@ const FreshDropRow = memo(function FreshDropRow({
   queue: Track[];
   heard: boolean;
 }) {
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't200x200');
   const when = whenLabel(track);
 
   return (
     <div
+      {...mark}
       onContextMenu={onContextMenu}
       className={`group flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-colors duration-200 ${
         isThis ? 'bg-ink/[0.05]' : 'hover:bg-ink/[0.035]'

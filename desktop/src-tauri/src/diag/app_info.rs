@@ -3,7 +3,7 @@ use std::path::Path;
 use std::process::Command;
 use std::sync::OnceLock;
 
-use backend_contracts::diag::App;
+use sc_diag::diag::App;
 
 use super::session;
 

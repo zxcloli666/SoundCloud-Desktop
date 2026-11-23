@@ -42,7 +42,7 @@ export const LibraryTrackRow = React.memo(
     alwaysShowPlay?: boolean;
   }) {
     const { t } = useTranslation();
-    const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue, onPlay);
+    const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const columns = useTrackColumns();
     const pick = useRowPick(track);
@@ -52,6 +52,7 @@ export const LibraryTrackRow = React.memo(
 
     return (
       <div
+        {...mark}
         onContextMenu={(event) => {
           hardStopHoverPreview();
           onContextMenu(event);

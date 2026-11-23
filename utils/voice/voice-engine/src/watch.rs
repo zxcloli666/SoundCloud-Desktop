@@ -189,9 +189,11 @@ impl Core {
             r#gen: watch.r#gen,
             session: watch.session,
             for_ask: false,
+            window: None,
             woken: true,
             started: Instant::now(),
             speech_seen: true,
+            quiet_since: None,
             finals,
             buffer: Vec::with_capacity(CHUNK * 2),
             said: watch.said,
@@ -200,7 +202,7 @@ impl Core {
         }));
         self.emit_state(State::Listening, input);
         if complete {
-            self.finish_listen();
+            self.phrase_ended();
         }
     }
 }

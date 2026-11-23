@@ -4,6 +4,7 @@ mod bare;
 mod catalog;
 mod entity;
 mod keys;
+mod library;
 mod phrase;
 mod score;
 mod spoken;
@@ -12,6 +13,7 @@ pub use answer::answer_ask;
 pub use bare::Bare;
 pub use catalog::{Catalog, FixtureCatalog};
 pub use entity::{Decision, Entity, Said, Scored};
+pub use library::Library;
 pub use phrase::{Lookup, Phrase};
 pub use score::{Boosts, rank};
 

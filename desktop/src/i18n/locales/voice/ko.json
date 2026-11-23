@@ -49,7 +49,8 @@
       "hush": "조용히",
       "downloading": "음성: 모델 받는 중",
       "openModels": "모델 열기",
-      "askOne": "이거 맞나요?"
+      "askOne": "이거 맞나요?",
+      "talk": "대화"
     },
     "error": {
       "mic_denied": "마이크 권한 없음",
@@ -77,18 +78,24 @@
       "hold": "누르고 있기",
       "tap": "누르기",
       "headset": "헤드셋 버튼",
-      "gesture": {
-        "off": "끔",
-        "double": "2회",
-        "triple": "3회"
+      "learnNow": "호출할 방식대로 헤드셋 버튼을 누르세요",
+      "learnSingle": "한 번 누르면 일시정지돼요. 2번이나 3번 누르세요",
+      "learnMissed": "누름이 전달되지 않았어요",
+      "rebind": "다시",
+      "bound": {
+        "double": "2번 누르기",
+        "triple": "3번 누르기",
+        "next": "\"다음 트랙\" 누르기",
+        "previous": "\"이전 트랙\" 누르기"
       },
-      "headsetHow_other": "버튼을 연속 {{count}}회 누르세요",
-      "test": "테스트",
-      "pressNow_other": "지금 {{count}}회 누르세요",
       "stopTest": "중지",
-      "headsetWorks": "작동함",
       "again": "다시",
       "wake": "이름으로 부르기",
+      "follow": "답한 뒤 계속 듣기",
+      "followOff": "끄기",
+      "talk": "조용해질 때까지 대화",
+      "talkHow": "\"얘기하자\"라고 하면 호출어 없이 이어서 말할 수 있어요",
+      "seconds_other": "{{count}}초",
       "names": "반응하는 이름",
       "needsEcho": "에코 제거 없이는 음악에 반응합니다",
       "echoOn": "켜기",
@@ -176,9 +183,25 @@
         "lyrics": "가사",
         "queue_list": "대기열",
         "queue_clear": "대기열 비우기",
+        "list_tracks": "목록",
+        "play_list": "목록에서 재생",
         "add_to_playlist": "플레이리스트에 추가",
         "remember": "기억하기",
-        "forget": "잊기"
+        "forget": "잊기",
+        "screen": "화면",
+        "press": "누르기",
+        "type_text": "입력",
+        "scroll": "스크롤",
+        "play_screen": "화면에서 재생",
+        "open_item": "열기",
+        "sleep_timer": "수면 타이머",
+        "effect": "효과",
+        "dislike": "싫어요",
+        "superlike": "슈퍼라이크",
+        "together": "함께 듣기",
+        "open_rooms": "공개 방",
+        "ask_user": "듣는 중",
+        "talk_mode": "대화"
       }
     },
     "you": {
@@ -253,7 +276,8 @@
       },
       "voice": "음성: {{name}}",
       "name": {
-        "qwen-codec": "음성 디코더"
+        "qwen-codec": "음성 디코더",
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "정밀 인식"
       }
     },
     "credits": {

@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef } from 'react';
 import { type Track, usePlayerStore } from '../stores/player';
 import { rememberTracks } from './offline-index';
+import { mountTrack, TRACK_MARK } from './voice/screen/tracks';
 
 /**
  * Optimized hook for track play/pause.
@@ -29,19 +30,28 @@ export function useTrackPlay(track: Track, queue?: Track[] | (() => Track[]), on
     void rememberTracks([track]);
   }, [track]);
 
-  const togglePlay = useCallback(() => {
-    const { play, pause, resume } = usePlayerStore.getState();
-    if (isThisPlaying) pause();
-    else if (isThis) resume();
-    else {
-        const q = queueRef.current;
-        const resolved = typeof q === 'function' ? q() : q;
-        play(trackRef.current, resolved?.length ? resolved : [trackRef.current]);
-        onPlayRef.current?.();
+  const start = useCallback(() => {
+    const { currentTrack, isPlaying, play, resume } = usePlayerStore.getState();
+    if (currentTrack?.urn === trackRef.current.urn) {
+      if (!isPlaying) resume();
+      return;
     }
-  }, [isThis, isThisPlaying]);
+    const q = queueRef.current;
+    const resolved = typeof q === 'function' ? q() : q;
+    play(trackRef.current, resolved?.length ? resolved : [trackRef.current]);
+    onPlayRef.current?.();
+  }, []);
 
-  return { isThis, isThisPlaying, togglePlay };
+  const togglePlay = useCallback(() => {
+    if (isThisPlaying) usePlayerStore.getState().pause();
+    else start();
+  }, [isThisPlaying, start]);
+
+  const id = useId();
+  useEffect(() => mountTrack(id, { track: () => trackRef.current, start }), [id, start]);
+  const mark = useMemo(() => ({ [TRACK_MARK]: id }), [id]);
+
+  return { isThis, isThisPlaying, togglePlay, mark };
 }
 
 /**

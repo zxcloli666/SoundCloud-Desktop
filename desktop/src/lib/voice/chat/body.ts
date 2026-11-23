@@ -14,9 +14,10 @@ export const HISTORY_MAX = 20;
 export const NOTES_MAX = 30;
 export const TOOLS_MAX = 64;
 export const BLOCK_BYTES = 8 * 1024;
+export const RESULTS_MAX = 16;
 export const NAME_MAX = 40;
 export const OWN_MAX = 300;
-const SHED_FIRST = ['candidates', 'queue_next', 'now_playing'];
+const SHED_FIRST = ['candidates', 'queue_next', 'screen', 'now_playing'];
 const BREAKS = /[\p{Cc}\p{Zl}\p{Zp}]/gu;
 
 export interface BodyInput {
@@ -60,7 +61,7 @@ function fitContext(context: Record<string, unknown>): Record<string, unknown> {
 
 function fitResults(results: CallResult[]): CallResult[] {
   const kept: CallResult[] = [];
-  for (const call of [...results].reverse()) {
+  for (const call of results.slice(-RESULTS_MAX).reverse()) {
     const next = [call, ...kept];
     if (bytesOf(next) <= BLOCK_BYTES) {
       kept.unshift(call);
