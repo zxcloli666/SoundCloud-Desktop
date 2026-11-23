@@ -3,7 +3,6 @@ import { HorizontalScroll } from '../../../ui/HorizontalScroll';
 
 const FIRST_BATCH = 60;
 const BATCH = 60;
-const WHEEL_STEP_CARDS = 6;
 
 interface Props<T> {
   items: T[];
@@ -22,12 +21,7 @@ export function ShelfScroll<T>({ items, keyOf, renderItem, activeKey, onEnd }: P
   }, [shown, items.length, onEnd]);
 
   return (
-    <HorizontalScroll
-      className="gap-4 pb-1"
-      activeItemKey={activeKey}
-      wheelStepItems={WHEEL_STEP_CARDS}
-      onNearEnd={more}
-    >
+    <HorizontalScroll className="gap-4 pb-1" activeItemKey={activeKey} onNearEnd={more}>
       {items.slice(0, shown).map((item) => (
         <Fragment key={keyOf(item)}>{renderItem(item)}</Fragment>
       ))}
