@@ -5,6 +5,7 @@ import { candidatesOf } from '../context.ts';
 import type { AppPort } from '../ports';
 import type { ChatTool, Ran, ToolEnv, ToolRun } from '../types';
 import { appTools } from './app.ts';
+import { buttonTools } from './buttons.ts';
 import { catalogTools } from './catalog.ts';
 import { listTools } from './lists.ts';
 import { memoryTools } from './memory.ts';
@@ -23,6 +24,7 @@ export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): 
     ...appTools(player, app),
     ...screenTools(player, app),
     ...soundTools(player, app),
+    ...buttonTools(app),
     ...tasteTools(app),
     ...togetherTools(app),
     ...talkTools(),

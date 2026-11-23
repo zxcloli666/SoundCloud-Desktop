@@ -1,3 +1,4 @@
+import type { ButtonAct, PlacementMap, Zone } from '../../player-zones';
 import type { ItemKind, Screen, ScrollTo } from '../screen/shape';
 import type { Listed, TrackList } from '../track-lists';
 import type { Entity, EntityKind } from '../types';
@@ -46,6 +47,21 @@ export interface OpenRoomShown {
   full: boolean;
 }
 
+export const BUTTON_PLACES = ['bar', 'home'] as const;
+export type ButtonPlace = (typeof BUTTON_PLACES)[number];
+
+export interface ButtonAsk {
+  place: ButtonPlace | null;
+  button: string;
+  act: ButtonAct;
+  zone: string | null;
+  position: number | null;
+}
+
+export type ButtonDone =
+  | { state: 'ok'; place: ButtonPlace; zone: Zone; position: number; hidden: boolean }
+  | { state: 'no_button' | 'no_zone' | 'bad_zone' };
+
 export interface AppPort {
   resolve(query: string, kinds: EntityKind[]): Promise<Entity[]>;
   open(page: Page, query: string, section: SettingsSection | null): OpenResult;
@@ -71,4 +87,6 @@ export interface AppPort {
   superlike(on: boolean): Taste;
   together(ask: TogetherAsk): Promise<TogetherDone>;
   openRooms(): Promise<OpenRoomShown[] | null>;
+  buttons(): Record<ButtonPlace, PlacementMap>;
+  placeButton(ask: ButtonAsk): ButtonDone;
 }

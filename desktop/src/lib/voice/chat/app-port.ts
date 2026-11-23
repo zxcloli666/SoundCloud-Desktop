@@ -9,6 +9,7 @@ import { openItem, playRow, press, scrollPage, typeInto } from '../screen/action
 import type { Screen, ScrollTo } from '../screen/shape';
 import { readScreen } from '../screen/snapshot';
 import { useVoiceStore } from '../store';
+import { buttons, placeButton } from './app-buttons';
 import { applySetting, readSettings } from './app-settings';
 import { setEffect, setSleep } from './app-sound';
 import { dislike, superlike } from './app-taste';
@@ -125,4 +126,6 @@ export const appPort: AppPort = {
   superlike,
   together,
   openRooms,
+  buttons,
+  placeButton,
 };

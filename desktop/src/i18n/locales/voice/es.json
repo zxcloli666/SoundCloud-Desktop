@@ -199,6 +199,8 @@
         "open_item": "Abrir",
         "sleep_timer": "Temporizador",
         "effect": "Efecto",
+        "player_buttons": "Botones del reproductor",
+        "player_button": "Botón del reproductor",
         "dislike": "No me gusta",
         "superlike": "Superlike",
         "together": "Juntos",
