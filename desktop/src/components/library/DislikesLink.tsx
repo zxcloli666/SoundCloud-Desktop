@@ -12,7 +12,7 @@ export const DislikesLink = memo(function DislikesLink() {
   return (
     <Link
       to="/library/dislikes"
-      className="group flex items-center gap-3.5 rounded-2xl border border-ink/[0.08] bg-ink/[0.025] px-4 py-3 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
+      className="panel group flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink/[0.06] text-ink-60">
         <ThumbsDown size={15} />

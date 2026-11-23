@@ -41,7 +41,7 @@ const FreshLead = memo(function FreshLead({
   return (
     <div
       onContextMenu={onContextMenu}
-      className="relative flex items-center gap-5 rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-4"
+      className="panel relative flex items-center gap-5 rounded-3xl p-4"
     >
       <button
         type="button"

@@ -45,7 +45,7 @@ export const ProfileGate = memo(function ProfileGate() {
 
   return (
     <div className="space-y-8">
-      <div className="flex items-center gap-5 rounded-[2rem] border border-ink/[0.06] bg-ink/[0.02] p-6">
+      <div className="panel flex items-center gap-5 rounded-[2rem] border-ink/[0.06] p-6">
         <Skeleton rounded="full" className="h-20 w-20 shrink-0" />
         <div className="flex-1 space-y-3">
           <Skeleton className="h-3 w-24" />

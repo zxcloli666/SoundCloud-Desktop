@@ -20,7 +20,7 @@ export const StatsTeaser = memo(function StatsTeaser({ genre }: { genre?: string
   return (
     <Link
       to="/library/stats"
-      className="group sp-rise flex items-center gap-4 rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-4 pr-5 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
+      className="panel group sp-rise flex items-center gap-4 rounded-3xl p-4 pr-5 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
       style={{ animation: 'sp-rise 620ms cubic-bezier(0.2,0.8,0.2,1) both' }}
     >
       <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-ink/[0.06] text-ink-70">

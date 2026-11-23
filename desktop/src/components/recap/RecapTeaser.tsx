@@ -8,7 +8,7 @@ export const RecapTeaser = memo(function RecapTeaser({ year }: { year: number })
   return (
     <Link
       to="/recap"
-      className="group flex items-center gap-5 rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-5 pr-6 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
+      className="panel group flex items-center gap-5 rounded-3xl p-5 pr-6 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
     >
       <span
         className="text-[44px] leading-none font-black tracking-[-0.05em] text-ink-90 tabular-nums"

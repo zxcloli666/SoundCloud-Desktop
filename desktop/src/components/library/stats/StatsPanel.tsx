@@ -1,6 +1,6 @@
 import { memo, type ReactNode } from 'react';
 
-export const STATS_PANEL = 'sp-rise rounded-3xl border border-ink/[0.08] bg-ink/[0.025]';
+export const STATS_PANEL = 'panel sp-rise rounded-3xl';
 
 export const StatsPanel = memo(function StatsPanel({
   icon,

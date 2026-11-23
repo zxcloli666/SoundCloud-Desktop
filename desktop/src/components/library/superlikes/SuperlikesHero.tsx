@@ -23,9 +23,9 @@ export const SuperlikesHero = memo(function SuperlikesHero({
   const { t } = useTranslation();
   return (
     <section
-      className="relative mb-6 overflow-hidden rounded-[28px] border border-ink/[0.07] px-6 py-6 md:px-8"
+      className="panel relative mb-6 overflow-hidden rounded-[28px] bg-transparent px-6 py-6 md:px-8"
       style={{
-        background:
+        backgroundImage:
           'linear-gradient(125deg, color-mix(in srgb, var(--color-superlike-from) 20%, transparent), color-mix(in srgb, var(--color-superlike-via) 14%, transparent) 45%, color-mix(in srgb, var(--color-superlike-to) 16%, transparent))',
       }}
     >
@@ -49,7 +49,11 @@ export const SuperlikesHero = memo(function SuperlikesHero({
               disabled={loading}
               className="inline-flex h-11 items-center gap-2 rounded-2xl bg-gradient-to-r from-superlike-from via-superlike-via to-superlike-to px-5 text-[13px] font-bold text-white shadow-[0_8px_24px_var(--color-superlike-glow)] transition-transform duration-200 hover:scale-[1.03] active:scale-[0.97] cursor-pointer disabled:opacity-60"
             >
-              {loading ? <Loader2 size={15} className="animate-spin" /> : <Play size={15} fill="currentColor" />}
+              {loading ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Play size={15} fill="currentColor" />
+              )}
               {t('superlikes.playAll')}
             </button>
             <button

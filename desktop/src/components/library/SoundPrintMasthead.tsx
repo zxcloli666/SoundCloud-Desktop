@@ -36,7 +36,7 @@ export const SoundPrintMasthead = memo(function SoundPrintMasthead({
   const avatar = art(user.avatar_url, 't300x300');
 
   return (
-    <section className="rounded-2xl border border-ink/[0.08] bg-ink/[0.02] p-5 md:p-7">
+    <section className="panel rounded-2xl p-5 md:p-7">
       <div className="flex items-center gap-5">
         <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full bg-ink/5 ring-1 ring-ink/10 md:h-20 md:w-20">
           {avatar ? (
