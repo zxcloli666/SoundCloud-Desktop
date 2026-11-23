@@ -1,6 +1,7 @@
 import { markVideoFailed, videoSource } from './video-cache';
-import { setVideoOpaque, type VideoHost } from './video-element';
-import { beginVideoLoad } from './video-load';
+import { hangCurtain } from './video-curtain';
+import type { VideoHost } from './video-element';
+import { buffered, canPlay, canPlayOn, HAVE_METADATA, hasFrame } from './video-media';
 import type { PickedVideo } from './video-pick';
 import {
   clockTime,
@@ -14,8 +15,6 @@ import {
   videoTarget,
 } from './video-sync';
 
-export const FADE_MS = 300;
-
 const STALL_MS = 30_000;
 const HOLD_FRAME_MS = 700;
 const END_HOLD_MS = 1_500;
@@ -25,10 +24,6 @@ const START_PATIENCE_MS = 4_000;
 const HOP_SEC = 3;
 const LAG_MAX_SEC = 0.3;
 const EARLY_SEC = 1;
-const HAVE_METADATA = 1;
-const HAVE_CURRENT_DATA = 2;
-const HAVE_FUTURE_DATA = 3;
-const HAVE_ENOUGH_DATA = 4;
 
 export interface Drive {
   host: VideoHost;
@@ -43,8 +38,8 @@ export interface Drive {
 
 export function driveVideo({ host, urn, video, slot, picked, clock, still, onSeek }: Drive) {
   const startedAt = performance.now();
+  const curtain = hangCurtain(host, slot);
   let stopped = false;
-  let shown = false;
   let ready = false;
   let wantPlay = false;
   let aim: number | null = null;
@@ -59,28 +54,8 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   let stallTimer = 0;
   let holdTimer = 0;
   let parkTimer = 0;
-  let opaqueTimer = 0;
-  let endLoad: (() => void) | null = null;
 
-  const show = (on: boolean) => {
-    if (on === shown) return;
-    shown = on;
-    slot.style.transition = `opacity ${FADE_MS}ms ease-out`;
-    slot.style.opacity = on ? '1' : '0';
-    window.clearTimeout(opaqueTimer);
-    if (on) opaqueTimer = window.setTimeout(() => setVideoOpaque(host, true), FADE_MS);
-    else setVideoOpaque(host, false);
-  };
-
-  const want = (wanted: boolean) => {
-    show(wanted && ready);
-    if (wanted && !ready) {
-      endLoad ??= beginVideoLoad(host);
-      return;
-    }
-    endLoad?.();
-    endLoad = null;
-  };
+  const want = (wanted: boolean) => curtain.want(wanted, ready);
 
   const play = () => {
     wantPlay = true;
@@ -107,10 +82,8 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     if (Math.abs(video.currentTime - time) > DRIFT_HOLD_SEC) video.currentTime = time;
   };
 
-  const canPlay = () => !video.seeking && video.readyState >= HAVE_FUTURE_DATA;
   const canStart = () =>
-    canPlay() &&
-    (video.readyState >= HAVE_ENOUGH_DATA || performance.now() - waitsFrom > START_PATIENCE_MS);
+    canPlayOn(video) || (canPlay(video) && performance.now() - waitsFrom > START_PATIENCE_MS);
 
   const park = (target: number, rate: number, lead: number) => {
     parkedAt = performance.now();
@@ -151,7 +124,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
       video.playbackRate = 1;
       if (now.playing) play();
       else pause();
-      ready ||= !video.paused && canPlay();
+      ready ||= !video.paused && canPlay(video);
       return want(true);
     }
     const target = videoTarget(clockTime(now, performance.now()), picked.offsetMs);
@@ -171,7 +144,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     if (!now.playing) {
       pause();
       seekTo(target);
-      ready ||= !video.seeking && video.readyState >= HAVE_CURRENT_DATA;
+      ready ||= hasFrame(video);
       return want(true);
     }
     video.playbackRate = aim === null ? step.rate : now.rate;
@@ -196,7 +169,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
 
   const inStep = () => {
     play();
-    if (!rolls() || !canPlay()) return;
+    if (!rolls() || !canPlay(video)) return;
     ready = true;
     clearWait();
   };
@@ -246,7 +219,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
 
   const onTime = () => {
     if (!ready) sync();
-    else if (!video.paused && canPlay()) clearWait();
+    else if (!video.paused && canPlay(video)) clearWait();
   };
 
   const onError = () => fail(`media error ${video.error?.code ?? '?'}`);
@@ -270,10 +243,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   const ticker = window.setInterval(sync, SYNC_EVERY_MS);
   const offSeek = onSeek?.(sync);
 
-  slot.style.transition = 'none';
-  slot.style.opacity = '0';
   video.loop = picked.loop;
-  endLoad = beginVideoLoad(host);
   videoSource(picked.url)
     .then((src) => {
       if (stopped) return;
@@ -288,26 +258,14 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     document.removeEventListener('visibilitychange', onVisible);
     window.clearInterval(ticker);
     clearWait();
-    window.clearTimeout(opaqueTimer);
     offSeek?.();
-    endLoad?.();
     video.pause();
     video.removeAttribute('src');
     video.load();
-    slot.style.transition = 'none';
-    slot.style.opacity = '0';
-    setVideoOpaque(host, false);
+    curtain.close();
   }
 
   return () => {
     if (!stopped) stop();
   };
-}
-
-function buffered(video: HTMLVideoElement, time: number): boolean {
-  const ranges = video.buffered;
-  for (let i = 0; i < ranges.length; i++) {
-    if (ranges.start(i) <= time && time < ranges.end(i)) return true;
-  }
-  return false;
 }
