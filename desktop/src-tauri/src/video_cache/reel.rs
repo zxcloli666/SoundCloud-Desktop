@@ -8,7 +8,7 @@ use tokio::time::Instant;
 
 use super::ranges::Ranges;
 
-const NEAR: u64 = 384 * 1024;
+const NEAR: u64 = 1024 * 1024;
 const STARVED: Duration = Duration::from_secs(2);
 
 pub struct Reel {
@@ -65,6 +65,14 @@ impl State {
             .filter(Waiter::starved)
             .min_by_key(|waiter| waiter.since);
         fresh.or(starved).or(newest)
+    }
+
+    fn lowest_near(&self, at: u64) -> u64 {
+        self.unserved()
+            .map(|waiter| waiter.at)
+            .filter(|near| (*near..*near + NEAR).contains(&at))
+            .min()
+            .unwrap_or(at)
     }
 
     fn unserved(&self) -> impl Iterator<Item = Waiter> {
@@ -135,7 +143,7 @@ impl Reel {
     pub fn gap(&self) -> Option<Gap> {
         let mut state = self.state();
         let next = state.next();
-        let from = next.map_or(0, |waiter| waiter.at);
+        let from = next.map_or(0, |waiter| state.lowest_near(waiter.at));
         state.served = next.map_or(0, |waiter| waiter.reader.max(state.served));
         let reader = state.served;
         let Some(total) = state.total else {
@@ -229,6 +237,10 @@ mod tests {
         (dir, Arc::new(reel))
     }
 
+    fn span(reel: &Reel) -> Option<(u64, u64)> {
+        reel.gap().and_then(|gap| Some((gap.start, gap.end?)))
+    }
+
     async fn reader(reel: &Arc<Reel>, reader: u64, at: u64) -> JoinHandle<Result<u64, String>> {
         let reel = reel.clone();
         let (asked, told) = tokio::sync::oneshot::channel();
@@ -268,26 +280,29 @@ mod tests {
     async fn the_next_gap_is_where_the_newest_reader_waits_and_then_the_first() {
         let (dir, reel) = reel("gaps");
         assert!(reel.gap().is_some_and(|gap| gap.end.is_none()));
-        reel.learn(1000).unwrap();
+        let total = NEAR * 10;
+        reel.learn(total).unwrap();
         reel.landed(0..100);
-        let _newest = reader(&reel, 2, 700).await;
-        let _older = reader(&reel, 1, 300).await;
-        assert!(
-            reel.gap()
-                .is_some_and(|gap| gap.start == 700 && gap.end == Some(1000))
-        );
-        reel.landed(700..1000);
-        assert!(
-            reel.gap()
-                .is_some_and(|gap| gap.start == 300 && gap.end == Some(700))
-        );
-        reel.landed(300..700);
-        assert!(
-            reel.gap()
-                .is_some_and(|gap| gap.start == 100 && gap.end == Some(300))
-        );
-        reel.landed(100..300);
+        let _newest = reader(&reel, 2, NEAR * 7).await;
+        let _older = reader(&reel, 1, NEAR * 3).await;
+        assert_eq!(span(&reel), Some((NEAR * 7, total)));
+        reel.landed(NEAR * 7..total);
+        assert_eq!(span(&reel), Some((NEAR * 3, NEAR * 7)));
+        reel.landed(NEAR * 3..NEAR * 7);
+        assert_eq!(span(&reel), Some((100, NEAR * 3)));
+        reel.landed(100..NEAR * 3);
         assert!(reel.gap().is_none());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[tokio::test]
+    async fn a_reader_just_before_the_newest_is_served_on_the_way() {
+        let (dir, reel) = reel("way");
+        reel.learn(NEAR * 10).unwrap();
+        let _whole = reader(&reel, 1, NEAR * 4).await;
+        let _piece = reader(&reel, 2, NEAR * 4 + NEAR / 2).await;
+        assert_eq!(span(&reel), Some((NEAR * 4, NEAR * 10)));
+        assert!(!reel.asks_elsewhere(&reel.gap().unwrap(), NEAR * 4));
         std::fs::remove_dir_all(&dir).ok();
     }
 
