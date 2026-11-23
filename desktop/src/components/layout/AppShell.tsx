@@ -211,7 +211,6 @@ const CustomBackground = React.memo(() => {
   useWallTone(bgUrl, bgDim, bgOpacity);
   if (!bgUrl) return null;
 
-  const effBlur = perf.blur(bgBlur);
   const dim = bgOpacity; // edge/vignette + chrome readability framing
 
   return (
@@ -224,7 +223,7 @@ const CustomBackground = React.memo(() => {
         fade={perf.mode !== 'light'}
         className="absolute inset-0 w-full h-full object-cover select-none"
         style={{
-          filter: effBlur > 0 ? `blur(${effBlur}px)` : undefined,
+          filter: bgBlur > 0 ? `blur(${bgBlur}px)` : undefined,
           transform: 'translateZ(0)',
         }}
       />

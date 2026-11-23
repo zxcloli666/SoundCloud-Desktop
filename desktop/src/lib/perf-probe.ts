@@ -80,6 +80,7 @@ export async function probeSoftwareRendering(): Promise<void> {
 }
 
 export function probePerfMode(): void {
+  if (import.meta.env.DEV) return;
   if (useSettingsStore.getState().perfProbed || !stillOnDefault()) return;
   setTimeout(async () => {
     if (!canSample()) return;
