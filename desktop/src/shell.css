@@ -40,7 +40,10 @@
   border-radius: 0.5rem;
   background: var(--shell-fill);
   color: rgb(var(--ink) / 0.6);
-  transition: color 150ms, background-color 150ms, border-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms,
+    border-color 150ms;
 }
 
 .shell-btn:hover:not(:disabled),
@@ -110,7 +113,10 @@
   color: rgb(var(--ink) / 0.65);
   font-size: 11px;
   font-weight: 500;
-  transition: color 150ms, background-color 150ms, border-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms,
+    border-color 150ms;
 }
 
 .chip-toggle:hover {
@@ -179,7 +185,9 @@
   color: rgb(var(--ink) / 0.5);
   font-size: 12px;
   font-weight: 500;
-  transition: color 150ms, background-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms;
 }
 
 .chip-seg:hover {
@@ -214,7 +222,10 @@
   color: rgb(var(--ink) / 0.6);
   font-size: 11px;
   font-weight: 600;
-  transition: color 150ms, background-color 150ms, border-color 150ms;
+  transition:
+    color 150ms,
+    background-color 150ms,
+    border-color 150ms;
 }
 
 a.chip-pill:hover,
@@ -224,4 +235,3 @@ button.chip-pill:hover:not(:disabled) {
   color: rgb(var(--ink));
   cursor: pointer;
 }
-

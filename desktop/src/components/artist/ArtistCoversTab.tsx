@@ -37,9 +37,7 @@ function ArtistCoversTabImpl({ artistId }: ArtistCoversTabProps) {
       items={tracks}
       rowHeight={ROW_HEIGHT}
       getItemKey={(t) => t.urn}
-      renderItem={(track, index) => (
-        <ThemedTrackRow track={track} index={index} queue={tracks} />
-      )}
+      renderItem={(track, index) => <ThemedTrackRow track={track} index={index} queue={tracks} />}
     />
   );
 }

@@ -132,9 +132,7 @@ function TabDockImpl<T extends string>({ tabs, active, onChange }: TabDockProps<
 
   return (
     <div className="sticky top-3 z-40 flex justify-center pointer-events-none px-2 sm:px-4 min-w-0">
-      <div
-        className="pointer-events-auto flex min-w-0 max-w-full rounded-2xl border border-ink/[0.08] bg-[var(--shell)]"
-      >
+      <div className="pointer-events-auto flex min-w-0 max-w-full rounded-2xl border border-ink/[0.08] bg-[var(--shell)]">
         <div
           ref={dockRef}
           onPointerDown={onPointerDown}

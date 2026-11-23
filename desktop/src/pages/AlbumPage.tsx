@@ -41,7 +41,6 @@ export function AlbumPage() {
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
       <div data-ui="page" data-page="album" className="relative w-full min-h-screen">
-
         <div
           className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32 flex flex-col gap-8"
           style={{ isolation: 'isolate' }}
