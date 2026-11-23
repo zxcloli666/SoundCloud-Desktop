@@ -97,8 +97,37 @@
 }
 
 .deck-round .pbtn {
-  width: 46px;
-  height: 46px;
+  width: var(--deck-btn, 46px);
+  height: var(--deck-btn, 46px);
+}
+
+.deck-round [data-ui="player-quality"] {
+  width: calc(var(--deck-btn, 46px) * 2);
+  height: var(--deck-btn, 46px);
+  gap: 7px;
+  border: 1px solid var(--round-line);
+  border-radius: 999px;
+  background: var(--round-fill);
+  box-shadow: var(--round-shadow);
+}
+
+.deck-round [data-ui="player-quality"]:empty {
+  display: none;
+}
+
+.deck-round [data-ui="player-quality"] > span:not([data-ui="player-rating"]) {
+  height: auto;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: rgb(var(--ink) / 0.9);
+  font-size: 10.5px;
+}
+
+.deck-round [data-ui="player-rating"] {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
 }
 
 .deck-title .pbtn {
