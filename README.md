@@ -12,11 +12,12 @@
 </p>
 
 <p align="center">
-<a href="https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-Скачать-FF2E55?style=for-the-badge" alt="Скачать для Windows"/></a>
-<a href="#macos"><img src="https://img.shields.io/badge/macOS-Скачать-FF2E55?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать для macOS"/></a>
-<a href="#linux"><img src="https://img.shields.io/badge/Linux-Скачать-FF2E55?style=for-the-badge&logo=linux&logoColor=white" alt="Скачать для Linux"/></a>
-<a href="https://github.com/okeydw/SoundCloud-Android/releases/latest"><img src="https://img.shields.io/badge/Android-Скачать-FF2E55?style=for-the-badge&logo=android&logoColor=white" alt="Скачать для Android"/></a>
-<a href="https://docs.getsoundcloud.app/install/ios"><img src="https://img.shields.io/badge/iPhone-Скачать-FF2E55?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать для iPhone"/></a>
+<b>Скачать бесплатно</b><br><br>
+<a href="https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop_x64-setup.exe"><img src="https://img.shields.io/badge/Windows-FF2E55?style=for-the-badge" alt="Скачать для Windows"/></a>
+<a href="#macos"><img src="https://img.shields.io/badge/macOS-FF2E55?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать для macOS"/></a>
+<a href="#linux"><img src="https://img.shields.io/badge/Linux-FF2E55?style=for-the-badge&logo=linux&logoColor=white" alt="Скачать для Linux"/></a>
+<a href="https://github.com/okeydw/SoundCloud-Android/releases/latest"><img src="https://img.shields.io/badge/Android-FF2E55?style=for-the-badge&logo=android&logoColor=white" alt="Скачать для Android"/></a>
+<a href="https://docs.getsoundcloud.app/install/ios"><img src="https://img.shields.io/badge/iPhone-FF2E55?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать для iPhone"/></a>
 </p>
 
 <p align="center">
@@ -136,10 +137,10 @@ Tauri 2 и Rust вместо Electron: системный WebView, звук сч
 
 ### Windows
 
-Перейди на [страницу релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest) и скачай:
-- **`*_x64-setup.exe`** - установщик, рекомендуется
-- **`*_x64_en-US.msi`** - альтернативный установщик
-- **`soundcloud-desktop-portable.exe`** - portable-версия, без установки
+Скачай прямо отсюда или со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest):
+- **[`soundcloud-desktop_x64-setup.exe`](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop_x64-setup.exe)** - установщик, рекомендуется
+- **[`soundcloud-desktop_x64_en-US.msi`](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop_x64_en-US.msi)** - альтернативный установщик
+- **[`soundcloud-desktop-portable.exe`](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop-portable.exe)** - portable-версия, без установки
 
 Требования: Windows 10 (1809+) или Windows 11
 
@@ -181,10 +182,8 @@ chmod +x soundcloud-desktop_*.AppImage
 
 ### macOS
 
-- **Apple Silicon** (M1/M2/M3/M4): `*_aarch64.dmg`
-- **Intel**: `*_x64.dmg`
-
-Скачай со [страницы релизов](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest).
+- **Apple Silicon** (M1 и новее): [`soundcloud-desktop_aarch64.dmg`](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop_aarch64.dmg)
+- **Intel**: [`soundcloud-desktop_x64.dmg`](https://github.com/zxcloli666/SoundCloud-Desktop/releases/latest/download/soundcloud-desktop_x64.dmg)
 
 > [!NOTE]
 > **macOS блокирует запуск?** Приложение не подписано Apple Developer сертификатом, поэтому Gatekeeper может показать ошибку "приложение повреждено". Исправляется одной командой:
