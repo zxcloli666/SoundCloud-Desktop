@@ -119,7 +119,7 @@ pub fn run() {
             let images_dir = data_dir.join("images");
             std::fs::create_dir_all(&images_dir).ok();
 
-            let video_cache = video_cache::VideoCache::init(cache_dir.join("video"));
+            let video_cache = video_cache::VideoCache::init(app.handle().clone(), cache_dir.join("video"));
 
             network::edge::init(data_dir.clone());
             network::edge::attach(app.handle().clone());

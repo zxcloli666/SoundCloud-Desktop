@@ -65,7 +65,7 @@ export const TrackSortMenu = React.memo(function TrackSortMenu({
         <button
           type="button"
           aria-label={t('trackSort.label')}
-          className={`inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-[10px] border px-3 text-[11.5px] font-semibold transition-all duration-200 ease-[var(--ease-apple)] ${
+          className={`inline-flex h-8 shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-[10px] border px-3 text-[11.5px] font-semibold transition-all duration-200 ease-[var(--ease-apple)] ${
             active
               ? 'border-accent/25 bg-accent/10 text-accent'
               : open

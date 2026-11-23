@@ -1,5 +1,6 @@
 import { markVideoFailed, videoSource } from './video-cache';
 import { setVideoOpaque, type VideoHost } from './video-element';
+import { beginVideoLoad } from './video-load';
 import type { PickedVideo } from './video-pick';
 import {
   clockTime,
@@ -139,6 +140,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   };
 
   const onLoadedData = () => {
+    endLoad();
     if (still) ready = true;
     sync();
   };
@@ -165,6 +167,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   slot.style.transition = 'none';
   slot.style.opacity = '0';
   video.loop = picked.loop;
+  const endLoad = beginVideoLoad(host, picked.url);
   videoSource(picked.url)
     .then((src) => {
       if (stopped) return;
@@ -181,6 +184,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     window.clearTimeout(stallTimer);
     window.clearTimeout(opaqueTimer);
     offSeek?.();
+    endLoad();
     video.pause();
     video.removeAttribute('src');
     video.load();

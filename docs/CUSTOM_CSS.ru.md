@@ -101,7 +101,8 @@
 | `[data-ui="lyrics-paste"]` | Поле для своего текста или LRC |
 | `[data-ui="track-video"]` | Видео трека; `data-place`: `player-cover`, `player-background`, `player-view`, `moments` или `room` (обложка страницы трека) |
 | `html[data-video-opaque]` | Стоит, пока видео целиком закрывает своё место (значения как у `data-place`); то, что под ним, скрыто |
-| `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере |
+| `[data-ui="lyrics-video-toggle"]` | Кнопка видео вкл/выкл в полноэкранном плеере; `data-state`: `off`, `none`, `loading`, `failed` или `on` |
+| `[data-ui="video-load"]` | Кольцо загрузки видео на обложке |
 | `[data-ui="waveform"]` | Волна трека |
 
 ### Голос

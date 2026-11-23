@@ -1,9 +1,9 @@
 import React from 'react';
 import {useTranslation} from 'react-i18next';
-import {Film, PanelLeftClose, PanelLeftOpen, X} from '../../../lib/icons';
-import {canPlayH264} from '../../../lib/video-element';
+import {PanelLeftClose, PanelLeftOpen, X} from '../../../lib/icons';
 import type {LyricsPanelTab} from '../../../stores/lyrics';
-import {useSettingsStore} from '../../../stores/settings';
+import type {Track} from '../../../stores/player';
+import {VideoToggle} from './VideoToggle';
 
 const TabButton = React.memo(
     ({
@@ -33,6 +33,7 @@ const glassBtn =
     'w-9 h-9 rounded-full flex items-center justify-center border border-ink/[0.08] bg-black/35 backdrop-blur-xl text-ink-55 hover:text-ink hover:bg-ink/[0.14] transition-all duration-200 cursor-pointer outline-none';
 
 interface LyricsHeaderProps {
+    track: Track;
     tab: LyricsPanelTab;
     rightPanelOpen: boolean;
     onSelectTab: (tab: LyricsPanelTab) => void;
@@ -44,7 +45,7 @@ interface LyricsHeaderProps {
  *  never shifts between split / focus modes (the old bug). Tabs float centred in
  *  their own glass pill; the panel toggle + close sit as a fixed right cluster. */
 export const LyricsHeader = React.memo(
-    ({tab, rightPanelOpen, onSelectTab, onTogglePanel, onClose}: LyricsHeaderProps) => {
+    ({track, tab, rightPanelOpen, onSelectTab, onTogglePanel, onClose}: LyricsHeaderProps) => {
         const {t} = useTranslation();
         return (
             <div
@@ -70,7 +71,7 @@ export const LyricsHeader = React.memo(
 
                 {/* fixed right cluster — always top-right */}
                 <div className="flex items-center gap-2">
-                    <VideoToggle/>
+                    <VideoToggle track={track} className={glassBtn}/>
                     <button
                         type="button"
                         onClick={onTogglePanel}
@@ -87,23 +88,3 @@ export const LyricsHeader = React.memo(
         );
     },
 );
-
-function VideoToggle() {
-    const {t} = useTranslation();
-    const on = useSettingsStore((s) => s.videoEnabled);
-    const setOn = useSettingsStore((s) => s.setVideoEnabled);
-    if (!canPlayH264()) return null;
-    return (
-        <button
-            type="button"
-            data-ui="lyrics-video-toggle"
-            aria-pressed={on}
-            onClick={() => setOn(!on)}
-            title={t('settings.video')}
-            className={glassBtn}
-            style={on ? {color: 'var(--color-accent)', borderColor: 'var(--color-accent-glow)', boxShadow: '0 0 14px var(--color-accent-glow)'} : undefined}
-        >
-            <Film size={17}/>
-        </button>
-    );
-}

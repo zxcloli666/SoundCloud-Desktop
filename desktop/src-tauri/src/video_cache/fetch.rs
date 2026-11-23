@@ -1,11 +1,12 @@
 use std::path::Path;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use futures_util::StreamExt;
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 use wreq::{Client, Method, Response};
 
+use super::progress::{Meter, Progress};
 use crate::network::edge::{self, Hop};
 use crate::network::fail::Fail;
 use crate::network::netcheck::model::Role;
@@ -23,11 +24,16 @@ enum Miss {
     Stop(String),
 }
 
-pub async fn download(client: &Client, url: &str, target: &Path) -> Result<(), String> {
+pub async fn download(
+    client: &Client,
+    url: &str,
+    target: &Path,
+    report: &(dyn Fn(Progress) + Send + Sync),
+) -> Result<(), String> {
     let part = target.with_extension("part");
     let mut errors = Vec::new();
     for (index, hop) in edge::plan(url).into_iter().enumerate() {
-        match from_hop(client, &hop, Role::of_index(index), &part).await {
+        match from_hop(client, &hop, Role::of_index(index), &part, report).await {
             Ok(()) => {
                 fs::rename(&part, target).await.map_err(|e| e.to_string())?;
                 return Ok(());
@@ -49,7 +55,13 @@ pub async fn download(client: &Client, url: &str, target: &Path) -> Result<(), S
     }
 }
 
-async fn from_hop(client: &Client, hop: &Hop, role: Role, part: &Path) -> Result<(), Miss> {
+async fn from_hop(
+    client: &Client,
+    hop: &Hop,
+    role: Role,
+    part: &Path,
+    report: &(dyn Fn(Progress) + Send + Sync),
+) -> Result<(), Miss> {
     let response = send(client, hop, role).await?;
     if !edge::hop_ok(hop, &response) {
         return Err(Miss::Next(format!("HTTP {}", response.status())));
@@ -65,7 +77,8 @@ async fn from_hop(client: &Client, hop: &Hop, role: Role, part: &Path) -> Result
     if response.content_length().is_some_and(|len| len > MAX_BYTES) {
         return Err(Miss::Stop("too big".into()));
     }
-    let bytes = save(response, part).await.inspect_err(|miss| {
+    let meter = Meter::new(report, response.content_length());
+    let bytes = save(response, part, meter).await.inspect_err(|miss| {
         if matches!(miss, Miss::Next(_)) {
             hop.note(false);
         }
@@ -96,7 +109,7 @@ async fn send(client: &Client, hop: &Hop, role: Role) -> Result<Response, Miss> 
     }
 }
 
-async fn save(response: Response, part: &Path) -> Result<u64, Miss> {
+async fn save(response: Response, part: &Path, mut meter: Meter<'_>) -> Result<u64, Miss> {
     let local = |err: std::io::Error| Miss::Stop(err.to_string());
     let mut file = File::create(part).await.map_err(local)?;
     let mut body = response.bytes_stream();
@@ -113,6 +126,7 @@ async fn save(response: Response, part: &Path) -> Result<u64, Miss> {
             return Err(Miss::Stop("too big".into()));
         }
         file.write_all(&chunk).await.map_err(local)?;
+        meter.received(total, Instant::now());
     }
     file.flush().await.map_err(local)?;
     if total == 0 {

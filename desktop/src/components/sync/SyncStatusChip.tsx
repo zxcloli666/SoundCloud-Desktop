@@ -14,18 +14,18 @@ const TONE: Record<SyncState, string> = {
 };
 
 const BADGE =
-  'inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[10.5px] font-medium tabular-nums transition-colors duration-300';
+  'inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[10.5px] font-medium tabular-nums transition-colors duration-300';
 
 function StateIcon({ state }: { state: SyncState }) {
   const perf = usePerfMode();
-  if (state === 'synced') return <Check size={11} />;
-  if (state === 'delayed') return <Clock size={11} />;
-  if (state === 'relogin') return <Lock size={11} />;
-  if (state === 'failed' || state === 'dead') return <AlertCircle size={11} />;
+  if (state === 'synced') return <Check size={11} className="shrink-0" />;
+  if (state === 'delayed') return <Clock size={11} className="shrink-0" />;
+  if (state === 'relogin') return <Lock size={11} className="shrink-0" />;
+  if (state === 'failed' || state === 'dead') return <AlertCircle size={11} className="shrink-0" />;
   return (
     <RefreshCw
       size={11}
-      className={perf.idleAnim ? 'animate-spin [animation-duration:2.4s]' : undefined}
+      className={`shrink-0 ${perf.idleAnim ? 'animate-spin [animation-duration:2.4s]' : ''}`}
     />
   );
 }
@@ -51,8 +51,8 @@ export const SyncStatusBadge = React.memo(function SyncStatusBadge({
         className={`${BADGE} ${TONE[state]} cursor-pointer enabled:hover:border-ink/30 disabled:cursor-default disabled:opacity-60 ${className}`}
       >
         <StateIcon state={state} />
-        {label}
-        <span className="border-l border-ink/15 pl-1.5 font-semibold">{action.label}</span>
+        <span className="truncate">{label}</span>
+        <span className="shrink-0 border-l border-ink/15 pl-1.5 font-semibold">{action.label}</span>
       </button>
     );
   }
@@ -60,7 +60,7 @@ export const SyncStatusBadge = React.memo(function SyncStatusBadge({
   return (
     <span title={hint} className={`${BADGE} ${TONE[state]} ${className}`}>
       <StateIcon state={state} />
-      {label}
+      <span className="truncate">{label}</span>
     </span>
   );
 });

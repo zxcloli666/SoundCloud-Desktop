@@ -15,6 +15,7 @@ import { ArtistNameLinks } from '../ArtistNameLinks';
 import { Controls } from './LyricsControls';
 import { MediaView } from './MediaView';
 import { PlayerVideo } from './TrackVideo';
+import { VideoLoadMark } from './VideoLoadMark';
 
 export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt?: string }) => {
   const { t } = useTranslation();
@@ -107,6 +108,7 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
             </>
           )}
         </div>
+        <VideoLoadMark host="player-cover" className="right-3 top-3" />
         {behind && (
           <CoverFade
             value={coverOpacity}

@@ -33,6 +33,11 @@ export function markVideoFailed(urn: string, kind: VideoKind, reason: string): v
   for (const listener of failedListeners) listener();
 }
 
+export function forgetVideoFails(urn: string): void {
+  if (!failed.delete(urn)) return;
+  for (const listener of failedListeners) listener();
+}
+
 export function useFailedKinds(urn: string | null): ReadonlySet<string> {
   return useSyncExternalStore(subscribeFailed, () => (urn ? failed.get(urn) : null) ?? NO_FAILS);
 }
