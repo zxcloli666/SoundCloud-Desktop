@@ -109,8 +109,6 @@ export const ProgressSlider = React.memo(() => {
   );
 });
 
-/* ── Progress Time (updates once per second) ─────────────────── */
-
 export const ProgressTime = React.memo(() => {
   const currentSecond = useSyncExternalStore(subscribe, () => Math.floor(getCurrentTime()));
   const duration = useSyncExternalStore(subscribe, getDuration);

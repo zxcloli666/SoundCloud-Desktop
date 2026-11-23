@@ -167,7 +167,6 @@ main[data-scrolling] *::after {
     pointer-events: none !important;
 }
 
-/* light and medium only: motion, blur and deep shadows are frozen while the wheel moves */
 :is([data-perf="light"], [data-perf="medium"]) main[data-scrolling] * {
     animation-play-state: paused !important;
     transition-duration: 0ms !important;
@@ -938,7 +937,6 @@ select,
     }
 }
 
-/* flat card: one line, no glow */
 .npb-dock {
     position: relative;
     z-index: 1;
@@ -1365,7 +1363,6 @@ select,
     background: rgb(var(--ink) / 0.07);
 }
 
-/* progress lane: time, waveform, time */
 .npb-lane {
     display: flex;
     align-items: center;

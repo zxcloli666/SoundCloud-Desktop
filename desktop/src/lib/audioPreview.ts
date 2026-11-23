@@ -17,10 +17,6 @@ import { previewStartMs } from './moment';
  * debounced on hover, starting at target volume and fading out on leave,
  * sourced from the existing track cache. It never touches the main player
  * or writes plays history.
- *
- * Deliberate gate: while the main player plays, hover previews are off unless
- * the user enabled hoverPreviewDuringPlayback; then the main track is paused
- * for the preview. The track already loaded is never previewed.
  */
 
 const HOVER_DEBOUNCE_MS = 1_000;
