@@ -133,14 +133,18 @@ export const TransportButtons = React.memo(({ ctx }: { ctx: PlayerContext }) => 
     (id) => id !== 'shuffle' && TRANSPORT_IDS.includes(id) && visible.has(id),
   );
   return (
-    <div className="flex items-center gap-0.5" data-ui="player-transport">
-      {visible.has('shuffle') && BUTTONS.shuffle(ctx)}
-      <PrevBtn />
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-0.5" data-ui="player-transport">
+      <div className="flex items-center justify-end gap-[inherit]">
+        {visible.has('shuffle') && BUTTONS.shuffle(ctx)}
+        <PrevBtn />
+      </div>
       <PlayPauseBtn />
-      <NextBtn />
-      {after.map((id) => (
-        <React.Fragment key={id}>{BUTTONS[id](ctx)}</React.Fragment>
-      ))}
+      <div className="flex items-center justify-start gap-[inherit]">
+        <NextBtn />
+        {after.map((id) => (
+          <React.Fragment key={id}>{BUTTONS[id](ctx)}</React.Fragment>
+        ))}
+      </div>
     </div>
   );
 });

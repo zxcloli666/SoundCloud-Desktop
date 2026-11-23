@@ -98,7 +98,6 @@ export const DEFAULT_HIDDEN: Record<LayoutScope, ReadonlySet<string>> = {
     'block',
     'quality',
     'abLoop',
-    'together',
     'mic',
     'sleep',
     'tuning',
