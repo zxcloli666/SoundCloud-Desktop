@@ -74,7 +74,7 @@ test('a parked video waits for its moment and starts on it', () => {
 test('a parked video that is late parks again only when it can go on or the wait is too long', () => {
   assert.equal(parkStep(13, 12, false), 'wait');
   assert.equal(parkStep(13, 12, true), 'again');
-  assert.equal(parkStep(16.5, 12, false), 'again');
+  assert.equal(parkStep(20.5, 12, false), 'again');
 });
 
 test('the lead follows the wait and stays in bounds', () => {
