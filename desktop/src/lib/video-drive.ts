@@ -22,10 +22,12 @@ const END_HOLD_MS = 1_500;
 const FAR_SEC = 10;
 const MOVED_SEC = 0.1;
 const LAG_LEARN_MS = 2_500;
-const LAG_MAX_SEC = 2;
+const LAG_MAX_SEC = 0.6;
+const EARLY_SEC = 1;
 const HAVE_METADATA = 1;
 const HAVE_CURRENT_DATA = 2;
 const HAVE_FUTURE_DATA = 3;
+const HAVE_ENOUGH_DATA = 4;
 
 export interface Drive {
   host: VideoHost;
@@ -98,6 +100,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   };
 
   const canPlay = () => !video.seeking && video.readyState >= HAVE_FUTURE_DATA;
+  const canStart = () => !video.seeking && video.readyState >= HAVE_ENOUGH_DATA;
 
   const park = (target: number, rate: number, lead: number) => {
     aim = target + (lead + startLag) * rate;
@@ -110,13 +113,15 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
 
   const unpark = (target: number, rate: number, from: number) => {
     window.clearTimeout(parkTimer);
-    const step = parkStep(target + startLag * rate, from, canPlay());
+    const step = parkStep(target + startLag * rate, from, canStart());
     if (step === 'play') {
       aim = null;
       play();
     } else if (step === 'again') {
       const took = (performance.now() - parkedAt) / 1000;
-      park(target, rate, leadFor(canPlay() ? (target - from) / 2 : took));
+      park(target, rate, leadFor(canStart() ? (target - from) / 2 : took));
+    } else if (from - target > EARLY_SEC && canStart() && buffered(video, target)) {
+      park(target, rate, LEAD_MIN_SEC);
     } else if (target < from) {
       parkTimer = window.setTimeout(sync, ((from - target) / rate - startLag) * 1000);
     }
@@ -235,6 +240,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     ['loadedmetadata', onMetadata],
     ['loadeddata', onLoadedData],
     ['canplay', sync],
+    ['canplaythrough', sync],
     ['playing', sync],
     ['seeked', sync],
     ['timeupdate', onTime],
