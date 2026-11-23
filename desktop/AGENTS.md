@@ -282,7 +282,7 @@ desktop/
   режим):
   - `blur(px)` — масштабирует радиус блюра. beauty→px, medium→~½, light→**0**.
   - `particles(n)` — масштабирует число декоративных элементов. beauty→n, medium→~45%, light→**0**.
-  - `idleAnim` — крутить ли idle-анимации (дрейфы, твинклы, спины, маркизы). light→`false`.
+  - `idleAnim` — крутить ли idle-анимации (дрейфы, твинклы, спины). light→`false`. Бегущая строка длинного названия (`ui/Marquee`) идёт во всех режимах: это чтение, а не декор; в light без маски по краям.
   - `atmosphere` — монтировать ли атмосферу страницы (орбы, звёздные поля, ambient-слои). light→`false`.
   - `glow` — per-element `drop-shadow`/`box-shadow` свечения на частицах. medium/light→`false`.
   - `bloom` — монтировать ли тяжёлые фоновые блумы (`AmbientGlow`, per-card гало). light→`false`.

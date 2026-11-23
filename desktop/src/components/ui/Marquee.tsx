@@ -1,5 +1,4 @@
 import { type CSSProperties, type ReactNode, useLayoutEffect, useRef, useState } from 'react';
-import { usePerfMode } from '../../lib/perf';
 import { useReducedMotion } from '../../lib/reduced-motion';
 
 interface Props {
@@ -41,8 +40,7 @@ export function Marquee({
 }: Props) {
   const { rootRef, copyRef, overflow } = useOverflow();
   const reduced = useReducedMotion();
-  const animated = usePerfMode().idleAnim;
-  const moving = overflow && animated && !reduced;
+  const moving = overflow && !reduced;
   const style = {
     '--marquee-gap': `${gapPx}px`,
     '--marquee-duration': `${durationSec}s`,

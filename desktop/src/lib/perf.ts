@@ -22,7 +22,7 @@ export interface PerfProfile {
     blur: (beautyPx: number) => number;
     /** Scale a decorative particle/element count. `light` → 0. */
     particles: (beautyCount: number) => number;
-    /** Run idle decorative animations (drifts, twinkles, spins, marquees, breathing). */
+    /** Run idle decorative animations (drifts, twinkles, spins, breathing). */
     idleAnim: boolean;
     /** Mount the full page atmosphere (aurora orbs, star fields, ambient layers). */
     atmosphere: boolean;

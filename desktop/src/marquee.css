@@ -15,6 +15,11 @@
   );
 }
 
+[data-perf="light"] [data-ui="marquee"][data-moving="true"] {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
 .marquee-track {
   display: inline-flex;
   width: max-content;
