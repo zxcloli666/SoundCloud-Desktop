@@ -3,6 +3,7 @@ use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::Duration;
 
 use futures_util::StreamExt;
+use futures_util::stream::FuturesUnordered;
 use tokio::fs::OpenOptions;
 use tokio::io::{AsyncSeekExt, AsyncWriteExt};
 use wreq::header::{CONTENT_RANGE, RANGE};
@@ -19,6 +20,7 @@ const MAX_BYTES: u64 = 60 * 1024 * 1024;
 
 const SOURCE: &str = "video";
 const HEADERS_TIMEOUT: Duration = Duration::from_secs(15);
+const HEDGE_AFTER: Duration = Duration::from_secs(2);
 const CHUNK_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub enum Miss {
@@ -26,27 +28,46 @@ pub enum Miss {
     Stop(String),
 }
 
-pub async fn pull(
-    client: &Client,
-    hop: &Hop,
-    role: Role,
-    reel: &Reel,
-    gap: &Gap,
-    at: &AtomicU64,
-) -> Result<(), Miss> {
-    let response = send(client, hop, role, gap).await?;
-    if !edge::hop_ok(hop, &response) {
-        return Err(Miss::Next(format!("HTTP {}", response.status())));
+pub struct Answer {
+    hop: Hop,
+    response: Response,
+    start: u64,
+    total: u64,
+}
+
+pub async fn ask(client: &Client, reel: &Reel, gap: &Gap) -> Result<Answer, String> {
+    let mut hops = edge::plan(&reel.url).into_iter().enumerate();
+    let mut asks = FuturesUnordered::new();
+    let mut errors = Vec::new();
+    loop {
+        if asks.is_empty() {
+            let Some((index, hop)) = hops.next() else {
+                return Err(told(&errors));
+            };
+            asks.push(answer(client, hop, Role::of_index(index), gap));
+        }
+        tokio::select! {
+            Some(came) = asks.next() => match came {
+                Ok(answer) => return Ok(answer),
+                Err(Miss::Stop(err)) => return Err(err),
+                Err(Miss::Next(err)) => errors.push(err),
+            },
+            () = tokio::time::sleep(HEDGE_AFTER), if hops.len() > 0 => {
+                if let Some((_, hop)) = hops.next() {
+                    asks.push(answer(client, hop, Role::Hedge, gap));
+                }
+            }
+        }
     }
-    let status = response.status();
-    hop.note(status.as_u16() < 500);
-    if matches!(status.as_u16(), 404 | 410) {
-        return Err(Miss::Stop(format!("HTTP {status}")));
-    }
-    if !status.is_success() {
-        return Err(Miss::Next(format!("HTTP {status}")));
-    }
-    let (start, total) = placed(&response, gap).ok_or_else(|| Miss::Next("no size".into()))?;
+}
+
+pub async fn pull(answer: Answer, reel: &Reel, at: &AtomicU64) -> Result<(), Miss> {
+    let Answer {
+        hop,
+        response,
+        start,
+        total,
+    } = answer;
     if total == 0 || total > MAX_BYTES {
         return Err(Miss::Stop(format!("{total} bytes")));
     }
@@ -65,7 +86,32 @@ pub async fn pull(
     saved.and(Err(Miss::Next("empty body".into())))
 }
 
-async fn send(client: &Client, hop: &Hop, role: Role, gap: &Gap) -> Result<Response, Miss> {
+async fn answer(client: &Client, hop: Hop, role: Role, gap: &Gap) -> Result<Answer, Miss> {
+    let next = |err: String| Miss::Next(format!("{}: {err}", hop.tier_label()));
+    let response = send(client, &hop, role, gap).await.map_err(next)?;
+    let status = response.status();
+    if !edge::hop_ok(&hop, &response) {
+        return Err(next(format!("HTTP {status}")));
+    }
+    hop.note(status.as_u16() < 500);
+    if matches!(status.as_u16(), 404 | 410) {
+        return Err(Miss::Stop(format!("HTTP {status}")));
+    }
+    if !status.is_success() {
+        return Err(next(format!("HTTP {status}")));
+    }
+    let Some((start, total)) = placed(&response, gap) else {
+        return Err(next("no size".into()));
+    };
+    Ok(Answer {
+        hop,
+        response,
+        start,
+        total,
+    })
+}
+
+async fn send(client: &Client, hop: &Hop, role: Role, gap: &Gap) -> Result<Response, String> {
     let (request, flight) = traced::begin(client, Method::GET, hop, role, SOURCE);
     let request = request.header(RANGE, range_of(gap));
     match tokio::time::timeout(HEADERS_TIMEOUT, request.send()).await {
@@ -77,13 +123,13 @@ async fn send(client: &Client, hop: &Hop, role: Role, gap: &Gap) -> Result<Respo
             flight.broke(&err);
             hop.note(false);
             relay_speed::failed(hop);
-            Err(Miss::Next(err.to_string()))
+            Err(err.to_string())
         }
         Err(_) => {
             let fail = Fail::timeout_after(HEADERS_TIMEOUT.as_millis() as u32);
             flight.failed(fail.kind, fail.to_string());
             hop.note(false);
-            Err(Miss::Next(fail.to_string()))
+            Err(fail.to_string())
         }
     }
 }
@@ -111,6 +157,14 @@ async fn save(response: Response, reel: &Reel, at: &AtomicU64) -> Result<(), Mis
         reel.landed(place..end);
         place = end;
         at.store(place, Ordering::Relaxed);
+    }
+}
+
+fn told(errors: &[String]) -> String {
+    if errors.is_empty() {
+        "no video route".into()
+    } else {
+        errors.join("; ")
     }
 }
 

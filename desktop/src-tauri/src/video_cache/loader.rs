@@ -5,8 +5,8 @@ use super::VideoCache;
 use super::fetch::{self, Miss};
 use super::reel::{Gap, Reel};
 use crate::app::diagnostics;
-use crate::network::edge;
-use crate::network::netcheck::model::Role;
+
+const TRIES: usize = 3;
 
 impl VideoCache {
     pub fn start(self: &Arc<Self>) {
@@ -44,20 +44,16 @@ impl VideoCache {
     }
 
     async fn through_hops(&self, reel: &Reel, gap: &Gap, at: &AtomicU64) -> Result<(), String> {
-        let mut errors = Vec::new();
-        for (index, hop) in edge::plan(&reel.url).into_iter().enumerate() {
-            let role = Role::of_index(index);
-            match fetch::pull(&self.client, &hop, role, reel, gap, at).await {
+        let mut last = String::new();
+        for _ in 0..TRIES {
+            let answer = fetch::ask(&self.client, reel, gap).await?;
+            match fetch::pull(answer, reel, at).await {
                 Ok(()) => return Ok(()),
                 Err(Miss::Stop(err)) => return Err(err),
-                Err(Miss::Next(err)) => errors.push(format!("{}: {err}", hop.tier_label())),
+                Err(Miss::Next(err)) => last = err,
             }
         }
-        if errors.is_empty() {
-            Err("no video route".into())
-        } else {
-            Err(errors.join("; "))
-        }
+        Err(last)
     }
 
     async fn called_away(&self, reel: &Arc<Reel>, at: &AtomicU64) {
