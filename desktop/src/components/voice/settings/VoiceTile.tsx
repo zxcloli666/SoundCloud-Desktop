@@ -114,9 +114,14 @@ export const VoiceTile = memo(function VoiceTile({
             </span>
           ) : (
             <span className="mt-1.5 flex flex-wrap justify-center gap-1">
-              <span className="rounded-md bg-ink/[0.07] px-1.5 py-[1px] font-mono text-[9.5px] font-bold uppercase tracking-wider text-ink-55">
-                {voice.lang}
-              </span>
+              {voice.langs.map((lang) => (
+                <span
+                  key={lang}
+                  className="rounded-md bg-ink/[0.07] px-1.5 py-[1px] font-mono text-[9.5px] font-bold uppercase tracking-wider text-ink-55"
+                >
+                  {lang}
+                </span>
+              ))}
               {voice.tags.map((tag) => (
                 <span
                   key={tag}
