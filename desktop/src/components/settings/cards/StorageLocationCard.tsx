@@ -22,8 +22,7 @@ import { Skeleton } from '../../ui/Skeleton';
 import { Card } from '../primitives';
 import { type RelocateTarget, StorageRelocateDialog } from './StorageRelocateDialog';
 
-const SECONDARY_BUTTON =
-  'flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
+const SECONDARY_BUTTON = 'set-btn';
 
 function UnavailableNotice({ path, onForget }: { path: string; onForget: () => Promise<void> }) {
   const { t } = useTranslation();
@@ -40,11 +39,11 @@ function UnavailableNotice({ path, onForget }: { path: string; onForget: () => P
   };
 
   return (
-    <div className="rounded-2xl px-4 py-3.5 bg-amber-500/[0.07] border border-amber-400/15 space-y-3">
+    <div className="space-y-3 rounded-[12px] bg-amber-400/[0.08] px-3.5 py-3">
       <div className="flex gap-3">
-        <TriangleAlert size={16} className="shrink-0 mt-0.5 text-amber-300/90" />
+        <TriangleAlert size={15} className="mt-0.5 shrink-0 text-amber-400" />
         <div className="min-w-0">
-          <p className="text-[12.5px] font-semibold text-amber-100/90">
+          <p className="text-[12.5px] font-semibold text-ink-90">
             {t('settings.storageUnavailable')}
           </p>
           <p className="text-[11.5px] text-ink-45 font-mono truncate mt-0.5" title={path}>
@@ -115,19 +114,13 @@ export function StorageLocationCard() {
       icon={<HardDrive size={17} />}
       action={
         info && (
-          <span
-            className={`text-[10.5px] uppercase tracking-[0.12em] font-semibold px-2.5 py-1 rounded-full border ${
-              info.isDefault
-                ? 'text-ink-40 border-ink/[0.08] bg-ink/[0.03]'
-                : 'text-[var(--color-accent)] border-[var(--color-accent-glow)]'
-            }`}
-          >
+          <span className={`set-chip ${info.isDefault ? '' : 'text-[var(--color-accent)]'}`}>
             {info.isDefault ? t('settings.storageDefault') : t('settings.storageCustom')}
           </span>
         )
       }
     >
-      <div className="space-y-4">
+      <div className="space-y-3">
         {info?.unavailablePath && (
           <UnavailableNotice path={info.unavailablePath} onForget={forget} />
         )}
@@ -137,17 +130,14 @@ export function StorageLocationCard() {
           onClick={openFolder}
           disabled={!info}
           title={t('settings.storageOpenFolder')}
-          className="group/path w-full flex items-center gap-3 rounded-2xl px-4 py-3 bg-ink/[0.03] border border-ink/[0.06] hover:bg-ink/[0.06] hover:border-ink/[0.1] transition-all duration-200 cursor-pointer text-left"
+          className="group/path flex h-10 w-full cursor-pointer items-center gap-3 rounded-[10px] border border-[color:var(--set-line)] bg-[var(--set-well)] px-3 text-left transition-colors duration-150 hover:border-[color:var(--shell-line-hi)]"
         >
           <FolderOpen
             size={16}
             className="shrink-0 text-ink-40 group-hover/path:text-[var(--color-accent)] transition-colors"
           />
           {info ? (
-            <span
-              className="min-w-0 flex-1 text-[12.5px] text-ink-80 font-mono truncate"
-              dir="rtl"
-            >
+            <span className="min-w-0 flex-1 text-[12.5px] text-ink-80 font-mono truncate" dir="rtl">
               <bdi>{info.path}</bdi>
             </span>
           ) : (
@@ -162,7 +152,7 @@ export function StorageLocationCard() {
             onClick={() => void choose()}
             className={SECONDARY_BUTTON}
           >
-            <FolderInput size={12} />
+            <FolderInput size={13} />
             {t('settings.storageChange')}
           </button>
           {info && !info.isDefault && (
@@ -171,13 +161,13 @@ export function StorageLocationCard() {
               onClick={() => setTarget({ picked: null, display: info.defaultPath })}
               className={SECONDARY_BUTTON}
             >
-              <RotateCcw size={12} />
+              <RotateCcw size={13} />
               {t('settings.storageReset')}
             </button>
           )}
         </div>
 
-        <p className="text-[11px] text-ink-30 leading-snug">{t('settings.storageApplyHint')}</p>
+        <p className="text-[12px] leading-snug text-ink-45">{t('settings.storageApplyHint')}</p>
       </div>
 
       <StorageRelocateDialog

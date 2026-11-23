@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { CheckCheck } from '../../../lib/chat/icons';
 import type { ChatSettings, SettingsPatch } from '../../../lib/chat/types';
 import { Eye, Headphones, Keyboard } from '../../../lib/icons';
-import { Card, Divider, Row, Toggle } from '../../settings/primitives';
+import { Card, Row, Toggle } from '../../settings/primitives';
 
 interface VisibilityCardProps {
   settings: ChatSettings;
@@ -28,7 +28,6 @@ export function VisibilityCard({ settings, onPatch }: VisibilityCardProps) {
           label={t('chat.settings.visibility.presence')}
         />
       </Row>
-      <Divider />
       <Row
         title={
           <>
@@ -43,7 +42,6 @@ export function VisibilityCard({ settings, onPatch }: VisibilityCardProps) {
           label={t('chat.settings.visibility.receipts')}
         />
       </Row>
-      <Divider />
       <Row
         title={
           <>

@@ -41,7 +41,7 @@ export function DeviceRow({ device, me, now, busy, locked, onRun }: DeviceRowPro
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-2xl px-2 py-2.5 transition-colors hover:bg-ink/[0.025] ${revoked ? 'opacity-45' : ''}`}
+      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-[10px] px-2 py-2.5 transition-colors hover:bg-[var(--set-well)] ${revoked ? 'opacity-45' : ''}`}
     >
       <DeviceGlyph
         device={device}

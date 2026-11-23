@@ -17,22 +17,16 @@ export function LinkOption({
     <button
       type="button"
       onClick={onClick}
-      className="group/opt flex items-center gap-3.5 w-full text-left rounded-2xl px-4 py-3.5 bg-ink/[0.03] hover:bg-ink/[0.06] border border-ink/[0.06] hover:border-[var(--color-accent-glow)] transition-all duration-300 ease-[var(--ease-apple)] active:scale-[0.985] cursor-pointer"
+      className="group/opt flex w-full cursor-pointer items-center gap-3 rounded-[12px] border border-[color:var(--set-line)] bg-[var(--set-well)] px-3.5 py-3 text-left transition-colors duration-150 hover:border-[color:var(--shell-line-hi)] hover:bg-[var(--set-well-hi)]"
     >
-      <span
-        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-[var(--color-accent)] transition-transform duration-300 ease-[var(--ease-apple)] group-hover/opt:scale-110"
-        style={{
-          background: 'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.03))',
-          border: '0.5px solid var(--color-accent-glow)',
-        }}
-      >
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[var(--set-well)] text-[var(--color-accent)] [&>svg]:h-4 [&>svg]:w-4">
         {icon}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[13.5px] font-semibold text-ink-85">{title}</span>
-        <span className="block text-[11.5px] text-ink-40 mt-0.5 leading-snug">{desc}</span>
+        <span className="block truncate text-[13px] font-medium text-ink-90">{title}</span>
+        <span className="mt-0.5 block truncate text-[11.5px] text-ink-45">{desc}</span>
       </span>
-      <span className="shrink-0 text-ink-30 group-hover/opt:text-[var(--color-accent)] transition-colors duration-300">
+      <span className="shrink-0 text-ink-35 transition-colors duration-150 group-hover/opt:text-ink-80">
         {trailing}
       </span>
     </button>

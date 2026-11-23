@@ -30,8 +30,8 @@ export function PortField({ port, onChange }: { port: number; onChange: (port: n
         onKeyDown={(e) => {
           if (e.key === 'Enter') e.currentTarget.blur();
         }}
-        className={`w-24 rounded-xl border bg-ink/[0.04] px-3 py-2 text-center font-mono text-[13px] text-ink-85 outline-none transition-colors ${
-          valid ? 'border-ink/[0.08] focus:border-accent' : 'border-[#ff453a]/50'
+        className={`h-8 w-24 rounded-[10px] border bg-[var(--set-well)] px-3 text-center font-mono text-[13px] text-ink-90 outline-none transition-colors ${
+          valid ? 'border-[color:var(--set-line)] focus:border-accent' : 'border-bad/60'
         }`}
       />
     </Row>

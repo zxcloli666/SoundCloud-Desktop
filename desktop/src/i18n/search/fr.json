@@ -203,7 +203,7 @@
     "offrir un café",
     "contribuer"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "apparence",
     "design",
     "personnalisation",
@@ -1438,5 +1438,31 @@
     "désactiver l'animation",
     "fond statique",
     "lumière de la pochette"
+  ],
+  "settings.themesAutoUpdate": [
+    "mettre à jour les thèmes automatiquement",
+    "thèmes à jour",
+    "installer les mises à jour des thèmes"
+  ],
+  "settings.sound": [
+    "réglages du son",
+    "qualité et volume",
+    "comment ça sonne",
+    "traitement audio"
+  ],
+  "settings.lyricsAndComments": [
+    "réglages des paroles",
+    "paroles et commentaires",
+    "commentaires sur le morceau"
+  ],
+  "settings.cacheLikes": [
+    "télécharger tous les likes",
+    "likes hors ligne",
+    "enregistrer mes favoris"
+  ],
+  "settings.cacheLimits": [
+    "limite du cache",
+    "taille max du cache",
+    "combien d'espace utiliser"
   ]
 }

@@ -37,49 +37,44 @@ function LayoutRow({ item }: { item: LayoutListItem }) {
   return (
     <div
       ref={setNodeRef}
-      className={`relative flex items-center gap-3 h-12 pl-1.5 pr-2 rounded-2xl border transition-[background-color,border-color,opacity] duration-200 ${
+      className={`relative flex h-11 items-center gap-2.5 rounded-[10px] border pr-1.5 pl-1 transition-[background-color,border-color] duration-150 ${
         isDragging
-          ? 'z-10 border-[var(--color-accent)] bg-ink/[0.08]'
-          : 'border-ink/[0.05] bg-ink/[0.025] hover:bg-ink/[0.04]'
+          ? 'z-10 border-accent bg-[rgb(var(--surface))]'
+          : 'border-transparent bg-[var(--set-well)] hover:bg-[var(--set-well-hi)]'
       }`}
       style={{
         transform: CSS.Translate.toString(transform),
         transition,
         boxShadow: isDragging
-          ? '0 14px 36px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))), 0 0 18px var(--color-accent-glow)'
+          ? '0 12px 30px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)))'
           : undefined,
       }}
     >
       <button
         type="button"
         aria-label={t('settings.layoutDrag')}
-        className="w-7 h-9 shrink-0 flex items-center justify-center rounded-lg text-ink-20 hover:text-ink-55 cursor-grab active:cursor-grabbing transition-colors"
+        className="flex h-9 w-6 shrink-0 cursor-grab items-center justify-center rounded-md text-ink-30 transition-colors hover:text-ink-70 active:cursor-grabbing"
         {...attributes}
         {...listeners}
       >
         <GripVertical size={15} />
       </button>
       <span
-        className={`w-8 h-8 shrink-0 rounded-xl flex items-center justify-center transition-opacity duration-200 ${
-          item.dimmed ? 'opacity-35 text-ink-60' : 'text-[var(--color-accent)]'
+        className={`flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-[8px] transition-colors duration-150 [&>svg]:h-[15px] [&>svg]:w-[15px] ${
+          item.dimmed ? 'bg-ink/[0.04] text-ink-30' : 'bg-accent/[0.12] text-[var(--color-accent)]'
         }`}
-        style={{
-          background: item.dimmed
-            ? 'rgb(var(--ink) / 0.04)'
-            : 'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.03))',
-        }}
       >
         {item.icon}
       </span>
       <div className="min-w-0 flex-1">
         <div
-          className={`truncate text-[13px] font-medium transition-colors duration-200 ${
-            item.dimmed ? 'text-ink-30' : 'text-ink-80'
+          className={`truncate text-[13px] font-medium transition-colors duration-150 ${
+            item.dimmed ? 'text-ink-35' : 'text-ink-90'
           }`}
         >
           {item.label}
         </div>
-        {item.hint && <div className="truncate text-[11px] text-ink-30">{item.hint}</div>}
+        {item.hint && <div className="truncate text-[11.5px] text-ink-40">{item.hint}</div>}
       </div>
       {item.trailing}
     </div>
@@ -110,7 +105,7 @@ export function LayoutList({
       onDragEnd={handleEnd}
     >
       <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex flex-col gap-1">
           {items.map((item) => (
             <LayoutRow key={item.id} item={item} />
           ))}
@@ -138,10 +133,8 @@ export function RowIconButton({
       aria-label={label}
       aria-pressed={active}
       onClick={onClick}
-      className={`w-8 h-8 shrink-0 rounded-xl flex items-center justify-center transition-all duration-200 cursor-pointer ${
-        active
-          ? 'text-ink-70 hover:text-ink hover:bg-ink/[0.07]'
-          : 'text-ink-25 hover:text-ink-60 hover:bg-ink/[0.05]'
+      className={`flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] transition-colors duration-150 hover:bg-ink/[0.07] ${
+        active ? 'text-ink-70 hover:text-ink' : 'text-ink-30 hover:text-ink-70'
       }`}
     >
       {children}

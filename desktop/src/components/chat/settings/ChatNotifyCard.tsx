@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { PreviewMode } from '../../../lib/chat/types';
 import { Bell } from '../../../lib/icons';
-import { Card, Divider, Row, Segmented, Toggle } from '../../settings/primitives';
+import { Card, Row, Segmented, Toggle } from '../../settings/primitives';
 import { useNotifyPrefs } from './useChatSettings';
 
 const PREVIEWS: PreviewMode[] = ['full', 'name_only', 'hidden'];
@@ -24,36 +24,38 @@ export function ChatNotifyCard() {
       }
     >
       <div
-        className={`transition-opacity duration-300 ${prefs.enabled ? '' : 'pointer-events-none opacity-45'}`}
+        className={`set-group transition-opacity duration-300 ${prefs.enabled ? '' : 'pointer-events-none opacity-45'}`}
       >
-        <p className="mb-2 text-[12px] font-medium text-ink-55">
-          {t('chat.settings.notify.preview')}
-        </p>
-        <Segmented
-          value={prefs.preview}
-          options={PREVIEWS.map((id) => ({ id, label: t(`chat.settings.notify.previews.${id}`) }))}
-          onChange={(preview) => set({ ...prefs, preview })}
-        />
-        <div className="mt-4">
-          <Row
-            title={t('chat.settings.notify.streamMode')}
-            desc={t('chat.settings.notify.streamHint')}
-          >
-            <Toggle
-              checked={prefs.streamMode}
-              onChange={() => set({ ...prefs, streamMode: !prefs.streamMode })}
-              label={t('chat.settings.notify.streamMode')}
-            />
-          </Row>
-          <Divider />
-          <Row title={t('chat.settings.notify.sound')}>
-            <Toggle
-              checked={prefs.sound}
-              onChange={() => set({ ...prefs, sound: !prefs.sound })}
-              label={t('chat.settings.notify.sound')}
-            />
-          </Row>
+        <div className="set-row space-y-2.5 py-3">
+          <p className="text-[13.5px] font-medium text-ink-90">
+            {t('chat.settings.notify.preview')}
+          </p>
+          <Segmented
+            value={prefs.preview}
+            options={PREVIEWS.map((id) => ({
+              id,
+              label: t(`chat.settings.notify.previews.${id}`),
+            }))}
+            onChange={(preview) => set({ ...prefs, preview })}
+          />
         </div>
+        <Row
+          title={t('chat.settings.notify.streamMode')}
+          desc={t('chat.settings.notify.streamHint')}
+        >
+          <Toggle
+            checked={prefs.streamMode}
+            onChange={() => set({ ...prefs, streamMode: !prefs.streamMode })}
+            label={t('chat.settings.notify.streamMode')}
+          />
+        </Row>
+        <Row title={t('chat.settings.notify.sound')}>
+          <Toggle
+            checked={prefs.sound}
+            onChange={() => set({ ...prefs, sound: !prefs.sound })}
+            label={t('chat.settings.notify.sound')}
+          />
+        </Row>
       </div>
     </Card>
   );

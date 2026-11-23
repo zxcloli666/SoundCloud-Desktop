@@ -4,7 +4,7 @@ import { APP_VERSION } from '../../../lib/constants';
 import { AlertCircle, Check, Loader2, RefreshCw, Sparkles } from '../../../lib/icons';
 import { getUpdaterInfo, type UpdaterInfo } from '../../../lib/updater';
 import { useAppUpdateStore } from '../../../stores/app-update';
-import { Card } from '../primitives';
+import { Block, Card } from '../primitives';
 
 function stripLeadingV(version: string) {
   return version.replace(/^v/, '');
@@ -32,18 +32,14 @@ function UpdateStatusLine() {
 
   if (status === 'available' && release) {
     return (
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex w-full items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0 text-[12.5px] font-medium text-ink-80">
           <Sparkles size={14} className="shrink-0 text-accent" />
           <span className="truncate">
             {t('settings.updateReady', { version: stripLeadingV(release.tag_name) })}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={openModal}
-          className="shrink-0 px-4 py-2 rounded-xl text-[12px] font-semibold bg-accent hover:bg-accent-hover text-accent-contrast transition-colors cursor-pointer shadow-[0_0_18px_var(--color-accent-glow)]"
-        >
+        <button type="button" onClick={openModal} className="set-btn" data-tone="accent">
           {t('settings.openUpdate')}
         </button>
       </div>
@@ -53,7 +49,7 @@ function UpdateStatusLine() {
   if (status === 'error') {
     return (
       <div className="flex items-start gap-2 text-[12px] leading-snug text-ink-55">
-        <AlertCircle size={14} className="mt-px shrink-0 text-amber-300/90" />
+        <AlertCircle size={14} className="mt-px shrink-0 text-amber-400" />
         {t('settings.updateCheckFailed')}
       </div>
     );
@@ -64,7 +60,7 @@ function UpdateStatusLine() {
       <div className="flex items-center gap-2 text-[12.5px] text-ink-65">
         <Check size={14} className="text-accent" />
         <span>{t('settings.upToDate')}</span>
-        {time && <span className="text-ink-30">· {t('settings.checkedAt', { time })}</span>}
+        {time && <span className="text-ink-40">· {t('settings.checkedAt', { time })}</span>}
       </div>
     );
   }
@@ -90,44 +86,40 @@ export function UpdatesCard() {
       title={t('settings.updates')}
       desc={t('settings.updatesDesc')}
       icon={<RefreshCw size={17} />}
+      action={
+        <button
+          type="button"
+          onClick={() => void check(true)}
+          disabled={checking}
+          className="set-btn"
+        >
+          <RefreshCw size={13} className={checking ? 'animate-spin' : undefined} />
+          {t('settings.checkUpdates')}
+        </button>
+      }
     >
-      <div className="flex items-center justify-between gap-4 rounded-2xl bg-shade-20 border border-ink/[0.06] px-4 py-3.5">
+      <Block className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-ink-30">
-            SoundCloud Desktop
-          </p>
-          <p className="mt-0.5 text-[20px] font-bold tracking-tight text-ink-90 tabular-nums">
+          <p className="text-[12px] text-ink-45">SoundCloud Desktop</p>
+          <p className="text-[22px] font-semibold tracking-tight text-ink-90 tabular-nums">
             v{stripLeadingV(APP_VERSION)}
           </p>
         </div>
         {info && (
-          <div className="flex flex-col items-end gap-1.5 min-w-0">
-            <span className="rounded-full border border-ink/[0.08] bg-ink/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-ink-60">
-              {t(`update.kind.${info.kind}`)}
-            </span>
+          <div className="flex min-w-0 flex-col items-end gap-1">
+            <span className="set-chip">{t(`update.kind.${info.kind}`)}</span>
             <span
-              className={`text-right text-[11px] leading-snug ${
-                info.selfUpdate ? 'text-[var(--color-accent)]' : 'text-ink-35'
+              className={`text-right text-[12px] leading-snug ${
+                info.selfUpdate ? 'text-[var(--color-accent)]' : 'text-ink-45'
               }`}
             >
               {t(info.selfUpdate ? 'settings.oneClickUpdates' : 'settings.manualUpdates')}
             </span>
           </div>
         )}
-      </div>
-      <div className="mt-4 min-h-[20px] px-1">
+      </Block>
+      <div className="set-row flex min-h-[48px] items-center py-2.5 empty:hidden">
         <UpdateStatusLine />
-      </div>
-      <div className="flex mt-4">
-        <button
-          type="button"
-          onClick={() => void check(true)}
-          disabled={checking}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <RefreshCw size={12} className={checking ? 'animate-spin' : undefined} />
-          {t('settings.checkUpdates')}
-        </button>
       </div>
     </Card>
   );

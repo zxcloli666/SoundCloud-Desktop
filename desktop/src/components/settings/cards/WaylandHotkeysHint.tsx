@@ -21,9 +21,9 @@ export function WaylandHotkeysHint() {
   };
 
   return (
-    <div className="mb-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.05] p-3.5">
+    <div className="rounded-[12px] bg-amber-400/[0.08] p-3">
       <div className="flex items-start gap-2.5">
-        <AlertCircle size={15} className="shrink-0 mt-px text-amber-300/90" />
+        <AlertCircle size={14} className="mt-px shrink-0 text-amber-400" />
         <div className="min-w-0">
           <p className="text-[12.5px] font-semibold text-ink-80">{t('hotkeys.wayland.title')}</p>
           <p className="text-[11.5px] text-ink-45 mt-0.5 leading-snug">
@@ -37,7 +37,7 @@ export function WaylandHotkeysHint() {
           return (
             <div
               key={action}
-              className="flex items-center gap-2 rounded-xl bg-shade-25 border border-ink/[0.05] pl-3 pr-1 py-1"
+              className="flex items-center gap-2 rounded-[9px] bg-[var(--set-well)] py-1 pr-1 pl-3"
             >
               <span className="w-[120px] shrink-0 truncate text-[11.5px] text-ink-50">
                 {t(`hotkeys.actions.${action}`)}

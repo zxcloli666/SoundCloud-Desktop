@@ -193,7 +193,7 @@
     "kahve ısmarla",
     "sponsor"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "görünümü özelleştir",
     "uygulamayı güzelleştir",
     "renkler ve stil",
@@ -553,7 +553,13 @@
     "soundcloud açılmıyor",
     "dns sorunu"
   ],
-  "call.title": ["p2p", "eşler arası", "peer ağı", "relay", "ağ yardımı"],
+  "call.title": [
+    "p2p",
+    "eşler arası",
+    "peer ağı",
+    "relay",
+    "ağ yardımı"
+  ],
   "settings.discordRpc": [
     "discord'da dinlediğim görünsün",
     "discord durumu",
@@ -1277,5 +1283,31 @@
     "animasyonu kapat",
     "sabit arka plan",
     "arka plan efekti"
+  ],
+  "settings.themesAutoUpdate": [
+    "temaları otomatik güncelle",
+    "tema güncellemeleri",
+    "temalar kendiliğinden güncellensin"
+  ],
+  "settings.sound": [
+    "ses ayarları",
+    "kalite ve seviye",
+    "nasıl duyuluyor",
+    "ses işleme"
+  ],
+  "settings.lyricsAndComments": [
+    "şarkı sözü ayarları",
+    "sözler ve yorumlar",
+    "parça yorumları"
+  ],
+  "settings.cacheLikes": [
+    "tüm beğenileri indir",
+    "çevrimdışı beğeniler",
+    "favorileri kaydet"
+  ],
+  "settings.cacheLimits": [
+    "önbellek sınırı",
+    "en fazla önbellek",
+    "ne kadar yer kullansın"
   ]
 }

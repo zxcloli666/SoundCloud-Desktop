@@ -1,7 +1,7 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CROSSFADE_MAX_SEC, useSettingsStore } from '../../../stores/settings';
-import { RangeSlider } from '../primitives';
+import { RangeSlider, Row } from '../primitives';
 
 const WIDTH = 240;
 const HEIGHT = 44;
@@ -34,7 +34,7 @@ function CrossfadeCurves({ seconds }: { seconds: number }) {
     <svg
       viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
       preserveAspectRatio="none"
-      className="w-full h-11 rounded-xl border border-ink/[0.05] bg-ink/[0.02]"
+      className="h-11 w-full rounded-[10px] border border-[color:var(--set-line)] bg-[var(--set-well)]"
       aria-hidden="true"
     >
       <defs>
@@ -83,35 +83,35 @@ export function CrossfadePicker() {
   const enabled = crossfadeSec > 0;
 
   return (
-    <div data-ui="settings-row" className="space-y-3 py-3 first:pt-0 last:pb-0">
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="text-[13.5px] text-ink-80 font-medium">{t('settings.crossfade')}</div>
-          <p className="text-[11.5px] text-ink-35 mt-0.5 leading-snug">
-            {enabled
-              ? t('settings.crossfadeDesc', { count: crossfadeSec })
-              : t('settings.crossfadeOffDesc')}
-          </p>
-        </div>
+    <Row
+      stacked
+      title={t('settings.crossfade')}
+      value={
         <span
-          className={`shrink-0 rounded-lg px-2 py-1 text-[12px] font-semibold tabular-nums transition-colors duration-200 ${
-            enabled ? 'text-ink' : 'text-ink-35 bg-ink/[0.03]'
-          }`}
+          className={`set-chip min-w-[52px] justify-center ${enabled ? 'text-ink' : 'text-ink-45'}`}
           style={enabled ? { background: 'var(--color-accent-glow)' } : undefined}
         >
           {enabled
             ? t('settings.crossfadeSeconds', { count: crossfadeSec })
             : t('settings.crossfadeOff')}
         </span>
+      }
+      info={
+        enabled
+          ? t('settings.crossfadeDesc', { count: crossfadeSec })
+          : t('settings.crossfadeOffDesc')
+      }
+    >
+      <div className="space-y-3">
+        <CrossfadeCurves seconds={crossfadeSec} />
+        <RangeSlider
+          value={crossfadeSec}
+          min={0}
+          max={CROSSFADE_MAX_SEC}
+          step={1}
+          onChange={setCrossfadeSec}
+        />
       </div>
-      <CrossfadeCurves seconds={crossfadeSec} />
-      <RangeSlider
-        value={crossfadeSec}
-        min={0}
-        max={CROSSFADE_MAX_SEC}
-        step={1}
-        onChange={setCrossfadeSec}
-      />
-    </div>
+    </Row>
   );
 }

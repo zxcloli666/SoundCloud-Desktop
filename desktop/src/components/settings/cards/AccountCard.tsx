@@ -6,11 +6,28 @@ import { useAppStatusStore } from '../../../stores/app-status';
 import { useAuthStore } from '../../../stores/auth';
 import { MobileAccessRow } from '../../mobile-link/MobileAccessRow';
 import { SyncStatusRow } from '../../sync/SyncStatusRow';
-import { Card } from '../primitives';
+import { Avatar } from '../../ui/Avatar';
+import { Block, Card } from '../primitives';
 
 const QrLinkSheetLazy = React.lazy(() =>
   import('../../auth/QrLinkSheet').then((m) => ({ default: m.QrLinkSheet })),
 );
+
+function Profile() {
+  const user = useAuthStore((s) => s.user);
+  if (!user) return null;
+  return (
+    <Block className="flex items-center gap-3">
+      <Avatar src={user.avatar_url} alt={user.username} size={40} />
+      <div className="min-w-0">
+        <div className="truncate text-[14px] font-semibold text-ink-90">{user.username}</div>
+        <div className="truncate text-[12px] text-ink-45">
+          {user.permalink_url.replace(/^https?:\/\//, '')}
+        </div>
+      </div>
+    </Block>
+  );
+}
 
 export function AccountCard() {
   const { t } = useTranslation();
@@ -26,40 +43,33 @@ export function AccountCard() {
 
   if (!hasSession) {
     return (
-      <Card title={t('settings.account')} icon={<User size={17} />}>
-        <button
-          type="button"
-          onClick={goToSignIn}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-ink/[0.04] text-ink-75 hover:bg-ink/[0.08] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-300 cursor-pointer w-fit"
-        >
-          {t('settings.signIn')}
-          <ChevronRight size={14} />
-        </button>
-      </Card>
+      <Card
+        title={t('settings.account')}
+        icon={<User size={17} />}
+        action={
+          <button type="button" onClick={goToSignIn} className="set-btn" data-tone="accent">
+            {t('settings.signIn')}
+            <ChevronRight size={14} />
+          </button>
+        }
+      />
     );
   }
 
   return (
     <Card title={t('settings.account')} icon={<User size={17} />}>
+      <Profile />
       <SyncStatusRow />
       <MobileAccessRow />
-      <div className="flex flex-col gap-2.5">
-        <button
-          type="button"
-          onClick={() => setTransferOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-ink/[0.04] text-ink-75 hover:bg-ink/[0.08] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-300 cursor-pointer w-fit"
-        >
+      <Block className="flex flex-wrap items-center justify-between gap-2 py-3">
+        <button type="button" onClick={() => setTransferOpen(true)} className="set-btn">
           <Smartphone size={14} />
           {t('qrLink.transferSession')}
         </button>
-        <button
-          type="button"
-          onClick={logout}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/20 transition-all duration-300 cursor-pointer w-fit"
-        >
+        <button type="button" onClick={logout} className="set-btn" data-tone="danger">
           {t('auth.signOut')}
         </button>
-      </div>
+      </Block>
       {transferOpen && (
         <React.Suspense fallback={null}>
           <QrLinkSheetLazy open={transferOpen} onOpenChange={setTransferOpen} mode="push" />

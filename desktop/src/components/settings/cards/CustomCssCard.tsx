@@ -67,7 +67,7 @@ function Chip({ label, onClick }: { label: string; onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="px-2 py-1 rounded-lg font-mono text-[11px] text-ink-50 bg-ink/[0.03] border border-ink/[0.06] hover:text-ink-90 hover:border-[var(--color-accent-glow)] hover:bg-ink/[0.06] transition-all duration-200 cursor-pointer"
+      className="cursor-pointer rounded-[7px] border border-[color:var(--set-line)] bg-[var(--set-well)] px-2 py-1 font-mono text-[11.5px] text-ink-60 transition-colors duration-150 hover:border-accent hover:text-ink"
     >
       {label}
     </button>
@@ -77,9 +77,7 @@ function Chip({ label, onClick }: { label: string; onClick: () => void }) {
 function ChipRow({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="flex items-start gap-3">
-      <span className="w-[86px] shrink-0 pt-1.5 text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-30">
-        {title}
-      </span>
+      <span className="w-[92px] shrink-0 pt-1 text-[12px] font-medium text-ink-50">{title}</span>
       <div className="flex flex-wrap gap-1.5 min-w-0">{children}</div>
     </div>
   );
@@ -142,9 +140,15 @@ export function CustomCssCard() {
       title={t('settings.customCssTitle')}
       desc={t('settings.customCssDesc')}
       icon={<Braces size={17} />}
-      action={<Toggle checked={enabled} onChange={() => setEnabled(!enabled)} />}
+      action={
+        <Toggle
+          checked={enabled}
+          onChange={() => setEnabled(!enabled)}
+          label={t('settings.customCssTitle')}
+        />
+      }
     >
-      <div className="space-y-4">
+      <div className="set-group space-y-3 py-3.5">
         <CustomCssEditor
           ref={editorRef}
           value={draft}
@@ -166,21 +170,17 @@ export function CustomCssCard() {
             ))}
           </ChipRow>
         </div>
-        <CustomCssAssets />
-        <div className="flex items-center justify-between gap-4 pt-1">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[11.5px] text-ink-35 leading-snug">
-            <span>{t('settings.customCssRescue')}</span>
-            <Hotkey />
-          </p>
-          <button
-            type="button"
-            onClick={() => openUrl(guideUrl(i18n.language))}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] hover:text-ink border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
-          >
-            <BookOpen size={12} />
-            {t('settings.customCssGuide')}
-          </button>
-        </div>
+      </div>
+      <CustomCssAssets />
+      <div className="set-row flex items-center justify-between gap-4 py-3">
+        <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[12px] leading-snug text-ink-45">
+          <span>{t('settings.customCssRescue')}</span>
+          <Hotkey />
+        </p>
+        <button type="button" onClick={() => openUrl(guideUrl(i18n.language))} className="set-btn">
+          <BookOpen size={13} />
+          {t('settings.customCssGuide')}
+        </button>
       </div>
     </Card>
   );

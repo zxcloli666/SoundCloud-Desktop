@@ -22,24 +22,12 @@ export function CopyField({ value, label }: { value: string; label?: string }) {
   };
 
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-ink/[0.06] bg-shade-20 py-1.5 pr-1.5 pl-3">
-      {label && (
-        <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-ink-30">
-          {label}
-        </span>
-      )}
+    <div className="flex items-center gap-2 rounded-[10px] border border-[color:var(--set-line)] bg-shade-20 py-1 pr-1 pl-3">
+      {label && <span className="shrink-0 text-[11.5px] font-medium text-ink-40">{label}</span>}
       <code className="min-w-0 flex-1 truncate font-mono text-[12px] text-ink-70 select-all">
         {value}
       </code>
-      <button
-        type="button"
-        onClick={copy}
-        className={`inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[12px] font-semibold transition-all duration-200 ${
-          copied
-            ? 'bg-[#23a55a]/20 text-ok'
-            : 'bg-ink/[0.06] text-ink-65 hover:bg-ink/[0.1] hover:text-ink-85'
-        }`}
-      >
+      <button type="button" onClick={copy} className={`set-btn h-7 ${copied ? 'text-ok' : ''}`}>
         {copied ? <Check size={13} strokeWidth={3} /> : <Copy size={13} />}
         {t(copied ? 'settings.obsCopied' : 'settings.obsCopy')}
       </button>

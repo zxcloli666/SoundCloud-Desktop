@@ -69,16 +69,14 @@ export function VideoCard() {
             onChange={() => setEnabled(!enabled)}
           />
         ) : (
-          <span className="rounded-full bg-ink/[0.06] px-2.5 py-1 text-[11px] font-semibold text-ink-40 ring-1 ring-ink/[0.08]">
-            {t('settings.videoNoCodec')}
-          </span>
+          <span className="set-chip">{t('settings.videoNoCodec')}</span>
         )
       }
     >
       <div
         inert={!live}
         aria-disabled={!live}
-        className={`space-y-4 transition-opacity duration-200 ${live ? '' : 'opacity-40 grayscale'}`}
+        className={`set-group transition-opacity duration-200 ${live ? '' : 'opacity-40 grayscale'}`}
       >
         <Row title={t('settings.videoPlace')}>
           <Segmented<VideoPlace>
@@ -92,10 +90,10 @@ export function VideoCard() {
         </Row>
         <div
           inert={place !== 'background'}
-          className={`transition-opacity duration-200 ${place === 'background' ? '' : 'opacity-40'}`}
+          className={`set-row transition-opacity duration-200 ${place === 'background' ? '' : 'opacity-40'}`}
         >
           <Row title={t('settings.videoCoverOpacity')}>
-            <div className="flex w-48 items-center gap-3">
+            <div className="flex w-56 items-center gap-3">
               <RangeSlider
                 value={coverOpacity}
                 min={0}
@@ -103,16 +101,14 @@ export function VideoCard() {
                 step={0.05}
                 onChange={setCoverOpacity}
               />
-              <span className="w-9 text-right text-[12px] tabular-nums text-ink-50">
+              <span className="set-chip w-12 justify-center">
                 {Math.round(coverOpacity * 100)}%
               </span>
             </div>
           </Row>
         </div>
-        <div data-ui="settings-row" className="space-y-2.5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-ink-35">
-            {t('settings.videoOrder')}
-          </p>
+        <div data-ui="settings-row" className="set-row space-y-2.5 py-3">
+          <p className="text-[13.5px] font-medium text-ink-90">{t('settings.videoOrder')}</p>
           <LayoutList items={items} onMove={move} />
         </div>
       </div>

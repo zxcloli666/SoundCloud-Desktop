@@ -18,7 +18,7 @@ export function SupportCard() {
       desc={t('settings.supportDesc')}
       icon={<Heart size={17} fill="currentColor" />}
     >
-      <div className="grid gap-2.5 sm:grid-cols-2">
+      <div className="grid gap-2.5 py-0.5 sm:grid-cols-2">
         <LinkOption
           icon={<Heart size={17} fill="currentColor" />}
           title={t('settings.supportDonate')}

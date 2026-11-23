@@ -11,8 +11,8 @@ export function ServerBadge({ status, port }: { status: ObsStatus | null; port: 
     return (
       <div className="flex items-center gap-2 text-[12px] font-medium text-ok">
         <span className="relative flex size-2">
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#23a55a] opacity-60" />
-          <span className="relative inline-flex size-2 rounded-full bg-[#23a55a]" />
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-60" />
+          <span className="relative inline-flex size-2 rounded-full bg-ok" />
         </span>
         {t('settings.obsLive', { address: obsOrigin(port).replace('http://', '') })}
       </div>
@@ -20,7 +20,7 @@ export function ServerBadge({ status, port }: { status: ObsStatus | null; port: 
   }
   if (current === 'busy' || current === 'failed') {
     return (
-      <div className="rounded-lg border border-[#ff453a]/20 bg-[#ff453a]/[0.08] px-2.5 py-1.5 text-[12px] text-bad">
+      <div className="rounded-[8px] bg-bad/[0.1] px-2.5 py-1.5 text-[12px] text-bad">
         {t(current === 'busy' ? 'settings.obsBusy' : 'settings.obsFailed', { port })}
       </div>
     );

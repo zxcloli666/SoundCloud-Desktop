@@ -55,7 +55,7 @@ function Ring({ live, artwork }: { live: LiveScrobble; artwork: string | null })
         )}
       </div>
       {done && (
-        <div className="absolute -bottom-0.5 -right-0.5 flex size-5 items-center justify-center rounded-full bg-[#23a55a] text-ink shadow-[0_0_10px_rgba(35,165,90,0.7)]">
+        <div className="absolute -right-0.5 -bottom-0.5 flex size-5 items-center justify-center rounded-full border-2 border-[rgb(var(--surface))] bg-ok text-[rgb(var(--paper))]">
           <Check size={12} strokeWidth={3} />
         </div>
       )}
@@ -90,15 +90,11 @@ export function LivePanel({ paused }: { paused: boolean }) {
   const artist = track ? getArtistDisplay(track).primary || track.user?.username || '' : '';
 
   return (
-    <div className="rounded-2xl border border-ink/[0.05] bg-ink/[0.02] p-4">
+    <div className="rounded-[12px] bg-[var(--set-well)] p-3.5">
       <div className="mb-3 flex items-center justify-between gap-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-35">
-          {t('settings.scrobbleLiveTitle')}
-        </p>
+        <p className="text-[12.5px] font-medium text-ink-70">{t('settings.scrobbleLiveTitle')}</p>
         {sent > 0 && (
-          <p className="text-[11px] text-ink-35 tabular-nums">
-            {t('settings.scrobbleLiveSession', { count: sent })}
-          </p>
+          <p className="set-chip h-6">{t('settings.scrobbleLiveSession', { count: sent })}</p>
         )}
       </div>
       {track && !paused ? (
@@ -119,7 +115,7 @@ export function LivePanel({ paused }: { paused: boolean }) {
           </div>
         </div>
       ) : (
-        <p className="text-[12px] text-ink-35">
+        <p className="text-[12.5px] text-ink-45">
           {t(paused ? 'settings.scrobblePaused' : 'settings.scrobbleLiveIdle')}
         </p>
       )}

@@ -67,7 +67,7 @@ export function HistoryCard({ canTalk }: { canTalk: boolean }) {
         />
       ) : (
         <>
-          <div className="divide-y divide-ink/[0.05]">
+          <div className="set-group divide-y divide-[color:var(--set-rule)]">
             {rows.map((row) => (
               <HistoryRow
                 key={row.id}

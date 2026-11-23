@@ -203,7 +203,7 @@
     "invitar un café",
     "contribuir"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "aspecto",
     "diseño",
     "personalización",
@@ -1438,5 +1438,31 @@
     "desactivar animación",
     "fondo estático",
     "luz de la portada"
+  ],
+  "settings.themesAutoUpdate": [
+    "actualizar temas automáticamente",
+    "temas al día",
+    "instalar actualizaciones de temas"
+  ],
+  "settings.sound": [
+    "ajustes de sonido",
+    "calidad y volumen",
+    "cómo suena",
+    "procesado de audio"
+  ],
+  "settings.lyricsAndComments": [
+    "ajustes de letras",
+    "letra y comentarios",
+    "comentarios en la pista"
+  ],
+  "settings.cacheLikes": [
+    "descargar todos los me gusta",
+    "likes sin conexión",
+    "guardar favoritos"
+  ],
+  "settings.cacheLimits": [
+    "límite de caché",
+    "tamaño máximo de caché",
+    "cuánto disco usar"
   ]
 }

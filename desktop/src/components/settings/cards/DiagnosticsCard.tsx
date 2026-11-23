@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
+import { setReporting } from '../../../lib/diag';
 import { trackedInvoke as invoke } from '../../../lib/diagnostics';
 import { Check, ClipboardCopy, FileText, FolderOpen } from '../../../lib/icons';
-import { setReporting } from '../../../lib/diag';
 import { useSettingsStore } from '../../../stores/settings';
 import { Skeleton } from '../../ui/Skeleton';
-import { Card, Row, Toggle } from '../primitives';
+import { Block, Card, Row, Toggle } from '../primitives';
 
 const COPIED_RESET_MS = 1800;
 
@@ -54,46 +54,45 @@ export function DiagnosticsCard() {
       title={t('settings.diagnostics')}
       desc={t('settings.diagnosticsDesc')}
       icon={<FileText size={17} />}
-    >
-      <p className="text-[13px] text-ink-60 font-medium mb-2">{t('settings.logFolder')}</p>
-      <div className="flex items-center gap-2 rounded-2xl bg-shade-20 border border-ink/[0.06] px-3.5 py-2.5">
-        {logDir === null ? (
-          <Skeleton className="h-[16px] flex-1" />
-        ) : (
-          <code
-            className="flex-1 min-w-0 truncate text-[12px] text-ink-70 font-mono select-text"
-            title={logDir}
-          >
-            {logDir || '—'}
-          </code>
-        )}
-        <button
-          type="button"
-          onClick={copyPath}
-          disabled={!logDir}
-          aria-label={t('settings.copyLogPath')}
-          title={t('settings.copyLogPath')}
-          className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-ink-50 hover:text-ink-85 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          {copied ? (
-            <Check size={14} className="text-[var(--color-accent)]" />
-          ) : (
-            <ClipboardCopy size={14} />
-          )}
-        </button>
-      </div>
-      <div className="flex mt-3">
-        <button
-          type="button"
-          onClick={openFolder}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
-        >
-          <FolderOpen size={12} />
+      action={
+        <button type="button" onClick={openFolder} className="set-btn">
+          <FolderOpen size={13} />
           {t('settings.openLogFolder')}
         </button>
-      </div>
+      }
+    >
+      <Block className="space-y-2">
+        <p className="text-[12px] text-ink-50">{t('settings.logFolder')}</p>
+        <div className="flex h-10 items-center gap-2 rounded-[10px] border border-[color:var(--set-line)] bg-[var(--set-well)] pr-1 pl-3">
+          {logDir === null ? (
+            <Skeleton className="h-[16px] flex-1" />
+          ) : (
+            <code
+              className="min-w-0 flex-1 select-text truncate font-mono text-[12px] text-ink-75"
+              title={logDir}
+            >
+              {logDir || '—'}
+            </code>
+          )}
+          <button
+            type="button"
+            onClick={copyPath}
+            disabled={!logDir}
+            aria-label={t('settings.copyLogPath')}
+            title={t('settings.copyLogPath')}
+            className="set-btn w-8 px-0"
+            data-tone="quiet"
+          >
+            {copied ? (
+              <Check size={14} className="text-[var(--color-accent)]" />
+            ) : (
+              <ClipboardCopy size={14} />
+            )}
+          </button>
+        </div>
+      </Block>
       <Row title={t('diag.sendReports')} desc={t('diag.sendReportsDesc')}>
-        <Toggle checked={sendErrorReports} onChange={toggleReports} />
+        <Toggle checked={sendErrorReports} onChange={toggleReports} label={t('diag.sendReports')} />
       </Row>
     </Card>
   );

@@ -13,12 +13,40 @@ interface AudioSink {
   is_active: boolean;
 }
 
-function optionClass(active: boolean) {
-  return `flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer border ${
-    active
-      ? 'bg-ink/[0.1] text-ink-90 border-ink/[0.15]'
-      : 'bg-ink/[0.02] text-ink-40 border-ink/[0.05] hover:bg-ink/[0.06] hover:text-ink-60'
-  } disabled:opacity-50`;
+function DeviceOption({
+  label,
+  active,
+  disabled,
+  onSelect,
+}: {
+  label: string;
+  active: boolean;
+  disabled: boolean;
+  onSelect: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="radio"
+      aria-checked={active}
+      disabled={disabled}
+      onClick={onSelect}
+      className={`flex h-10 w-full cursor-pointer items-center gap-3 rounded-[10px] px-3 text-left text-[13px] transition-colors duration-150 disabled:cursor-default ${
+        active
+          ? 'bg-[var(--set-well-hi)] text-ink'
+          : 'text-ink-70 hover:bg-[var(--set-well)] hover:text-ink'
+      }`}
+    >
+      <span
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-[1.5px] ${
+          active ? 'border-accent' : 'border-ink/25'
+        }`}
+      >
+        {active && <span className="h-2 w-2 rounded-full bg-accent" />}
+      </span>
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+    </button>
+  );
 }
 
 export function AudioDeviceCard() {
@@ -57,25 +85,25 @@ export function AudioDeviceCard() {
 
   return (
     <Card title={t('settings.audioDevice')} icon={<Volume2 size={17} />}>
-      <div className="flex gap-2 flex-wrap">
-        <button
-          type="button"
-          onClick={() => handleSwitch(null)}
+      <div
+        role="radiogroup"
+        aria-label={t('settings.audioDevice')}
+        className="-mx-1.5 flex flex-col gap-0.5"
+      >
+        <DeviceOption
+          label={t('settings.audioDeviceDefault')}
+          active={activeName === null}
           disabled={switching}
-          className={optionClass(activeName === null)}
-        >
-          {t('settings.audioDeviceDefault')}
-        </button>
+          onSelect={() => handleSwitch(null)}
+        />
         {sinks.map((sink) => (
-          <button
+          <DeviceOption
             key={sink.name}
-            type="button"
-            onClick={() => handleSwitch(sink.name)}
+            label={sink.description}
+            active={sink.is_active}
             disabled={switching}
-            className={optionClass(sink.is_active)}
-          >
-            {sink.description}
-          </button>
+            onSelect={() => handleSwitch(sink.name)}
+          />
         ))}
       </div>
     </Card>

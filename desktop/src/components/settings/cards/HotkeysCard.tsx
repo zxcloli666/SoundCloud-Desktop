@@ -92,36 +92,31 @@ export function HotkeysCard() {
       }
     >
       {enabled && backend === 'wayland' && <WaylandHotkeysHint />}
-      <div
-        className={`divide-y divide-ink/[0.05] transition-opacity duration-300 ${
-          enabled ? '' : 'opacity-55'
-        }`}
-      >
-        {GLOBAL_HOTKEY_ACTIONS.map((action) => (
-          <HotkeyRow
-            key={action}
-            icon={ACTION_ICONS[action]}
-            label={t(`hotkeys.actions.${action}`)}
-            value={hotkeys[action]}
-            status={enabled ? statuses[action] : undefined}
-            validate={validatorFor(action)}
-            onChange={(accelerator) => setHotkey(action, accelerator)}
-          />
-        ))}
-      </div>
-      {!enabled && <p className="mt-3 text-[11.5px] text-ink-40">{t('hotkeys.offHint')}</p>}
-      <div className="mt-4 pt-4 border-t border-ink/[0.05] flex items-center gap-3">
-        <AudioLines size={14} className="shrink-0 text-ink-30" />
-        <p className="flex-1 min-w-0 text-[11.5px] leading-snug text-ink-40">
-          {t('hotkeys.mediaKeys')}
+      {GLOBAL_HOTKEY_ACTIONS.map((action) => (
+        <HotkeyRow
+          key={action}
+          icon={ACTION_ICONS[action]}
+          label={t(`hotkeys.actions.${action}`)}
+          value={hotkeys[action]}
+          dim={!enabled}
+          status={enabled ? statuses[action] : undefined}
+          validate={validatorFor(action)}
+          onChange={(accelerator) => setHotkey(action, accelerator)}
+        />
+      ))}
+      <div className="set-row flex min-h-[52px] items-center gap-3 py-3">
+        <AudioLines size={14} className="shrink-0 text-ink-35" />
+        <p className="min-w-0 flex-1 text-[12px] leading-snug text-ink-45">
+          {enabled ? t('hotkeys.mediaKeys') : t('hotkeys.offHint')}
         </p>
         <button
           type="button"
           onClick={resetHotkeys}
           disabled={isDefault}
-          className="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer disabled:opacity-35 disabled:cursor-default disabled:hover:bg-ink/[0.06]"
+          className="set-btn"
+          data-tone="quiet"
         >
-          <RotateCcw size={12} />
+          <RotateCcw size={13} />
           {t('hotkeys.reset')}
         </button>
       </div>

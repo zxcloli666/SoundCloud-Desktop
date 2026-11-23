@@ -23,11 +23,7 @@ function PrivacyCards() {
   if (query.isError) {
     return (
       <Card title={t('chat.settings.loadFailed')} icon={<MessagesSquare size={17} />}>
-        <button
-          type="button"
-          onClick={() => void query.refetch()}
-          className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-ink/[0.06] bg-ink/[0.06] px-3.5 py-1.5 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.1]"
-        >
+        <button type="button" onClick={() => void query.refetch()} className="set-btn">
           <RefreshCw size={12} />
           {t('chat.settings.retry')}
         </button>

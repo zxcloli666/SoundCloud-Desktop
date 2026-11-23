@@ -44,21 +44,27 @@ export function SoftwareRenderingRow() {
   };
 
   return (
-    <div className="mt-4 border-t border-ink/[0.05] pt-4">
-      <Row title={t('settings.softwareRendering')} desc={t('settings.softwareRenderingDesc')}>
-        <Toggle checked={mode.softwareRendering} onChange={toggle} disabled={saving} />
+    <>
+      <Row title={t('settings.softwareRendering')} info={t('settings.softwareRenderingDesc')}>
+        <Toggle
+          checked={mode.softwareRendering}
+          onChange={toggle}
+          disabled={saving}
+          label={t('settings.softwareRendering')}
+        />
       </Row>
       {mode.restartRequired && (
-        <div className="mt-3 flex items-center gap-3 rounded-2xl border border-accent/20 bg-accent/[0.06] px-3.5 py-2.5">
+        <div className="flex items-center gap-2.5 rounded-[10px] bg-accent/[0.1] py-1.5 pr-1.5 pl-3">
           <RefreshCw size={14} className="shrink-0 text-accent" />
-          <p className="flex-1 min-w-0 text-[12px] leading-snug text-ink-70">
+          <p className="min-w-0 flex-1 text-[12.5px] leading-snug text-ink-80">
             {t('settings.softwareRenderingRestart')}
           </p>
           <button
             type="button"
             onClick={restart}
             disabled={restarting}
-            className="shrink-0 flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-[12px] font-semibold bg-accent text-accent-contrast hover:bg-accent-hover active:scale-[0.97] transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-default"
+            className="set-btn h-7"
+            data-tone="accent"
           >
             {restarting && <Loader2 size={12} className="animate-spin" />}
             {t('settings.restartNow')}
@@ -66,19 +72,15 @@ export function SoftwareRenderingRow() {
         </div>
       )}
       {mode.softwareRendering && perfMode !== 'light' && (
-        <div className="mt-3 flex items-center gap-3 px-1">
-          <p className="flex-1 min-w-0 text-[11.5px] leading-snug text-ink-40">
+        <div className="flex items-center gap-3">
+          <p className="min-w-0 flex-1 text-[12px] leading-snug text-ink-45">
             {t('settings.softwareRenderingLightHint')}
           </p>
-          <button
-            type="button"
-            onClick={() => setPerfMode('light')}
-            className="shrink-0 px-3 py-1.5 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
-          >
+          <button type="button" onClick={() => setPerfMode('light')} className="set-btn">
             {t('settings.useLightMode')}
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }

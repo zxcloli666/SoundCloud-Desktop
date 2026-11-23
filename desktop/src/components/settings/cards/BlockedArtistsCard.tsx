@@ -34,7 +34,7 @@ const BlockedRow = memo(({ entry, style }: { entry: BlockedArtist; style: CSSPro
   return (
     <li
       style={style}
-      className="group absolute left-0 top-0 flex h-[58px] w-full items-center gap-3 rounded-2xl border-[0.5px] border-ink/[0.05] bg-ink/[0.02] px-3 py-2.5 transition-colors duration-200 hover:border-ink/[0.10] hover:bg-ink/[0.04]"
+      className="group absolute top-0 left-0 flex h-[58px] w-full items-center gap-3 rounded-[12px] bg-[var(--set-well)] px-3 py-2.5 transition-colors duration-150 hover:bg-[var(--set-well-hi)]"
     >
       <button
         type="button"
@@ -49,29 +49,22 @@ const BlockedRow = memo(({ entry, style }: { entry: BlockedArtist; style: CSSPro
             size={38}
             className="grayscale-[0.6] opacity-80"
           />
-          <span className="absolute -bottom-0.5 -right-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full border border-surface bg-rose-500 text-white">
+          <span className="absolute -right-0.5 -bottom-0.5 flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 border-[rgb(var(--surface))] bg-bad text-[rgb(var(--paper))]">
             <Ban size={10} strokeWidth={3} />
           </span>
         </span>
         <span className="min-w-0">
-          <span className="block truncate text-[13.5px] font-semibold text-ink-80 group-hover:text-ink">
-            {entry.name}
-          </span>
-          <span className="flex items-center gap-1.5 text-[11px] text-ink-30">
+          <span className="block truncate text-[13.5px] font-medium text-ink-90">{entry.name}</span>
+          <span className="flex items-center gap-1.5 text-[11.5px] text-ink-40">
             {entry.kind === 'artist' ? <MicVocal size={11} /> : <User size={11} />}
             {entry.kind === 'artist' ? t('blocklist.kindArtist') : t('blocklist.kindUser')}
             {since && (
-              <span className="text-ink-20">· {t('blocklist.since', { date: since })}</span>
+              <span className="text-ink-30">· {t('blocklist.since', { date: since })}</span>
             )}
           </span>
         </span>
       </button>
-      <button
-        type="button"
-        onClick={() => void unblock(entry)}
-        disabled={busy}
-        className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border-[0.5px] border-ink/[0.08] bg-ink/[0.04] px-3.5 text-[11.5px] font-semibold text-ink-55 transition-all duration-200 cursor-pointer hover:border-ink/[0.16] hover:bg-ink/[0.08] hover:text-ink active:scale-95 disabled:opacity-60"
-      >
+      <button type="button" onClick={() => void unblock(entry)} disabled={busy} className="set-btn">
         {busy && <Loader2 size={12} className="animate-spin" />}
         {t('blocklist.unblock')}
       </button>
@@ -98,21 +91,14 @@ export function BlockedArtistsCard() {
       icon={<Ban size={17} />}
       action={
         entries.length > 0 ? (
-          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full border-[0.5px] border-rose-400/25 bg-rose-500/10 px-2.5 text-[12px] font-bold tabular-nums text-rose-300">
-            {entries.length}
-          </span>
+          <span className="set-chip h-7 min-w-7 justify-center px-2.5">{entries.length}</span>
         ) : undefined
       }
     >
       {entries.length === 0 ? (
-        <div className="flex items-center gap-3 rounded-2xl border border-dashed border-ink/[0.08] px-4 py-4">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink/[0.04] text-ink-25">
-            <Ban size={16} />
-          </span>
-          <p className="text-[12px] leading-snug text-ink-35">{t('blocklist.empty')}</p>
-        </div>
+        <p className="text-[12.5px] leading-snug text-ink-40">{t('blocklist.empty')}</p>
       ) : (
-        <div ref={scrollRef} className="max-h-[420px] overflow-y-auto pr-1">
+        <div ref={scrollRef} className="max-h-[420px] overflow-y-auto">
           <ul className="relative w-full" style={{ height: virtualizer.getTotalSize() - 6 }}>
             {virtualizer.getVirtualItems().map((row) => (
               <BlockedRow

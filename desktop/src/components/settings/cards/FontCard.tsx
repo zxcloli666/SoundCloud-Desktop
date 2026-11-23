@@ -32,13 +32,6 @@ const FONT_NAMES: Partial<Record<InterfaceFont, string>> = {
   comfortaa: 'Comfortaa',
 };
 
-const ACTIVE_STYLE = {
-  background:
-    'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
-  borderColor: 'var(--color-accent)',
-  boxShadow: '0 0 16px var(--color-accent-glow)',
-};
-
 function FontTile({
   label,
   family,
@@ -51,27 +44,14 @@ function FontTile({
   onSelect: () => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`group rounded-2xl border overflow-hidden transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
-        active ? '' : 'border-ink/[0.06] bg-ink/[0.02] hover:border-ink/15'
-      }`}
-      style={active ? ACTIVE_STYLE : undefined}
-    >
-      <div
-        className={`h-14 flex items-center justify-center text-[22px] font-semibold tracking-tight ${
-          active ? 'text-ink' : 'text-ink-70 group-hover:text-ink-85'
-        }`}
+    <button type="button" onClick={onSelect} data-active={active} className="set-tile">
+      <span
+        className="set-tile-art flex h-12 items-center justify-center text-[20px] font-semibold tracking-tight text-ink-85"
         style={{ fontFamily: family }}
       >
         {SAMPLE}
-      </div>
-      <div
-        className={`px-2 pb-2 text-[11.5px] font-medium truncate ${active ? 'text-ink-90' : 'text-ink-45'}`}
-      >
-        {label}
-      </div>
+      </span>
+      <span className="set-tile-label text-center">{label}</span>
     </button>
   );
 }
@@ -88,7 +68,7 @@ function UploadedFontRow({ family, fileName }: { family: string; fileName: strin
   };
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-ink/[0.04] border border-ink/[0.06] animate-fade-in-up">
+    <div className="flex items-center gap-3 rounded-[10px] bg-[var(--set-well)] py-2 pr-1.5 pl-3 animate-fade-in-up">
       <div className="min-w-0 flex-1">
         <div
           className="text-[14px] text-ink-85 truncate"
@@ -96,14 +76,15 @@ function UploadedFontRow({ family, fileName }: { family: string; fileName: strin
         >
           {family}
         </div>
-        <div className="text-[11px] text-ink-35 truncate">{fileName}</div>
+        <div className="truncate text-[11.5px] text-ink-40">{fileName}</div>
       </div>
       <button
         type="button"
         onClick={removeFile}
         title={t('settings.fontRemoveFile')}
         aria-label={t('settings.fontRemoveFile')}
-        className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-40 hover:text-ink-80 hover:bg-ink/[0.08] transition-all cursor-pointer"
+        className="set-btn w-8 px-0"
+        data-tone="quiet"
       >
         <X size={15} />
       </button>
@@ -151,11 +132,7 @@ function CustomFontInput() {
           e.target.value = '';
         }}
       />
-      <button
-        type="button"
-        onClick={() => fileInput.current?.click()}
-        className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[12.5px] font-medium text-ink-60 hover:text-ink-85 hover:bg-ink/[0.07] transition-all cursor-pointer"
-      >
+      <button type="button" onClick={() => fileInput.current?.click()} className="set-btn">
         <Upload size={14} />
         {t('settings.fontUpload')}
       </button>
@@ -182,13 +159,13 @@ function CustomFontInput() {
           onKeyDown={(e) => e.key === 'Enter' && setCustomFontName(clean)}
           placeholder={t('settings.fontCustomPlaceholder')}
           spellCheck={false}
-          className="w-full px-4 py-2.5 pr-10 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[13px] text-ink-80 placeholder:text-ink-20 focus:border-ink/[0.12] focus:bg-ink/[0.06] transition-all duration-200 outline-none"
+          className="h-9 w-full rounded-[10px] border border-[color:var(--set-line)] bg-[var(--set-well)] pr-10 pl-3 text-[13px] text-ink-90 outline-none transition-colors duration-150 placeholder:text-ink-35 focus:border-accent"
           style={clean ? { fontFamily: `"${clean}", var(--font-sans)` } : undefined}
         />
         {installed !== null && (
           <span
             className={`absolute right-3 top-1/2 -translate-y-1/2 ${
-              installed ? 'text-emerald-400/80' : 'text-amber-400/80'
+              installed ? 'text-ok' : 'text-amber-400'
             }`}
           >
             {installed ? <Check size={15} /> : <X size={15} />}
@@ -196,7 +173,7 @@ function CustomFontInput() {
         )}
       </div>
       <p
-        className={`text-[11.5px] leading-snug ${installed === false ? 'text-amber-300/60' : 'text-ink-35'}`}
+        className={`text-[11.5px] leading-snug ${installed === false ? 'text-amber-400' : 'text-ink-40'}`}
       >
         {installed === false
           ? t('settings.fontNotFound')
@@ -206,7 +183,7 @@ function CustomFontInput() {
       </p>
       {uploadButton}
       {uploadFailed && (
-        <p className="text-[11.5px] leading-snug text-amber-300/60">
+        <p className="text-[11.5px] leading-snug text-amber-400">
           {t('settings.fontUploadFailed')}
         </p>
       )}
@@ -229,29 +206,27 @@ export function FontCard() {
 
   return (
     <Card title={t('settings.fontTitle')} desc={t('settings.fontDesc')} icon={<Type size={17} />}>
-      <div className="space-y-4">
-        {look?.font && (
-          <ThemeOverrideRow label={t('settings.themesFontFromTheme', { name: look.name })} />
-        )}
-        <div className="grid grid-cols-5 gap-2.5">
-          {FONT_OPTIONS.map((font) => (
-            <FontTile
-              key={font}
-              label={FONT_NAMES[font] ?? t('settings.fontSystem')}
-              family={fontFamilyOf(font, '') ?? 'inherit'}
-              active={interfaceFont === font}
-              onSelect={() => setInterfaceFont(font)}
-            />
-          ))}
+      {look?.font && (
+        <ThemeOverrideRow label={t('settings.themesFontFromTheme', { name: look.name })} />
+      )}
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(108px,1fr))] gap-2.5">
+        {FONT_OPTIONS.map((font) => (
           <FontTile
-            label={t('settings.fontCustom')}
-            family={customFamily ? `${customFamily}, var(--font-sans)` : 'inherit'}
-            active={interfaceFont === 'custom'}
-            onSelect={() => setInterfaceFont('custom')}
+            key={font}
+            label={FONT_NAMES[font] ?? t('settings.fontSystem')}
+            family={fontFamilyOf(font, '') ?? 'inherit'}
+            active={interfaceFont === font}
+            onSelect={() => setInterfaceFont(font)}
           />
-        </div>
-        {interfaceFont === 'custom' && <CustomFontInput />}
+        ))}
+        <FontTile
+          label={t('settings.fontCustom')}
+          family={customFamily ? `${customFamily}, var(--font-sans)` : 'inherit'}
+          active={interfaceFont === 'custom'}
+          onSelect={() => setInterfaceFont('custom')}
+        />
       </div>
+      {interfaceFont === 'custom' && <CustomFontInput />}
     </Card>
   );
 }

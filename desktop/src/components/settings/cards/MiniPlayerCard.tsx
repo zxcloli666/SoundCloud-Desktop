@@ -6,7 +6,7 @@ import {
   miniPlayerStockOpacity,
   useSettingsStore,
 } from '../../../stores/settings';
-import { Card, Divider, RangeSlider, Row, Toggle } from '../primitives';
+import { Block, Card, RangeSlider, Row, Toggle } from '../primitives';
 
 const CHECKER =
   'repeating-conic-gradient(rgb(var(--ink) / 0.16) 0 25%, rgb(var(--ink) / 0.04) 0 50%) 0 0 / 12px 12px';
@@ -30,9 +30,9 @@ export function MiniPlayerCard() {
       desc={t('settings.miniPlayerDesc')}
       icon={<PictureInPicture2 size={17} />}
     >
-      <div className="mb-3 flex flex-wrap items-center gap-x-5 gap-y-3">
+      <Block className="flex flex-wrap items-center gap-x-5 gap-y-3">
         <div
-          className="relative h-16 w-28 shrink-0 overflow-hidden rounded-xl border border-ink/[0.06]"
+          className="relative h-16 w-28 shrink-0 overflow-hidden rounded-[10px] border border-[color:var(--set-line)]"
           style={{ background: CHECKER }}
           aria-hidden="true"
         >
@@ -53,10 +53,10 @@ export function MiniPlayerCard() {
           aria-disabled={solid}
         >
           <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="text-[13.5px] font-medium text-ink-80">
+            <span className="text-[13.5px] font-medium text-ink-90">
               {t('settings.miniPlayerOpacity')}
             </span>
-            <span className="text-[12px] font-semibold tabular-nums text-ink-60">{percent}%</span>
+            <span className="set-chip">{percent}%</span>
           </div>
           <RangeSlider
             value={percent}
@@ -66,10 +66,13 @@ export function MiniPlayerCard() {
             onChange={(value) => setOpacity(value / 100)}
           />
         </div>
-      </div>
-      <Divider />
+      </Block>
       <Row title={t('settings.miniPlayerSolid')} desc={t('settings.miniPlayerSolidDesc')}>
-        <Toggle checked={solid} onChange={() => setSolid(!solid)} label={t('settings.miniPlayerSolid')} />
+        <Toggle
+          checked={solid}
+          onChange={() => setSolid(!solid)}
+          label={t('settings.miniPlayerSolid')}
+        />
       </Row>
     </Card>
   );

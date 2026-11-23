@@ -49,62 +49,37 @@ export function WallpaperSlideshow({ available }: { available: string[] }) {
   const ready = s.names.length > 1;
 
   return (
-    <div
-      className="rounded-2xl border border-ink/[0.06] bg-ink/[0.02] p-4 space-y-4"
-      style={
-        s.enabled
-          ? {
-              borderColor: 'var(--color-accent-glow)',
-              background:
-                'linear-gradient(160deg, var(--color-accent-glow), transparent 55%), rgb(var(--ink) / 0.02)',
-            }
-          : undefined
-      }
-    >
+    <>
       <Row title={t('settings.wpSlideshow')} desc={t('settings.wpSlideshowDesc')}>
-        <Toggle checked={s.enabled} onChange={toggle} />
+        <Toggle checked={s.enabled} onChange={toggle} label={t('settings.wpSlideshow')} />
       </Row>
-
       {s.enabled && (
-        <div className="space-y-4 animate-fade-in-up">
-          <div className="flex items-center justify-between gap-3">
+        <>
+          <div className="set-row flex min-h-[52px] items-center gap-3 py-2.5">
             <p
-              className={`text-[12px] leading-snug ${ready ? 'text-ink-45' : 'text-amber-300/80'}`}
+              className={`min-w-0 flex-1 text-[12.5px] leading-snug ${ready ? 'text-ink-55' : 'text-amber-400'}`}
             >
               {ready
                 ? t('settings.wpSlideshowSelected', { count: s.names.length })
                 : t('settings.wpSlideshowNeedTwo')}
             </p>
-            <button
-              type="button"
-              onClick={advanceWallpaper}
-              disabled={!ready}
-              className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-semibold text-ink-70 bg-ink/[0.06] border border-ink/[0.06] hover:bg-ink/[0.1] hover:text-ink transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <SkipForward size={12} />
+            <button type="button" onClick={advanceWallpaper} disabled={!ready} className="set-btn">
+              <SkipForward size={13} />
               {t('settings.wpSlideshowNext')}
             </button>
           </div>
-
-          <div data-ui="settings-row" className="space-y-2">
-            <span className="text-[12px] text-ink-40 font-medium">
-              {t('settings.wpSlideshowInterval')}
-            </span>
+          <Row title={t('settings.wpSlideshowInterval')}>
             <Segmented
               value={String(s.minutes) as MinutesId}
               options={intervalOptions}
               onChange={(v) => s.setMinutes(Number(v))}
             />
-          </div>
-
-          <div data-ui="settings-row" className="space-y-2">
-            <span className="text-[12px] text-ink-40 font-medium">
-              {t('settings.wpSlideshowOrder')}
-            </span>
+          </Row>
+          <Row title={t('settings.wpSlideshowOrder')}>
             <Segmented value={s.order} options={orderOptions} onChange={s.setOrder} />
-          </div>
-        </div>
+          </Row>
+        </>
       )}
-    </div>
+    </>
   );
 }

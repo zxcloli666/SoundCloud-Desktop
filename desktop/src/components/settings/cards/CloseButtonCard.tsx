@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { useTrayAvailable } from '../../../lib/close-action';
-import { AlertCircle, X } from '../../../lib/icons';
+import { X } from '../../../lib/icons';
 import { type CloseAction, useSettingsStore } from '../../../stores/settings';
 import { Card, Segmented } from '../primitives';
+import { Notice } from './Notice';
 
 const OPTIONS: Array<{ id: CloseAction; labelKey: string }> = [
   { id: 'tray', labelKey: 'settings.closeToTray' },
@@ -19,25 +20,21 @@ export function CloseButtonCard() {
     <Card
       title={t('settings.closeButton')}
       desc={t('settings.closeButtonDesc')}
+      info={
+        trayAvailable
+          ? t(closeAction === 'tray' ? 'settings.closeToTrayHint' : 'settings.closeQuitHint')
+          : undefined
+      }
       icon={<X size={17} />}
+      action={
+        <Segmented
+          value={closeAction}
+          onChange={setCloseAction}
+          options={OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
+        />
+      }
     >
-      <Segmented
-        value={closeAction}
-        onChange={setCloseAction}
-        options={OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
-      />
-      {trayAvailable ? (
-        <p className="mt-3 px-1 text-[11.5px] leading-snug text-ink-40">
-          {t(closeAction === 'tray' ? 'settings.closeToTrayHint' : 'settings.closeQuitHint')}
-        </p>
-      ) : (
-        <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-amber-400/15 bg-amber-400/[0.05] px-3.5 py-2.5">
-          <AlertCircle size={14} className="shrink-0 mt-px text-amber-300/90" />
-          <p className="min-w-0 text-[11.5px] leading-snug text-ink-60">
-            {t('settings.closeNoTray')}
-          </p>
-        </div>
-      )}
+      {!trayAvailable && <Notice>{t('settings.closeNoTray')}</Notice>}
     </Card>
   );
 }

@@ -9,6 +9,7 @@ export function HotkeyRow({
   icon,
   label,
   value,
+  dim = false,
   status,
   validate,
   onChange,
@@ -16,6 +17,7 @@ export function HotkeyRow({
   icon: ReactNode;
   label: string;
   value: string;
+  dim?: boolean;
   status: HotkeyStatus | undefined;
   validate: (chord: KeyChord) => string | null;
   onChange: (accelerator: string) => void;
@@ -26,23 +28,27 @@ export function HotkeyRow({
   const message = problem ?? failure;
 
   return (
-    <div className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-      <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-ink/[0.04] border border-ink/[0.06] text-ink-55">
+    <div
+      className={`set-row flex min-h-[52px] items-center gap-3 py-2 transition-opacity duration-200 ${
+        dim ? 'opacity-50' : ''
+      }`}
+    >
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] bg-[var(--set-well)] text-ink-55">
         {icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 text-[13px] text-ink-80 font-medium">
-          {label}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2 text-[13.5px] font-medium text-ink-90">
+          <span className="truncate">{label}</span>
           {value && status === 'active' && (
             <span
-              className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.7)]"
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-ok"
               title={t('hotkeys.status.active')}
             />
           )}
         </div>
         {message && (
           <p
-            className={`text-[11px] mt-0.5 leading-snug ${problem ? 'text-amber-300/80' : 'text-red-400/85'}`}
+            className={`mt-0.5 text-[11.5px] leading-snug ${problem ? 'text-amber-400' : 'text-bad'}`}
           >
             {message}
           </p>
@@ -64,7 +70,7 @@ export function HotkeyRow({
         disabled={!value}
         aria-label={t('hotkeys.clear')}
         title={t('hotkeys.clear')}
-        className="shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-ink-35 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer disabled:opacity-0 disabled:pointer-events-none"
+        className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-ink-35 transition-colors duration-150 hover:bg-[var(--set-well)] hover:text-ink-85 disabled:pointer-events-none disabled:opacity-0"
       >
         <X size={13} />
       </button>

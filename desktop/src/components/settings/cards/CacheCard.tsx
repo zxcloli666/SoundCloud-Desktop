@@ -1,82 +1,28 @@
-import {useCallback, useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {toast} from 'sonner';
-import {bulkCacheErrorText, useCacheLikes} from '../../../lib/bulk-cache';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 import {
-    clearCache,
-    clearImageCache,
-    clearLikedCache,
-    enforceImageCacheLimit,
-    getCacheSize,
-    getImageCacheSize,
-    getLikedCacheSize,
+  clearCache,
+  clearImageCache,
+  clearLikedCache,
+  getCacheSize,
+  getImageCacheSize,
+  getLikedCacheSize,
 } from '../../../lib/cache';
-import {
-  AUDIO_CACHE_STEPS,
-  audioCacheStep,
-  CACHE_UNLIMITED,
-  formatCacheLimit,
-  IMAGE_CACHE_STEPS,
-  imageCacheStep,
-  isAudioCacheOff,
-  isAudioCacheUnlimited,
-} from '../../../lib/cache-limit';
-import {formatBytes} from '../../../lib/formatters';
-import {Database, Download, Loader2, Trash2, X} from '../../../lib/icons';
-import {clearVideoCache, enforceVideoCacheLimit, getVideoCacheSize} from '../../../lib/video-cache';
-import {useSettingsStore} from '../../../stores/settings';
-import {Skeleton} from '../../ui/Skeleton';
-import {Card, Divider, Row, Toggle} from '../primitives';
-import {CacheLimitSlider} from './CacheLimitSlider';
-
-function CacheRow({
-  label,
-  size,
-  clearing,
-  onClear,
-  clearLabel,
-  'data-ui': dataUi,
-}: {
-  label: string;
-  size: number | null;
-  clearing: boolean;
-  onClear: () => void;
-  clearLabel: string;
-  'data-ui'?: string;
-}) {
-  return (
-    <div data-ui={dataUi} className="flex items-center justify-between py-3">
-      <div>
-        <p className="text-[13px] text-ink-60 font-medium">{label}</p>
-        <div className="h-[25px] flex items-center">
-          {size === null ? (
-            <Skeleton className="w-25 h-[20px]" />
-          ) : (
-            <p className="text-[17px] font-bold text-ink-90 tabular-nums">{formatBytes(size)}</p>
-          )}
-        </div>
-      </div>
-      <button
-        type="button"
-        onClick={onClear}
-        disabled={clearing || size === 0}
-        className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/10 hover:border-red-500/20 transition-all duration-300 disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-      >
-        {clearing ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
-        {clearLabel}
-      </button>
-    </div>
-  );
-}
+import { isAudioCacheOff } from '../../../lib/cache-limit';
+import { formatBytes } from '../../../lib/formatters';
+import { Database } from '../../../lib/icons';
+import { clearVideoCache, getVideoCacheSize } from '../../../lib/video-cache';
+import { useSettingsStore } from '../../../stores/settings';
+import { Skeleton } from '../../ui/Skeleton';
+import { Card, Row, Toggle } from '../primitives';
+import { CacheLikesRow } from './CacheLikesRow';
+import { CacheLimitsCard } from './CacheLimitsCard';
+import { CACHE_SHADES, CacheRow, UsageBar } from './CacheUsage';
 
 export function CacheCard() {
   const { t } = useTranslation();
   const audioCacheLimitMB = useSettingsStore((s) => s.audioCacheLimitMB);
-  const setAudioCacheLimitMB = useSettingsStore((s) => s.setAudioCacheLimitMB);
-  const imageCacheLimitMB = useSettingsStore((s) => s.imageCacheLimitMB);
-  const setImageCacheLimitMB = useSettingsStore((s) => s.setImageCacheLimitMB);
-  const videoCacheLimitMB = useSettingsStore((s) => s.videoCacheLimitMB);
-  const setVideoCacheLimitMB = useSettingsStore((s) => s.setVideoCacheLimitMB);
   const hoverPreload = useSettingsStore((s) => s.hoverPreload);
   const setHoverPreload = useSettingsStore((s) => s.setHoverPreload);
   const [audioSize, setAudioSize] = useState<number | null>(null);
@@ -91,18 +37,6 @@ export function CacheCard() {
   const refreshLikedSize = useCallback(() => {
     void getLikedCacheSize().then(setLikedSize);
   }, []);
-
-  const {
-    caching: cachingLikes,
-    progress,
-    start: startLikes,
-    cancel: cancelLikes,
-  } = useCacheLikes((p) => {
-    refreshLikedSize();
-    if (p.phase === 'done') {
-      toast.success(t('settings.cacheLikesDone', { done: p.done - p.failed, total: p.total }));
-    }
-  });
 
   useEffect(() => {
     void getCacheSize().then(setAudioSize);
@@ -131,204 +65,75 @@ export function CacheCard() {
     [t],
   );
 
-  const handleImageLimit = useCallback(
-    (step: number) => {
-      const limitMb = IMAGE_CACHE_STEPS[step];
-      setImageCacheLimitMB(limitMb);
-      void enforceImageCacheLimit(limitMb)
-        .then(getImageCacheSize)
-        .then(setImagesSize)
-        .catch(() => {});
-    },
-    [setImageCacheLimitMB],
-  );
-
-  const handleVideoLimit = useCallback(
-    (step: number) => {
-      const limitMb = IMAGE_CACHE_STEPS[step];
-      setVideoCacheLimitMB(limitMb);
-      void enforceVideoCacheLimit(limitMb)
-        .then(getVideoCacheSize)
-        .then(setVideoSize)
-        .catch(() => {});
-    },
-    [setVideoCacheLimitMB],
-  );
-
-  const handleCacheLikes = useCallback(async () => {
-    try {
-      const queued = await startLikes();
-      if (queued === 0) toast(t('settings.cacheLikesEmpty'));
-    } catch (err) {
-      toast.error(bulkCacheErrorText(err));
-    }
-  }, [startLikes, t]);
-
-  const totalSize = (audioSize ?? 0) + (imagesSize ?? 0) + (likedSize ?? 0) + (videoSize ?? 0);
-  const allLoaded =
-    audioSize !== null && imagesSize !== null && likedSize !== null && videoSize !== null;
+  const sizes = [audioSize, likedSize, imagesSize, videoSize];
+  const loaded = sizes.every((size) => size !== null);
+  const total = sizes.reduce<number>((sum, size) => sum + (size ?? 0), 0);
   const cacheOff = isAudioCacheOff(audioCacheLimitMB);
-  const limitLabel = cacheOff
-    ? t('settings.audioCacheOff')
-    : isAudioCacheUnlimited(audioCacheLimitMB)
-      ? t('settings.unlimited')
-      : `${audioCacheStep(audioCacheLimitMB)} GB`;
-  const imageLimitLabel =
-    imageCacheLimitMB === CACHE_UNLIMITED
-      ? t('settings.unlimited')
-      : formatCacheLimit(imageCacheLimitMB);
-  const videoLimitLabel =
-    videoCacheLimitMB === CACHE_UNLIMITED
-      ? t('settings.unlimited')
-      : formatCacheLimit(videoCacheLimitMB);
-  const progressPct =
-    progress && progress.total > 0
-      ? Math.min(100, Math.round((progress.done / progress.total) * 100))
-      : 0;
 
   return (
-    <Card
-      title={t('settings.cache')}
-      icon={<Database size={17} />}
-      action={
-        allLoaded ? (
-          <span className="text-[12px] text-ink-30 tabular-nums">
-            {t('settings.total')}: {formatBytes(totalSize)}
-          </span>
-        ) : (
-          <Skeleton className="h-[12px] w-[80px]" />
-        )
-      }
-    >
-      <div className="divide-y divide-ink/[0.04]">
+    <>
+      <Card
+        title={t('settings.cache')}
+        icon={<Database size={17} />}
+        action={
+          loaded ? (
+            <span className="set-chip h-7 px-3 text-[12.5px]">
+              {t('settings.total')}: {formatBytes(total)}
+            </span>
+          ) : (
+            <Skeleton className="h-7 w-24 rounded-full" />
+          )
+        }
+      >
+        <UsageBar sizes={sizes} />
         <CacheRow
           data-ui="settings-row"
           label={t('settings.audioCacheSize')}
           size={audioSize}
+          shade={CACHE_SHADES[0]}
           clearing={clearingAudio}
           clearLabel={t('settings.clearCache')}
           onClear={() => clearWith(clearCache, setClearingAudio, setAudioSize)}
         />
         <CacheRow
           data-ui="settings-row"
-          label={t('settings.assetsCacheSize')}
-          size={imagesSize}
-          clearing={clearingImages}
-          clearLabel={t('settings.clearCache')}
-          onClear={() => clearWith(clearImageCache, setClearingImages, setImagesSize)}
-        />
-        <CacheRow
-          data-ui="settings-row"
           label={t('settings.likedCacheSize')}
+          info={t('settings.likedCacheHint')}
           size={likedSize}
+          shade={CACHE_SHADES[1]}
           clearing={clearingLiked}
           clearLabel={t('settings.clearCache')}
           onClear={() => clearWith(clearLikedCache, setClearingLiked, setLikedSize)}
         />
         <CacheRow
           data-ui="settings-row"
+          label={t('settings.assetsCacheSize')}
+          size={imagesSize}
+          shade={CACHE_SHADES[2]}
+          clearing={clearingImages}
+          clearLabel={t('settings.clearCache')}
+          onClear={() => clearWith(clearImageCache, setClearingImages, setImagesSize)}
+        />
+        <CacheRow
+          data-ui="settings-row"
           label={t('settings.videoCacheSize')}
           size={videoSize}
+          shade={CACHE_SHADES[3]}
           clearing={clearingVideo}
           clearLabel={t('settings.clearCache')}
           onClear={() => clearWith(clearVideoCache, setClearingVideo, setVideoSize)}
         />
-      </div>
-
-      <div className="pt-3 space-y-2">
-        <p className="text-[11px] text-ink-30">{t('settings.cacheLikesDesc')}</p>
-        {cachingLikes ? (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-[12px] text-ink-60">
-              <span className="flex items-center gap-2">
-                <Loader2 size={12} className="animate-spin" />
-                {progress
-                  ? t('settings.cacheLikesProgress', { done: progress.done, total: progress.total })
-                  : t('settings.cacheLikesStarting')}
-              </span>
-              {progress && progress.failed > 0 && (
-                <span className="text-red-400/80 tabular-nums">
-                  {t('settings.cacheLikesFailed', { count: progress.failed })}
-                </span>
-              )}
-            </div>
-            <div className="h-1 bg-ink/[0.06] rounded-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--color-accent)] transition-[width] duration-300"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={cancelLikes}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.04] text-ink-60 hover:bg-ink/[0.08] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
-            >
-              <X size={12} />
-              {t('common.cancel')}
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            onClick={handleCacheLikes}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-semibold bg-ink/[0.06] text-ink-75 hover:bg-ink/[0.1] border border-ink/[0.06] hover:border-ink/[0.12] transition-all duration-200 cursor-pointer"
-          >
-            <Download size={12} />
-            {t('settings.cacheLikes')}
-          </button>
-        )}
-      </div>
-
-      <Divider />
-      <CacheLimitSlider
-        data-ui="settings-row"
-        title={t('settings.audioCacheLimit')}
-        desc={cacheOff ? t('settings.audioCacheOffDesc') : t('settings.audioCacheLimitDesc')}
-        valueLabel={limitLabel}
-        danger={cacheOff}
-        step={audioCacheStep(audioCacheLimitMB)}
-        steps={AUDIO_CACHE_STEPS.length}
-        minLabel={t('settings.audioCacheOff')}
-        maxLabel={t('settings.unlimited')}
-        onChange={(step) => setAudioCacheLimitMB(AUDIO_CACHE_STEPS[step])}
-      />
-
-      <Divider />
-      <CacheLimitSlider
-        data-ui="settings-row"
-        title={t('settings.imageCacheLimit')}
-        desc={t('settings.imageCacheLimitDesc')}
-        valueLabel={imageLimitLabel}
-        step={imageCacheStep(imageCacheLimitMB)}
-        steps={IMAGE_CACHE_STEPS.length}
-        minLabel={formatCacheLimit(IMAGE_CACHE_STEPS[0])}
-        maxLabel={t('settings.unlimited')}
-        onChange={handleImageLimit}
-      />
-
-      <Divider />
-      <CacheLimitSlider
-        data-ui="settings-row"
-        title={t('settings.videoCacheLimit')}
-        desc={t('settings.videoCacheLimitDesc')}
-        valueLabel={videoLimitLabel}
-        step={imageCacheStep(videoCacheLimitMB)}
-        steps={IMAGE_CACHE_STEPS.length}
-        minLabel={formatCacheLimit(IMAGE_CACHE_STEPS[0])}
-        maxLabel={t('settings.unlimited')}
-        onChange={handleVideoLimit}
-      />
-
-      <Divider />
-      <div className="pt-3">
+        <CacheLikesRow onProgress={refreshLikedSize} />
         <Row title={t('settings.hoverPreload')} desc={t('settings.hoverPreloadDesc')}>
           <Toggle
             checked={hoverPreload && !cacheOff}
             disabled={cacheOff}
             onChange={() => setHoverPreload(!hoverPreload)}
+            label={t('settings.hoverPreload')}
           />
         </Row>
-      </div>
-    </Card>
+      </Card>
+      <CacheLimitsCard onImageSize={setImagesSize} onVideoSize={setVideoSize} />
+    </>
   );
 }

@@ -4,7 +4,7 @@ import { Eye, EyeOff, LayoutDashboard, Lock, RotateCcw } from '../../../lib/icon
 import { isDefaultLayout, type LayoutScope, LOCKED_VISIBLE, moveEntry } from '../../../lib/layout';
 import { useLayout } from '../../../lib/use-layout';
 import { useSettingsStore } from '../../../stores/settings';
-import { Card, Segmented } from '../primitives';
+import { Block, Card, Segmented } from '../primitives';
 import { PinnedEditor, RiverSections } from './LayoutExtras';
 import { LayoutList, RowIconButton } from './LayoutList';
 import { itemMeta } from './layout-items';
@@ -47,7 +47,7 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
       trailing: locked ? (
         <span
           title={t('settings.layoutAlwaysVisible')}
-          className="w-8 h-8 flex items-center justify-center text-ink-20"
+          className="flex h-8 w-8 items-center justify-center text-ink-30"
         >
           <Lock size={14} />
         </span>
@@ -89,24 +89,26 @@ export function LayoutCard() {
           type="button"
           disabled={pristine}
           onClick={() => resetLayout(scope)}
-          className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[12px] font-medium text-ink-50 bg-ink/[0.04] border border-ink/[0.06] hover:text-ink-85 hover:bg-ink/[0.07] transition-all duration-200 cursor-pointer disabled:opacity-0 disabled:pointer-events-none"
+          className="set-btn"
+          data-tone="quiet"
         >
           <RotateCcw size={13} />
           {t('settings.layoutReset')}
         </button>
       }
     >
-      <div className="space-y-5">
+      <Block className="space-y-3">
         <Segmented
           value={scope}
           onChange={setScope}
+          full
           options={SCOPES.map((s) => ({ id: s.id, label: t(s.labelKey) }))}
         />
+        <p className="px-0.5 text-[12px] leading-snug text-ink-45">{t(HINTS[scope])}</p>
         <BlocksEditor key={scope} scope={scope} />
-        {scope === 'sidebar' && <PinnedEditor />}
-        {scope === 'home' && <RiverSections />}
-        <p className="text-[11.5px] leading-snug text-ink-30">{t(HINTS[scope])}</p>
-      </div>
+      </Block>
+      {scope === 'sidebar' && <PinnedEditor />}
+      {scope === 'home' && <RiverSections />}
     </Card>
   );
 }
