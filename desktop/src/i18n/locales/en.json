@@ -1465,6 +1465,7 @@
     "layoutLibrary": "Library",
     "layoutHome": "Home",
     "layoutReset": "Reset",
+    "layoutResetDefault": "Reset to default",
     "layoutDrag": "Drag to reorder",
     "layoutHide": "Hide",
     "layoutShow": "Show",

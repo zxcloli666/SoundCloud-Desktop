@@ -1446,6 +1446,7 @@
     "layoutLibrary": "라이브러리",
     "layoutHome": "홈",
     "layoutReset": "초기화",
+    "layoutResetDefault": "기본값으로 초기화",
     "layoutDrag": "드래그해서 순서 변경",
     "layoutHide": "숨기기",
     "layoutShow": "보기",

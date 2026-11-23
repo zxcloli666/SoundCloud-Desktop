@@ -1486,6 +1486,7 @@
     "layoutLibrary": "Bibliothèque",
     "layoutHome": "Accueil",
     "layoutReset": "Réinitialiser",
+    "layoutResetDefault": "Rétablir par défaut",
     "layoutDrag": "Faites glisser pour réorganiser",
     "layoutHide": "Masquer",
     "layoutShow": "Afficher",
