@@ -9,6 +9,7 @@ use tokio::time::Instant;
 use super::ranges::Ranges;
 
 const NEAR: u64 = 1024 * 1024;
+const RUN_MIN: u64 = 512 * 1024;
 const STARVED: Duration = Duration::from_secs(2);
 
 pub struct Reel {
@@ -134,9 +135,10 @@ impl Reel {
     }
 
     pub fn asks_elsewhere(&self, gap: &Gap, at: u64) -> bool {
+        let ran = at >= gap.start + RUN_MIN;
         self.state().unserved().any(|waiter| {
             let near = (at..at + NEAR).contains(&waiter.at);
-            !near && (waiter.reader > gap.reader || waiter.starved())
+            !near && (waiter.reader > gap.reader || ran && waiter.starved())
         })
     }
 
@@ -228,7 +230,7 @@ mod tests {
 
     use tokio::task::JoinHandle;
 
-    use super::{NEAR, Reel, STARVED};
+    use super::{NEAR, RUN_MIN, Reel, STARVED};
 
     fn reel(test: &str) -> (PathBuf, Arc<Reel>) {
         let dir = std::env::temp_dir().join(format!("video-reel-{test}-{}", std::process::id()));
@@ -330,7 +332,9 @@ mod tests {
 
         let third = reel.gap().unwrap();
         assert_eq!((third.start, third.reader), (0, 3));
+        tokio::time::sleep(STARVED).await;
         assert!(!reel.asks_elsewhere(&third, 0));
+        assert!(reel.asks_elsewhere(&third, RUN_MIN));
         let _newest = reader(&reel, 4, NEAR * 80).await;
         assert!(reel.asks_elsewhere(&third, 0));
         assert_eq!(reel.gap().unwrap().start, NEAR * 80);
