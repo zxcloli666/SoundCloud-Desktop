@@ -149,8 +149,10 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="deck-lyric-next"]` | Next lyric line under the wave settings in a wide window |
 | `[data-ui="deck-idle"]` | Home deck when nothing is playing |
 | `[data-ui="deck-start"]` | Button that starts the wave when nothing is playing |
-| `[data-ui="wave-pane"]` | Wave list on the left of the Home deck in a wide window |
-| `[data-ui="wave-row"]` | A track in that list |
+| `[data-ui="wave-pane"]` | Wave and its stations on the left of the Home deck in a wide window |
+| `[data-ui="wave-tabs"]` | Row of Wave station tabs, on a narrow deck also the Up next / Wave switch |
+| `[data-ui="wave-tab"]` | One tab in it |
+| `[data-ui="wave-row"]` | A track or an artist in a Wave station |
 | `[data-ui="up-next"]` | Up next list in the Home deck |
 | `[data-ui="up-next-row"]` | A track in the Up next list |
 | `[data-ui="wave-settings"]` | Wave settings box under Up next |
@@ -162,7 +164,6 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="shelf-toggle"]` | Collapse and expand button of that shelf |
 | `[data-ui="shelf-card"]` | A card in that shelf |
 | `[data-ui="shelf-locked"]` | New releases teaser without STAR |
-| `[data-ui="river-section"]` | A section of the wave river on Home |
 | `[data-ui="moments-station"]` | "Moments" block on Home |
 | `[data-ui="moments"]` | Moments page |
 | `[data-ui="moments-stage"]` | Swipe area of the Moments page |
