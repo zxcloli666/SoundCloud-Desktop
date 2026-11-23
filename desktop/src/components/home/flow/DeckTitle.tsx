@@ -1,17 +1,19 @@
+import type { MouseEventHandler } from 'react';
 import { useDisplayTitle } from '../../../lib/track-display';
 import type { Track } from '../../../stores/player';
-import type { PlayerContext } from '../../layout/player/PlayerButtons';
-import { QueueSlot } from '../../layout/player/PlayerButtons';
+import { type PlayerContext, Zone } from '../../layout/player/PlayerButtons';
 import { Marquee } from '../../ui/Marquee';
 
 export function DeckTitle({
   track,
   fallback,
   ctx,
+  onContextMenu,
 }: {
   track: Track;
   fallback: string;
   ctx: PlayerContext;
+  onContextMenu: MouseEventHandler;
 }) {
   const title = useDisplayTitle(track).trim() || fallback;
   return (
@@ -22,7 +24,12 @@ export function DeckTitle({
       >
         <Marquee label={title}>{title}</Marquee>
       </h2>
-      <QueueSlot ctx={ctx} />
+      <Zone
+        zone="title"
+        ctx={ctx}
+        onContextMenu={onContextMenu}
+        className="flex shrink-0 items-center gap-1.5"
+      />
     </div>
   );
 }

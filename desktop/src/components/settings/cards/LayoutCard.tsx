@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LayoutDashboard, Lock, RotateCcw } from '../../../lib/icons';
 import { isDefaultLayout, type LayoutScope, LOCKED_VISIBLE, moveEntry } from '../../../lib/layout';
+import type { Surface } from '../../../lib/player-zones';
 import { useLayout, useToggleLayoutEntry } from '../../../lib/use-layout';
 import { useSettingsStore } from '../../../stores/settings';
 import { Block, Card, Segmented } from '../primitives';
 import { PinnedEditor, RiverSections, SubHeading } from './LayoutExtras';
 import { LayoutList, RowIconButton } from './LayoutList';
 import { itemMeta } from './layout-items';
+import { PlacementEditor } from './PlacementEditor';
 
 const SCOPES: Array<{ id: LayoutScope; labelKey: string }> = [
   { id: 'sidebar', labelKey: 'settings.layoutSidebar' },
@@ -22,6 +24,7 @@ const HINTS: Record<LayoutScope, string> = {
   library: 'settings.layoutPageHint',
   home: 'settings.layoutPageHint',
   player: 'settings.layoutPlayerHint',
+  deck: 'settings.layoutPlayerHint',
 };
 
 function BlocksEditor({ scope }: { scope: LayoutScope }) {
@@ -69,7 +72,9 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
 
 export function LayoutCard() {
   const { t } = useTranslation();
-  const [scope, setScope] = useState<LayoutScope>('sidebar');
+  const [tab, setTab] = useState<LayoutScope>('sidebar');
+  const [surface, setSurface] = useState<Surface>('player');
+  const scope = tab === 'player' ? surface : tab;
   const layout = useLayout(scope);
   const quick = useLayout('quick');
   const riverHidden = useSettingsStore((s) => s.riverHidden);
@@ -103,14 +108,15 @@ export function LayoutCard() {
     >
       <Block className="space-y-3">
         <Segmented
-          value={scope}
-          onChange={setScope}
+          value={tab}
+          onChange={setTab}
           full
           options={SCOPES.map((s) => ({ id: s.id, label: t(s.labelKey) }))}
         />
         <p className="px-0.5 text-[12px] leading-snug text-ink-45">{t(HINTS[scope])}</p>
-        <BlocksEditor key={scope} scope={scope} />
+        {tab !== 'player' && <BlocksEditor key={scope} scope={scope} />}
       </Block>
+      {tab === 'player' && <PlacementEditor surface={surface} onSurface={setSurface} />}
       {scope === 'sidebar' && (
         <div data-ui="settings-row" className="set-row space-y-2.5 py-3">
           <SubHeading title={t('sidebar.quickAccess')} />

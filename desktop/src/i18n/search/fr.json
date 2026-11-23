@@ -400,6 +400,14 @@
     "épinglés",
     "raccourcis de playlists"
   ],
+  "settings.layoutPlacement": [
+    "déplacer les boutons du lecteur",
+    "réorganiser les commandes",
+    "aléatoire à côté de lecture",
+    "personnaliser le lecteur",
+    "boutons de la barre du bas",
+    "boutons sur l'accueil"
+  ],
   "settings.layoutRiverSections": [
     "mix infini",
     "sections de l'accueil",

@@ -400,6 +400,14 @@
     "fijados",
     "atajos de playlists"
   ],
+  "settings.layoutPlacement": [
+    "mover botones del reproductor",
+    "reordenar controles",
+    "aleatorio junto a play",
+    "personalizar reproductor",
+    "botones de la barra inferior",
+    "botones en inicio"
+  ],
   "settings.layoutRiverSections": [
     "mix infinito",
     "secciones del inicio",

@@ -545,3 +545,111 @@
   inset: 0 -16px;
   border-radius: 12px;
 }
+
+@layer components {
+  .zone-map-wrap {
+    container: zones / inline-size;
+  }
+
+  .zone-map {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    grid-template-areas:
+      "title title title"
+      "left . right"
+      "before core after";
+    align-items: start;
+    gap: 18px 14px;
+  }
+
+  .zone-map[data-surface="player"] {
+    grid-template-areas:
+      "left . right"
+      "before core after";
+  }
+
+  .zone-map > [data-zone="title"] {
+    grid-area: title;
+    justify-self: center;
+    width: min(100%, 300px);
+  }
+
+  .zone-map > [data-zone="left"] {
+    grid-area: left;
+  }
+
+  .zone-map > [data-zone="right"] {
+    grid-area: right;
+  }
+
+  .zone-map > [data-zone="before"] {
+    grid-area: before;
+  }
+
+  .zone-map > [data-zone="after"] {
+    grid-area: after;
+  }
+
+  .zone-map > [data-zone="core"] {
+    grid-area: core;
+    display: flex;
+    justify-content: center;
+    padding-top: 23px;
+  }
+
+  .zone-list {
+    min-height: 44px;
+    border-radius: 12px;
+    outline: 1px solid transparent;
+    outline-offset: 3px;
+    transition:
+      outline-color 150ms ease,
+      background-color 150ms ease;
+  }
+
+  .zone-list[data-drop="open"] {
+    outline-color: rgb(var(--ink) / 0.1);
+  }
+
+  .zone-list[data-drop="over"] {
+    outline-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 5%, transparent);
+  }
+
+  .zone-empty {
+    height: 44px;
+    border: 1px dashed rgb(var(--ink) / 0.16);
+    border-radius: 10px;
+  }
+
+  [data-perf="light"] .zone-list {
+    transition: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .zone-list {
+      transition: none;
+    }
+  }
+
+  @container zones (width < 560px) {
+    .zone-map {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "title" "left" "before" "core" "after" "right";
+      gap: 14px;
+    }
+
+    .zone-map[data-surface="player"] {
+      grid-template-areas: "left" "before" "core" "after" "right";
+    }
+
+    .zone-map > [data-zone="title"] {
+      justify-self: stretch;
+      width: auto;
+    }
+
+    .zone-map > [data-zone="core"] {
+      padding-top: 0;
+    }
+  }
+}

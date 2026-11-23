@@ -2,7 +2,9 @@ import { useTranslation } from 'react-i18next';
 import { useOutletContext } from 'react-router-dom';
 import type { Track } from '../../../stores/player';
 import { usePlayerStore } from '../../../stores/player';
+import { useLayoutMenu } from '../../layout/LayoutMenu';
 import type { PlayerContext } from '../../layout/player/PlayerButtons';
+import { ZoneBoard } from '../../layout/player/zone-board';
 import { DeckControls } from './DeckControls';
 import { DeckCover } from './DeckCover';
 import { DeckHeading } from './DeckHeading';
@@ -27,6 +29,7 @@ export function FlowDeck({ waveTracks, canPlay, onPlayWave, spinning, onRefresh 
   const { t } = useTranslation();
   const ctx = useOutletContext<PlayerContext | undefined>() ?? NO_QUEUE;
   const track = usePlayerStore((s) => s.currentTrack);
+  const menu = useLayoutMenu('deck');
 
   return (
     <section data-ui="soundwave" className="@container relative isolate">
@@ -37,8 +40,16 @@ export function FlowDeck({ waveTracks, canPlay, onPlayWave, spinning, onRefresh 
             <>
               <DeckHeading track={track} />
               <DeckCover track={track} title={track.title} />
-              <DeckTitle track={track} fallback={t('flowRedesign.idleTitle')} ctx={ctx} />
-              <DeckControls ctx={ctx} />
+              <ZoneBoard surface="deck">
+                <DeckTitle
+                  track={track}
+                  fallback={t('flowRedesign.idleTitle')}
+                  ctx={ctx}
+                  onContextMenu={menu.onContextMenu}
+                />
+                <DeckControls ctx={ctx} onContextMenu={menu.onContextMenu} />
+              </ZoneBoard>
+              {menu.menu}
               <LyricInline track={track} />
             </>
           ) : (
