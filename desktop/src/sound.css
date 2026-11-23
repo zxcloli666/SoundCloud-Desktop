@@ -1,0 +1,186 @@
+.sound-btn {
+  display: flex;
+  height: 34px;
+  flex-shrink: 0;
+  cursor: pointer;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgb(var(--ink) / 0.1);
+  border-radius: 999px;
+  background: rgb(var(--ink) / 0.04);
+  padding-inline: 11px 13px;
+  color: rgb(var(--ink) / 0.75);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    color 150ms;
+}
+
+.sound-btn:hover,
+.sound-btn[data-state="open"] {
+  border-color: rgb(var(--ink) / 0.2);
+  background: rgb(var(--ink) / 0.09);
+  color: rgb(var(--ink));
+}
+
+.sound-btn[data-live] {
+  gap: 8px;
+  border-color: color-mix(in srgb, var(--color-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 13%, transparent);
+  padding-inline: 11px;
+  color: var(--color-accent);
+}
+
+.sound-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.sound-token {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sound-token svg {
+  width: 14px;
+  height: 14px;
+}
+
+.sound-btn .sound-name + .sound-token {
+  border-left: 1px solid color-mix(in srgb, var(--color-accent) 35%, transparent);
+  padding-left: 8px;
+}
+
+:is(.deck-round, .deck-title) .sound-btn .sound-name + .sound-token {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.sound-count {
+  display: none;
+}
+
+:is(.deck-round, .deck-title) .sound-btn {
+  position: relative;
+  width: var(--deck-btn, 46px);
+  height: var(--deck-btn, 46px);
+  justify-content: center;
+  border-color: var(--round-line);
+  background: var(--round-fill);
+  box-shadow: var(--round-shadow);
+  padding: 0;
+  color: rgb(var(--ink) / 0.9);
+}
+
+.deck-title .sound-btn {
+  width: 30px;
+  height: 30px;
+}
+
+:is(.deck-round, .deck-title) .sound-btn:is(:hover, [data-state="open"]) {
+  border-color: rgb(var(--ink) / 0.3);
+  background: rgb(var(--ink) / 0.1);
+}
+
+:is(.deck-round, .deck-title) .sound-btn[data-live] {
+  border-color: color-mix(in srgb, var(--color-accent) 50%, transparent);
+  color: var(--color-accent);
+}
+
+:is(.deck-round, .deck-title) .sound-btn .sound-name,
+:is(.deck-round, .deck-title) .sound-btn[data-live] .sound-faders,
+:is(.deck-round, .deck-title) .sound-token ~ .sound-token,
+:is(.deck-round, .deck-title) .sound-token > span {
+  display: none;
+}
+
+:is(.deck-round, .deck-title) .sound-token svg {
+  width: 16px;
+  height: 16px;
+}
+
+:is(.deck-round, .deck-title) .sound-count {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: grid;
+  min-width: 16px;
+  height: 16px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: var(--color-accent-contrast);
+  font-size: 10px;
+}
+
+@container npb (width < 1000px) {
+  .npb .sound-btn:not([data-live]) {
+    width: 34px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .npb .sound-btn .sound-name + .sound-token {
+    border-left: 0;
+    padding-left: 0;
+  }
+
+  .npb .sound-name,
+  .npb .sound-btn[data-live] .sound-faders,
+  .npb .sound-token > span {
+    display: none;
+  }
+}
+
+.sound-pop {
+  --sound-tint: radial-gradient(
+    90% 70% at 12% 0%,
+    color-mix(in srgb, var(--color-accent) 9%, transparent),
+    transparent 70%
+  );
+  width: min(728px, calc(100vw - 24px));
+  max-height: var(--radix-popover-content-available-height);
+  overflow-y: auto;
+  border: 1px solid var(--shell-line-hi);
+  border-radius: 22px;
+  background: var(--sound-tint), rgb(var(--surface-hi));
+  box-shadow: 0 24px 64px -20px rgb(var(--shade) / calc(0.7 * var(--shade-alpha)));
+  container: sound / inline-size;
+}
+
+.sound-pop[data-glass] {
+  background:
+    var(--sound-tint),
+    linear-gradient(168deg, rgb(var(--surface-hi) / 0.92), rgb(var(--surface) / 0.95));
+}
+
+.sound-main {
+  grid-template-columns: 246px minmax(0, 1fr);
+}
+
+.sound-main [data-ui="sound-effects"] {
+  grid-auto-rows: 1fr;
+}
+
+.sound-foot {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto auto;
+}
+
+@container sound (width < 660px) {
+  .sound-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sound-main [data-ui="sound-effects"] {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .sound-foot {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}

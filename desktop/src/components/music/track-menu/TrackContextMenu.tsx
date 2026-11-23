@@ -15,11 +15,11 @@ interface Placement {
   origin: string;
 }
 
-function place(x: number, y: number, w: number, h: number): Placement {
+function place({ x, y, above }: TrackMenuTarget, w: number, h: number): Placement {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const flipX = x + w + EDGE > vw;
-  const flipY = y + h + EDGE > vh;
+  const flipY = above ?? y + h + EDGE > vh;
   return {
     left: Math.max(EDGE, Math.min(flipX ? x - w : x, vw - w - EDGE)),
     top: Math.max(EDGE, Math.min(flipY ? y - h : y, vh - h - EDGE)),
@@ -53,8 +53,8 @@ function MenuPanel({ target }: { target: TrackMenuTarget }) {
 
   useLayoutEffect(() => {
     const el = ref.current;
-    if (el) setPlacement(place(target.x, target.y, el.offsetWidth, el.offsetHeight));
-  }, [target.x, target.y]);
+    if (el) setPlacement(place(target, el.offsetWidth, el.offsetHeight));
+  }, [target]);
 
   useEffect(() => {
     if (!placement) return;

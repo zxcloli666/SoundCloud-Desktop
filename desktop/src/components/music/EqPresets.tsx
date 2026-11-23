@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { applyEqPreset } from '../../lib/eq-presets';
 import { EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, EQ_PRESETS } from '../../lib/equalizer';
 import { Check, Download, Plus, Upload, X } from '../../lib/icons';
 import { useSettingsStore } from '../../stores/settings';
@@ -16,9 +17,7 @@ const panelButtonClass =
   'flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent';
 
 const panelButtonState = (open: boolean) =>
-  open
-    ? 'bg-ink/[0.08] text-ink-80'
-    : 'text-ink-40 hover:bg-ink/[0.06] hover:text-ink-75';
+  open ? 'bg-ink/[0.08] text-ink-80' : 'text-ink-40 hover:bg-ink/[0.06] hover:text-ink-75';
 
 const PresetBtn = React.memo(function PresetBtn({
   id,
@@ -131,26 +130,11 @@ export const EqPresets = React.memo(function EqPresets() {
   const { t, i18n } = useTranslation();
   const eqPreset = useSettingsStore((s) => s.eqPreset);
   const customPresets = useSettingsStore((s) => s.eqCustomPresets);
-  const setEqGains = useSettingsStore((s) => s.setEqGains);
-  const setEqPreset = useSettingsStore((s) => s.setEqPreset);
-  const setEqPreamp = useSettingsStore((s) => s.setEqPreamp);
   const deleteEqCustomPreset = useSettingsStore((s) => s.deleteEqCustomPreset);
   const [panel, setPanel] = useState<'save' | 'import' | 'export' | null>(null);
 
   const isRu = i18n.language === 'ru';
   const limitReached = customPresets.length >= EQ_CUSTOM_PRESET_LIMIT;
-
-  const handlePreset = useCallback(
-    (id: string) => {
-      const custom = useSettingsStore.getState().eqCustomPresets.find((p) => p.id === id);
-      const preset = EQ_PRESETS[id] ?? custom;
-      if (!preset) return;
-      setEqGains([...preset.gains]);
-      setEqPreamp(custom?.preamp ?? null);
-      setEqPreset(id);
-    },
-    [setEqGains, setEqPreamp, setEqPreset],
-  );
 
   const closePanel = useCallback(() => setPanel(null), []);
   const togglePanel = (next: 'save' | 'import' | 'export') =>
@@ -204,7 +188,7 @@ export const EqPresets = React.memo(function EqPresets() {
             id={id}
             label={isRu ? preset.labelRu : preset.label}
             active={eqPreset === id}
-            onClick={handlePreset}
+            onClick={applyEqPreset}
           />
         ))}
         {eqPreset === 'custom' && (
@@ -221,7 +205,7 @@ export const EqPresets = React.memo(function EqPresets() {
                 id={preset.id}
                 name={preset.name}
                 active={eqPreset === preset.id}
-                onSelect={handlePreset}
+                onSelect={applyEqPreset}
                 onDelete={deleteEqCustomPreset}
               />
             ))}

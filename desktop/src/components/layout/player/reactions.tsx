@@ -102,38 +102,42 @@ function RatingChip() {
   );
 }
 
-export const QualityBadge = React.memo(() => {
+export function QualityChips() {
   const { t } = useTranslation();
   const quality = usePlayerStore((s) => s.playbackQuality);
   const local = useCurrentTrackData().local;
+  if (local) {
+    return (
+      <span
+        title={t('local.badge')}
+        className="flex h-6 items-center gap-1 rounded-md border border-ink/[0.08] bg-ink/[0.04] px-2 text-ink-50"
+      >
+        <HardDrive size={12} />
+      </span>
+    );
+  }
+  if (!quality) return null;
   return (
-    <div
-      data-ui="player-quality"
-      className="flex h-[34px] w-[72px] shrink-0 items-center justify-center gap-1.5"
-    >
-      {local ? (
-        <span
-          title={t('local.badge')}
-          className="flex h-6 items-center gap-1 rounded-md border border-ink/[0.08] bg-ink/[0.04] px-2 text-ink-50"
-        >
-          <HardDrive size={12} />
-        </span>
-      ) : (
-        quality && (
-          <>
-            <span
-              className={`inline-flex h-6 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
-                quality !== 'sq'
-                  ? 'border-ink/[0.14] bg-ink/[0.08] text-ink-92'
-                  : 'border-ink/[0.08] bg-ink/[0.04] text-ink-68'
-              }`}
-            >
-              {t(QUALITY_LABEL_KEYS[quality])}
-            </span>
-            <RatingChip />
-          </>
-        )
-      )}
-    </div>
+    <>
+      <span
+        className={`inline-flex h-6 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
+          quality !== 'sq'
+            ? 'border-ink/[0.14] bg-ink/[0.08] text-ink-92'
+            : 'border-ink/[0.08] bg-ink/[0.04] text-ink-68'
+        }`}
+      >
+        {t(QUALITY_LABEL_KEYS[quality])}
+      </span>
+      <RatingChip />
+    </>
   );
-});
+}
+
+export const QualityBadge = React.memo(() => (
+  <div
+    data-ui="player-quality"
+    className="flex h-[34px] w-[72px] shrink-0 items-center justify-center gap-1.5"
+  >
+    <QualityChips />
+  </div>
+));

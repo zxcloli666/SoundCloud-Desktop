@@ -1,5 +1,5 @@
 import * as Popover from '@radix-ui/react-popover';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ListEnd, Moon } from '../../lib/icons';
 import {
@@ -8,31 +8,18 @@ import {
   startSleepAtTrackEnd,
   startSleepTimer,
 } from '../../lib/sleep-timer';
+import { useSleepMinutesLeft } from '../../lib/use-sleep-left';
 import { useSleepTimerStore } from '../../stores/sleep-timer';
 
 const optionClass =
   'flex h-9 cursor-pointer items-center justify-center rounded-xl border border-ink/[0.06] bg-ink/[0.03] text-[12px] font-medium text-ink-70 outline-none transition-colors hover:bg-ink/[0.08] hover:text-ink focus-visible:ring-2 focus-visible:ring-accent/50';
 
-function minutesLeft(endsAt: number) {
-  return Math.max(1, Math.ceil((endsAt - Date.now()) / 60_000));
-}
-
 const SleepBadge = React.memo(() => {
-  const timer = useSleepTimerStore((s) => s.timer);
-  const endsAt = timer?.kind === 'time' ? timer.endsAt : 0;
-  const [minutes, setMinutes] = useState(() => (endsAt ? minutesLeft(endsAt) : 0));
-
-  useEffect(() => {
-    if (!endsAt) return;
-    const sync = () => setMinutes(minutesLeft(endsAt));
-    sync();
-    const id = window.setInterval(sync, 1000);
-    return () => window.clearInterval(id);
-  }, [endsAt]);
+  const minutes = useSleepMinutesLeft();
 
   return (
     <span className="pointer-events-none absolute -bottom-0.5 -right-0.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-accent px-[3px] text-[9px] font-semibold leading-none tabular-nums text-accent-contrast">
-      {endsAt ? minutes : <ListEnd size={9} />}
+      {minutes || <ListEnd size={9} />}
     </span>
   );
 });

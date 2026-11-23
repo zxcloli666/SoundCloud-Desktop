@@ -6,6 +6,7 @@ export interface Frame {
   t: number;
   level: number;
   bass: number;
+  bins: readonly number[];
   accent: string;
   ink: string;
 }
@@ -19,7 +20,14 @@ const COLOR_EVERY = 60;
 const painters = new Set<Painter>();
 const claim = createSpectrumClaim();
 const bins: number[] = [];
-const frame: Frame = { t: 0, level: 0, bass: 0, accent: '255,85,0', ink: '255,255,255' };
+const frame: Frame = {
+  t: 0,
+  level: 0,
+  bass: 0,
+  bins,
+  accent: '255,85,0',
+  ink: '255,255,255',
+};
 
 let raf = 0;
 let last = 0;

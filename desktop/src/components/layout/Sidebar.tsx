@@ -24,6 +24,7 @@ import {
   useNarrowWindow,
   useSidebarCollapsed,
 } from './SidebarChrome';
+import { SidebarMore } from './SidebarMore';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
 import { StarCard } from './StarCard';
@@ -187,6 +188,7 @@ export const Sidebar = React.memo(() => {
         </div>
 
         <SidebarPins collapsed={collapsed} />
+        <SidebarMore collapsed={collapsed} shown={navIds} />
       </div>
 
       <div className="px-2 pb-1 flex flex-col gap-0.5">

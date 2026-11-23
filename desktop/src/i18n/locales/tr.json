@@ -83,7 +83,8 @@
     "pinArtistShort": "Sabitle",
     "pinnedArtist": "Sabitlendi",
     "artistPinned": "Kenar çubuğuna sabitlendi",
-    "artistUnpinned": "Kenar çubuğundan kaldırıldı"
+    "artistUnpinned": "Kenar çubuğundan kaldırıldı",
+    "more": "Daha fazla"
   },
   "player": {
     "queue": "Kuyruk",
@@ -134,7 +135,8 @@
     "copiedShort": "Kopyalandı",
     "seek": "Sar",
     "abLoopName": "A-B döngüsü",
-    "qualityName": "Kalite"
+    "qualityName": "Kalite",
+    "more": "Parça işlemleri"
   },
   "queue": {
     "remove": "Kuyruktan çıkar",
@@ -2762,7 +2764,10 @@
     "playLastDone": "Kuyruğun sonuna eklendi: {{title}}",
     "linkCopied": "Bağlantı kopyalandı",
     "labelCopied": "Sanatçı ve ad kopyalandı",
-    "copyFailed": "Panoya kopyalanamadı"
+    "copyFailed": "Panoya kopyalanamadı",
+    "goToAlbum": "Albüme git",
+    "block": "{{name}} bir daha çalmasın",
+    "unblock": "{{name}} yine çalsın"
   },
   "collectionSave": {
     "kicker": "Çevrimdışı",
@@ -3200,5 +3205,17 @@
     "emptyPlaylists": "Bir çalma listesini beğen, burada görünsün",
     "emptyHistory": "Bir parça çal, burada görünsün",
     "emptyReleases": "Sanatçılarından son zamanlarda yeni bir şey yok"
+  },
+  "sound": {
+    "title": "Ses",
+    "reset": "Sesi sıfırla",
+    "fx": {
+      "off": "Kapalı",
+      "slowedReverb": "Yavaş",
+      "spedUp": "Hızlı",
+      "eightD": "8D",
+      "bass": "Bas",
+      "custom": "Özel"
+    }
   }
 }

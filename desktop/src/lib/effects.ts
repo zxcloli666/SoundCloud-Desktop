@@ -19,6 +19,10 @@ export const EFFECT_PRESETS: Record<'slowedReverb' | 'spedUp' | 'eightD' | 'bass
   bass: { fx: { reverb: 0, eightD: false, bassDb: 8 } },
 };
 
+export function presetRate(id: EffectsPresetId) {
+  return id === 'off' || id === 'custom' ? 1 : (EFFECT_PRESETS[id].rate ?? 1);
+}
+
 export const PRESET_ORDER = ['off', 'slowedReverb', 'spedUp', 'eightD', 'bass'] as const;
 
 export const FX_RANGE = {

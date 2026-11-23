@@ -40,6 +40,7 @@ import {
   Crown as _Crown,
   Database as _Database,
   Disc3 as _Disc3,
+  DiscAlbum as _DiscAlbum,
   Download as _Download,
   Ellipsis as _Ellipsis,
   ExternalLink as _ExternalLink,
@@ -87,6 +88,7 @@ import {
   Lock as _Lock,
   LogIn as _LogIn,
   MapPin as _MapPin,
+  Maximize2 as _Maximize2,
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
   Minus as _Minus,
@@ -122,6 +124,7 @@ import {
   SkipBack as _SkipBack,
   SkipForward as _SkipForward,
   SlidersHorizontal as _SlidersHorizontal,
+  SlidersVertical as _SlidersVertical,
   Smartphone as _Smartphone,
   SmilePlus as _SmilePlus,
   Sparkles as _Sparkles,
@@ -225,6 +228,7 @@ export const Compass = memo(_Compass);
 export const Copy = memo(_Copy);
 export const Database = memo(_Database);
 export const Disc3 = memo(_Disc3);
+export const DiscAlbum = memo(_DiscAlbum);
 export const ExternalLink = memo(_ExternalLink);
 export const Eye = memo(_Eye);
 export const Gauge = memo(_Gauge);
@@ -268,6 +272,7 @@ export const Monitor = memo(_Monitor);
 export const MonitorOff = memo(_MonitorOff);
 export const MonitorPlay = memo(_MonitorPlay);
 export const MessageCircle = memo(_MessageCircle);
+export const Maximize2 = memo(_Maximize2);
 export const Minus = memo(_Minus);
 export const Music = memo(_Music);
 export const Palette = memo(_Palette);
@@ -317,6 +322,7 @@ export const ZoomIn = memo(_ZoomIn);
 export const ZoomOut = memo(_ZoomOut);
 export const Link = memo(_Link2);
 export const SlidersHorizontal = memo(_SlidersHorizontal);
+export const SlidersVertical = memo(_SlidersVertical);
 export const AudioLines = memo(_AudioLines);
 export const Ban = memo(_Ban);
 export const Power = memo(_Power);

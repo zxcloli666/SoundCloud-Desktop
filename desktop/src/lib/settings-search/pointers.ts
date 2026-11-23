@@ -48,7 +48,7 @@ export const pointers: SettingsEntry[] = [
       'player.pitchModeManual',
     ],
     place: PLAYER,
-    trigger: 'player-tuning',
+    trigger: 'player-sound',
   },
   {
     id: 'elsewhere.sleep',
@@ -59,7 +59,7 @@ export const pointers: SettingsEntry[] = [
     desc: [],
     keys: ['sleep.endOfTrack', 'sleep.cancel'],
     place: PLAYER,
-    trigger: 'player-sleep',
+    trigger: 'player-sound',
   },
   {
     id: 'elsewhere.shortcuts',

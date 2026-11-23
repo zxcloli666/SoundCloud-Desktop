@@ -47,7 +47,8 @@
     "pinArtistShort": "Fixar",
     "pinnedArtist": "Fixado",
     "artistPinned": "Fixado na barra lateral",
-    "artistUnpinned": "Removido da barra lateral"
+    "artistUnpinned": "Removido da barra lateral",
+    "more": "Mais"
   },
   "player": {
     "queue": "Fila",
@@ -98,7 +99,8 @@
     "copiedShort": "Copiado",
     "seek": "Buscar",
     "abLoopName": "Loop A-B",
-    "qualityName": "Qualidade"
+    "qualityName": "Qualidade",
+    "more": "Ações da faixa"
   },
   "queue": {
     "remove": "Tirar da fila",
@@ -2839,7 +2841,10 @@
     "playLastDone": "Adicionada ao fim da fila: {{title}}",
     "linkCopied": "Link copiado",
     "labelCopied": "Artista e título copiados",
-    "copyFailed": "Não deu para copiar para a área de transferência"
+    "copyFailed": "Não deu para copiar para a área de transferência",
+    "goToAlbum": "Ir para o álbum",
+    "block": "Não tocar mais {{name}}",
+    "unblock": "Permitir {{name}} de novo"
   },
   "collectionSave": {
     "kicker": "Offline",
@@ -3285,5 +3290,17 @@
     "emptyPlaylists": "Curta uma playlist e ela aparece aqui",
     "emptyHistory": "Toque uma faixa e ela aparece aqui",
     "emptyReleases": "Nada novo dos seus artistas por enquanto"
+  },
+  "sound": {
+    "title": "Som",
+    "reset": "Redefinir o som",
+    "fx": {
+      "off": "Desl.",
+      "slowedReverb": "Lento",
+      "spedUp": "Rápido",
+      "eightD": "8D",
+      "bass": "Graves",
+      "custom": "Próprio"
+    }
   }
 }

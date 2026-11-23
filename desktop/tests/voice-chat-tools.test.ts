@@ -409,12 +409,13 @@ test('player buttons list each zone of the bar and the Home deck', async () => {
   const ran = await run('player_buttons');
   assert.equal(ran.returns, true);
   const { bar, home } = ran.result as unknown as Record<string, Record<string, string[]>>;
-  assert.deepEqual(bar.left, ['like']);
+  assert.deepEqual(bar.left, ['like', 'more']);
   assert.deepEqual(bar.before, ['shuffle']);
   assert.deepEqual(bar.after, ['repeat']);
-  assert.deepEqual(bar.right, ['together', 'lyrics', 'queue', 'volume']);
+  assert.deepEqual(bar.right, ['together', 'sound', 'lyrics', 'queue', 'volume']);
   assert.equal(bar.title, undefined);
-  assert.deepEqual(home.title, ['queue']);
+  assert.deepEqual(home.left, ['like', 'sound']);
+  assert.deepEqual(home.title, ['more', 'queue']);
   assert.deepEqual(home.right, ['together', 'lyrics', 'volume']);
   assert.ok(bar.hidden.includes('eq'));
 });
@@ -436,7 +437,7 @@ test('a player button moves, hides and shows on the bar or the Home deck', async
     hidden: false,
   });
   assert.deepEqual(app.buttons().bar.after, ['like', 'repeat']);
-  assert.deepEqual(app.buttons().bar.left, []);
+  assert.deepEqual(app.buttons().bar.left, ['more']);
   const titled = await run('player_button', {
     button: 'lyrics',
     act: 'move',
@@ -447,10 +448,10 @@ test('a player button moves, hides and shows on the bar or the Home deck', async
     ok: true,
     place: 'home',
     zone: 'title',
-    position: 2,
+    position: 3,
     hidden: false,
   });
-  assert.deepEqual(app.buttons().bar.right, ['together', 'lyrics', 'queue', 'volume']);
+  assert.deepEqual(app.buttons().bar.right, ['together', 'sound', 'lyrics', 'queue', 'volume']);
   const hidden = await run('player_button', { button: 'volume', act: 'hide' });
   assert.deepEqual(hidden.result, { ok: true, place: 'bar', zone: 'right', hidden: true });
   assert.ok(app.buttons().bar.hidden.includes('volume'));
@@ -482,7 +483,7 @@ test('a player button move is refused without a zone, outside its place or for f
       .reason,
     'bad_position',
   );
-  assert.deepEqual(app.buttons().bar.left, ['like']);
+  assert.deepEqual(app.buttons().bar.left, ['like', 'more']);
 });
 
 test('effects switch by name and an unknown effect is refused before the app', async () => {
