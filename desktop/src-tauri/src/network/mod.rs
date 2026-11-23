@@ -20,5 +20,4 @@ pub mod server;
 pub mod static_server;
 pub mod system_proxy;
 pub mod traced;
-pub mod video_server;
 pub mod wallpapers;

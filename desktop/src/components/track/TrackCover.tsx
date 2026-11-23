@@ -2,6 +2,7 @@ import React from 'react';
 import { Pause, Play } from '../../lib/icons';
 import { useVideoOpaque } from '../../lib/video-element';
 import { AlbumCoverArtifact } from '../album/AlbumCoverArtifact';
+import { VideoLoadMark } from '../music/lyrics/VideoLoadMark';
 import { RoomVideo } from './RoomVideo';
 
 export const TrackCover = React.memo(function TrackCover({
@@ -30,6 +31,7 @@ export const TrackCover = React.memo(function TrackCover({
       <AlbumCoverArtifact title={title} coverUrl={coverUrl} hasStar={false}>
         <RoomVideo on={isCurrent} />
       </AlbumCoverArtifact>
+      <VideoLoadMark host="room" className="right-4 top-4" />
       <div
         data-scheme="dark"
         className={`pointer-events-none absolute inset-0 flex items-center justify-center rounded-3xl bg-black/30 transition-opacity duration-300 ${

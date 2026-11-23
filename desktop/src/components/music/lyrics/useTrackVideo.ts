@@ -41,7 +41,7 @@ export function useTrackVideo(feed: VideoFeed): RefObject<HTMLDivElement | null>
   const slotRef = useRef<HTMLDivElement>(null);
   const feedRef = useRef(feed);
   feedRef.current = feed;
-  const picked = usePickedVideo(feed.urn, feed.videos);
+  const picked = useSamePicked(usePickedVideo(feed.urn, feed.videos));
   const owner = useVideoOwner(slotRef);
   const still = useStill();
   const has = picked !== null;
@@ -69,6 +69,12 @@ export function useTrackVideo(feed: VideoFeed): RefObject<HTMLDivElement | null>
   }, [owner, picked, still]);
 
   return slotRef;
+}
+
+function useSamePicked(picked: PickedVideo | null): PickedVideo | null {
+  const last = useRef(picked);
+  if (JSON.stringify(last.current) !== JSON.stringify(picked)) last.current = picked;
+  return last.current;
 }
 
 function useStill(): boolean {

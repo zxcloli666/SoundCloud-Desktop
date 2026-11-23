@@ -1,6 +1,6 @@
 import React, { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
 import { getPlaybackClock } from '../../lib/audio';
-import { FADE_MS } from '../../lib/video-drive';
+import { FADE_MS } from '../../lib/video-curtain';
 import { clockTime, type PlaybackClock } from '../../lib/video-sync';
 import { type Track, usePlayerStore } from '../../stores/player';
 import {

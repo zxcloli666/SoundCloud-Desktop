@@ -46,3 +46,22 @@ export function syncStep(
   }
   return { kind: 'jump', time: target, rate };
 }
+
+export type ParkStep = 'wait' | 'play' | 'again';
+
+export const LEAD_MIN_SEC = 0.15;
+const LEAD_MAX_SEC = 4;
+const LEAD_PART = 0.8;
+const PARK_EARLY_SEC = 0.03;
+const PARK_PATIENCE_SEC = 8;
+
+export function parkStep(target: number, aim: number, canPlay: boolean): ParkStep {
+  const late = target - aim;
+  if (late < -PARK_EARLY_SEC) return 'wait';
+  if (canPlay) return late <= DRIFT_JUMP_SEC ? 'play' : 'again';
+  return late < PARK_PATIENCE_SEC ? 'wait' : 'again';
+}
+
+export function leadFor(tookSec: number): number {
+  return Math.min(Math.max(tookSec * LEAD_PART, LEAD_MIN_SEC), LEAD_MAX_SEC);
+}

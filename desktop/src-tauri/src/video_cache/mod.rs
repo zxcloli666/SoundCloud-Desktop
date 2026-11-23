@@ -1,30 +1,35 @@
+mod desk;
 mod fetch;
+mod loader;
 mod lru;
+mod ranges;
+mod reel;
 mod source;
 
 pub mod commands;
+pub mod server;
 
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
-use futures_util::future::{FutureExt, Shared};
 use sha2::{Digest, Sha256};
+use tokio::sync::watch;
 
-use crate::app::diagnostics;
+use self::desk::Desk;
+use self::reel::Reel;
 use crate::network::system_proxy::follow;
 use crate::shared::file_lru::mark_used;
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(8);
 
-type Flight = Shared<Pin<Box<dyn Future<Output = Result<String, String>> + Send>>>;
-
 pub struct VideoCache {
     dir: PathBuf,
     client: wreq::Client,
-    flights: Mutex<HashMap<String, Flight>>,
+    desk: Mutex<Desk>,
+    poke: watch::Sender<()>,
+    readers: AtomicU64,
 }
 
 impl VideoCache {
@@ -40,7 +45,9 @@ impl VideoCache {
         Arc::new(Self {
             dir,
             client,
-            flights: Mutex::new(HashMap::new()),
+            desk: Mutex::default(),
+            poke: watch::Sender::new(()),
+            readers: AtomicU64::new(0),
         })
     }
 
@@ -48,45 +55,56 @@ impl VideoCache {
         &self.dir
     }
 
-    pub async fn fetch(self: Arc<Self>, url: String) -> Result<String, String> {
-        let checked = source::checked(&url)?;
-        let name = file_name(checked.as_str());
+    pub async fn open(&self, url: &str) -> Result<String, String> {
+        let (name, reel) = self.reel_of(url)?;
+        if let Some(reel) = reel {
+            self.bring_front(&reel);
+            reel.opened().await?;
+        }
+        Ok(name)
+    }
+
+    pub fn load_ahead(&self, url: &str) -> Result<(), String> {
+        if let (_, Some(reel)) = self.reel_of(url)? {
+            self.desk().put_ahead(&reel);
+            self.poke.send_replace(());
+        }
+        Ok(())
+    }
+
+    pub fn reel(&self, name: &str) -> Option<Arc<Reel>> {
+        self.desk().named(name)
+    }
+
+    pub async fn ready(&self, reel: &Arc<Reel>, reader: u64, at: u64) -> Result<u64, String> {
+        reel.ready(reader, at, || self.bring_front(reel)).await
+    }
+
+    pub fn new_reader(&self) -> u64 {
+        self.readers.fetch_add(1, Ordering::Relaxed) + 1
+    }
+
+    fn reel_of(&self, url: &str) -> Result<(String, Option<Arc<Reel>>), String> {
+        let url = source::checked(url)?;
+        let name = file_name(url.as_str());
         let path = self.dir.join(&name);
         if path.is_file() {
             mark_used(&path);
-            return Ok(name);
+            return Ok((name, None));
         }
-        let flight = self.flight(checked.to_string(), name, path);
-        flight.await
+        let reel = self.desk().take(&self.dir, &name, url.as_str())?;
+        Ok((name, Some(reel)))
     }
 
-    fn flight(self: &Arc<Self>, url: String, name: String, path: PathBuf) -> Flight {
-        let mut flights = match self.flights.lock() {
+    fn bring_front(&self, reel: &Arc<Reel>) {
+        self.desk().bring_front(reel);
+        self.poke.send_replace(());
+    }
+
+    fn desk(&self) -> MutexGuard<'_, Desk> {
+        match self.desk.lock() {
             Ok(guard) => guard,
             Err(poison) => poison.into_inner(),
-        };
-        if let Some(flight) = flights.get(&name) {
-            return flight.clone();
-        }
-        let cache = self.clone();
-        let key = name.clone();
-        let flight = async move {
-            let result = fetch::download(&cache.client, &url, &path).await;
-            cache.land(&key, &result);
-            result.map(|()| key)
-        }
-        .boxed()
-        .shared();
-        flights.insert(name, flight.clone());
-        flight
-    }
-
-    fn land(&self, name: &str, result: &Result<(), String>) {
-        if let Ok(mut flights) = self.flights.lock() {
-            flights.remove(name);
-        }
-        if let Err(err) = result {
-            diagnostics::warn(format!("[Video] {name}: {err}"));
         }
     }
 }
@@ -98,12 +116,15 @@ fn file_name(url: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::file_name;
-    use crate::network::video_server::is_file_name;
+    use super::server::is_file_name;
 
     #[test]
     fn names_are_served_hex_hashes_of_the_url() {
         let name = file_name("https://storage.scnative.dev/video/1-1.mp4");
         assert!(is_file_name(&name));
-        assert_ne!(name, file_name("https://storage.scnative.dev/video/1-2.mp4"));
+        assert_ne!(
+            name,
+            file_name("https://storage.scnative.dev/video/1-2.mp4")
+        );
     }
 }

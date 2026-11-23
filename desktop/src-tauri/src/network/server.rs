@@ -1,4 +1,7 @@
 use std::path::PathBuf;
+use std::sync::Arc;
+
+use crate::video_cache::VideoCache;
 
 pub struct ServerState {
     pub static_port: u16,
@@ -31,14 +34,14 @@ pub async fn start_all(
     local_covers_dir: PathBuf,
     css_assets_dir: PathBuf,
     theme_files_dir: PathBuf,
-    video_dir: PathBuf,
+    video: Arc<VideoCache>,
 ) -> (u16, u16) {
     let static_port = crate::network::static_server::start(
         wallpapers_dir,
         local_covers_dir,
         css_assets_dir,
         theme_files_dir,
-        video_dir,
+        video,
     )
     .await;
     let proxy_port = crate::network::proxy_server::start().await;

@@ -11,6 +11,7 @@ import type { Track } from '../../stores/player';
 import { ArtistNameLinks } from '../music/ArtistNameLinks';
 import { LikeButton } from '../music/LikeButton';
 import { MomentVideo } from '../music/lyrics/TrackVideo';
+import { VideoLoadMark } from '../music/lyrics/VideoLoadMark';
 import { MomentWave } from './MomentWave';
 
 export const MomentCard = React.memo(function MomentCard({
@@ -126,6 +127,7 @@ function MomentCover({
         <CoverBadge phase={phase} />
       </span>
       {playing && <PlayingBars />}
+      <VideoLoadMark host="moments" className="right-4 top-4" />
       {phase === 'handed' && (
         <span
           data-scheme="dark"

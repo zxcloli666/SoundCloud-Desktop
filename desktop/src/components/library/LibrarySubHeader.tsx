@@ -23,13 +23,16 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
   const { t } = useTranslation();
   return (
     <div className="mb-6">
-      <Link
-        to="/library"
-        className="inline-flex items-center gap-1 text-[12px] font-semibold text-ink-40 hover:text-ink-85 transition-colors mb-3"
-      >
-        <ChevronLeft size={15} />
-        {t('nav.library')}
-      </Link>
+      <div className="mb-1 flex h-8 items-center gap-3">
+        <Link
+          to="/library"
+          className="inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-ink-40 hover:text-ink-85 transition-colors"
+        >
+          <ChevronLeft size={15} />
+          {t('nav.library')}
+        </Link>
+        <SyncStatusChip quietWhenSynced />
+      </div>
       <div className="flex items-end justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3 min-w-0">
           <h1 className="truncate text-[26px] font-bold leading-tight tracking-tight text-ink md:text-[30px]">
@@ -38,11 +41,10 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
           {count != null && count > 0 && (
             <span className="text-[14px] font-medium tabular-nums text-ink-35">{fc(count)}</span>
           )}
-          <SyncStatusChip quietWhenSynced />
         </div>
 
         {(onFilter || actions) && (
-          <div className="flex items-center justify-end gap-2 flex-1 min-w-[200px]">
+          <div className="flex items-center justify-end gap-2 flex-1 min-w-min">
             {actions}
             {onFilter && (
               <div className="relative min-w-[200px] max-w-[320px] flex-1">

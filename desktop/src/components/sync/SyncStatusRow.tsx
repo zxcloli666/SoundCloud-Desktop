@@ -9,7 +9,7 @@ function SyncRow({ status }: { status: SyncStatus }) {
   const { hint, action } = useSyncCopy(status);
   return (
     <Row title={t('sync.title')} desc={hint}>
-      <SyncStatusBadge status={status} withAction={false} className="max-w-full" />
+      <SyncStatusBadge status={status} withAction={false} />
       {action && (
         <button type="button" onClick={action.run} disabled={action.disabled} className="set-btn">
           {action.label}

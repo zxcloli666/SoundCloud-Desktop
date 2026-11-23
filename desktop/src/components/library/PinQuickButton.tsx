@@ -16,7 +16,7 @@ export function PinQuickButton({ id }: { id: LayoutId<'quick'> }) {
       title={label}
       aria-label={label}
       aria-pressed={pinned}
-      className={`inline-flex items-center justify-center w-10 h-10 rounded-xl border-[0.5px] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
+      className={`inline-flex shrink-0 items-center justify-center w-10 h-10 rounded-xl border-[0.5px] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
         pinned
           ? 'text-accent bg-accent/15 border-accent/30'
           : 'text-ink-60 bg-ink/[0.04] border-ink/[0.08] hover:text-ink-95 hover:bg-ink/[0.07]'

@@ -101,7 +101,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="lyrics-paste"]` | Box to paste your own lyrics or LRC |
 | `[data-ui="track-video"]` | Track video; `data-place` is `player-cover`, `player-background`, `player-view`, `moments` or `room` (track page cover) |
 | `html[data-video-opaque]` | Set while the video fully covers its place (same values as `data-place`); what it covers is hidden |
-| `[data-ui="lyrics-video-toggle"]` | Video on/off button in full screen |
+| `[data-ui="lyrics-video-toggle"]` | Video on/off button in full screen; `data-state` is `off`, `none`, `loading`, `failed` or `on` |
+| `[data-ui="video-load"]` | Video loading ring on a cover |
 | `[data-ui="waveform"]` | Waveform |
 
 ### Voice

@@ -1,5 +1,6 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
@@ -9,6 +10,7 @@ use warp::Filter;
 
 use crate::app::{diagnostics, themes};
 use crate::network::server::cors;
+use crate::video_cache::VideoCache;
 
 fn content_type_for(filename: &str) -> &'static str {
     if filename.ends_with(".png") {
@@ -109,7 +111,7 @@ pub async fn start(
     local_covers_dir: PathBuf,
     css_assets_dir: PathBuf,
     theme_files_dir: PathBuf,
-    video_dir: PathBuf,
+    video: Arc<VideoCache>,
 ) -> u16 {
     let routes = dir_route("wallpapers", wallpapers_dir, any_name)
         .or(dir_route("local-covers", local_covers_dir, any_name))
@@ -122,7 +124,7 @@ pub async fn start(
             themes::is_served_name,
         ))
         .unify()
-        .or(crate::network::video_server::route(video_dir))
+        .or(crate::video_cache::server::route(video))
         .unify()
         .with(cors());
 

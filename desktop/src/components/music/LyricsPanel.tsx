@@ -61,6 +61,7 @@ export const LyricsPanel = React.memo(() => {
         {visualizerEnabled && <LyricsVisualizer/>}
 
         <LyricsHeader
+            track={track}
             tab={tab}
             rightPanelOpen={rightPanelOpen}
             onSelectTab={(next) => {

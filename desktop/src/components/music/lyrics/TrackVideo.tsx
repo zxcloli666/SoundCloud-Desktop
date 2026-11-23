@@ -10,14 +10,15 @@ import {
 } from '../../../lib/audio';
 import { isLocalUrn } from '../../../lib/local-library';
 import { getMomentClock } from '../../../lib/moments/channel';
-import { videoSource } from '../../../lib/video-cache';
+import { loadVideoAhead } from '../../../lib/video-cache';
 import type { VideoHost } from '../../../lib/video-element';
 import { pickVideo } from '../../../lib/video-pick';
-import type { Track } from '../../../stores/player';
+import type { Track, TrackVideo } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
 import { useTrackVideo, useVideoAllowed, type VideoFeed } from './useTrackVideo';
 
 const FRESH_MS = 30 * 60_000;
+const NO_VIDEOS: TrackVideo[] = [];
 const PREFETCH_LEFT_SEC = 30;
 const PREFETCH_EVERY_MS = 5_000;
 const DIM =
@@ -82,7 +83,7 @@ export function useTrackVideos(track: Track, allowed: boolean) {
     enabled: ask,
     staleTime: FRESH_MS,
   });
-  return track.videos ?? data?.videos;
+  return track.videos ?? (data ? (data.videos ?? NO_VIDEOS) : undefined);
 }
 
 export function usePrefetchUpcoming(allowed: boolean) {
@@ -96,7 +97,7 @@ export function usePrefetchUpcoming(allowed: boolean) {
       done = next.urn;
       const { videoOrder, videoOff } = useSettingsStore.getState();
       const picked = pickVideo(next.videos, { order: videoOrder, off: videoOff }, new Set());
-      if (picked) videoSource(picked.url).catch(() => {});
+      if (picked) loadVideoAhead(picked.url).catch(() => {});
     };
     const timer = window.setInterval(check, PREFETCH_EVERY_MS);
     return () => window.clearInterval(timer);
