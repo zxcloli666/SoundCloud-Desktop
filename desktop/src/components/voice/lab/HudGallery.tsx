@@ -4,7 +4,7 @@ import { isMac } from '../../../lib/platform';
 import { type HudView, summarize, useVoiceRuntime } from '../../../lib/voice/runtime';
 import { Mic } from '../icons';
 import { IslandCard, type IslandHandlers } from '../island/IslandCard';
-import { KHOCHU_M, KHOCHU_Z, SCRIPTONITE } from './fixtures';
+import { KHOCHU_M, KHOCHU_Z, PSYCHOSIS } from './fixtures';
 
 const NOOP: IslandHandlers = {
   onClose: () => {},
@@ -21,8 +21,8 @@ const CARDS: { label: string; hud: HudView }[] = [
     hud: {
       kind: 'done',
       id: 'lab-volume',
-      heard: 'включи скриптонита',
-      items: [{ intent: 'play', entity: SCRIPTONITE, display: 'Скриптонит' }],
+      heard: 'включи психосиса',
+      items: [{ intent: 'play', entity: PSYCHOSIS, display: 'Psychosis' }],
       undo: true,
       at: 0,
     },
@@ -56,8 +56,8 @@ const CARDS: { label: string; hud: HudView }[] = [
     hud: {
       kind: 'asking',
       id: 'lab-ask-one',
-      heard: 'включи скрипанита',
-      first: { entity: SCRIPTONITE, score: 0.7 },
+      heard: 'включи психазиса',
+      first: { entity: PSYCHOSIS, score: 0.7 },
       second: null,
     },
   },

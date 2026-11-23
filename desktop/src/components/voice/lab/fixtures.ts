@@ -86,9 +86,9 @@ export function downloadingModels(): Model[] {
   ];
 }
 
-export const SCRIPTONITE: Entity = {
+export const PSYCHOSIS: Entity = {
   kind: 'artist',
-  name: 'Скриптонит',
+  name: 'Psychosis',
   artist: '',
   popularity: 6_500_000,
   id: 'art-1',
@@ -125,9 +125,9 @@ export function labHistory(now: number): HistoryRow[] {
       id: 'h1',
       at: at(3),
       source: 'hotkey',
-      heard: 'включи скриптонита',
+      heard: 'включи психосиса',
       intents: ['play'],
-      label: 'Скриптонит',
+      label: 'Psychosis',
       result: 'done',
       undoable: false,
       wrong: false,
@@ -220,7 +220,7 @@ export function labHistory(now: number): HistoryRow[] {
       source: 'wake',
       heard: 'что сейчас играет',
       intents: ['now_playing'],
-      label: 'Скриптонит — Притон',
+      label: 'Psychosis — утопленник',
       result: 'done',
       undoable: false,
       wrong: false,
