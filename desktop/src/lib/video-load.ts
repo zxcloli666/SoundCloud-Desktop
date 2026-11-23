@@ -28,17 +28,18 @@ let listening = false;
 
 export function beginVideoLoad(host: VideoHost, url: string): () => void {
   listenProgress();
-  const mine: Wait = { url, share: null };
+  const share = wait?.url === url ? wait.share : null;
+  const mine: Wait = { url, share };
   wait = mine;
-  const timer = window.setTimeout(
-    () => useVideoLoad.setState({ host, share: mine.share }),
-    SHOW_AFTER_MS,
-  );
+  const show = () => useVideoLoad.setState({ host, share: mine.share });
+  const timer = window.setTimeout(show, useVideoLoad.getState().host ? 0 : SHOW_AFTER_MS);
   return () => {
     window.clearTimeout(timer);
-    if (wait !== mine) return;
-    wait = null;
-    useVideoLoad.setState(IDLE);
+    queueMicrotask(() => {
+      if (wait !== mine) return;
+      wait = null;
+      useVideoLoad.setState(IDLE);
+    });
   };
 }
 
