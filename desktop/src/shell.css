@@ -21,13 +21,6 @@
   background: var(--shell-veil);
 }
 
-[data-ui="app"][data-wall] .glass,
-[data-ui="app"][data-wall] .glass-flat,
-[data-ui="app"][data-wall] .glass-featured,
-[data-ui="app"][data-wall] .panel {
-  background: var(--shell-pane);
-}
-
 [data-ui="app"][data-wall] [data-ui="sidebar"],
 [data-ui="app"][data-wall] [data-ui="chat-dock"],
 [data-ui="app"][data-wall] [data-ui="titlebar"] {
@@ -247,4 +240,11 @@ button.chip-pill:hover:not(:disabled) {
   background: var(--shell-fill-hi);
   color: rgb(var(--ink));
   cursor: pointer;
+}
+
+[data-ui="app"][data-wall] .glass,
+[data-ui="app"][data-wall] .glass-flat,
+[data-ui="app"][data-wall] .glass-featured,
+[data-ui="app"][data-wall] .panel {
+  background: var(--shell-pane);
 }
