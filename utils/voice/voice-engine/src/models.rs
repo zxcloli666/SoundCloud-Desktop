@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use voice_models::{Kind, Status, Store};
 use voice_qwen::Paths;
-use voice_speech::Model;
+use voice_speech::{ExactKind, Model};
 
 use crate::config::{Config, Language};
 use crate::server::Server;
@@ -14,6 +14,7 @@ pub const VAD: &str = "silero-vad";
 pub const ASR_RU: &str = "sherpa-onnx-streaming-zipformer-small-ru-vosk-int8-2025-08-16";
 pub const ASR_EN: &str = "sherpa-onnx-zipformer-gigaspeech-2023-12-12";
 pub const EXACT_RU: &str = "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16";
+pub const EXACT_EN: &str = "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8";
 
 const PROGRAM: &str = if cfg!(windows) {
     "scd-qwen.exe"
@@ -28,10 +29,10 @@ pub fn asr(language: Language) -> (&'static str, Model) {
     }
 }
 
-pub fn exact(language: Language) -> Option<&'static str> {
+pub fn exact(language: Language) -> (&'static str, ExactKind) {
     match language {
-        Language::Ru => Some(EXACT_RU),
-        Language::En => None,
+        Language::Ru => (EXACT_RU, ExactKind::Letters),
+        Language::En => (EXACT_EN, ExactKind::Pieces),
     }
 }
 
@@ -53,7 +54,7 @@ fn parts<'a>(voice: &'a Voice, store: &'a Store) -> Option<Vec<&'a str>> {
 
 pub fn hearing(config: &Config) -> Vec<&'static str> {
     let mut ids = vec![VAD, asr(config.language).0];
-    ids.extend(exact(config.language));
+    ids.push(exact(config.language).0);
     ids
 }
 

@@ -280,7 +280,8 @@
       "voice": "Voix : {{name}}",
       "name": {
         "qwen-codec": "Décodeur vocal",
-        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "Reconnaissance précise"
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "Reconnaissance précise",
+        "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8": "Reconnaissance précise"
       }
     },
     "credits": {

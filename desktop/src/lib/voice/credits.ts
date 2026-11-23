@@ -93,6 +93,16 @@ export const CREDITS: Credit[] = [
     models: ['sherpa-onnx-zipformer-gigaspeech'],
   },
   {
+    id: 'parakeet',
+    name: 'Parakeet TDT 0.6B v2',
+    by: 'NVIDIA',
+    license: 'CC BY 4.0',
+    url: 'https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2',
+    group: 'models',
+    use: 'asrEn',
+    models: ['sherpa-onnx-nemo-parakeet-tdt'],
+  },
+  {
     id: 'kokoro',
     name: 'Kokoro-82M',
     by: 'hexgrad',

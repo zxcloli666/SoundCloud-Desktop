@@ -4,6 +4,7 @@ const MAX_RUSSIAN: usize = 40;
 pub const RUSSIAN_SCORE: f32 = 1.5;
 pub const RUSSIAN_EXACT_SCORE: f32 = 0.5;
 pub const ENGLISH_SCORE: f32 = 2.0;
+pub const ENGLISH_EXACT_SCORE: f32 = 0.5;
 
 const RUSSIAN_WORDS: [&str; 7] = [
     "суперлайки",

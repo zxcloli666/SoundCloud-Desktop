@@ -59,7 +59,7 @@ pub use event::{
     WakeEvent,
 };
 pub use gesture::{LEARN_FOR, Learned, Learner, Press, Presses, Signal, WINDOW};
-pub use models::{ASR_EN, ASR_RU, EXACT_RU, VAD, hearing, required};
+pub use models::{ASR_EN, ASR_RU, EXACT_EN, EXACT_RU, VAD, hearing, required};
 pub use output::Output;
 pub use server::{Ask, Said, Server};
 pub use stream::{Resampled, Stream};

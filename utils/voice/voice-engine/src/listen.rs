@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use voice_audio::{
     CaptureError, EchoMode, ErrorCode, Event as CaptureEvent, ListenMode, Purpose, Request, Session,
 };
-use voice_speech::{Event as Heard, Listener, Options};
+use voice_speech::{Event as Heard, ExactKind, Listener, Options};
 
 use crate::Timing;
 use crate::config::{Echo, Language, ListenMode as Mode};
@@ -208,6 +208,11 @@ impl Core {
         ))
     }
 
+    fn exact_model(&self) -> Option<(PathBuf, ExactKind)> {
+        let (id, kind) = models::exact(self.config.language);
+        models::dir(&self.deps.store, id).map(|dir| (dir, kind))
+    }
+
     pub fn ensure_listener(&mut self) -> Result<(), &'static str> {
         let (asr_id, model) = models::asr(self.config.language);
         let Some((vad, asr)) = self.listener_models() else {
@@ -229,7 +234,7 @@ impl Core {
             Language::En => (
                 hotwords::english(&said),
                 hotwords::ENGLISH_SCORE,
-                hotwords::ENGLISH_SCORE,
+                hotwords::ENGLISH_EXACT_SCORE,
             ),
         };
         let mut hotwords = if self.config.activation.wake.on {
@@ -253,8 +258,7 @@ impl Core {
             threads: THREADS,
             hotwords: hotwords.clone(),
             hotwords_score,
-            exact_dir: models::exact(self.config.language)
-                .and_then(|id| models::dir(&self.deps.store, id)),
+            exact: self.exact_model(),
             exact_hotwords_score,
             exact_threads: EXACT_THREADS,
         };
