@@ -12,6 +12,7 @@ import {
   useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 import { X } from '../../lib/icons';
 
 /** Custom modal — no Radix. Radix Dialog's data-state CSS animations don't fire
@@ -168,6 +169,7 @@ export function ModalContent({
   showClose?: boolean;
   zClass?: string;
 }) {
+  const { t } = useTranslation();
   const { open, setOpen, titleId } = useCtx();
   const { mounted, state } = usePresence(open, 200);
   const cardRef = useRef<HTMLDivElement>(null);
@@ -220,7 +222,7 @@ export function ModalContent({
           {showClose && (
             <button
               type="button"
-              aria-label="Close"
+              aria-label={t('common.close')}
               onClick={() => setOpen(false)}
               className="absolute right-4 top-4 z-10 flex h-8 w-8 items-center justify-center rounded-full text-ink-40 hover:text-ink-90 hover:bg-ink/[0.08] transition-all duration-200 cursor-pointer"
             >

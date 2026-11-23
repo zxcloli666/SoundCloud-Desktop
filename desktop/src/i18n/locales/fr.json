@@ -29,7 +29,10 @@
     "following": "Abonnements",
     "settings": "Paramètres",
     "collapse": "Réduire",
-    "expand": "Développer"
+    "expand": "Développer",
+    "forward": "Suivant",
+    "minimize": "Réduire",
+    "maximize": "Agrandir"
   },
   "sidebar": {
     "quickAccess": "Accès rapide",

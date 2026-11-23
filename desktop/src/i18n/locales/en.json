@@ -29,7 +29,10 @@
     "following": "Following",
     "settings": "Settings",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "forward": "Forward",
+    "minimize": "Minimize",
+    "maximize": "Maximize"
   },
   "sidebar": {
     "quickAccess": "Quick Access",

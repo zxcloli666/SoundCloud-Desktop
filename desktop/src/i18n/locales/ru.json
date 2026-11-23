@@ -29,7 +29,10 @@
     "following": "Подписки",
     "settings": "Настройки",
     "collapse": "Свернуть",
-    "expand": "Развернуть"
+    "expand": "Развернуть",
+    "forward": "Вперёд",
+    "minimize": "Свернуть",
+    "maximize": "Развернуть"
   },
   "sidebar": {
     "quickAccess": "Быстрый доступ",

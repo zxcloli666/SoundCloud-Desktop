@@ -36,17 +36,22 @@ const NavButtons = React.memo(() => {
         disabled={!canGoBack}
         onClick={() => navigate(-1)}
         className="shell-btn"
-        aria-label="Back"
+        aria-label={t('common.back')}
       >
         <ChevronLeft size={17} strokeWidth={2.2} />
       </button>
-      <button type="button" onClick={() => navigate(1)} className="shell-btn" aria-label="Forward">
+      <button
+        type="button"
+        onClick={() => navigate(1)}
+        className="shell-btn"
+        aria-label={t('nav.forward')}
+      >
         <ChevronRight size={17} strokeWidth={2.2} />
       </button>
       <button
         type="button"
         onClick={() => navigate('/home')}
-        aria-label="Home"
+        aria-label={t('nav.home')}
         aria-current={onHome ? 'page' : undefined}
         className="shell-btn"
       >
@@ -116,13 +121,13 @@ export const WindowControls = React.memo(() => {
       <WinButton onClick={() => void toggleWindowFullscreen()} label={t('kb.fullscreen')}>
         <Fullscreen size={13} />
       </WinButton>
-      <WinButton onClick={() => win.minimize()} label="Minimize">
+      <WinButton onClick={() => win.minimize()} label={t('nav.minimize')}>
         <Minus size={15} />
       </WinButton>
-      <WinButton onClick={() => win.toggleMaximize()} label="Maximize">
+      <WinButton onClick={() => win.toggleMaximize()} label={t('nav.maximize')}>
         <Square size={12} />
       </WinButton>
-      <WinButton onClick={() => win.close()} danger label="Close">
+      <WinButton onClick={() => win.close()} danger label={t('common.close')}>
         <X size={15} />
       </WinButton>
     </div>

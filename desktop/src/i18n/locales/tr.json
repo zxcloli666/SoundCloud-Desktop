@@ -65,7 +65,10 @@
     "following": "Takip Edilenler",
     "settings": "Ayarlar",
     "collapse": "Daralt",
-    "expand": "Genişlet"
+    "expand": "Genişlet",
+    "forward": "İleri",
+    "minimize": "Simge durumuna küçült",
+    "maximize": "Ekranı kapla"
   },
   "sidebar": {
     "quickAccess": "Hızlı Erişim",
