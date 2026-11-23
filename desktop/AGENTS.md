@@ -52,12 +52,12 @@ desktop/
                      YMImportDialog, YMImportFloatingStatus,
                      cluster/   (рекомендательные «соседи»: ClusterHeader/Row, NeighborCard…)
                      soundwave/ (бесконечная лента «волны»: home-block, similar-block,
-                                 waveform, vibe-search-bar, strip, ambient, lock-overlay/…)
+                                 waveform, vibe-search-bar, strip, lock-overlay/…)
       album/         AlbumHero, AlbumCast, AlbumTrackList, AlbumTrackRow,
                      AlbumPlayButton, AlbumCoverArtifact, useAlbumData
       artist/        ArtistHero, Artist*Tab (About/Tracks/Albums/Covers/Related),
                      socials, useArtistData, wave/ArtistSoundWave
-      user/          IdentityHub, AuraField, AuraPicker, StarField, StatOrb,
+      user/          IdentityHub, AuraPicker, StarField, StatOrb,
                      TabDock, UserTabs, UserChips, UserSearchBox, ThemedTrackRow,
                      AvatarArtifact, FollowBtn, useUserAura
       discover/      DiscoverHero, DiscoverSpotlight, AlbumsCatalog,
@@ -319,14 +319,14 @@ style = {
 }
 }
 // частицы:        SEEDS.slice(0, perf.particles(SEEDS.length))   // 0 → не рендерить
-// атмосфера/блум: {perf.atmosphere && <AuraField/>}  /  {perf.bloom && <Glow/>}
+// атмосфера/блум: {perf.atmosphere && <Atmosphere/>}  /  {perf.bloom && <Glow/>}
 // idle-анимация:  animation: perf.idleAnim ? 'drift 8s infinite' : undefined   // hover-анимации НЕ трогать
 // glow:           boxShadow: perf.glow ? '0 0 6px var(--color-accent-glow)' : undefined
 ```
 
-- **`scale` на blur запрещён** (пересчёт гаусса каждый кадр, см. коммент `sw-aurora` в `index.css`). Если дизайн требует
+- **`scale` на blur запрещён** (пересчёт гаусса каждый кадр). Если дизайн требует
   «дыхание» орба в beauty — ДВА кейфрейма: `orb-drift` (со `scale`) для beauty, `orb-drift-lite` (только `translate3d`)
-  для medium; компонент выбирает по `perf.mode === 'beauty'`. Образец — `AuraField` / `search/Atmosphere`.
+  для medium; компонент выбирает по `perf.mode === 'beauty'`. Образец — `search/Atmosphere`.
 
 ## Как верстать экран
 
@@ -334,7 +334,7 @@ style = {
    **`frontend-design`** — он даёт отличительный, не «AI-generic» вид. Без него выходит шаблонно. (Концепт-метафора
    важнее раскладки — не рескин.)
 2. **Атмосферный фон** — `fixed inset-0` + `contain:strict` + `translateZ(0)`, контент `relative z-10` +
-   `isolation:isolate` (см. `AuraField` / `search/Atmosphere`). Монтаж гейтить на `perf.atmosphere`.
+   `isolation:isolate` (см. `search/Atmosphere`). Монтаж гейтить на `perf.atmosphere`.
 3. Каждый инлайновый `backdrop-filter`/`filter:blur` — через `perf.blur()` + solid-tint своп на 0.
 4. Любое декоративное поле частиц/звёзд — счётчик через `perf.particles()`, свечения под `perf.glow`, анимации под
    `perf.idleAnim`.
@@ -381,8 +381,7 @@ style = {
   остаётся позади).
 - Распредели орбы так, чтобы хотя бы один светил **снизу** (`-bottom-[…]`), иначе нижняя кромка пустая даже при `fixed`.
 - **Вспоминать когда:** делаешь/правишь страницу с фоновой атмосферой и «снизу/по бокам нет свечения» или оно «уезжает
-  при скролле». Общий слой — `components/user/AuraField.tsx` (User/Artist/Discover/Album), у Search свой
-  `components/search/Atmosphere.tsx`; оба уже `fixed`.
+  при скролле». Образец — `components/search/Atmosphere.tsx`, он уже `fixed`.
 
 ### Transitions и анимации
 
