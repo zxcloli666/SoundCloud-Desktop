@@ -35,6 +35,7 @@ const WIDE_ITEM = '[data-ui="player-quality"]';
 interface Fit {
   tray: boolean;
   size: number;
+  side: number;
   near: number;
   nearGap: number;
 }
@@ -66,12 +67,13 @@ function span(group: GroupSize, size: number, gap: number) {
 }
 
 function sideFit(width: number, left: GroupSize, right: GroupSize) {
-  if (Math.max(left.items, right.items) > FLANK_MAX_ITEMS) return { tray: true, size: TRAY_SIZE };
+  const tray = { tray: true, size: TRAY_SIZE, side: 0 };
+  if (Math.max(left.items, right.items) > FLANK_MAX_ITEMS) return tray;
   for (const size of FLANK_SIZES) {
     const side = Math.max(span(left, size, GAP), span(right, size, GAP));
-    if (2 * side + SEEK_MIN + 2 * GAP <= width) return { tray: false, size };
+    if (2 * side + SEEK_MIN + 2 * GAP <= width) return { tray: false, size, side };
   }
-  return { tray: true, size: TRAY_SIZE };
+  return tray;
 }
 
 function nearFit(width: number, between: number, before: GroupSize, after: GroupSize) {
@@ -88,14 +90,26 @@ function nearFit(width: number, between: number, before: GroupSize, after: Group
 }
 
 function sameFit(a: Fit, b: Fit) {
-  return a.tray === b.tray && a.size === b.size && a.near === b.near && a.nearGap === b.nearGap;
+  return (
+    a.tray === b.tray &&
+    a.size === b.size &&
+    a.side === b.side &&
+    a.near === b.near &&
+    a.nearGap === b.nearGap
+  );
 }
 
 function useDeckFit() {
   const ref = useRef<HTMLDivElement>(null);
   const layout = usePlacement('deck');
   const [width, setWidth] = useState(0);
-  const [fit, setFit] = useState<Fit>({ tray: false, size: FLANK_SIZES[0], near: 40, nearGap: 20 });
+  const [fit, setFit] = useState<Fit>({
+    tray: false,
+    size: FLANK_SIZES[0],
+    side: 0,
+    near: 40,
+    nearGap: 20,
+  });
 
   useLayoutEffect(() => {
     const root = ref.current;
@@ -153,7 +167,9 @@ export function DeckControls({
       ) : (
         <div
           className="grid w-full items-center gap-2.5"
-          style={{ gridTemplateColumns: `1fr minmax(${SEEK_MIN}px, 520px) 1fr` }}
+          style={{
+            gridTemplateColumns: `minmax(${fit.side}px, 1fr) minmax(${SEEK_MIN}px, 520px) minmax(${fit.side}px, 1fr)`,
+          }}
         >
           <Zone zone="left" ctx={ctx} className={LEFT} />
           <DeckSeek />
