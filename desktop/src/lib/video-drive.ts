@@ -13,10 +13,13 @@ import {
 
 export const FADE_MS = 300;
 
-const STALL_MS = 8_000;
+const STALL_MS = 30_000;
+const HOLD_FRAME_MS = 700;
+const SEEK_PATIENCE_SEC = 5;
 const END_HOLD_MS = 1_500;
 const HAVE_METADATA = 1;
 const HAVE_CURRENT_DATA = 2;
+const HAVE_FUTURE_DATA = 3;
 
 export interface Drive {
   host: VideoHost;
@@ -38,6 +41,8 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   let endedAt = 0;
   let nudging = false;
   let stallTimer = 0;
+  let holdTimer = 0;
+  let endLoad: (() => void) | null = null;
   let opaqueTimer = 0;
 
   const show = (on: boolean) => {
@@ -50,6 +55,16 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     else setVideoOpaque(host, false);
   };
 
+  const want = (wanted: boolean) => {
+    show(wanted && ready);
+    if (wanted && !ready) {
+      endLoad ??= beginVideoLoad(host);
+      return;
+    }
+    endLoad?.();
+    endLoad = null;
+  };
+
   const play = () => {
     wantPlay = true;
     if (video.paused) void video.play().catch(() => {});
@@ -58,7 +73,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   const pause = () => {
     wantPlay = false;
     playAfterSeek = false;
-    window.clearTimeout(stallTimer);
+    clearWait();
     if (!video.paused) video.pause();
   };
 
@@ -72,14 +87,14 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     if (still) {
       pause();
       seekTo(0);
-      return show(ready);
+      return want(true);
     }
     const now = clock();
     if (picked.loop) {
       video.playbackRate = 1;
       if (now.playing) play();
       else pause();
-      return show(ready);
+      return want(true);
     }
     const target = videoTarget(clockTime(now, performance.now()), picked.offsetMs);
     const step = syncStep(target, video.currentTime, video.duration, now.rate, nudging);
@@ -87,30 +102,33 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     if (step.kind === 'wait') {
       pause();
       seekTo(0);
-      return show(false);
+      return want(false);
     }
     if (step.kind === 'end') {
       pause();
       endedAt ||= performance.now();
-      return show(ready && performance.now() - endedAt < END_HOLD_MS);
+      return want(ready && performance.now() - endedAt < END_HOLD_MS);
     }
     endedAt = 0;
     if (!now.playing) {
       pause();
       seekTo(target);
-      return show(ready);
+      ready ||= !video.seeking && video.readyState >= HAVE_CURRENT_DATA;
+      return want(true);
     }
     video.playbackRate = step.rate;
-    if (video.paused) {
-      if (Math.abs(video.currentTime - target) > DRIFT_HOLD_SEC) {
-        playAfterSeek = true;
-        wantPlay = true;
-        video.currentTime = target;
-      } else play();
-    } else if (step.kind === 'jump') {
+    const drift = Math.abs(video.currentTime - target);
+    const onTheWay = video.seeking && drift < SEEK_PATIENCE_SEC;
+    if (video.paused && drift <= DRIFT_HOLD_SEC) {
+      play();
+    } else if (video.paused && !onTheWay) {
+      playAfterSeek = true;
+      wantPlay = true;
+      video.currentTime = target;
+    } else if (step.kind === 'jump' && !onTheWay) {
       video.currentTime = step.time;
     }
-    show(ready);
+    want(true);
   };
 
   const fail = (reason: string) => {
@@ -121,11 +139,26 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
 
   const armStall = () => {
     window.clearTimeout(stallTimer);
-    if (wantPlay) stallTimer = window.setTimeout(() => fail('stalled'), STALL_MS);
+    stallTimer = wantPlay ? window.setTimeout(() => fail('stalled'), STALL_MS) : 0;
+  };
+
+  const clearWait = () => {
+    window.clearTimeout(stallTimer);
+    window.clearTimeout(holdTimer);
+    stallTimer = 0;
+  };
+
+  const onWaiting = () => {
+    armStall();
+    window.clearTimeout(holdTimer);
+    holdTimer = window.setTimeout(() => {
+      ready = false;
+      sync();
+    }, HOLD_FRAME_MS);
   };
 
   const onPlaying = () => {
-    window.clearTimeout(stallTimer);
+    clearWait();
     ready = true;
     sync();
   };
@@ -140,12 +173,18 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   };
 
   const onLoadedData = () => {
-    endLoad();
     if (still) ready = true;
     sync();
   };
 
-  const onProgress = () => window.clearTimeout(stallTimer);
+  const onBytes = () => {
+    if (stallTimer) armStall();
+  };
+
+  const onTime = () => {
+    if (!video.seeking && video.readyState >= HAVE_FUTURE_DATA) clearWait();
+  };
+
   const onError = () => fail(`media error ${video.error?.code ?? '?'}`);
   const onVisible = () => sync();
 
@@ -154,8 +193,9 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     ['loadeddata', onLoadedData],
     ['playing', onPlaying],
     ['seeked', onSeeked],
-    ['timeupdate', onProgress],
-    ['waiting', armStall],
+    ['timeupdate', onTime],
+    ['progress', onBytes],
+    ['waiting', onWaiting],
     ['stalled', armStall],
     ['error', onError],
   ];
@@ -167,7 +207,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   slot.style.transition = 'none';
   slot.style.opacity = '0';
   video.loop = picked.loop;
-  const endLoad = beginVideoLoad(host, picked.url);
+  endLoad = beginVideoLoad(host);
   videoSource(picked.url)
     .then((src) => {
       if (stopped) return;
@@ -181,10 +221,10 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     for (const [name, handler] of events) video.removeEventListener(name, handler);
     document.removeEventListener('visibilitychange', onVisible);
     window.clearInterval(ticker);
-    window.clearTimeout(stallTimer);
+    clearWait();
     window.clearTimeout(opaqueTimer);
     offSeek?.();
-    endLoad();
+    endLoad?.();
     video.pause();
     video.removeAttribute('src');
     video.load();

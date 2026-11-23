@@ -7,7 +7,12 @@ use crate::shared::blocking::run_blocking;
 
 #[tauri::command]
 pub async fn video_fetch(url: String, state: State<'_, Arc<VideoCache>>) -> Result<String, String> {
-    state.inner().clone().fetch(url).await
+    state.open(&url).await
+}
+
+#[tauri::command]
+pub fn video_ahead(url: String, state: State<'_, Arc<VideoCache>>) -> Result<(), String> {
+    state.load_ahead(&url)
 }
 
 #[tauri::command]

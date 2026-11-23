@@ -1,54 +1,21 @@
-import { listen } from '@tauri-apps/api/event';
 import { create } from 'zustand';
 import type { VideoHost } from './video-element';
 
 const SHOW_AFTER_MS = 250;
-const IDLE: VideoLoad = { host: null, share: null };
 
-export interface VideoLoad {
-  host: VideoHost | null;
-  share: number | null;
-}
+export const useVideoLoad = create<{ host: VideoHost | null }>(() => ({ host: null }));
 
-interface Wait {
-  url: string;
-  share: number | null;
-}
+let current: object | null = null;
 
-interface Progress {
-  url: string;
-  received: number;
-  total: number | null;
-}
-
-export const useVideoLoad = create<VideoLoad>(() => IDLE);
-
-let wait: Wait | null = null;
-let listening = false;
-
-export function beginVideoLoad(host: VideoHost, url: string): () => void {
-  listenProgress();
-  const share = wait?.url === url ? wait.share : null;
-  const mine: Wait = { url, share };
-  wait = mine;
-  const show = () => useVideoLoad.setState({ host, share: mine.share });
+export function beginVideoLoad(host: VideoHost): () => void {
+  const mine = {};
+  current = mine;
+  const show = () => useVideoLoad.setState({ host });
   const timer = window.setTimeout(show, useVideoLoad.getState().host ? 0 : SHOW_AFTER_MS);
   return () => {
     window.clearTimeout(timer);
     queueMicrotask(() => {
-      if (wait !== mine) return;
-      wait = null;
-      useVideoLoad.setState(IDLE);
+      if (current === mine) useVideoLoad.setState({ host: null });
     });
   };
-}
-
-function listenProgress() {
-  if (listening) return;
-  listening = true;
-  void listen<Progress>('video:progress', ({ payload }) => {
-    if (wait?.url !== payload.url) return;
-    wait.share = payload.total ? Math.min(payload.received / payload.total, 1) : null;
-    if (useVideoLoad.getState().host) useVideoLoad.setState({ share: wait.share });
-  });
 }

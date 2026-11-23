@@ -37,7 +37,6 @@ export const VideoToggle = React.memo(function VideoToggle({
 }) {
   const { t } = useTranslation();
   const setOn = useSettingsStore((s) => s.setVideoEnabled);
-  const share = useVideoLoad((s) => s.share);
   const state = useVideoState(track);
   if (!canPlayH264()) return null;
 
@@ -46,35 +45,27 @@ export const VideoToggle = React.memo(function VideoToggle({
     if (!on) forgetVideoFails(track.urn);
     setOn(!on);
   };
-  const percent = state === 'loading' && share !== null ? `${Math.round(share * 100)}%` : null;
-  const title = percent ? `${t(TITLE_KEY.loading)} ${percent}` : t(TITLE_KEY[state]);
+  const title = t(TITLE_KEY[state]);
 
   return (
-    <>
-      {percent && (
-        <span className="text-[12px] font-semibold tabular-nums text-ink-70" aria-hidden>
-          {percent}
-        </span>
+    <button
+      type="button"
+      data-ui="lyrics-video-toggle"
+      data-state={state}
+      aria-label={title}
+      aria-pressed={on}
+      aria-busy={state === 'loading'}
+      onClick={toggle}
+      title={title}
+      className={`relative ${className}`}
+      style={state === 'on' ? GLOW : on ? { color: 'var(--color-accent)' } : undefined}
+    >
+      {state === 'loading' && <VideoLoadRing size={SIZE} />}
+      <Film size={17} className={state === 'none' || state === 'failed' ? 'opacity-50' : ''} />
+      {state === 'failed' && (
+        <span className="absolute right-0 top-0 size-2.5 rounded-full bg-rose-400 ring-2 ring-black/60" />
       )}
-      <button
-        type="button"
-        data-ui="lyrics-video-toggle"
-        data-state={state}
-        aria-label={title}
-        aria-pressed={on}
-        aria-busy={state === 'loading'}
-        onClick={toggle}
-        title={title}
-        className={`relative ${className}`}
-        style={state === 'on' ? GLOW : on ? { color: 'var(--color-accent)' } : undefined}
-      >
-        {state === 'loading' && <VideoLoadRing share={share} size={SIZE} />}
-        <Film size={17} className={state === 'none' || state === 'failed' ? 'opacity-50' : ''} />
-        {state === 'failed' && (
-          <span className="absolute right-0 top-0 size-2.5 rounded-full bg-rose-400 ring-2 ring-black/60" />
-        )}
-      </button>
-    </>
+    </button>
   );
 });
 

@@ -10,7 +10,7 @@ import {
 } from '../../../lib/audio';
 import { isLocalUrn } from '../../../lib/local-library';
 import { getMomentClock } from '../../../lib/moments/channel';
-import { videoSource } from '../../../lib/video-cache';
+import { loadVideoAhead } from '../../../lib/video-cache';
 import type { VideoHost } from '../../../lib/video-element';
 import { pickVideo } from '../../../lib/video-pick';
 import type { Track, TrackVideo } from '../../../stores/player';
@@ -97,7 +97,7 @@ export function usePrefetchUpcoming(allowed: boolean) {
       done = next.urn;
       const { videoOrder, videoOff } = useSettingsStore.getState();
       const picked = pickVideo(next.videos, { order: videoOrder, off: videoOff }, new Set());
-      if (picked) videoSource(picked.url).catch(() => {});
+      if (picked) loadVideoAhead(picked.url).catch(() => {});
     };
     const timer = window.setInterval(check, PREFETCH_EVERY_MS);
     return () => window.clearInterval(timer);

@@ -7,22 +7,19 @@ import { trackedInvoke as invoke, logInfo } from './diagnostics';
 
 const TRIM_GAP_MS = 60_000;
 
-const sources = new Map<string, Promise<string>>();
 const failed = new Map<string, Set<string>>();
 const failedListeners = new Set<() => void>();
 const NO_FAILS: ReadonlySet<string> = new Set();
 let lastTrim = 0;
 
-export function videoSource(url: string): Promise<string> {
-  const known = sources.get(url);
-  if (known) return known;
-  const pending = invoke<string>('video_fetch', { url }).then((name) => {
-    trimSoon();
-    return `http://127.0.0.1:${getStaticPort()}/video/${name}`;
-  });
-  sources.set(url, pending);
-  pending.catch(() => sources.delete(url));
-  return pending;
+export async function videoSource(url: string): Promise<string> {
+  const name = await invoke<string>('video_fetch', { url });
+  trimSoon();
+  return `http://127.0.0.1:${getStaticPort()}/video/${name}`;
+}
+
+export function loadVideoAhead(url: string): Promise<void> {
+  return invoke('video_ahead', { url });
 }
 
 export function markVideoFailed(urn: string, kind: VideoKind, reason: string): void {
@@ -52,7 +49,6 @@ export function getVideoCacheSize(): Promise<number> {
 }
 
 export function clearVideoCache(): Promise<void> {
-  sources.clear();
   return invoke('video_cache_clear');
 }
 
@@ -61,9 +57,7 @@ export function enforceVideoCacheLimit(
 ): Promise<unknown> {
   if (limitMb === CACHE_UNLIMITED) return Promise.resolve();
   lastTrim = Date.now();
-  return invoke<number>('video_cache_enforce_limit', { limitMb }).then((freed) => {
-    if (freed > 0) sources.clear();
-  });
+  return invoke<number>('video_cache_enforce_limit', { limitMb });
 }
 
 function trimSoon() {
