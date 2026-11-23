@@ -97,6 +97,27 @@
     "abLoopName": "A-B 반복",
     "qualityName": "음질"
   },
+  "queue": {
+    "remove": "대기열에서 빼기",
+    "played": "재생한 곡",
+    "added": "내가 추가한 곡",
+    "fromWave": "내 웨이브에서",
+    "fromArtistWave": "아티스트 웨이브에서",
+    "fromSimilar": "비슷한 트랙",
+    "fromLikes": "내 좋아요에서",
+    "fromSuperlikes": "내 슈퍼 좋아요에서",
+    "fromPlaylist": "{{name}}에서",
+    "fromPlaylistAny": "플레이리스트에서",
+    "summary_other": "{{count}}곡 · {{time}}",
+    "minutes_other": "{{count}}분",
+    "hoursMinutes": "{{hours}}시간 {{minutes}}분",
+    "cleared": "대기열을 비웠어요",
+    "undo": "되돌리기",
+    "waveFailed": "웨이브를 시작하지 못했어요",
+    "seek": "탐색",
+    "play": "재생",
+    "pause": "일시정지"
+  },
   "auth": {
     "signIn": "SoundCloud로 로그인",
     "signingIn": "인증을 기다리는 중...",

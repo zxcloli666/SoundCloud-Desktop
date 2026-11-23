@@ -314,6 +314,8 @@ export const AppShell = React.memo(() => {
   const onHome = /^\/home\/?$/.test(pathname) && deckVisible && authenticated;
   const hideNowPlaying = onHome || /^\/moments\/?$/.test(pathname);
   const [queueOpen, setQueueOpen] = useState(false);
+  const queueUsed = useRef(false);
+  if (queueOpen) queueUsed.current = true;
   const hasWall = useSettingsStore((s) => !!s.backgroundImage);
   const kbOpen = useShortcutsStore((s) => s.open);
   const setKbOpen = useShortcutsStore((s) => s.setOpen);
@@ -533,7 +535,7 @@ export const AppShell = React.memo(() => {
       <ImportHost />
       <VoiceHost />
       <MobileLinkHost />
-      {queueOpen && (
+      {queueUsed.current && (
         <Suspense fallback={null}>
           <QueuePanel open={queueOpen} onClose={onQueueClose} />
         </Suspense>

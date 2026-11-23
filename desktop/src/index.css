@@ -4,6 +4,7 @@
 @import "./shell.css";
 @import "./home.css";
 @import "./marquee.css";
+@import "./queue.css";
 
 @theme {
   --color-bg-primary: rgb(var(--paper) / 0.95);
