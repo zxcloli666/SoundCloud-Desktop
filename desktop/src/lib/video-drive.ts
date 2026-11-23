@@ -49,6 +49,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   let wantPlay = false;
   let aim: number | null = null;
   let parkedAt = 0;
+  let waitsFrom = 0;
   let coldLead = LEAD_MIN_SEC;
   let startLag = 0;
   let playedAt = 0;
@@ -107,11 +108,14 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   };
 
   const canPlay = () => !video.seeking && video.readyState >= HAVE_FUTURE_DATA;
-  const canStart = () => !video.seeking && video.readyState >= HAVE_ENOUGH_DATA;
+  const canStart = () =>
+    canPlay() &&
+    (video.readyState >= HAVE_ENOUGH_DATA || performance.now() - waitsFrom > START_PATIENCE_MS);
 
   const park = (target: number, rate: number, lead: number) => {
-    aim = target + (lead + startLag) * rate;
     parkedAt = performance.now();
+    if (aim === null) waitsFrom = parkedAt;
+    aim = target + (lead + startLag) * rate;
     wantPlay = true;
     if (!video.paused) video.pause();
     video.currentTime = aim;
@@ -181,7 +185,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   const rejoin = (target: number, rate: number) => {
     const behind = (target - video.currentTime) / rate;
     const starting = !video.paused && performance.now() - playedAt < START_PATIENCE_MS;
-    if (starting && !rolls()) return;
+    if (starting && !rolls() && Math.abs(behind) < HOP_SEC) return;
     if (starting && behind > 0) startLag = Math.min(behind, LAG_MAX_SEC);
     const ahead = target + (LEAD_MIN_SEC + startLag) * rate;
     const near = !video.paused && behind > 0 && behind < HOP_SEC;
