@@ -493,6 +493,17 @@ test('effects switch by name and an unknown effect is refused before the app', a
   assert.deepEqual(app.calls, ['effect:slowed_reverb', 'effect:off']);
 });
 
+test('a station of the wave plays and an empty one goes back to the model', async () => {
+  const { app, run } = setup();
+  assert.equal((await run('play_station', { station: 'deep_cuts' })).returns, false);
+  assert.deepEqual((await run('play_station', { station: 'fresh_drops' })).result, {
+    ok: false,
+    reason: 'empty',
+  });
+  assert.equal((await run('play_station', { station: 'wave' })).result.reason, 'bad_args:station');
+  assert.deepEqual(app.calls, ['station:deep_cuts', 'station:fresh_drops']);
+});
+
 test('dislike and superlike rate the current track and a full quota goes back to the model', async () => {
   const { app, run } = setup();
   assert.equal((await run('dislike', { on: true })).returns, false);

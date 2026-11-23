@@ -42,7 +42,10 @@ export function useStations(feed: WaveFeed): { ids: StationId[]; active: Station
 export function stationRows(id: StationId, feed: WaveFeed): StationRow[] {
   if (id === 'wave') return trackRows(feed.tracks);
   const cluster = feed.clusters.get(id);
-  if (!cluster) return [];
+  return cluster ? clusterRows(cluster) : [];
+}
+
+export function clusterRows(cluster: ClusterHydrated): StationRow[] {
   return cluster.neighbors?.length ? artistRows(cluster) : trackRows(cluster.tracks);
 }
 

@@ -1,10 +1,16 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { isUrnLiked, likedTracksCount, useLiked } from '../../../lib/likes';
+import { isTrackLiked, likedTracksCount, useLiked } from '../../../lib/likes';
 import { useAuthStore } from '../../../stores/auth';
 import type { Track } from '../../../stores/player';
 import { usePlayerStore } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
-import { type ClusterHydrated, useClusterWave, waveQueue } from '../../music/cluster';
+import {
+  type ClusterHydrated,
+  homeWaveQuery,
+  keepVisible,
+  useClusterWave,
+  waveQueue,
+} from '../../music/cluster';
 import { useInfiniteWave } from '../../music/soundwave/use-infinite-wave';
 import { FlowDeck } from '../flow/FlowDeck';
 import type { WaveFeed, WaveTrouble } from '../flow/wave/stations';
@@ -24,49 +30,22 @@ export const RiverFlow = React.memo(function RiverFlow() {
   const [liveWave, setLiveWave] = useState<Track[]>(NO_TRACKS);
 
   const stableLanguages = useMemo(() => [...languages].sort(), [languages]);
-  const stableGenres = useMemo(() => [...genres].sort(), [genres]);
-  const langKey = stableLanguages.join(',') || 'all';
-  const genreKey = stableGenres.join(',') || 'any';
-
-  const url = useMemo(() => {
-    if (!isAuthenticated) return null;
-    const qs = new URLSearchParams();
-    if (stableLanguages.length > 0) qs.set('languages', stableLanguages.join(','));
-    if (stableGenres.length > 0) qs.set('genres', stableGenres.join(','));
-    qs.set('hide_listened', hideListened ? '1' : '0');
-    return `/recommendations?${qs}`;
-  }, [isAuthenticated, stableLanguages, stableGenres, hideListened]);
 
   const { data, isLoading, isError, isFetching, refetch } = useClusterWave({
-    queryKey: ['cluster-wave', 'home', langKey, genreKey, hideListened],
-    url,
+    ...homeWaveQuery({ languages, genres, hideListened }),
     enabled: isAuthenticated,
   });
 
   const rawClusters = useMemo(() => data?.clusters ?? [], [data]);
 
   const likesVersion = useLiked(currentTrack?.urn ?? '');
-  const keepTrack = useCallback(
-    (track: Track) => !hideLiked || (!track.user_favorite && !isUrnLiked(track.urn)),
-    [hideLiked],
-  );
+  const keepTrack = useCallback((track: Track) => !hideLiked || !isTrackLiked(track), [hideLiked]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: likesVersion ticks the live hide-liked filter.
-  const clusters = useMemo(() => {
-    return rawClusters
-      .map((cluster) => {
-        const byUrn = new Map(cluster.tracks.map((track) => [track.urn, track]));
-        return {
-          ...cluster,
-          tracks: cluster.tracks.filter(keepTrack),
-          neighbors: cluster.neighbors?.filter((n) => {
-            const match = byUrn.get(n.track_urn);
-            return !match || keepTrack(match);
-          }),
-        };
-      })
-      .filter((cluster) => cluster.tracks.length > 0) as ClusterHydrated[];
-  }, [rawClusters, keepTrack, likesVersion]);
+  const clusters = useMemo(
+    () => keepVisible({ clusters: rawClusters }, keepTrack).clusters,
+    [rawClusters, keepTrack, likesVersion],
+  );
 
   const clusterById = useMemo(
     () => new Map<string, ClusterHydrated>(clusters.map((cluster) => [cluster.id, cluster])),

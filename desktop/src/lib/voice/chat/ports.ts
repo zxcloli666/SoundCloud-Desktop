@@ -47,6 +47,15 @@ export interface OpenRoomShown {
   full: boolean;
 }
 
+export const STATIONS = [
+  'same_vibe',
+  'deep_cuts',
+  'adjacent',
+  'top_artists',
+  'fresh_drops',
+] as const;
+export type Station = (typeof STATIONS)[number];
+
 export const BUTTON_PLACES = ['bar', 'home'] as const;
 export type ButtonPlace = (typeof BUTTON_PLACES)[number];
 
@@ -89,4 +98,5 @@ export interface AppPort {
   openRooms(): Promise<OpenRoomShown[] | null>;
   buttons(): Record<ButtonPlace, PlacementMap>;
   placeButton(ask: ButtonAsk): ButtonDone;
+  playStation(station: Station): Promise<boolean>;
 }

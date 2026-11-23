@@ -20,11 +20,13 @@ export function WavePane({ feed, current }: { feed: WaveFeed; current: Track | n
     <section
       data-ui="wave-pane"
       aria-label={t('flowRedesign.waveTitle')}
-      className="hidden w-full max-w-[360px] min-w-0 flex-col gap-5 self-center @min-[1180px]:col-start-1 @min-[1180px]:row-start-1 @min-[1180px]:flex"
+      className="hidden w-full max-w-[360px] min-w-0 flex-col gap-3 self-center @min-[1180px]:col-start-1 @min-[1180px]:row-start-1 @min-[1180px]:flex"
     >
-      <WaveTabs heads={[wave]} stations={stations} value={active} panelId={panelId} />
-      <div id={panelId} role={stations.length > 0 ? 'tabpanel' : undefined}>
-        <StationList station={active} feed={feed} />
+      <div className="flex flex-col gap-4">
+        <WaveTabs heads={[wave]} stations={stations} value={active} panelId={panelId} />
+        <div id={panelId} role={stations.length > 0 ? 'tabpanel' : undefined}>
+          <StationList station={active} feed={feed} />
+        </div>
       </div>
       {current && <LyricCurrent track={current} />}
     </section>
