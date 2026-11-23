@@ -21,26 +21,24 @@ export const SearchState = memo(function SearchState({
   onAction,
 }: SearchStateProps) {
   return (
-    <div className="flex justify-center px-4 pt-14">
-      <div className="flex w-full max-w-[420px] flex-col items-center gap-4 rounded-2xl border border-ink/[0.08] bg-ink/[0.025] p-9 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-ink/[0.08] bg-ink/[0.04] text-accent">
-          {icon}
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <p className="text-[17px] font-semibold text-ink-90">{title}</p>
-          {body && <p className="text-[13px] leading-relaxed text-ink-45">{body}</p>}
-        </div>
-        {cta && onAction && (
-          <button
-            type="button"
-            onClick={onAction}
-            className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full bg-accent px-5 text-[13px] font-semibold text-accent-contrast transition-colors hover:bg-accent-hover"
-          >
-            {ctaIcon}
-            {cta}
-          </button>
-        )}
+    <div className="flex flex-col items-center gap-4 px-4 pt-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05] text-ink-40">
+        {icon}
       </div>
+      <div className="flex max-w-[420px] flex-col gap-1.5">
+        <p className="text-[16px] font-semibold text-ink-90">{title}</p>
+        {body && <p className="text-[13px] leading-relaxed text-ink-45">{body}</p>}
+      </div>
+      {cta && onAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-ink/10 bg-ink/[0.055] px-4 text-[12px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.18] hover:bg-ink/[0.09] hover:text-ink"
+        >
+          {ctaIcon}
+          {cta}
+        </button>
+      )}
     </div>
   );
 });
@@ -102,11 +100,7 @@ export const StripSkeleton = memo(function StripSkeleton() {
   return (
     <div className="flex gap-3 px-4 py-2">
       {[0, 1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="h-11 w-32 shrink-0 rounded-full skeleton-shimmer"
-          style={{ background: 'rgb(var(--ink) / 0.04)' }}
-        />
+        <div key={i} className="h-11 w-32 shrink-0 rounded-full bg-ink/[0.04] skeleton-shimmer" />
       ))}
     </div>
   );
