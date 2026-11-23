@@ -103,6 +103,7 @@ const TOOL_ICONS: Record<string, (size: number) => ReactNode> = {
   dislike: (s) => <ThumbsDown size={s} />,
   superlike: (s) => <Star size={s} />,
   together: (s) => <Users size={s} />,
+  open_rooms: (s) => <Radio size={s} />,
   ask_user: (s) => <Ear size={s} />,
   talk_mode: (s) => <MessageCircle size={s} />,
 };

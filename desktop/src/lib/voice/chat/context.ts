@@ -17,6 +17,7 @@ export interface RoomShown {
   role: 'host' | 'guest';
   code: string;
   listeners: number;
+  open?: true;
 }
 
 export interface Extras {

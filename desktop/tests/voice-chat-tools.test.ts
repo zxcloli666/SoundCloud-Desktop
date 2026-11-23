@@ -59,6 +59,7 @@ test('only the tools the model must hear back from ask for another round', () =>
       'screen',
       'scroll',
       'together',
+      'open_rooms',
     ],
   );
 });
@@ -440,11 +441,38 @@ test('together opens a room with a copied invite, refuses a second one and leave
   assert.deepEqual((await run('together', { act: 'leave' })).result, { ok: true, code: null });
   assert.equal((await run('together', { act: 'join', code: 'AB' })).result.reason, 'bad_code');
   assert.deepEqual(app.calls, [
-    'together:invite::false',
-    'together:start::false',
-    'together:join:ABC234:false',
-    'together:leave::false',
-    'together:join:AB:false',
+    'together:invite:::false',
+    'together:start:::false',
+    'together:join:ABC234::false',
+    'together:leave:::false',
+    'together:join:AB::false',
+  ]);
+});
+
+test('open rooms go back to the model and a public room is joined by its host or any', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('open_rooms', {})).result, {
+    ok: true,
+    rooms: [{ host: 'Mira', track: 'Faded - Psychosis', listeners: 3, capacity: 8, full: false }],
+  });
+  assert.equal(
+    (await run('together', { act: 'join', host: 'Oleg' })).result.reason,
+    'no_open_room',
+  );
+  assert.deepEqual((await run('together', { act: 'join', host: 'Mira' })).result, {
+    ok: true,
+    code: 'OPEN42',
+  });
+  assert.equal((await run('together', { act: 'visibility', open: true })).result.ok, true);
+  await run('together', { act: 'leave' });
+  assert.equal((await run('together', { act: 'join' })).result.code, 'OPEN42');
+  assert.deepEqual(app.calls, [
+    'open_rooms',
+    'together:join::Oleg:false',
+    'together:join::Mira:false',
+    'together:visibility:::true',
+    'together:leave:::false',
+    'together:join:::false',
   ]);
 });
 

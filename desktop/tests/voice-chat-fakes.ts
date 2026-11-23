@@ -163,18 +163,23 @@ export function fakeApp(): FakeApp {
       app.superlikes -= 1;
       return 'ok';
     },
-    together: async (act, code, open) => {
-      calls.push(`together:${act}:${code}:${open}`);
-      if (act === 'leave' || act === 'invite') {
-        if (!app.room) return { state: 'no_room' };
+    together: async ({ act, code, host, open }) => {
+      calls.push(`together:${act}:${code}:${host}:${open}`);
+      if (app.room) {
+        if (act === 'start' || act === 'join') return { state: 'in_room' };
         const was = app.room;
         if (act === 'leave') app.room = null;
         return { state: 'ok', code: act === 'leave' ? null : was };
       }
-      if (app.room) return { state: 'in_room' };
-      if (act === 'join' && code.length !== 6) return { state: 'bad_code' };
-      app.room = act === 'join' ? code : 'K7M2QP';
+      if (act !== 'start' && act !== 'join') return { state: 'no_room' };
+      if (act === 'join' && code && code.length !== 6) return { state: 'bad_code' };
+      if (act === 'join' && !code && host && host !== 'Mira') return { state: 'no_open_room' };
+      app.room = act === 'join' ? code || 'OPEN42' : 'K7M2QP';
       return { state: 'ok', code: app.room };
+    },
+    openRooms: async () => {
+      calls.push('open_rooms');
+      return [{ host: 'Mira', track: 'Faded - Psychosis', listeners: 3, capacity: 8, full: false }];
     },
   };
   return app;

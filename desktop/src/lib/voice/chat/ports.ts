@@ -15,10 +15,36 @@ export type EffectName = (typeof EFFECTS)[number];
 
 export type Taste = 'ok' | 'nothing_playing' | 'local_track' | 'quota_full' | 'failed';
 
-export type TogetherAct = 'start' | 'join' | 'invite' | 'leave';
+export const TOGETHER_ACTS = ['start', 'join', 'invite', 'visibility', 'leave'] as const;
+export type TogetherAct = (typeof TOGETHER_ACTS)[number];
+
+export interface TogetherAsk {
+  act: TogetherAct;
+  code: string;
+  host: string;
+  open: boolean;
+}
+
 export type TogetherDone =
   | { state: 'ok'; code: string | null }
-  | { state: 'no_room' | 'in_room' | 'bad_code' | 'failed' };
+  | {
+      state:
+        | 'no_room'
+        | 'in_room'
+        | 'bad_code'
+        | 'no_open_room'
+        | 'room_full'
+        | 'not_host'
+        | 'failed';
+    };
+
+export interface OpenRoomShown {
+  host: string;
+  track: string | null;
+  listeners: number;
+  capacity: number;
+  full: boolean;
+}
 
 export interface AppPort {
   resolve(query: string, kinds: EntityKind[]): Promise<Entity[]>;
@@ -43,5 +69,6 @@ export interface AppPort {
   setEffect(effect: EffectName): void;
   dislike(on: boolean): Promise<Taste>;
   superlike(on: boolean): Taste;
-  together(act: TogetherAct, code: string, open: boolean): Promise<TogetherDone>;
+  together(ask: TogetherAsk): Promise<TogetherDone>;
+  openRooms(): Promise<OpenRoomShown[] | null>;
 }
