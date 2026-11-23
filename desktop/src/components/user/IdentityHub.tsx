@@ -54,6 +54,7 @@ interface IdentityHubProps {
     | Array<{ id: number | string; url: string; service: string; title: string }>
     | undefined;
   aura: Aura;
+  glow: readonly string[];
   isOwnProfile: boolean;
   customHex: string;
   onPickAura: (a: Aura) => void;
@@ -66,6 +67,7 @@ export function IdentityHub({
   starTier,
   webProfiles,
   aura,
+  glow,
   isOwnProfile,
   customHex,
   onPickAura,
@@ -77,7 +79,7 @@ export function IdentityHub({
   const country = [user.city, user.country_code].filter(Boolean).join(', ');
 
   return (
-    <GlassHeroPanel className="@container">
+    <GlassHeroPanel className="@container" glow={glow} star={hasStar}>
       {user.banner_url && <ProfileBanner key={user.banner_url} url={user.banner_url} />}
       <div
         data-ui="user-hero"

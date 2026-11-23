@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { art } from '../../lib/formatters';
 import type { Comment } from '../../lib/hooks';
 import { Disc3 } from '../../lib/icons';
+import { litStyle } from '../../lib/page-glow';
 import {
   getAlbumTarget,
   getArtistDisplay,
@@ -29,6 +30,7 @@ export const RoomHero = React.memo(function RoomHero({
   isThis,
   isThisPlaying,
   isOwner,
+  glow,
   comments,
   onPlay,
   onSeek,
@@ -37,6 +39,7 @@ export const RoomHero = React.memo(function RoomHero({
   isThis: boolean;
   isThisPlaying: boolean;
   isOwner: boolean;
+  glow: readonly string[];
   comments: Comment[];
   onPlay: () => void;
   onSeek: (seconds: number) => void;
@@ -63,7 +66,11 @@ export const RoomHero = React.memo(function RoomHero({
   const year = track.release_year ?? album?.year;
 
   return (
-    <section data-ui="track-hero" className="@container panel relative rounded-3xl">
+    <section
+      data-ui="track-hero"
+      className="@container panel lit relative rounded-3xl"
+      style={litStyle(glow)}
+    >
       <div className="relative p-6 @min-[512px]:p-8 flex flex-col gap-7">
         <div className="flex flex-col @min-[740px]:flex-row items-center @min-[740px]:items-start gap-6 @min-[740px]:gap-8">
           <TrackCover

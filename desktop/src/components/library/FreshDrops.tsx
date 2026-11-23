@@ -11,12 +11,14 @@ import {
   RefreshCw,
   Sparkles,
 } from '../../lib/icons';
+import { glowColors, litStyle } from '../../lib/page-glow';
 import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
 import { useTrackPlay } from '../../lib/useTrackPlay';
 import type { Track } from '../../stores/player';
 import { LikeButton } from '../music/LikeButton';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 import { ReleaseActions } from '../releases/ReleaseActions';
+import { genreColor } from '../search/utils';
 import { useFollowingDrops } from './useFollowingDrops';
 
 function whenLabel(track: Track): string {
@@ -37,12 +39,14 @@ const FreshLead = memo(function FreshLead({
   const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't500x500');
   const when = whenLabel(track);
+  const glow = useMemo(() => litStyle(glowColors([genreColor(track.genre)])), [track.genre]);
 
   return (
     <div
       {...mark}
       onContextMenu={onContextMenu}
-      className="panel relative flex items-center gap-5 rounded-3xl p-4"
+      className="panel lit relative flex items-center gap-5 rounded-3xl p-4"
+      style={glow}
     >
       <button
         type="button"

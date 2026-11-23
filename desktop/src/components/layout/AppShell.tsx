@@ -39,6 +39,7 @@ import { BackToTop } from './BackToTop';
 import { CoverTint } from './CoverTint';
 import { GlobalBindingsGroup } from './GlobalBindingsGroup';
 import { NowPlayingBar } from './NowPlayingBar';
+import { PageGlow } from './PageGlow';
 import type { PlayerContext } from './player/PlayerButtons';
 import { ScrollReset } from './ScrollReset';
 import { Sidebar } from './Sidebar';
@@ -512,6 +513,7 @@ export const AppShell = React.memo(() => {
         <WallpaperRotator />
         <CustomBackground />
         <CoverTint />
+        <PageGlow />
         <AmbientGlow />
         <Titlebar />
         <div className="flex flex-1 min-h-0 relative z-10" style={{ isolation: 'isolate' }}>

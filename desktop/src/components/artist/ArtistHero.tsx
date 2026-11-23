@@ -18,6 +18,7 @@ interface ArtistHeroProps {
   artist: ArtistDetail;
   hasStar: boolean;
   aura: Aura;
+  glow: readonly string[];
 }
 
 const SocialChip = memo(({kind, url, title}: { kind: string; url: string; title: string }) => (
@@ -51,13 +52,13 @@ const ScAccountChip = memo(
   },
 );
 
-function ArtistHeroImpl({ artist, hasStar, aura }: ArtistHeroProps) {
+function ArtistHeroImpl({ artist, hasStar, aura, glow }: ArtistHeroProps) {
   const { t } = useTranslation();
   const [bioExpanded, setBioExpanded] = useState(false);
   const blockTarget = useMemo(() => artistTarget(artist), [artist]);
 
   return (
-    <GlassHeroPanel className="@container">
+    <GlassHeroPanel className="@container" glow={glow} star={hasStar}>
       <div data-ui="artist-hero" className="relative p-6 @lg:p-10 flex flex-col @min-[720px]:flex-row gap-8 @min-[720px]:gap-10 items-center @min-[720px]:items-stretch">
         <AvatarArtifact
           username={artist.name}

@@ -1,4 +1,5 @@
 import { memo } from 'react';
+import { usePageGlow } from '../../../lib/page-glow';
 import { usePremium } from '../../../lib/premium-cache';
 import { ChooseView } from './choose/ChooseView';
 import { useBuying } from './flow/derive';
@@ -13,6 +14,7 @@ import { Success } from './steps/Success';
 import { Panel } from './ui/Panel';
 
 export const StarShell = memo(function StarShell() {
+  usePageGlow([], 'page');
   return (
     <div data-ui="page" data-page="star" className="relative w-full">
       <div className="relative mx-auto w-full max-w-[1080px] px-4 pb-4 md:px-8">
