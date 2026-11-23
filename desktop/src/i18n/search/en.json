@@ -411,6 +411,14 @@
     "library sections",
     "reorder"
   ],
+  "sidebar.quickAccess": [
+    "history in sidebar",
+    "pin likes",
+    "unpin history",
+    "library shortcuts",
+    "sidebar shortcuts",
+    "hide superlikes from sidebar"
+  ],
   "settings.layoutPinned": [
     "pin playlist",
     "playlists in sidebar",

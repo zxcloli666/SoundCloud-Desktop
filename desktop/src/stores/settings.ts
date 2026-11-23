@@ -142,7 +142,6 @@ export interface SettingsState {
   miniPlayerOpacity: number | null;
   miniPlayerSolid: boolean;
   trackColumns: Partial<Record<TrackColumnId, number>>;
-  pinnedLikes: boolean;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   pinnedArtists: SidebarPinnedArtist[];
   discordRpcEnabled: boolean;
@@ -242,7 +241,6 @@ export interface SettingsState {
   setMiniPlayerOpacity: (opacity: number) => void;
   setMiniPlayerSolid: (solid: boolean) => void;
   setTrackColumn: (id: TrackColumnId, width: number | null) => void;
-  setPinnedLikes: (pinned: boolean) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   renamePinnedPlaylist: (urn: string, title: string) => void;
@@ -354,7 +352,6 @@ const DEFAULTS = {
   miniPlayerOpacity: null as number | null,
   miniPlayerSolid: false,
   trackColumns: {} as Partial<Record<TrackColumnId, number>>,
-  pinnedLikes: false,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   pinnedArtists: [] as SidebarPinnedArtist[],
   discordRpcEnabled: true,
@@ -500,7 +497,6 @@ export const useSettingsStore = create<SettingsState>()(
       setUiScale: (uiScale) => set({ uiScale }),
       setMiniPlayerOpacity: (opacity) =>
         set({ miniPlayerOpacity: Math.min(1, Math.max(MINI_PLAYER_OPACITY_MIN, opacity)) }),
-      setPinnedLikes: (pinnedLikes) => set({ pinnedLikes }),
       setMiniPlayerSolid: (miniPlayerSolid) => set({ miniPlayerSolid }),
       setTrackColumn: (id, width) =>
         set((s) => {
@@ -718,7 +714,6 @@ export const useSettingsStore = create<SettingsState>()(
         miniPlayerOpacity: s.miniPlayerOpacity,
         miniPlayerSolid: s.miniPlayerSolid,
         trackColumns: s.trackColumns,
-        pinnedLikes: s.pinnedLikes,
         pinnedPlaylists: s.pinnedPlaylists,
         pinnedArtists: s.pinnedArtists,
         discordRpcEnabled: s.discordRpcEnabled,

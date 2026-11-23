@@ -8,7 +8,7 @@ import { LibraryFrame } from '../components/library/LibraryFrame';
 import { LibrarySubHeader } from '../components/library/LibrarySubHeader';
 import { LikesSortMenu } from '../components/library/LikesSortMenu';
 import { LikesTab } from '../components/library/LikesTab';
-import { PinLikesButton } from '../components/library/PinLikesButton';
+import { PinQuickButton } from '../components/library/PinQuickButton';
 import { PlaylistsTab } from '../components/library/PlaylistsTab';
 import { ProfileGate } from '../components/library/ProfileGate';
 import { StatsView } from '../components/library/stats/StatsView';
@@ -96,14 +96,13 @@ export const LibraryCollection = React.memo(() => {
         filter={filterable ? filter : undefined}
         onFilter={filterable ? setFilter : undefined}
         actions={
-          sec === 'likes' ? (
-            <>
-              <PinLikesButton />
+          <>
+            <PinQuickButton id={sec} />
+            {sec === 'likes' && (
               <LikesSortMenu loading={likesSort !== 'default' && !!likesHaveMore} />
-            </>
-          ) : sec === 'superlikes' && superlikeCount > 1 ? (
-            <SuperlikesOrderReset />
-          ) : undefined
+            )}
+            {sec === 'superlikes' && superlikeCount > 1 && <SuperlikesOrderReset />}
+          </>
         }
       />
 

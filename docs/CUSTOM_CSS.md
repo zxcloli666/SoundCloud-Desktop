@@ -34,7 +34,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="search"]` | Search field in the title bar |
 | `[data-ui="sidebar"]` | Left navigation |
 | `[data-ui="nav-item"]` | A link in the left navigation |
-| `[data-ui="sidebar-pins"]` | Pinned artists in the left navigation |
+| `[data-ui="quick-access"]` | Quick access block in the left navigation: library shortcuts and pins |
+| `[data-ui="sidebar-pins"]` | Quick access rows, pinned playlists and artists in the left navigation |
 | `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |

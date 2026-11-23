@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LayoutDashboard, Lock, RotateCcw } from '../../../lib/icons';
 import { isDefaultLayout, type LayoutScope, LOCKED_VISIBLE, moveEntry } from '../../../lib/layout';
-import { useLayout } from '../../../lib/use-layout';
+import { useLayout, useToggleLayoutEntry } from '../../../lib/use-layout';
 import { useSettingsStore } from '../../../stores/settings';
 import { Block, Card, Segmented } from '../primitives';
-import { PinnedEditor, RiverSections } from './LayoutExtras';
+import { PinnedEditor, RiverSections, SubHeading } from './LayoutExtras';
 import { LayoutList, RowIconButton } from './LayoutList';
 import { itemMeta } from './layout-items';
 
@@ -18,6 +18,7 @@ const SCOPES: Array<{ id: LayoutScope; labelKey: string }> = [
 
 const HINTS: Record<LayoutScope, string> = {
   sidebar: 'settings.layoutSidebarHint',
+  quick: 'settings.layoutSidebarHint',
   library: 'settings.layoutPageHint',
   home: 'settings.layoutPageHint',
   player: 'settings.layoutPlayerHint',
@@ -27,12 +28,7 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
   const { t } = useTranslation();
   const layout = useLayout(scope);
   const setLayout = useSettingsStore((s) => s.setLayout);
-
-  const toggle = (id: string) =>
-    setLayout(
-      scope,
-      layout.map((e) => (e.id === id ? { ...e, hidden: !e.hidden } : e)),
-    );
+  const toggle = useToggleLayoutEntry(scope);
 
   const items = layout.map((entry) => {
     const meta = itemMeta(scope, entry.id);
@@ -75,9 +71,17 @@ export function LayoutCard() {
   const { t } = useTranslation();
   const [scope, setScope] = useState<LayoutScope>('sidebar');
   const layout = useLayout(scope);
+  const quick = useLayout('quick');
   const riverHidden = useSettingsStore((s) => s.riverHidden);
   const resetLayout = useSettingsStore((s) => s.resetLayout);
-  const pristine = isDefaultLayout(layout, scope) && (scope !== 'home' || riverHidden.length === 0);
+  const pristine =
+    isDefaultLayout(layout, scope) &&
+    (scope !== 'home' || riverHidden.length === 0) &&
+    (scope !== 'sidebar' || isDefaultLayout(quick, 'quick'));
+  const reset = () => {
+    resetLayout(scope);
+    if (scope === 'sidebar') resetLayout('quick');
+  };
 
   return (
     <Card
@@ -88,7 +92,7 @@ export function LayoutCard() {
         <button
           type="button"
           disabled={pristine}
-          onClick={() => resetLayout(scope)}
+          onClick={reset}
           className="set-btn"
           data-tone="quiet"
         >
@@ -107,6 +111,12 @@ export function LayoutCard() {
         <p className="px-0.5 text-[12px] leading-snug text-ink-45">{t(HINTS[scope])}</p>
         <BlocksEditor key={scope} scope={scope} />
       </Block>
+      {scope === 'sidebar' && (
+        <div data-ui="settings-row" className="set-row space-y-2.5 py-3">
+          <SubHeading title={t('sidebar.quickAccess')} />
+          <BlocksEditor scope="quick" />
+        </div>
+      )}
       {scope === 'sidebar' && <PinnedEditor />}
       {scope === 'home' && <RiverSections />}
     </Card>

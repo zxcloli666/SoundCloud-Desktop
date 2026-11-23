@@ -1,25 +1,18 @@
 import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
-import { useShallow } from 'zustand/shallow';
 import { MapPin } from '../../lib/icons';
-import { useSettingsStore } from '../../stores/settings';
+import type { LayoutId } from '../../lib/layout';
+import { useLayout, useToggleLayoutEntry } from '../../lib/use-layout';
 
-export function PinLikesButton() {
+export function PinQuickButton({ id }: { id: LayoutId<'quick'> }) {
   const { t } = useTranslation();
-  const { pinned, setPinned } = useSettingsStore(
-    useShallow((s) => ({ pinned: s.pinnedLikes, setPinned: s.setPinnedLikes })),
-  );
-  const label = pinned ? t('sidebar.unpinLikes') : t('sidebar.pinLikes');
-
-  const toggle = () => {
-    setPinned(!pinned);
-    toast.success(t(pinned ? 'sidebar.unpinned' : 'sidebar.pinned'));
-  };
+  const pinned = useLayout('quick').some((entry) => entry.id === id && !entry.hidden);
+  const toggle = useToggleLayoutEntry('quick');
+  const label = pinned ? t('sidebar.unpin') : t('sidebar.pin');
 
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={() => toggle(id)}
       title={label}
       aria-label={label}
       aria-pressed={pinned}

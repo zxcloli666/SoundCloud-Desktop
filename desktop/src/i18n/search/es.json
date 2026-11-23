@@ -385,6 +385,13 @@
     "ocultar elemento del menú",
     "secciones de la biblioteca"
   ],
+  "sidebar.quickAccess": [
+    "historial en la barra lateral",
+    "fijar me gusta",
+    "quitar historial del menú",
+    "atajos de biblioteca",
+    "accesos directos"
+  ],
   "settings.layoutPinned": [
     "fijar playlist",
     "playlists en la barra lateral",

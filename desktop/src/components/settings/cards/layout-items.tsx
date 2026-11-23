@@ -44,6 +44,16 @@ const LIBRARY_ITEMS: Record<LayoutId<'library'>, ItemMeta> = {
   dislikes: { icon: <ThumbsDown size={16} />, label: 'dislikes.title' },
 };
 
+const QUICK_ITEMS: Record<LayoutId<'quick'>, ItemMeta> = {
+  history: { icon: <Clock size={16} />, label: 'library.history' },
+  likes: { icon: <Heart size={16} />, label: 'library.likedTracks' },
+  superlikes: { icon: <SuperHeart size={16} />, label: 'superlikes.title' },
+  playlists: { icon: <ListMusic size={16} />, label: 'search.playlists' },
+  following: { icon: <Users size={16} />, label: 'nav.following' },
+  stats: { icon: <ChartNoAxesColumn size={16} />, label: 'stats.title' },
+  dislikes: { icon: <ThumbsDown size={16} />, label: 'dislikes.title' },
+};
+
 const HOME_ITEMS: Record<LayoutId<'home'>, ItemMeta> = {
   river: { icon: <AudioLines size={16} />, label: 'settings.layoutRiver' },
   shelf: { icon: <Heart size={16} />, label: 'home.shelf' },
@@ -75,6 +85,7 @@ const PLAYER_ITEMS: Record<LayoutId<'player'>, ItemMeta> = {
 };
 
 export function itemMeta(scope: LayoutScope, id: string): ItemMeta {
+  if (scope === 'quick') return QUICK_ITEMS[id as LayoutId<'quick'>];
   if (scope === 'library') return LIBRARY_ITEMS[id as LayoutId<'library'>];
   if (scope === 'home') return HOME_ITEMS[id as LayoutId<'home'>];
   if (scope === 'player') return PLAYER_ITEMS[id as LayoutId<'player'>];

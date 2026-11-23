@@ -11,7 +11,7 @@ import {
 import { useSettingsStore } from '../../../stores/settings';
 import { LayoutList, RowIconButton } from './LayoutList';
 
-function SubHeading({ title, desc }: { title: string; desc?: string }) {
+export function SubHeading({ title, desc }: { title: string; desc?: string }) {
   return (
     <div>
       <div className="text-[13.5px] font-medium text-ink-90">{title}</div>

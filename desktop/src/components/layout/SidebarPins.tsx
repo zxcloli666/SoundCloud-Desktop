@@ -4,8 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { art } from '../../lib/formatters';
-import { Heart, ListMusic, X } from '../../lib/icons';
+import { ListMusic, X } from '../../lib/icons';
+import { moveEntry } from '../../lib/layout';
+import { useSuperlikeCount } from '../../lib/superlikes';
+import { useLayout, useToggleLayoutEntry } from '../../lib/use-layout';
 import { useSettingsStore } from '../../stores/settings';
+import { itemMeta } from '../settings/cards/layout-items';
 import { Avatar } from '../ui/Avatar';
 import { IconBox, Label, ROW } from './SidebarChrome';
 import { SortableSlot, SortableStack } from './SortableStack';
@@ -57,43 +61,56 @@ function PinnedRow({
   );
 }
 
+function QuickRows({ collapsed }: { collapsed: boolean }) {
+  const { t } = useTranslation();
+  const layout = useLayout('quick');
+  const setLayout = useSettingsStore((s) => s.setLayout);
+  const toggle = useToggleLayoutEntry('quick');
+  const hasSuperlikes = useSuperlikeCount() > 0;
+  const ids = layout
+    .filter((entry) => !entry.hidden && (entry.id !== 'superlikes' || hasSuperlikes))
+    .map((entry) => entry.id);
+
+  return (
+    <SortableStack ids={ids} onMove={(from, to) => setLayout('quick', moveEntry(layout, from, to))}>
+      {ids.map((id) => {
+        const meta = itemMeta('quick', id);
+        return (
+          <SortableSlot key={id} id={id}>
+            <PinnedRow
+              to={`/library/${id}`}
+              title={t(meta.label)}
+              collapsed={collapsed}
+              unpinLabel={t('sidebar.unpin')}
+              onUnpin={() => toggle(id)}
+              icon={meta.icon}
+            />
+          </SortableSlot>
+        );
+      })}
+    </SortableStack>
+  );
+}
+
 export function SidebarPins({ collapsed }: { collapsed: boolean }) {
   const { t } = useTranslation();
-  const {
-    pinnedLikes,
-    setPinnedLikes,
-    pinnedPlaylists,
-    pinnedArtists,
-    unpinPlaylist,
-    unpinArtist,
-    reorderPinned,
-  } = useSettingsStore(
-    useShallow((s) => ({
-      pinnedLikes: s.pinnedLikes,
-      setPinnedLikes: s.setPinnedLikes,
-      pinnedPlaylists: s.pinnedPlaylists,
-      pinnedArtists: s.pinnedArtists,
-      unpinPlaylist: s.unpinPlaylist,
-      unpinArtist: s.unpinArtist,
-      reorderPinned: s.reorderPinnedPlaylists,
-    })),
-  );
+  const { pinnedPlaylists, pinnedArtists, unpinPlaylist, unpinArtist, reorderPinned } =
+    useSettingsStore(
+      useShallow((s) => ({
+        pinnedPlaylists: s.pinnedPlaylists,
+        pinnedArtists: s.pinnedArtists,
+        unpinPlaylist: s.unpinPlaylist,
+        unpinArtist: s.unpinArtist,
+        reorderPinned: s.reorderPinnedPlaylists,
+      })),
+    );
   const pinnedUrns = pinnedPlaylists.map((p) => p.urn);
   const movePinned = (from: string, to: string) =>
     reorderPinned(arrayMove(pinnedUrns, pinnedUrns.indexOf(from), pinnedUrns.indexOf(to)));
 
   return (
     <div data-ui="sidebar-pins" className="contents">
-      {pinnedLikes && (
-        <PinnedRow
-          to="/library/likes"
-          title={t('library.likedTracks')}
-          collapsed={collapsed}
-          unpinLabel={t('sidebar.unpinLikes')}
-          onUnpin={() => setPinnedLikes(false)}
-          icon={<Heart size={17} strokeWidth={1.9} />}
-        />
-      )}
+      <QuickRows collapsed={collapsed} />
 
       <SortableStack ids={pinnedUrns} onMove={movePinned}>
         {pinnedPlaylists.map((playlist) => {

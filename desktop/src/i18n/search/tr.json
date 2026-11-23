@@ -350,6 +350,13 @@
     "ana ekran düzeni",
     "sürükle bırak"
   ],
+  "sidebar.quickAccess": [
+    "kenar çubuğunda geçmiş",
+    "beğenileri sabitle",
+    "geçmişi menüden kaldır",
+    "kitaplık kısayolları",
+    "kısayollar"
+  ],
   "settings.layoutPinned": [
     "sabitlenen listeler",
     "sol menüdeki playlist",

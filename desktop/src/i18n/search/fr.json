@@ -385,6 +385,13 @@
     "cacher un élément du menu",
     "sections de la bibliothèque"
   ],
+  "sidebar.quickAccess": [
+    "historique dans la barre latérale",
+    "épingler les likes",
+    "retirer l'historique du menu",
+    "raccourcis de la bibliothèque",
+    "raccourcis"
+  ],
   "settings.layoutPinned": [
     "épingler une playlist",
     "playlists dans la barre latérale",

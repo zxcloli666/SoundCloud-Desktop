@@ -1,6 +1,6 @@
 import { selectChatInNav, useChatStore } from '../stores/chat';
 
-export type LayoutScope = 'sidebar' | 'library' | 'home' | 'player';
+export type LayoutScope = 'sidebar' | 'quick' | 'library' | 'home' | 'player';
 
 export interface LayoutEntry {
   id: string;
@@ -11,6 +11,7 @@ export type LayoutState = Record<LayoutScope, LayoutEntry[]>;
 
 export const LAYOUT_IDS = {
   sidebar: ['home', 'moments', 'search', 'discover', 'library', 'chats', 'offline'],
+  quick: ['history', 'likes', 'superlikes', 'playlists', 'following', 'stats', 'dislikes'],
   library: [
     'fresh',
     'continue',
@@ -87,6 +88,7 @@ const NO_IDS: ReadonlySet<string> = new Set();
 
 export const DEFAULT_HIDDEN: Record<LayoutScope, ReadonlySet<string>> = {
   sidebar: new Set(['search', 'discover', 'offline']),
+  quick: new Set(['playlists', 'following', 'stats', 'dislikes']),
   library: NO_IDS,
   home: new Set(['releases', 'superlikes', 'likes', 'recommended']),
   player: new Set([
@@ -105,7 +107,13 @@ export const DEFAULT_HIDDEN: Record<LayoutScope, ReadonlySet<string>> = {
   ]),
 };
 
-export const EMPTY_LAYOUT: LayoutState = { sidebar: [], library: [], home: [], player: [] };
+export const EMPTY_LAYOUT: LayoutState = {
+  sidebar: [],
+  quick: [],
+  library: [],
+  home: [],
+  player: [],
+};
 
 const NONE_GATED: ReadonlySet<string> = new Set();
 const CHATS_GATED: ReadonlySet<string> = new Set(['chats']);

@@ -345,6 +345,13 @@
     "layout da home",
     "arrastar e soltar"
   ],
+  "sidebar.quickAccess": [
+    "histórico na barra lateral",
+    "fixar curtidas",
+    "tirar histórico do menu",
+    "atalhos da biblioteca",
+    "atalhos"
+  ],
   "settings.layoutPinned": [
     "listas fixadas",
     "playlists na barra lateral",

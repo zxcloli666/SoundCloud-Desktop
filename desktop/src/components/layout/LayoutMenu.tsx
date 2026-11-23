@@ -3,8 +3,7 @@ import { type MouseEvent, type ReactNode, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Check } from '../../lib/icons';
 import type { LayoutScope } from '../../lib/layout';
-import { useLayout } from '../../lib/use-layout';
-import { useSettingsStore } from '../../stores/settings';
+import { useLayout, useToggleLayoutEntry } from '../../lib/use-layout';
 import { itemMeta } from '../settings/cards/layout-items';
 
 interface Point {
@@ -23,7 +22,7 @@ function LayoutMenu({
 }) {
   const { t } = useTranslation();
   const layout = useLayout(scope);
-  const setLayout = useSettingsStore((s) => s.setLayout);
+  const toggle = useToggleLayoutEntry(scope);
   const anchor = useMemo(
     () => ({
       current: {
@@ -32,12 +31,6 @@ function LayoutMenu({
     }),
     [at.x, at.y],
   );
-
-  const toggle = (id: string) =>
-    setLayout(
-      scope,
-      layout.map((e) => (e.id === id ? { ...e, hidden: !e.hidden } : e)),
-    );
 
   return (
     <Popover.Root open onOpenChange={(open) => !open && onClose()}>

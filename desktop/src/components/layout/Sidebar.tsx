@@ -3,18 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
-import { Clock, Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
+import { Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
 import { moveEntry } from '../../lib/layout';
 import { useReleaseFeed } from '../../lib/new-releases-api';
 import { usePerfMode } from '../../lib/perf';
 import { useOwnTenure } from '../../lib/star-tenure';
-import { useSuperlikeCount } from '../../lib/superlikes';
 import { useLayout } from '../../lib/use-layout';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
 import { ChatNavBadge } from '../chat/shell/ChatNavBadge';
-import { SuperHeart } from '../music/superlike/SuperHeart';
 import { Avatar } from '../ui/Avatar';
 import { useLayoutMenu } from './LayoutMenu';
 import { type IconCmp, NAV_ITEMS } from './nav-items';
@@ -110,6 +108,7 @@ export const Sidebar = React.memo(() => {
   );
   const layout = useLayout('sidebar');
   const layoutMenu = useLayoutMenu('sidebar');
+  const quickMenu = useLayoutMenu('quick');
   const navIds = layout
     .filter((e) => !e.hidden || (e.id === 'offline' && appMode !== 'online'))
     .map((e) => e.id);
@@ -117,7 +116,6 @@ export const Sidebar = React.memo(() => {
   const { isPremium } = useStarSubscription();
   const ownTenure = useOwnTenure();
   const perf = usePerfMode();
-  const superlikeCount = useSuperlikeCount();
   const { unheard } = useReleaseFeed();
 
   const toggleLanguage = () => {
@@ -166,7 +164,11 @@ export const Sidebar = React.memo(() => {
         </SortableStack>
       </nav>
 
-      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-2 space-y-0.5">
+      <div
+        data-ui="quick-access"
+        onContextMenu={quickMenu.onContextMenu}
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-2 space-y-0.5"
+      >
         <div className="relative h-5 mx-1 mb-0.5">
           <span
             className="absolute inset-x-0 top-1/2 h-px"
@@ -183,24 +185,6 @@ export const Sidebar = React.memo(() => {
             {t('sidebar.quickAccess')}
           </span>
         </div>
-
-        <NavItem
-          to="/library/history"
-          icon={Clock}
-          label={t('library.history')}
-          collapsed={collapsed}
-          title={collapsed ? t('library.history') : undefined}
-        />
-
-        {superlikeCount > 0 && (
-          <NavItem
-            to="/library/superlikes"
-            icon={SuperHeart}
-            label={t('superlikes.title')}
-            collapsed={collapsed}
-            title={collapsed ? t('superlikes.title') : undefined}
-          />
-        )}
 
         <SidebarPins collapsed={collapsed} />
       </div>
@@ -274,6 +258,7 @@ export const Sidebar = React.memo(() => {
         </div>
       )}
       {layoutMenu.menu}
+      {quickMenu.menu}
     </aside>
   );
 });
