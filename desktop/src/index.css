@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
 @import "./scheme.css";
+@import "./shell.css";
+@import "./home.css";
+@import "./settings.css";
+@import "./marquee.css";
+@import "./queue.css";
 
 @theme {
   --color-bg-primary: rgb(var(--paper) / 0.95);
@@ -77,17 +82,6 @@
 [data-perf="light"] .npb-glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: linear-gradient(
-            180deg,
-            rgb(var(--ink) / 0.06),
-            rgb(var(--ink) / 0.015) 44%,
-            rgb(var(--ink) / 0.008)
-    ),
-    rgb(var(--surface) / 0.92);
-}
-
-[data-perf="light"] .npb-glass::after {
-    display: none;
 }
 
 [data-perf="light"] *,
@@ -137,7 +131,6 @@
 [data-app-idle="1"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-app-idle="1"] .npb-dock[data-playing="true"] .npb-ring,
 [data-app-idle="1"] .npb-dock[data-playing="true"] .npb-eq i,
-[data-app-idle="1"] .npb-dock[data-playing="true"] .npb-play::after,
 [data-app-idle="1"] .tp[data-playing="true"] .npb-ring,
 [data-app-idle="1"] .tp[data-playing="true"] .npb-eq i {
     animation-play-state: paused !important;
@@ -153,7 +146,6 @@
 [data-perf="light"] .lyric-line[data-state="active"] .note-gradient-text,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-ring,
 [data-perf="light"] .npb-dock[data-playing="true"] .npb-eq i,
-[data-perf="light"] .npb-dock[data-playing="true"] .npb-play::after,
 [data-perf="light"] .tp[data-playing="true"] .npb-ring,
 [data-perf="light"] .tp[data-playing="true"] .npb-eq i {
     animation: none !important;
@@ -173,6 +165,25 @@ main[data-scrolling] *,
 main[data-scrolling] *::before,
 main[data-scrolling] *::after {
     pointer-events: none !important;
+}
+
+:is([data-perf="light"], [data-perf="medium"]) main[data-scrolling] * {
+    animation-play-state: paused !important;
+    transition-duration: 0ms !important;
+}
+
+:is([data-perf="light"], [data-perf="medium"]) main[data-scrolling] :is([class*="blur"], [style*="blur("], [style*="backdrop-filter"]) {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+:is([data-perf="light"], [data-perf="medium"]) main[data-scrolling] [class*="shadow"] {
+    box-shadow: none !important;
+}
+
+:is([data-perf="light"], [data-perf="medium"]) main[data-scrolling] [style*="mix-blend-mode"] {
+    mix-blend-mode: normal !important;
 }
 
 html,
@@ -233,9 +244,12 @@ select,
 
 /* ── Glass ──────────────────────────────────────────────────── */
 .glass {
-  background: rgb(var(--ink) / 0.025);
-    backdrop-filter: blur(var(--glass-blur)) saturate(1.8);
-  border: 1px solid rgb(var(--ink) / 0.05);
+  background: var(--shell-fill);
+  border: 1px solid var(--shell-line);
+}
+
+[data-wall] .glass {
+  backdrop-filter: blur(var(--glass-blur));
 }
 
 .glass-hover:hover {
@@ -244,8 +258,8 @@ select,
 }
 
 .glass-flat {
-  background: rgb(var(--ink) / 0.025);
-  border: 1px solid rgb(var(--ink) / 0.05);
+  background: var(--shell-fill);
+  border: 1px solid var(--shell-line);
 }
 
 /* ── Shimmer ───────────────────────────────────────────────── */
@@ -731,19 +745,6 @@ select,
   }
 }
 
-/* Aurora orbs carry a heavy `filter: blur()`; rotate/scale would force the
-   blur kernel to recompute every frame (huge GPU cost). Stick to translate —
-   that's a cheap composite transform, blur result stays cached. */
-@keyframes sw-aurora {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(3%, -1.5%, 0);
-  }
-}
-
 @keyframes sw-shine {
   0% {
     transform: translateX(-120%);
@@ -902,19 +903,6 @@ select,
   box-shadow: 0 0 6px var(--color-accent-glow);
 }
 
-.soundwave-title {
-  background-image: linear-gradient(
-    100deg,
-    rgb(var(--ink) / 0.98) 0%,
-    rgb(var(--ink) / 0.72) 40%,
-    var(--color-accent) 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
 /* ── Now Playing Bar — Liquid Pill Dock ──────────────────────────
    A single floating frosted capsule. The glass (backdrop-filter) lives in
    its OWN isolated layer (.npb-glass); all live/interactive content sits in
@@ -923,7 +911,6 @@ select,
    (vinyl ring, eq bars, play pulse) run only while [data-playing] is true
    (= playing AND window visible). */
 .npb {
-    --npb-quality-w: 67px;
     position: absolute;
     left: 0;
     right: 0;
@@ -950,40 +937,17 @@ select,
     }
 }
 
-/* accent under-glow plate behind the pill (cheap gradient, no backdrop-filter) */
-.npb-underglow {
-    position: absolute;
-    bottom: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(62%, 660px);
-    height: 70px;
-    pointer-events: none;
-    z-index: 0;
-    background: radial-gradient(60% 100% at 50% 100%, var(--color-accent-glow) 0%, transparent 72%);
-    filter: blur(8px);
-    opacity: 0.85;
-    transition: opacity 0.4s var(--ease-apple);
-}
-
-.npb:hover .npb-underglow {
-    opacity: 1;
-}
-
-/* the floating capsule — frame carries shadow + the gentle float */
 .npb-dock {
     position: relative;
     z-index: 1;
     pointer-events: auto;
     width: 1128px;
     max-width: calc(100% - 32px);
-    border-radius: 28px;
+    border-radius: 18px;
     container: npb / inline-size;
-    box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
-    0 0 64px -18px var(--color-accent-glow);
+    box-shadow: 0 10px 30px -14px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)));
 }
 
-/* the ONLY backdrop-filter — isolated in its own GPU layer */
 .npb-glass {
     position: absolute;
     inset: 0;
@@ -991,39 +955,12 @@ select,
     overflow: hidden;
     pointer-events: none;
     z-index: 0;
-    background: linear-gradient(
-            180deg,
-            rgb(var(--ink) / 0.09),
-            rgb(var(--ink) / 0.022) 44%,
-            rgb(var(--ink) / 0.01)
-    ),
-    rgb(var(--surface) / 0.55);
-    border: 1px solid rgb(var(--ink) / 0.11);
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset,
-    0 -10px 26px -18px rgb(var(--shade) / calc(0.7 * var(--shade-alpha))) inset;
-    backdrop-filter: blur(var(--glass-blur-soft)) saturate(1.6);
-    -webkit-backdrop-filter: blur(var(--glass-blur-soft)) saturate(1.6);
+    background: color-mix(in srgb, var(--shell-side-solid) 95%, transparent);
+    border: 1px solid var(--shell-line-hi);
+    backdrop-filter: blur(var(--glass-blur-soft));
+    -webkit-backdrop-filter: blur(var(--glass-blur-soft));
     contain: strict;
     transform: translateZ(0);
-}
-
-/* accent tint in the corner */
-.npb-glass::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(120% 180% at 6% 0%, var(--color-accent-glow) 0%, transparent 42%);
-    opacity: 0.5;
-}
-
-/* fine grain for material realism */
-.npb-glass::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    opacity: 0.04;
-    mix-blend-mode: overlay;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* content layer — repaints here never re-blur the glass below */
@@ -1034,44 +971,44 @@ select,
     display: flex;
     flex-direction: column;
     gap: 7px;
-    padding: 10px 18px 8px;
+    padding: 12px 18px 10px;
 }
 
 .npb-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 
-.npb-quality {
+.npb-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.npb-track-btns,
+.npb-tool-btns {
+    display: flex;
+    align-items: center;
     flex: 0 0 auto;
-    width: auto;
-}
-
-.npb-react {
-    display: flex;
-    align-items: center;
     gap: 2px;
-    flex: 0 0 auto;
 }
 
-.npb-react.is-local {
-    justify-content: center;
-    width: calc(5 * 36px + 5 * 2px + var(--npb-quality-w));
+.npb-tool-btns {
+    justify-self: end;
 }
 
-.npb-slot {
-    display: flex;
-    flex: 0 0 36px;
-    width: 36px;
-    height: 36px;
-}
-
-.npb-sep {
-    width: 1px;
-    height: 30px;
-    flex: 0 0 auto;
-    background: linear-gradient(180deg, transparent, rgb(var(--ink) / 0.16), transparent);
+.npb-ghosts {
+    position: absolute;
+    top: 0;
+    right: 18px;
+    width: 34px;
+    height: 34px;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* meta (art + title) */
@@ -1402,96 +1339,55 @@ select,
     box-shadow: 0 0 14px var(--color-accent-glow);
 }
 
-/* play orb — the hero */
 .npb-play {
-    position: relative;
-    width: 48px;
-    height: 48px;
-    flex: 0 0 auto;
-    margin: 0 3px;
     display: grid;
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    margin: 0 3px;
     place-items: center;
+    border: 1px solid rgb(var(--ink) / 0.28);
     border-radius: 50%;
+    background: rgb(var(--ink) / 0.1);
+    color: rgb(var(--ink));
     cursor: pointer;
-    border: 0;
-    background: radial-gradient(
-            125% 125% at 32% 24%,
-            var(--color-accent-hover),
-            var(--color-accent) 68%
-    );
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.26) inset,
-    0 8px 20px -5px var(--color-accent-glow),
-    0 0 30px -6px var(--color-accent-glow);
-    transition: transform 0.25s var(--ease-apple),
-    box-shadow 0.25s var(--ease-apple);
+    transition: background-color 0.15s, border-color 0.15s;
 }
 
 .npb-play:hover {
-    transform: translateY(-1px) scale(1.06);
+    border-color: rgb(var(--ink) / 0.4);
+    background: rgb(var(--ink) / 0.17);
 }
 
 .npb-play:active {
-    transform: scale(0.95);
+    background: rgb(var(--ink) / 0.07);
 }
 
-.npb-play::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    pointer-events: none;
-    border: 1.5px solid var(--color-accent);
-    opacity: 0;
-}
-
-.npb-dock[data-playing="true"] .npb-play::after {
-    animation: npb-pulse 2.8s var(--ease-apple) infinite;
-}
-
-@keyframes npb-pulse {
-    0% {
-        transform: scale(1);
-        opacity: 0.7;
-    }
-    70% {
-        transform: scale(1.4);
-        opacity: 0;
-    }
-    100% {
-        opacity: 0;
-    }
-}
-
-/* progress lane (full pill width) */
 .npb-lane {
-    position: relative;
     display: flex;
-    flex-direction: column;
-    gap: 0;
+    align-items: center;
+    gap: 10px;
 }
 
-.npb-times {
-    display: flex;
-    justify-content: space-between;
-    font-size: 9.5px;
+.npb-time {
+    flex: 0 0 34px;
+    font-size: 10px;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.02em;
     color: rgb(var(--ink) / 0.42);
-    padding: 0 1px 1px;
 }
 
-.npb-times b {
-    color: rgb(var(--ink) / 0.9);
-    font-weight: 700;
+.npb-time.is-now {
+    color: rgb(var(--ink) / 0.85);
+    text-align: right;
 }
 
 /* track loading (SC → SCD): the capsule traces its own glowing accent outline,
    the artwork shows a % veil, and the halo brightens. No idle motion — the ring
    just fills to the real download progress via a transition. */
 .npb-dock.is-loading {
-    box-shadow: 0 30px 70px -22px rgb(var(--shade) / calc(0.78 * var(--shade-alpha))),
-    0 0 90px -10px var(--color-accent-glow);
+    box-shadow: 0 10px 30px -14px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))),
+    0 0 40px -12px var(--color-accent-glow);
 }
 
 .npb-loadring {
@@ -1509,8 +1405,8 @@ select,
     y: 1px;
     width: calc(100% - 2px);
     height: calc(100% - 2px);
-    rx: 27px;
-    ry: 27px;
+    rx: 17px;
+    ry: 17px;
     fill: none;
 }
 
@@ -1557,20 +1453,7 @@ select,
     display: block;
 }
 
-.together-icon {
-    display: none;
-}
-
-.npb-extra,
-.npb-spare {
-    display: contents;
-}
-
 @container npb (width < 1096px) {
-    .npb-content {
-        --npb-quality-w: 64px;
-    }
-
     .npb-vol-slider {
         display: none;
     }
@@ -1582,40 +1465,16 @@ select,
     .npb-txt {
         flex-basis: 112px;
     }
+}
 
-    .together-icon {
-        display: block;
-    }
-
-    .together-stack {
+@container npb (width < 800px) {
+    .npb-track-btns {
         display: none;
     }
 }
 
-@container npb (width < 936px) {
-    .npb-quality {
-        display: none;
-    }
-
-    .npb-react.is-local {
-        width: auto;
-    }
-}
-
-@container npb (width < 836px) {
-    .npb-row {
-        gap: 8px;
-    }
-
-    .npb-slot,
-    .npb-abloop:not(.is-active) {
-        display: none;
-    }
-}
-
-@container npb (width < 696px) {
-    .npb-extra,
-    .npb-sep {
+@container npb (width < 620px) {
+    .npb-tool-btns {
         display: none;
     }
 
@@ -1624,25 +1483,15 @@ select,
     }
 }
 
-@container npb (width < 536px) {
-    .npb-spare {
-        display: none;
-    }
-}
-
 @container npb (width < 480px) {
     .npb-row {
-        flex-wrap: wrap;
-        justify-content: center;
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
         row-gap: 6px;
     }
 
-    .npb-meta {
-        flex-basis: 100%;
-    }
-
-    .npb-react.is-local {
-        display: none;
+    .npb-left {
+        width: 100%;
     }
 }
 
@@ -1650,8 +1499,7 @@ select,
     .npb-namecard,
     .npb,
     .npb-dock[data-playing="true"] .npb-ring,
-    .npb-dock[data-playing="true"] .npb-eq i,
-    .npb-dock[data-playing="true"] .npb-play::after {
+    .npb-dock[data-playing="true"] .npb-eq i {
         animation: none;
     }
 }
@@ -1851,24 +1699,6 @@ select,
   }
 }
 
-@keyframes star-sheen {
-  0% {
-    transform: translate3d(-120%, 0, 0) skewX(-18deg);
-  }
-  55%, 100% {
-    transform: translate3d(320%, 0, 0) skewX(-18deg);
-  }
-}
-
-@keyframes star-halo {
-  0%, 100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(-4vw, 3vh, 0);
-  }
-}
-
 .star-in,
 .star-stagger > * {
   animation: star-in 0.42s var(--ease-apple) both;
@@ -1898,16 +1728,11 @@ select,
   animation: star-pulse 2.2s ease-in-out infinite;
 }
 
-.star-sheen {
-  animation: star-sheen 3.4s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .star-in,
   .star-stagger > *,
   .star-pop,
-  .star-pulse,
-  .star-sheen {
+  .star-pulse {
     animation: none !important;
   }
 }

@@ -10,7 +10,7 @@ import {
 import { isFinal } from '../../lib/mobile-link/flow';
 import { mobileLink, useMobileLinkState } from '../../stores/mobile-link';
 import { Row } from '../settings/primitives';
-import { PRIMARY_BUTTON, QUIET_BUTTON, TONE_CLASS, type Tone } from './styles';
+import { TONE_CLASS, type Tone } from './styles';
 
 type Kind = 'off' | 'active' | 'relink' | 'waiting';
 
@@ -55,30 +55,29 @@ export function MobileAccessRow() {
   const unlinking = kind === 'active';
 
   return (
-    <div className="mb-4 border-b border-ink/[0.05] pb-4">
-      <Row
-        title={t('mobileLink.title')}
-        desc={running ? t('mobileLink.hint.minutes', { count: flow.minutes }) : undefined}
+    <Row
+      title={t('mobileLink.title')}
+      desc={running ? t('mobileLink.hint.minutes', { count: flow.minutes }) : undefined}
+    >
+      <span
+        data-ui="mobile-access-badge"
+        data-state={kind}
+        role="status"
+        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11.5px] font-semibold ${TONE_CLASS[look.tone]}`}
       >
-        <span
-          data-ui="mobile-access-badge"
-          data-state={kind}
-          role="status"
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11.5px] font-semibold ${TONE_CLASS[look.tone]}`}
-        >
-          <StateIcon kind={kind} />
-          {t(look.label)}
-        </span>
-        <button
-          type="button"
-          disabled={unlink.isPending}
-          onClick={() => (unlinking ? unlink.mutate() : mobileLink.openDialog())}
-          className={unlinking ? QUIET_BUTTON : PRIMARY_BUTTON}
-        >
-          {unlink.isPending && <Loader2 size={12} className="motion-safe:animate-spin" />}
-          {t(look.action)}
-        </button>
-      </Row>
-    </div>
+        <StateIcon kind={kind} />
+        {t(look.label)}
+      </span>
+      <button
+        type="button"
+        disabled={unlink.isPending}
+        onClick={() => (unlinking ? unlink.mutate() : mobileLink.openDialog())}
+        className="set-btn"
+        data-tone={unlinking ? undefined : 'accent'}
+      >
+        {unlink.isPending && <Loader2 size={12} className="motion-safe:animate-spin" />}
+        {t(look.action)}
+      </button>
+    </Row>
   );
 }

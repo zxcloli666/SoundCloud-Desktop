@@ -7,6 +7,8 @@ import { useScrollEdges } from './useScrollEdges';
 interface HorizontalScrollProps {
   children: ReactNode;
   className?: string;
+  activeItemKey?: string;
+  onNearEnd?: () => void;
 }
 
 const DRAG_THRESHOLD = 6;
@@ -41,7 +43,12 @@ function ScrollArrow({ side, visible, label, onClick }: ScrollArrowProps) {
   );
 }
 
-export function HorizontalScroll({ children, className = '' }: HorizontalScrollProps) {
+export function HorizontalScroll({
+  children,
+  className = '',
+  activeItemKey,
+  onNearEnd,
+}: HorizontalScrollProps) {
   const ref = useRef<HTMLDivElement>(null);
   const dragStateRef = useRef({
     active: false,
@@ -69,6 +76,31 @@ export function HorizontalScroll({ children, className = '' }: HorizontalScrollP
       document.body.style.removeProperty('user-select');
     };
   }, []);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!activeItemKey || !el) return;
+    const item = Array.from(el.children).find(
+      (child) => child.getAttribute('data-scroll-key') === activeItemKey,
+    );
+    if (!(item instanceof HTMLElement)) return;
+    const box = el.getBoundingClientRect();
+    const rect = item.getBoundingClientRect();
+    const left = el.scrollLeft + rect.left - box.left - (el.clientWidth - rect.width) / 2;
+    el.scrollTo({ left: Math.max(0, left), behavior: smooth ? 'smooth' : 'auto' });
+  }, [activeItemKey, smooth]);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !onNearEnd) return;
+    const onScroll = () => {
+      if (el.scrollWidth - el.clientWidth - el.scrollLeft < Math.max(420, el.clientWidth * 0.45)) {
+        onNearEnd();
+      }
+    };
+    el.addEventListener('scroll', onScroll, { passive: true });
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [onNearEnd]);
 
   const handlePointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;

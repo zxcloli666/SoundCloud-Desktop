@@ -35,7 +35,7 @@ export function TemplateField({
         value={value}
         spellCheck={false}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-xl border border-ink/[0.08] bg-ink/[0.04] px-3 py-2.5 font-mono text-[13px] text-ink-85 outline-none transition-colors focus:border-accent"
+        className="h-9 w-full rounded-[10px] border border-[color:var(--set-line)] bg-shade-20 px-3 font-mono text-[13px] text-ink-90 outline-none transition-colors focus:border-accent"
       />
       <div className="flex flex-wrap gap-1.5">
         {OBS_TOKENS.map((token) => (
@@ -43,7 +43,7 @@ export function TemplateField({
             key={token}
             type="button"
             onClick={() => insert(token)}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-ink/[0.06] bg-ink/[0.04] px-2 py-1 text-[11.5px] text-ink-55 transition-colors hover:bg-ink/[0.08] hover:text-ink-80"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-[7px] border border-[color:var(--set-line)] bg-shade-20 px-2 py-1 text-[11.5px] text-ink-60 transition-colors hover:text-ink"
           >
             <code className="font-mono text-accent">{token}</code>
             {t(TOKEN_LABELS[token])}

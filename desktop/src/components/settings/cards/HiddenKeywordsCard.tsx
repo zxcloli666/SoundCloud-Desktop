@@ -32,10 +32,10 @@ const KeywordChip = memo(
     return (
       <li
         ref={ref}
-        className={`group/chip inline-flex h-8 items-center gap-1 rounded-full border-[0.5px] pl-3 pr-1 text-[12.5px] font-medium transition-colors duration-200 ${
+        className={`group/chip inline-flex h-8 items-center gap-1 rounded-full border pr-1 pl-3 text-[12.5px] font-medium transition-colors duration-150 ${
           armed
-            ? 'border-rose-400/40 bg-rose-500/15 text-rose-200'
-            : 'border-ink/[0.08] bg-ink/[0.04] text-ink-75 hover:border-ink/[0.14] hover:bg-ink/[0.07] hover:text-ink'
+            ? 'border-bad/40 bg-bad/15 text-bad'
+            : 'border-[color:var(--set-line)] bg-[var(--set-well)] text-ink-80 hover:bg-[var(--set-well-hi)] hover:text-ink'
         }`}
       >
         <span className="max-w-[220px] truncate">{keyword}</span>
@@ -43,7 +43,7 @@ const KeywordChip = memo(
           type="button"
           onClick={() => onRemove(keyword)}
           aria-label={t('keywordFilter.remove', { keyword })}
-          className="flex h-6 w-6 items-center justify-center rounded-full text-ink-35 transition-all duration-200 cursor-pointer hover:bg-rose-500/15 hover:text-rose-300 active:scale-90"
+          className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-full text-ink-35 transition-colors duration-150 hover:bg-bad/15 hover:text-bad"
         >
           <X size={12} strokeWidth={2.5} />
         </button>
@@ -98,24 +98,23 @@ export function HiddenKeywordsCard() {
     <Card
       title={t('keywordFilter.cardTitle')}
       desc={t('keywordFilter.cardDesc')}
+      info={t('keywordFilter.hint')}
       icon={<Hash size={17} />}
       action={
         keywords.length > 0 ? (
-          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full border-[0.5px] border-ink/[0.12] bg-ink/[0.06] px-2.5 text-[12px] font-bold tabular-nums text-ink-70">
-            {keywords.length}
-          </span>
+          <span className="set-chip h-7 min-w-7 justify-center px-2.5">{keywords.length}</span>
         ) : undefined
       }
     >
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3.5">
         <div
-          className={`flex h-11 items-center gap-2 rounded-2xl border-[0.5px] bg-ink/[0.03] pl-3.5 pr-1.5 transition-colors duration-200 focus-within:bg-ink/[0.05] ${
+          className={`flex h-10 items-center gap-2 rounded-[11px] border bg-[var(--set-well)] pr-1 pl-3 transition-colors duration-150 ${
             duplicate
-              ? 'border-amber-400/30'
-              : 'border-ink/[0.08] focus-within:border-ink/[0.18]'
+              ? 'border-amber-400/60'
+              : 'border-[color:var(--set-line)] focus-within:border-accent'
           }`}
         >
-          <Hash size={14} className="shrink-0 text-ink-25" />
+          <Hash size={14} className="shrink-0 text-ink-35" />
           <input
             value={draft}
             onChange={(e) => {
@@ -127,13 +126,14 @@ export function HiddenKeywordsCard() {
             maxLength={MAX_KEYWORD_LENGTH}
             placeholder={t('keywordFilter.placeholder')}
             spellCheck={false}
-            className="min-w-0 flex-1 bg-transparent text-[13px] text-ink-85 outline-none placeholder:text-ink-25"
+            className="min-w-0 flex-1 bg-transparent text-[13px] text-ink-90 outline-none placeholder:text-ink-35"
           />
           <button
             type="button"
             onClick={submit}
             disabled={!draftKey || duplicate}
-            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3 text-[12px] font-semibold text-accent-contrast transition-all duration-200 cursor-pointer hover:brightness-110 active:scale-95 disabled:cursor-default disabled:bg-ink/[0.06] disabled:text-ink-30 disabled:active:scale-100"
+            className="set-btn"
+            data-tone="accent"
           >
             <Plus size={13} strokeWidth={2.5} />
             {t('keywordFilter.add')}
@@ -141,16 +141,11 @@ export function HiddenKeywordsCard() {
         </div>
 
         {duplicate && (
-          <p className="-mt-2 text-[11.5px] text-amber-300/80">{t('keywordFilter.duplicate')}</p>
+          <p className="-mt-1.5 text-[11.5px] text-amber-400">{t('keywordFilter.duplicate')}</p>
         )}
 
         {keywords.length === 0 ? (
-          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-ink/[0.08] px-4 py-4">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ink/[0.04] text-ink-25">
-              <Hash size={16} />
-            </span>
-            <p className="text-[12px] leading-snug text-ink-35">{t('keywordFilter.empty')}</p>
-          </div>
+          <p className="text-[12.5px] leading-snug text-ink-40">{t('keywordFilter.empty')}</p>
         ) : (
           <ul className="flex max-h-[220px] flex-wrap gap-1.5 overflow-y-auto pr-1">
             {keywords.map((keyword) => (
@@ -166,15 +161,13 @@ export function HiddenKeywordsCard() {
 
         {suggestions.length > 0 && (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="mr-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-25">
-              {t('keywordFilter.suggestions')}
-            </span>
+            <span className="mr-1 text-[12px] text-ink-40">{t('keywordFilter.suggestions')}</span>
             {suggestions.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => add(s)}
-                className="inline-flex h-7 items-center gap-1 rounded-full border-[0.5px] border-dashed border-ink/[0.12] px-2.5 text-[11.5px] font-medium text-ink-45 transition-all duration-200 cursor-pointer hover:border-ink/[0.24] hover:bg-ink/[0.04] hover:text-ink-80 active:scale-95"
+                className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-full border border-dashed border-[color:var(--shell-line-hi)] px-2.5 text-[12px] font-medium text-ink-55 transition-colors duration-150 hover:bg-[var(--set-well)] hover:text-ink"
               >
                 <Plus size={11} />
                 {s}
@@ -182,8 +175,6 @@ export function HiddenKeywordsCard() {
             ))}
           </div>
         )}
-
-        <p className="text-[11.5px] leading-snug text-ink-30">{t('keywordFilter.hint')}</p>
       </div>
     </Card>
   );

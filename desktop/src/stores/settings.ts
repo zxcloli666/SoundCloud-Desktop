@@ -1,23 +1,30 @@
-import {create} from 'zustand';
-import {createJSONStorage, persist} from 'zustand/middleware';
-import {normalizeAudioCacheLimit, normalizeImageCacheLimit} from '../lib/cache-limit';
-import {EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset} from '../lib/equalizer';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import { normalizeAudioCacheLimit, normalizeImageCacheLimit } from '../lib/cache-limit';
+import { EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset } from '../lib/equalizer';
 import {
   DEFAULT_GLOBAL_HOTKEYS,
   type GlobalHotkeyAction,
   type GlobalHotkeyMap,
 } from '../lib/hotkeys/actions';
-import type {InterfaceFont} from '../lib/interface-font';
-import type {SchemeChoice} from '../lib/scheme';
-import {EMPTY_LAYOUT, type LayoutEntry, type LayoutScope, type LayoutState, type RiverSectionId,} from '../lib/layout';
-import type {PerfMode} from '../lib/perf';
-import {tauriStorage} from '../lib/tauri-storage';
-import type {TrackSort} from '../lib/track-sort';
-import {VIDEO_KINDS} from '../lib/video-pick';
-import type {VideoKind} from './player';
+import type { InterfaceFont } from '../lib/interface-font';
+import {
+  EMPTY_LAYOUT,
+  type LayoutEntry,
+  type LayoutScope,
+  type LayoutState,
+  type RiverHiddenEntry,
+} from '../lib/layout';
+import type { PerfMode } from '../lib/perf';
+import type { SchemeChoice } from '../lib/scheme';
+import { tauriStorage } from '../lib/tauri-storage';
+import type { TrackSort } from '../lib/track-sort';
+import { VIDEO_KINDS } from '../lib/video-pick';
+import type { VideoKind } from './player';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
+export type HomeShelfTab = 'liked' | 'releases' | 'artists' | 'playlists' | 'history';
 export type CloseAction = 'tray' | 'quit';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq' | 'uq';
@@ -110,6 +117,7 @@ export interface SettingsState {
   audioCacheLimitMB: number;
   imageCacheLimitMB: number;
   hoverPreload: boolean;
+  hoverPreviewDuringPlayback: boolean;
   language: string;
   eqEnabled: boolean;
   eqGains: number[];
@@ -134,7 +142,6 @@ export interface SettingsState {
   miniPlayerOpacity: number | null;
   miniPlayerSolid: boolean;
   trackColumns: Partial<Record<TrackColumnId, number>>;
-  pinnedLikes: boolean;
   pinnedPlaylists: SidebarPinnedPlaylist[];
   pinnedArtists: SidebarPinnedArtist[];
   discordRpcEnabled: boolean;
@@ -187,7 +194,10 @@ export interface SettingsState {
   customCss: string;
   customCssEnabled: boolean;
   layouts: LayoutState;
-  riverHidden: RiverSectionId[];
+  riverHidden: RiverHiddenEntry[];
+  liveBackground: boolean;
+  homeShelfTab: HomeShelfTab;
+  homeShelfOpen: boolean;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -204,6 +214,7 @@ export interface SettingsState {
   setAudioCacheLimitMB: (limit: number) => void;
   setImageCacheLimitMB: (limit: number) => void;
   setHoverPreload: (enabled: boolean) => void;
+  setHoverPreviewDuringPlayback: (enabled: boolean) => void;
   setLanguage: (lang: string) => void;
   setEqEnabled: (enabled: boolean) => void;
   setEqGains: (gains: number[]) => void;
@@ -230,7 +241,6 @@ export interface SettingsState {
   setMiniPlayerOpacity: (opacity: number) => void;
   setMiniPlayerSolid: (solid: boolean) => void;
   setTrackColumn: (id: TrackColumnId, width: number | null) => void;
-  setPinnedLikes: (pinned: boolean) => void;
   pinPlaylist: (playlist: SidebarPinnedPlaylist) => void;
   unpinPlaylist: (urn: string) => void;
   renamePinnedPlaylist: (urn: string, title: string) => void;
@@ -289,7 +299,10 @@ export interface SettingsState {
   setCustomCssEnabled: (v: boolean) => void;
   setLayout: (scope: LayoutScope, entries: LayoutEntry[]) => void;
   resetLayout: (scope: LayoutScope) => void;
-  setRiverHidden: (ids: RiverSectionId[]) => void;
+  setRiverHidden: (ids: RiverHiddenEntry[]) => void;
+  setLiveBackground: (v: boolean) => void;
+  setHomeShelfTab: (tab: HomeShelfTab) => void;
+  setHomeShelfOpen: (open: boolean) => void;
   resetTheme: () => void;
 }
 
@@ -314,6 +327,7 @@ const DEFAULTS = {
   audioCacheLimitMB: 1024,
   imageCacheLimitMB: 1024,
   hoverPreload: true,
+  hoverPreviewDuringPlayback: false,
   language: navigator.language?.split('-')[0] || 'en',
   eqEnabled: false,
   eqGains: DEFAULT_EQ_GAINS,
@@ -338,7 +352,6 @@ const DEFAULTS = {
   miniPlayerOpacity: null as number | null,
   miniPlayerSolid: false,
   trackColumns: {} as Partial<Record<TrackColumnId, number>>,
-  pinnedLikes: false,
   pinnedPlaylists: [] as SidebarPinnedPlaylist[],
   pinnedArtists: [] as SidebarPinnedArtist[],
   discordRpcEnabled: true,
@@ -391,7 +404,10 @@ const DEFAULTS = {
   customCss: '',
   customCssEnabled: true,
   layouts: EMPTY_LAYOUT,
-  riverHidden: [] as RiverSectionId[],
+  riverHidden: [] as RiverHiddenEntry[],
+  liveBackground: true,
+  homeShelfTab: 'liked' as HomeShelfTab,
+  homeShelfOpen: true,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -421,6 +437,8 @@ export const useSettingsStore = create<SettingsState>()(
       setAudioCacheLimitMB: (audioCacheLimitMB) => set({ audioCacheLimitMB }),
       setImageCacheLimitMB: (imageCacheLimitMB) => set({ imageCacheLimitMB }),
       setHoverPreload: (hoverPreload) => set({ hoverPreload }),
+      setHoverPreviewDuringPlayback: (hoverPreviewDuringPlayback) =>
+        set({ hoverPreviewDuringPlayback }),
       setLanguage: (language) => set({ language }),
       setEqEnabled: (eqEnabled) => set({ eqEnabled }),
       setEqGains: (eqGains) => set({ eqGains, eqPreset: 'custom' }),
@@ -479,7 +497,6 @@ export const useSettingsStore = create<SettingsState>()(
       setUiScale: (uiScale) => set({ uiScale }),
       setMiniPlayerOpacity: (opacity) =>
         set({ miniPlayerOpacity: Math.min(1, Math.max(MINI_PLAYER_OPACITY_MIN, opacity)) }),
-      setPinnedLikes: (pinnedLikes) => set({ pinnedLikes }),
       setMiniPlayerSolid: (miniPlayerSolid) => set({ miniPlayerSolid }),
       setTrackColumn: (id, width) =>
         set((s) => {
@@ -593,6 +610,9 @@ export const useSettingsStore = create<SettingsState>()(
           riverHidden: scope === 'home' ? [] : s.riverHidden,
         })),
       setRiverHidden: (riverHidden) => set({ riverHidden }),
+      setLiveBackground: (liveBackground) => set({ liveBackground }),
+      setHomeShelfTab: (homeShelfTab) => set({ homeShelfTab }),
+      setHomeShelfOpen: (homeShelfOpen) => set({ homeShelfOpen }),
       resetTheme: () =>
         set({
           scheme: DEFAULTS.scheme,
@@ -617,7 +637,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 23,
+      version: 24,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -645,6 +665,9 @@ export const useSettingsStore = create<SettingsState>()(
         if (version < 23) {
           next.sendErrorReports = prev.sendErrorReports ?? true;
         }
+        if (version < 24) {
+          next.hoverPreviewDuringPlayback = prev.hoverPreviewDuringPlayback ?? false;
+        }
         return next;
       },
       partialize: (s) => ({
@@ -666,6 +689,7 @@ export const useSettingsStore = create<SettingsState>()(
         audioCacheLimitMB: s.audioCacheLimitMB,
         imageCacheLimitMB: s.imageCacheLimitMB,
         hoverPreload: s.hoverPreload,
+        hoverPreviewDuringPlayback: s.hoverPreviewDuringPlayback,
         language: s.language,
         eqEnabled: s.eqEnabled,
         eqGains: s.eqGains,
@@ -690,7 +714,6 @@ export const useSettingsStore = create<SettingsState>()(
         miniPlayerOpacity: s.miniPlayerOpacity,
         miniPlayerSolid: s.miniPlayerSolid,
         trackColumns: s.trackColumns,
-        pinnedLikes: s.pinnedLikes,
         pinnedPlaylists: s.pinnedPlaylists,
         pinnedArtists: s.pinnedArtists,
         discordRpcEnabled: s.discordRpcEnabled,
@@ -744,6 +767,9 @@ export const useSettingsStore = create<SettingsState>()(
         customCssEnabled: s.customCssEnabled,
         layouts: s.layouts,
         riverHidden: s.riverHidden,
+        liveBackground: s.liveBackground,
+        homeShelfTab: s.homeShelfTab,
+        homeShelfOpen: s.homeShelfOpen,
       }),
     },
   ),

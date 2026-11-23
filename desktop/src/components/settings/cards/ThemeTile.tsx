@@ -12,11 +12,6 @@ export interface ThemeItem {
   installed: InstalledTheme | null;
 }
 
-const ACTIVE_STYLE = {
-  borderColor: 'var(--color-accent)',
-  boxShadow: '0 0 0 1px var(--color-accent), 0 0 22px var(--color-accent-glow)',
-};
-
 export function themePreviewUrl(entry: CatalogTheme): string | null {
   return proxiedAssetUrl(fileUrl(THEMES_RAW_BASE, entry.rev, entry.id, entry.preview.path));
 }
@@ -90,12 +85,10 @@ export const ThemeTile = memo(function ThemeTile({
     <button
       type="button"
       onClick={() => onOpen(item.id)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
-        active ? '' : 'border-ink/[0.06] hover:border-ink/15'
-      } ${locked ? 'opacity-50' : ''}`}
-      style={active ? ACTIVE_STYLE : undefined}
+      data-active={active}
+      className={`set-tile group relative ${locked ? 'opacity-50' : ''}`}
     >
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-ink/[0.03]">
+      <div className="set-tile-art aspect-[16/10] w-full bg-ink/[0.03]">
         {preview ? (
           <img
             src={preview}
@@ -104,7 +97,7 @@ export const ThemeTile = memo(function ThemeTile({
             decoding="async"
             draggable={false}
             onError={() => setFailed(true)}
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <ThemeSwatch
@@ -114,8 +107,8 @@ export const ThemeTile = memo(function ThemeTile({
         )}
         <div className="absolute right-2 top-2 flex gap-1">
           {broken && (
-            <Badge title={t('settings.themesBroken')} className="bg-red-500/90 text-white">
-              <span className="h-2 w-2 rounded-full bg-white" />
+            <Badge title={t('settings.themesBroken')} className="bg-bad text-[rgb(var(--paper))]">
+              <span className="h-2 w-2 rounded-full bg-[rgb(var(--paper))]" />
             </Badge>
           )}
           {update && (
@@ -154,13 +147,9 @@ export const ThemeTile = memo(function ThemeTile({
           </div>
         )}
       </div>
-      <div className="min-w-0 px-3 py-2 bg-ink/[0.03]">
-        <div
-          className={`truncate text-[12.5px] font-semibold ${active ? 'text-ink' : 'text-ink-75'}`}
-        >
-          {name}
-        </div>
-        {author && <div className="truncate text-[11px] text-ink-35">{author}</div>}
+      <div className="set-tile-label">
+        <div className="truncate">{name}</div>
+        {author && <div className="truncate text-[11px] font-normal text-ink-40">{author}</div>}
       </div>
     </button>
   );

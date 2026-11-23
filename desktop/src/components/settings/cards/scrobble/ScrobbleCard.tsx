@@ -32,28 +32,33 @@ export function ScrobbleCard() {
     <Card
       title={t('settings.scrobble')}
       desc={t('settings.scrobbleDesc')}
+      info={t('settings.scrobbleRules')}
       icon={<AudioLines size={17} />}
-      action={<Toggle checked={enabled} onChange={() => setEnabled(!enabled)} />}
+      action={
+        <Toggle
+          checked={enabled}
+          onChange={() => setEnabled(!enabled)}
+          label={t('settings.scrobble')}
+        />
+      }
     >
-      <div className="space-y-4">
-        {status && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            <LastfmTile status={status.lastfm} />
-            <ListenbrainzTile status={status.listenbrainz} />
-          </div>
-        )}
-        {linked && <LivePanel paused={!enabled} />}
-        {linked && (
-          <Row title={t('settings.scrobbleNowPlaying')} desc={t('settings.scrobbleNowPlayingDesc')}>
-            <Toggle
-              checked={nowPlaying}
-              disabled={!enabled}
-              onChange={() => setNowPlaying(!nowPlaying)}
-            />
-          </Row>
-        )}
-        <p className="text-[11.5px] leading-snug text-ink-30">{t('settings.scrobbleRules')}</p>
-      </div>
+      {status && (
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          <LastfmTile status={status.lastfm} />
+          <ListenbrainzTile status={status.listenbrainz} />
+        </div>
+      )}
+      {linked && <LivePanel paused={!enabled} />}
+      {linked && (
+        <Row title={t('settings.scrobbleNowPlaying')} desc={t('settings.scrobbleNowPlayingDesc')}>
+          <Toggle
+            checked={nowPlaying}
+            disabled={!enabled}
+            onChange={() => setNowPlaying(!nowPlaying)}
+            label={t('settings.scrobbleNowPlaying')}
+          />
+        </Row>
+      )}
     </Card>
   );
 }

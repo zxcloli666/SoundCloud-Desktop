@@ -1,12 +1,24 @@
-import {closestCenter, DndContext, DragOverlay, PointerSensor, useSensor, useSensors,} from '@dnd-kit/core';
-import {arrayMove, SortableContext, verticalListSortingStrategy} from '@dnd-kit/sortable';
-import React, {useMemo, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {VirtualList} from '../ui/VirtualList';
-import {OfflineRowClone, OfflineTrackRow, ROW_HEIGHT, SortableOfflineRow,} from './OfflineTrackRow';
-import type {OfflineEntry} from './types';
+import {
+  closestCenter,
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HeadCell } from '../music/columns/HeadCell';
 import { useColumnVars } from '../music/columns/useColumnVars';
+import { VirtualList } from '../ui/VirtualList';
+import {
+  OfflineRowClone,
+  OfflineTrackRow,
+  ROW_HEIGHT,
+  SortableOfflineRow,
+} from './OfflineTrackRow';
+import type { OfflineEntry } from './types';
 
 interface OfflineTrackListProps {
   entries: OfflineEntry[];
@@ -56,9 +68,11 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
   const urns = useMemo(() => entries.map((e) => e.urn), [entries]);
   const activeEntry = activeUrn ? (entries.find((e) => e.urn === activeUrn) ?? null) : null;
 
+  const canSort = sortable && entries.length <= 160;
+
   if (entries.length === 0) {
     return (
-      <div className="rounded-[18px] border border-dashed border-ink/[0.08] bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
+      <div className="panel rounded-[18px] border-dashed bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
         {emptyText}
       </div>
     );
@@ -68,7 +82,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
     const props = {
       entry,
       index,
-      sortable,
+      sortable: canSort,
       likesSection,
       forging: forgingUrns.has(entry.urn),
       downloadProgress: downloads[entry.urn],
@@ -77,7 +91,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
       onRefetch,
       onRemove,
     };
-    return sortable ? <SortableOfflineRow {...props} /> : <OfflineTrackRow {...props} />;
+    return canSort ? <SortableOfflineRow {...props} /> : <OfflineTrackRow {...props} />;
   };
 
   const list = (
@@ -96,7 +110,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
       style={vars}
     >
       <ListHead t={t} />
-      {sortable ? (
+      {canSort ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}

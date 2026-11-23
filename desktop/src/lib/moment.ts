@@ -7,6 +7,7 @@ const INTRO_SHARE = 0.08;
 const FALLBACK_SHARE = 0.35;
 const MIN_SCAN_MS = 20_000;
 const WAVEFORM_WAIT_MS = 1200;
+const MOMENT_WAVEFORM_WAIT_MS = 180;
 const DERIVED_CAP = 400;
 
 export interface MomentWindow {
@@ -29,15 +30,23 @@ export function hasMoment(track: Track): boolean {
 export async function momentWindow(track: Track): Promise<MomentWindow> {
   const moment = trackMoment(track);
   if (moment) return moment;
-  return fitWindow(track, await previewStartMs(track, MOMENT_MS), MOMENT_MS);
+  return fitWindow(
+    track,
+    await previewStartMs(track, MOMENT_MS, MOMENT_WAVEFORM_WAIT_MS),
+    MOMENT_MS,
+  );
 }
 
-export async function previewStartMs(track: Track, lengthMs: number): Promise<number> {
+export async function previewStartMs(
+  track: Track,
+  lengthMs: number,
+  waitMs = WAVEFORM_WAIT_MS,
+): Promise<number> {
   const moment = trackMoment(track);
   if (moment) return fitWindow(track, moment.startMs, lengthMs).startMs;
   const known = derived.get(track.urn);
   if (known !== undefined) return known;
-  const samples = await Promise.race([loadWaveform(track), wait(WAVEFORM_WAIT_MS)]);
+  const samples = await Promise.race([loadWaveform(track), wait(waitMs)]);
   const durationMs = track.duration;
   const guess = samples
     ? loudestStartMs(samples.values, durationMs, Math.max(lengthMs, MIN_SCAN_MS))

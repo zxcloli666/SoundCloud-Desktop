@@ -211,7 +211,7 @@
     "offrir un café",
     "contribuer"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "apparence",
     "design",
     "personnalisation",
@@ -385,6 +385,13 @@
     "cacher un élément du menu",
     "sections de la bibliothèque"
   ],
+  "sidebar.quickAccess": [
+    "historique dans la barre latérale",
+    "épingler les likes",
+    "retirer l'historique du menu",
+    "raccourcis de la bibliothèque",
+    "raccourcis"
+  ],
   "settings.layoutPinned": [
     "épingler une playlist",
     "playlists dans la barre latérale",
@@ -532,6 +539,14 @@
     "wave après le titre",
     "la musique s'arrête après le dernier titre",
     "autoplay"
+  ],
+  "settings.hoverPreviewDuringPlayback": [
+    "aperçu par-dessus la musique",
+    "extrait au survol",
+    "pause au survol",
+    "le titre se lance au survol",
+    "écouter un extrait",
+    "ma musique s'arrête toute seule"
   ],
   "settings.altUploads": [
     "titre indisponible",
@@ -1442,5 +1457,41 @@
     "délier l'accès étendu",
     "accès aux flux haute qualité",
     "permissions supplémentaires soundcloud"
+  ],
+  "settings.liveBackground": [
+    "fond animé",
+    "halo en mouvement",
+    "fond du lecteur",
+    "fond vivant",
+    "animation de l'accueil",
+    "désactiver l'animation",
+    "fond statique",
+    "lumière de la pochette"
+  ],
+  "settings.themesAutoUpdate": [
+    "mettre à jour les thèmes automatiquement",
+    "thèmes à jour",
+    "installer les mises à jour des thèmes"
+  ],
+  "settings.sound": [
+    "réglages du son",
+    "qualité et volume",
+    "comment ça sonne",
+    "traitement audio"
+  ],
+  "settings.lyricsAndComments": [
+    "réglages des paroles",
+    "paroles et commentaires",
+    "commentaires sur le morceau"
+  ],
+  "settings.cacheLikes": [
+    "télécharger tous les likes",
+    "likes hors ligne",
+    "enregistrer mes favoris"
+  ],
+  "settings.cacheLimits": [
+    "limite du cache",
+    "taille max du cache",
+    "combien d'espace utiliser"
   ]
 }

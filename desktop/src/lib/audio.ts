@@ -158,7 +158,7 @@ export function getPlaybackClock(): PlaybackClock {
     pos: cachedTime,
     at: tickAt,
     rate: playbackRate,
-    playing: isPlaying && hasTrack && downloadProgress === null,
+    playing: isPlaying && downloadProgress === null,
   };
 }
 

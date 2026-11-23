@@ -211,7 +211,7 @@
     "invitar un café",
     "contribuir"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "aspecto",
     "diseño",
     "personalización",
@@ -385,6 +385,13 @@
     "ocultar elemento del menú",
     "secciones de la biblioteca"
   ],
+  "sidebar.quickAccess": [
+    "historial en la barra lateral",
+    "fijar me gusta",
+    "quitar historial del menú",
+    "atajos de biblioteca",
+    "accesos directos"
+  ],
   "settings.layoutPinned": [
     "fijar playlist",
     "playlists en la barra lateral",
@@ -532,6 +539,14 @@
     "wave tras la pista",
     "la música para tras la última canción",
     "autoplay"
+  ],
+  "settings.hoverPreviewDuringPlayback": [
+    "previsualizar sobre la música",
+    "fragmento al pasar el ratón",
+    "pausa al pasar el cursor",
+    "suena al pasar encima",
+    "escuchar un trozo",
+    "la música se para sola"
   ],
   "settings.altUploads": [
     "pista no disponible",
@@ -1442,5 +1457,41 @@
     "desvincular acceso ampliado",
     "acceso a streams de alta calidad",
     "permisos extra de soundcloud"
+  ],
+  "settings.liveBackground": [
+    "fondo animado",
+    "brillo en movimiento",
+    "fondo del reproductor",
+    "fondo en vivo",
+    "animación de inicio",
+    "desactivar animación",
+    "fondo estático",
+    "luz de la portada"
+  ],
+  "settings.themesAutoUpdate": [
+    "actualizar temas automáticamente",
+    "temas al día",
+    "instalar actualizaciones de temas"
+  ],
+  "settings.sound": [
+    "ajustes de sonido",
+    "calidad y volumen",
+    "cómo suena",
+    "procesado de audio"
+  ],
+  "settings.lyricsAndComments": [
+    "ajustes de letras",
+    "letra y comentarios",
+    "comentarios en la pista"
+  ],
+  "settings.cacheLikes": [
+    "descargar todos los me gusta",
+    "likes sin conexión",
+    "guardar favoritos"
+  ],
+  "settings.cacheLimits": [
+    "límite de caché",
+    "tamaño máximo de caché",
+    "cuánto disco usar"
   ]
 }

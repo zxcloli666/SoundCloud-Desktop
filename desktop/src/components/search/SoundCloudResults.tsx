@@ -24,13 +24,15 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
     [remember, navigate],
   );
 
-  const chips = useMemo(
-    () => [
-      ...(playlists.data ?? []).map((p) => playlistChip(p, open)),
-      ...(users.data ?? []).map((u) => userChip(u, open)),
-    ],
-    [playlists.data, users.data, open],
+  const userChips = useMemo(
+    () => (users.data ?? []).map((u) => userChip(u, open)),
+    [users.data, open],
   );
+  const playlistChips = useMemo(
+    () => (playlists.data ?? []).map((p) => playlistChip(p, open)),
+    [playlists.data, open],
+  );
+  const chips = [...userChips, ...playlistChips];
   const stripsLoading = strips.some((s) => s.isLoading);
   const failedStrips = strips.filter((s) => s.isError);
   const retryStrips = () => {
@@ -48,7 +50,14 @@ export const SoundCloudResults = memo(function SoundCloudResults({ q }: { q: str
   return (
     <>
       <div className="mb-2 max-w-[1100px] mx-auto w-full">
-        {chips.length > 0 ? <EntityStrip items={chips} /> : stripsLoading && <StripSkeleton />}
+        {chips.length > 0 ? (
+          <>
+            <EntityStrip items={userChips} label={t('search.artistsUsers')} />
+            <EntityStrip items={playlistChips} label={t('search.playlists')} />
+          </>
+        ) : (
+          stripsLoading && <StripSkeleton />
+        )}
         {failedStrips.length > 0 && !tracks.isError && <SectionError onRetry={retryStrips} />}
       </div>
       {empty ? (

@@ -46,13 +46,16 @@ export function buildSettingsIndex(root) {
   return {
     entries,
     problems: ctx.problems,
-    categories: categories.map(({ id, labelKey }) => ({ id, labelKey })),
+    categories: categories.map(({ id, labelKey, parentKey }) =>
+      parentKey ? { id, labelKey, parentKey } : { id, labelKey },
+    ),
   };
 }
 
 function readCategories(source) {
   const categories = [];
-  const visit = (node) => {
+  const visit = (node, parentKey) => {
+    let inner = parentKey;
     if (ts.isObjectLiteralExpression(node)) {
       const id = property(node, 'id');
       const body = property(node, 'Body');
@@ -60,13 +63,15 @@ function readCategories(source) {
         categories.push({
           id: id.text,
           labelKey: property(node, 'labelKey').text,
+          parentKey,
           tags: tagsIn(body),
         });
       }
+      if (id && property(node, 'pages')) inner = property(node, 'labelKey').text;
     }
-    ts.forEachChild(node, visit);
+    ts.forEachChild(node, (child) => visit(child, inner));
   };
-  visit(source);
+  visit(source, undefined);
   return categories;
 }
 

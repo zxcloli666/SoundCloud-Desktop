@@ -11,11 +11,9 @@ import { deleteComment } from '../../stores/comment-delete';
 export const CommentLikeButton = React.memo(function CommentLikeButton({
   trackUrn,
   commentUrn,
-  accent,
 }: {
   trackUrn: string;
   commentUrn: string;
-  accent: string;
 }) {
   const { t } = useTranslation();
   const visible = useMobileButtons();
@@ -34,9 +32,8 @@ export const CommentLikeButton = React.memo(function CommentLikeButton({
       title={label}
       onClick={() => void setCommentLiked(trackUrn, commentUrn, !liked)}
       className={`inline-flex items-center gap-1 h-6 px-1.5 rounded-full text-[11px] font-semibold tabular-nums cursor-pointer transition-colors duration-200 ${
-        liked ? '' : 'text-ink-30 hover:text-ink-70'
+        liked ? 'text-accent' : 'text-ink-35 hover:text-ink-70'
       }`}
-      style={liked ? { color: accent } : undefined}
     >
       <Heart size={13} fill={liked ? 'currentColor' : 'none'} />
       {count > 0 && <span>{fc(count)}</span>}
@@ -68,7 +65,7 @@ export const CommentDeleteButton = React.memo(function CommentDeleteButton({
       aria-label={label}
       title={label}
       onClick={() => void deleteComment(trackUrn, commentUrn)}
-      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-ink-30 hover:text-red-400 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 cursor-pointer"
+      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-ink-35 hover:text-bad hover:bg-bad/10 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-[color,background-color,opacity] duration-200 cursor-pointer"
     >
       <Trash2 size={13} />
     </button>

@@ -55,6 +55,8 @@
     "home": "Ana Sayfa",
     "moments": "Anlar",
     "reload": "Arayüzü yeniden yükle",
+    "lightMode": "Açık tema",
+    "darkMode": "Koyu tema",
     "search": "Ara",
     "discover": "Keşfet",
     "library": "Kütüphane",
@@ -63,14 +65,17 @@
     "following": "Takip Edilenler",
     "settings": "Ayarlar",
     "collapse": "Daralt",
-    "expand": "Genişlet"
+    "expand": "Genişlet",
+    "forward": "İleri",
+    "minimize": "Simge durumuna küçült",
+    "maximize": "Ekranı kapla"
   },
   "sidebar": {
     "quickAccess": "Hızlı Erişim",
     "pinPlaylist": "Çalma listesini sabitle",
     "unpinPlaylist": "Çalma listesinin sabitini kaldır",
-    "pinLikes": "Beğenileri sabitle",
-    "unpinLikes": "Beğenilerin sabitini kaldır",
+    "pin": "Kenar çubuğuna sabitle",
+    "unpin": "Sabitlemeyi kaldır",
     "pinned": "Kenar çubuğuna sabitlendi",
     "unpinned": "Kenar çubuğundan kaldırıldı",
     "pinArtist": "Kenar çubuğuna sabitle",
@@ -114,6 +119,8 @@
     "volume": "Ses",
     "volumeReset": "Sesi %100'e sıfırla",
     "volumeResetHint": "%100'e sıfırlamak için çift tıkla",
+    "volumeType": "Ses düzeyini yaz",
+    "volumePercent": "Yüzde olarak ses düzeyi",
     "previous": "Önceki",
     "next": "Sonraki",
     "openApp": "SoundCloud'u aç",
@@ -124,7 +131,33 @@
     "copyArtist": "Sanatçı",
     "copyBoth": "Sanatçı ve başlık",
     "copyLink": "Bağlantı",
-    "copiedShort": "Kopyalandı"
+    "copiedShort": "Kopyalandı",
+    "seek": "Sar",
+    "abLoopName": "A-B döngüsü",
+    "qualityName": "Kalite"
+  },
+  "queue": {
+    "remove": "Kuyruktan çıkar",
+    "played": "Dinlenenler",
+    "added": "Senin eklediklerin",
+    "fromWave": "Dalgandan",
+    "fromArtistWave": "Sanatçının dalgasından",
+    "fromSimilar": "Benzer parçalar",
+    "fromLikes": "Beğenilerinden",
+    "fromSuperlikes": "Süper beğenilerinden",
+    "fromPlaylist": "{{name}} listesinden",
+    "fromPlaylistAny": "Çalma listesinden",
+    "summary_one": "{{count}} parça · {{time}}",
+    "summary_other": "{{count}} parça · {{time}}",
+    "minutes_one": "{{count}} dk",
+    "minutes_other": "{{count}} dk",
+    "hoursMinutes": "{{hours}} sa {{minutes}} dk",
+    "cleared": "Kuyruk temizlendi",
+    "undo": "Geri al",
+    "waveFailed": "Dalga başlatılamadı",
+    "seek": "Sar",
+    "play": "Çal",
+    "pause": "Duraklat"
   },
   "auth": {
     "signIn": "SoundCloud ile giriş yap",
@@ -249,7 +282,13 @@
       "unsupportedTitle": "Parça, çalma listesi veya profil bağlantısı değil",
       "unreachableTitle": "SoundCloud'a ulaşılamadı",
       "unreachableBody": "Birazdan tekrar deneyin."
-    }
+    },
+    "layout": {
+      "tiles": "Kareler",
+      "list": "Liste"
+    },
+    "artists": "Sanatçılar",
+    "artistsUsers": "Sanatçılar ve kullanıcılar"
   },
   "sharing": {
     "public": "Herkese açık",
@@ -264,7 +303,6 @@
     "showLess": "Daha az göster",
     "relatedEmpty": "Henüz benzer bir şey yok",
     "noWaveform": "Bu parça için dalga formu yok",
-    "roomFor": "Bu parçaya ayarlı bir oda",
     "feat": "feat.",
     "remix": "Remiks",
     "prod": "prod.",
@@ -538,7 +576,9 @@
       "clear": "Temizle",
       "empty": "Bu kullanıcının içeriğinde eşleşme yok",
       "error": "Bu profilde arama yapılamadı"
-    }
+    },
+    "myMusic": "Müziğim",
+    "myMusicEmpty": "Birkaç parçayı beğen, ses izin burada görünsün."
   },
   "library": {
     "soundprint": "Ses iziniz",
@@ -864,7 +904,8 @@
     "recommended": "Sizin İçin Önerilenler",
     "startListening": "Dinlemeye Başla",
     "startLikingTitle": "Parçaları beğenin — burada daha fazla müzik görünecek",
-    "startLikingDesc": "Ne kadar çok beğeni, o kadar iyi öneriler ve daha zengin ana sayfa"
+    "startLikingDesc": "Ne kadar çok beğeni, o kadar iyi öneriler ve daha zengin ana sayfa",
+    "shelf": "Raf"
   },
   "soundwave": {
     "tagline": "Kişisel radyon — tam sana göre",
@@ -1110,7 +1151,6 @@
     "dropCount_other": "{{count}} öğe"
   },
   "settings": {
-    "title": "Ayarlar",
     "search": "Ara",
     "searchClear": "Temizle",
     "searchEmpty": "Sonuç yok",
@@ -1118,7 +1158,7 @@
     "total": "Toplam",
     "audioCacheSize": "Ses",
     "assetsCacheSize": "Görseller ve varlıklar",
-    "likedCacheSize": "Beğeniler, çevrimdışı listeler ve kaydedilenler (korumalı önbellek)",
+    "likedCacheSize": "Beğeniler ve çevrimdışı",
     "cacheLikes": "Beğenileri önbelleğe al",
     "cacheLikesDesc": "Tüm beğenileri ses önbellek limitini atlayan ayrı bir klasöre indirir.",
     "cacheLikesStarting": "Hazırlanıyor...",
@@ -1136,7 +1176,6 @@
     "hoverPreloadDesc": "İmleç bir parçanın üzerinde durunca parçayı önceden indirir, böylece hemen başlar",
     "clearCache": "Temizle",
     "cacheCleared": "Önbellek temizlendi",
-    "appearance": "Görünüm",
     "accentColor": "Vurgu rengi",
     "backgroundImage": "Arka plan resmi",
     "none": "Yok",
@@ -1478,6 +1517,7 @@
     "layoutLibrary": "Kitaplık",
     "layoutHome": "Ana sayfa",
     "layoutReset": "Sıfırla",
+    "layoutResetDefault": "Varsayılana sıfırla",
     "layoutDrag": "Sıralamak için sürükle",
     "layoutHide": "Gizle",
     "layoutShow": "Göster",
@@ -1557,6 +1597,8 @@
     "manualUpdates": "Güncellemeler elle kurulur",
     "autoplay": "Otomatik devam",
     "autoplayDesc": "Sıra bittiğinde son parçanın dalgasından benzer parçalar çalmaya devam eder",
+    "hoverPreviewDuringPlayback": "Müzik çalarken üzerine gelince önizleme",
+    "hoverPreviewDuringPlaybackDesc": "Bir parçanın üzerinde bir saniye durursan müziğin duraklar ve kısa bir önizleme çalar",
     "altUploads": "Erişilemeyen parça yerine kopya",
     "altUploadsDesc": "Bir parça çalınamazsa, bulunursa aynı parçanın başka bir hesaptaki yüklemesi çalar",
     "searchPlayback": "Aramadan çalma",
@@ -1616,7 +1658,27 @@
     "videoNoCodec": "H.264 yok",
     "videoCacheSize": "Video",
     "videoCacheLimit": "Video önbellek limiti",
-    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir"
+    "videoCacheLimitDesc": "En uzun süredir izlemediğiniz klipler önce silinir",
+    "layoutPlayer": "Oynatıcı",
+    "layoutPlayerHint": "Düğmeleri değiştirmek için oynatıcıya sağ tıklayabilirsin",
+    "liveBackground": "Canlı arka plan",
+    "liveBackgroundDesc": "Ana sayfada oynatıcının arkasında kapaktan gelen hareketli ışık",
+    "catAdvanced": "Gelişmiş",
+    "catAbout": "Hakkında",
+    "sumGeneral": "Dil, başlangıç, kısayollar ve filtreler",
+    "sumAppearance": "Tema, duvar kağıdı, yazı tipi ve düzen",
+    "sumAudio": "Kalite, geçiş, sözler ve çıkış",
+    "sumVoice": "Sesli asistan Loli",
+    "sumChats": "Gizlilik, cihazlar ve anahtarlar",
+    "sumAccount": "Senkronizasyon, telefon ve çıkış",
+    "sumAdvanced": "Ağ, entegrasyonlar, depolama, video ve CSS",
+    "sumAbout": "Sürüm, güncellemeler, yardım ve destek",
+    "sound": "Ses kalitesi",
+    "lyricsAndComments": "Sözler ve yorumlar",
+    "colors": "Renkler",
+    "wpRemove": "Duvar kağıdını kaldır",
+    "cacheLimits": "Önbellek sınırları",
+    "likedCacheHint": "Beğeniler, çevrimdışı listeler ve kaydedilen parçalar. Ses önbelleği sınırı bunları silmez."
   },
   "effects": {
     "title": "Efektler",
@@ -2245,7 +2307,8 @@
       "provisioning": "kaydediliyor",
       "active": "aktif",
       "failed": "hata"
-    }
+    },
+    "desc": "Açıkken sunucularımız SoundCloud isteklerini sizin internet bağlantınız üzerinden gönderir"
   },
   "artist": {
     "title": "Sanatçı",
@@ -3112,5 +3175,29 @@
     "ahead_one": "{{count}} önde",
     "ahead_other": "{{count}} önde",
     "saved": "Alındı"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Şimdi çalıyor",
+    "paused": "Duraklatıldı",
+    "openPlayer": "Tam oynatıcıyı aç: {{title}}",
+    "upNext": "Sıradaki",
+    "waveTitle": "Dalga",
+    "emptyQueue": "Sırada henüz bir şey yok",
+    "waveSettings": "Dalga ayarları",
+    "vibe": "Vibe",
+    "vibeHint": "Havaya göre ara",
+    "idleTitle": "Senin dalgan",
+    "idleSub": "Sana özel, bitmeyen müzik",
+    "playWave": "Dalgayı çal",
+    "removeLiked": "Beğenilenlerden kaldır",
+    "followers_one": "{{value}} takipçi",
+    "followers_other": "{{value}} takipçi",
+    "collapse": "Daralt",
+    "expand": "Genişlet",
+    "emptyLiked": "Bir parçayı beğen, burada görünsün",
+    "emptyArtists": "Bir sanatçıyı takip et, burada görünsün",
+    "emptyPlaylists": "Bir çalma listesini beğen, burada görünsün",
+    "emptyHistory": "Bir parça çal, burada görünsün",
+    "emptyReleases": "Sanatçılarından son zamanlarda yeni bir şey yok"
   }
 }

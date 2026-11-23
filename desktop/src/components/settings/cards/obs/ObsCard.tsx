@@ -14,17 +14,19 @@ export function ObsCard() {
     <Card
       title={t('settings.obs')}
       desc={t('settings.obsDesc')}
+      info={enabled ? t('settings.obsPrivacy') : undefined}
       icon={<Radio size={17} />}
-      action={<Toggle checked={enabled} onChange={() => setEnabled(!enabled)} />}
+      action={
+        <Toggle checked={enabled} onChange={() => setEnabled(!enabled)} label={t('settings.obs')} />
+      }
     >
       {enabled ? (
-        <div className="space-y-3">
+        <div className="space-y-2.5">
           <OverlayPanel />
           <TextFilePanel />
-          <p className="text-[11.5px] leading-snug text-ink-30">{t('settings.obsPrivacy')}</p>
         </div>
       ) : (
-        <p className="text-[11.5px] leading-snug text-ink-35">{t('settings.obsIntro')}</p>
+        <p className="text-[12.5px] leading-snug text-ink-50">{t('settings.obsIntro')}</p>
       )}
     </Card>
   );

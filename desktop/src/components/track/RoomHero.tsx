@@ -1,10 +1,9 @@
 import React from 'react';
-import {Trans, useTranslation} from 'react-i18next';
-import {useNavigate} from 'react-router-dom';
-import {art} from '../../lib/formatters';
-import type {Comment} from '../../lib/hooks';
-import {Disc3} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
+import { Trans, useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { art } from '../../lib/formatters';
+import type { Comment } from '../../lib/hooks';
+import { Disc3 } from '../../lib/icons';
 import {
   getAlbumTarget,
   getArtistDisplay,
@@ -13,26 +12,20 @@ import {
   getDisplayTitle,
   getParticipants,
 } from '../../lib/track-display';
-import type {Track} from '../../stores/player';
-import {ArtistNameLinks} from '../music/ArtistNameLinks';
-import {TrackStatusBadges} from '../music/TrackStatusBadges';
-import {ArtistLinks} from './ArtistLinks';
-import {RoomFloor} from './RoomFloor';
-import {TrackActionRail} from './TrackActionRail';
-import {TrackCover} from './TrackCover';
-import type {TrackAura} from './useTrackAura';
+import type { Track } from '../../stores/player';
+import { ArtistNameLinks } from '../music/ArtistNameLinks';
+import { TrackStatusBadges } from '../music/TrackStatusBadges';
+import { UploadKindDot } from '../music/UploadKindDot';
+import { ArtistLinks } from './ArtistLinks';
+import { RoomFloor } from './RoomFloor';
+import { TrackActionRail } from './TrackActionRail';
+import { TrackCover } from './TrackCover';
 
-const KIND_TONE: Record<string, string> = {
-  original: 'bg-emerald-500/15 text-emerald-300/90',
-  demo: 'bg-sky-500/15 text-sky-300/90',
-  alt: 'bg-violet-500/15 text-violet-300/90',
-  reupload: 'bg-amber-500/12 text-amber-300/80',
-  cover: 'bg-fuchsia-500/15 text-fuchsia-300/90',
-};
+const CHIP =
+  'rounded-full border border-ink/[0.07] bg-ink/[0.05] px-2.5 py-1 text-[10px] font-semibold';
 
 export const RoomHero = React.memo(function RoomHero({
   track,
-  aura,
   isThis,
   isThisPlaying,
   isOwner,
@@ -41,7 +34,6 @@ export const RoomHero = React.memo(function RoomHero({
   onSeek,
 }: {
   track: Track;
-  aura: TrackAura;
   isThis: boolean;
   isThisPlaying: boolean;
   isOwner: boolean;
@@ -51,21 +43,14 @@ export const RoomHero = React.memo(function RoomHero({
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const perf = usePerfMode();
 
   const cover = art(track.artwork_url, 't500x500');
   const title = getDisplayTitle(track);
   const ad = getArtistDisplay(track);
-  // Фиты показываются в feat-ряду (как и все кроме основного) — из
-  // participants берём только remix/prod.
   const participants = getParticipants(track, ['remixer', 'producer']);
   const artistLinks = getArtistLinkItems(track);
-  // Страница трека: в главной строке ТОЛЬКО основной, остальные — feat-ряд.
   const mainLink = artistLinks.slice(0, 1);
   const featLinks = artistLinks.slice(1);
-  // Аватар и его клик — ОДИН человек: артист каталога, когда enrichment его
-  // знает, иначе uploader. Раньше картинка была uploader'а, а клик вёл на
-  // первого слинкованного из строки авторов.
   const primaryArtist = track.enrichment?.primary_artist;
   const heroAvatarSrc = primaryArtist?.avatar_url ?? track.user.avatar_url;
   const heroAvatarTarget = primaryArtist?.avatar_url
@@ -76,48 +61,14 @@ export const RoomHero = React.memo(function RoomHero({
   const album = track.enrichment?.album;
   const albumTarget = getAlbumTarget(track);
   const year = track.release_year ?? album?.year;
-  const hb = perf.blur(90);
-
-  const titleStyle = aura.hasGenre
-    ? {
-        background: aura.aura.nameGradient,
-        WebkitBackgroundClip: 'text',
-        backgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-        filter: 'drop-shadow(0 6px 22px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
-      }
-    : { color: 'rgb(var(--ink) / calc(0.96 * (1 + var(--ink-lift) * (1 - 0.96))))', textShadow: '0 6px 22px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' };
 
   return (
-    <section
-      data-ui="track-hero"
-      className="@container relative rounded-[2rem] overflow-hidden glass-featured"
-      style={{ isolation: 'isolate' }}
-    >
-      {cover && hb > 0 && (
-        <div className="absolute inset-0 pointer-events-none" aria-hidden>
-          <img
-            src={cover}
-            alt=""
-            className="w-full h-full object-cover scale-[1.4] opacity-[0.20]"
-            style={{ filter: `blur(${hb}px) saturate(1.4)` }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(180deg, rgb(var(--paper) / 0.40), rgb(var(--paper) / 0.66))',
-            }}
-          />
-        </div>
-      )}
-
+    <section data-ui="track-hero" className="@container panel relative rounded-3xl">
       <div className="relative p-6 @min-[512px]:p-8 flex flex-col gap-7">
         <div className="flex flex-col @min-[740px]:flex-row items-center @min-[740px]:items-start gap-6 @min-[740px]:gap-8">
           <TrackCover
             title={title}
             coverUrl={cover ?? undefined}
-            aura={aura.aura}
-            verified={ad.isEnriched && ad.verified}
             isPlaying={isThisPlaying}
             isCurrent={isThis}
             onToggle={onPlay}
@@ -127,24 +78,17 @@ export const RoomHero = React.memo(function RoomHero({
             <div className="flex items-center gap-2 flex-wrap justify-center @min-[740px]:justify-start mb-3.5">
               <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
               {track.genre && (
-                <span
-                  className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.06] text-ink-55 border border-ink/[0.06] uppercase tracking-[0.14em]"
-                  style={{ color: aura.hasGenre ? aura.accent : undefined }}
-                >
+                <span className={`${CHIP} uppercase tracking-[0.14em] text-ink-60`}>
                   {track.genre}
                 </span>
               )}
-              {year && (
-                <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.05] text-ink-40 border border-ink/[0.06] tabular-nums">
-                  {year}
-                </span>
-              )}
+              {year && <span className={`${CHIP} tabular-nums text-ink-45`}>{year}</span>}
               {albumTarget && album?.title && (
                 <button
                   type="button"
                   onClick={() => navigate(albumTarget)}
                   title={t('track.openAlbum', { title: album.title })}
-                  className="inline-flex items-center gap-1.5 max-w-[16rem] text-[10px] font-semibold px-2.5 py-1 rounded-full bg-ink/[0.05] text-ink-55 border border-ink/[0.06] cursor-pointer transition-colors duration-200 hover:bg-ink/[0.1] hover:text-ink-90"
+                  className={`${CHIP} inline-flex max-w-[16rem] cursor-pointer items-center gap-1.5 text-ink-60 transition-colors duration-200 hover:bg-ink/[0.1] hover:text-ink-90`}
                 >
                   <Disc3 size={11} className="shrink-0" />
                   <span className="truncate">{album.title}</span>
@@ -152,10 +96,7 @@ export const RoomHero = React.memo(function RoomHero({
               )}
             </div>
 
-            <h1
-              className="text-4xl @min-[512px]:text-6xl @min-[960px]:text-7xl font-black leading-[0.95] tracking-tighter break-words"
-              style={titleStyle}
-            >
+            <h1 className="text-4xl @min-[512px]:text-6xl @min-[960px]:text-7xl font-black leading-[0.95] tracking-tighter break-words text-ink">
               {title}
             </h1>
 
@@ -179,7 +120,7 @@ export const RoomHero = React.memo(function RoomHero({
                 </span>
                 {ad.isEnriched && ad.verified && (
                   <span
-                    className="text-[11px] text-emerald-400/80"
+                    className="text-[11px] text-ok"
                     title={t('track.verifiedArtist', {
                       confidence: (ad.confidence ?? 0).toFixed(2),
                     })}
@@ -189,7 +130,7 @@ export const RoomHero = React.memo(function RoomHero({
                 )}
                 {ad.isEnriched && !ad.verified && (
                   <span
-                    className="text-[11px] text-amber-400/70"
+                    className="text-[11px] text-ink-40"
                     title={t('track.unverifiedArtist', {
                       confidence: (ad.confidence ?? 0).toFixed(2),
                     })}
@@ -198,12 +139,8 @@ export const RoomHero = React.memo(function RoomHero({
                   </span>
                 )}
                 {ad.uploadKind && (
-                  <span
-                    className={`px-1.5 py-0.5 rounded-md text-[9px] uppercase tracking-wider font-semibold ${
-                      KIND_TONE[ad.uploadKind] ?? 'bg-ink/[0.06] text-ink-50'
-                    }`}
-                    title={t(`track.uploadKind.${ad.uploadKind}`)}
-                  >
+                  <span className="inline-flex items-center gap-1.5 rounded-md bg-ink/[0.06] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-ink-55">
+                    <UploadKindDot kind={ad.uploadKind} />
                     {t(`track.uploadKind.${ad.uploadKind}`)}
                   </span>
                 )}
@@ -263,13 +200,7 @@ export const RoomHero = React.memo(function RoomHero({
         </div>
 
         <div className="pt-6 border-t border-ink/[0.07]">
-          <RoomFloor
-            track={track}
-            isCurrent={isThis}
-            comments={comments}
-            aura={aura}
-            onSeek={onSeek}
-          />
+          <RoomFloor track={track} isCurrent={isThis} comments={comments} onSeek={onSeek} />
         </div>
       </div>
     </section>

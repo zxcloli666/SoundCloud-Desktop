@@ -19,7 +19,7 @@ export const KeysCard = memo(function KeysCard() {
         <div
           data-ui="chat-keys-storage"
           data-storage={storage}
-          className="flex items-center gap-3 rounded-2xl border border-ink/[0.06] bg-ink/[0.03] px-3.5 py-3"
+          className="flex items-center gap-3 rounded-[12px] bg-[var(--set-well)] px-3.5 py-3"
         >
           <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-ink/[0.05] text-ink-60">
             <Where size={15} />

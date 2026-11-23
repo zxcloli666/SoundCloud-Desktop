@@ -19,6 +19,8 @@
     "home": "홈",
     "moments": "모먼트",
     "reload": "인터페이스 새로고침",
+    "lightMode": "라이트 모드",
+    "darkMode": "다크 모드",
     "search": "검색",
     "discover": "둘러보기",
     "library": "라이브러리",
@@ -27,14 +29,17 @@
     "following": "팔로잉",
     "settings": "설정",
     "collapse": "접기",
-    "expand": "펼치기"
+    "expand": "펼치기",
+    "forward": "앞으로",
+    "minimize": "최소화",
+    "maximize": "최대화"
   },
   "sidebar": {
     "quickAccess": "바로 가기",
     "pinPlaylist": "재생 목록 고정",
     "unpinPlaylist": "재생 목록 고정 해제",
-    "pinLikes": "좋아요 고정",
-    "unpinLikes": "좋아요 고정 해제",
+    "pin": "사이드바에 고정",
+    "unpin": "고정 해제",
     "pinned": "사이드바에 고정했어요",
     "unpinned": "사이드바에서 제거했어요",
     "pinArtist": "사이드바에 고정",
@@ -81,6 +86,8 @@
     "volume": "볼륨",
     "volumeReset": "볼륨을 100%로 초기화",
     "volumeResetHint": "더블클릭하면 100%로 초기화돼요",
+    "volumeType": "볼륨 입력",
+    "volumePercent": "볼륨 퍼센트",
     "autoplay": "자동 재생",
     "autoplayOn": "대기열이 끝나면 비슷한 트랙을 이어서 재생해요",
     "autoplayOff": "대기열이 끝나면 재생을 멈춰요",
@@ -88,7 +95,31 @@
     "copyArtist": "아티스트",
     "copyBoth": "아티스트와 제목",
     "copyLink": "링크",
-    "copiedShort": "복사됨"
+    "copiedShort": "복사됨",
+    "seek": "탐색",
+    "abLoopName": "A-B 반복",
+    "qualityName": "음질"
+  },
+  "queue": {
+    "remove": "대기열에서 빼기",
+    "played": "재생한 곡",
+    "added": "내가 추가한 곡",
+    "fromWave": "내 웨이브에서",
+    "fromArtistWave": "아티스트 웨이브에서",
+    "fromSimilar": "비슷한 트랙",
+    "fromLikes": "내 좋아요에서",
+    "fromSuperlikes": "내 슈퍼 좋아요에서",
+    "fromPlaylist": "{{name}}에서",
+    "fromPlaylistAny": "플레이리스트에서",
+    "summary_other": "{{count}}곡 · {{time}}",
+    "minutes_other": "{{count}}분",
+    "hoursMinutes": "{{hours}}시간 {{minutes}}분",
+    "cleared": "대기열을 비웠어요",
+    "undo": "되돌리기",
+    "waveFailed": "웨이브를 시작하지 못했어요",
+    "seek": "탐색",
+    "play": "재생",
+    "pause": "일시정지"
   },
   "auth": {
     "signIn": "SoundCloud로 로그인",
@@ -220,7 +251,13 @@
       "unsupportedTitle": "트랙, 재생 목록, 프로필 링크가 아니에요",
       "unreachableTitle": "SoundCloud에 연결할 수 없어요",
       "unreachableBody": "잠시 후 다시 시도해 주세요."
-    }
+    },
+    "layout": {
+      "tiles": "타일",
+      "list": "목록"
+    },
+    "artists": "아티스트",
+    "artistsUsers": "아티스트 및 사용자"
   },
   "sharing": {
     "public": "공개",
@@ -325,7 +362,6 @@
     "showLess": "접기",
     "relatedEmpty": "아직 관련 트랙이 없어요",
     "noWaveform": "이 트랙은 파형이 없어요",
-    "roomFor": "이 트랙에 맞춘 공간",
     "feat": "feat.",
     "remix": "리믹스",
     "prod": "prod.",
@@ -503,7 +539,9 @@
       "clear": "검색어 지우기",
       "empty": "이 사용자의 콘텐츠에서 일치하는 항목이 없어요",
       "error": "이 프로필에서 검색하지 못했어요"
-    }
+    },
+    "myMusic": "내 음악",
+    "myMusicEmpty": "트랙에 좋아요를 누르면 여기에 사운드프린트가 나타납니다."
   },
   "library": {
     "soundprint": "나의 사운드프린트",
@@ -825,7 +863,8 @@
     "recommended": "나를 위한 추천",
     "startListening": "듣기 시작",
     "startLikingTitle": "트랙에 좋아요를 누르면 여기에 더 많은 음악이 나타나요",
-    "startLikingDesc": "좋아요가 많을수록 추천이 정확해지고 홈 화면이 풍성해져요"
+    "startLikingDesc": "좋아요가 많을수록 추천이 정확해지고 홈 화면이 풍성해져요",
+    "shelf": "선반"
   },
   "soundwave": {
     "tagline": "나만을 위해 고른 개인 라디오",
@@ -1047,7 +1086,6 @@
     "dropCount_other": "항목 {{count}}개"
   },
   "settings": {
-    "title": "설정",
     "search": "검색",
     "searchClear": "지우기",
     "searchEmpty": "결과 없음",
@@ -1055,7 +1093,7 @@
     "total": "전체",
     "audioCacheSize": "오디오",
     "assetsCacheSize": "이미지 및 리소스",
-    "likedCacheSize": "좋아요, 오프라인 재생 목록, 저장한 트랙 (보호된 캐시)",
+    "likedCacheSize": "좋아요 및 오프라인",
     "cacheLikes": "좋아요한 트랙 캐시",
     "cacheLikesDesc": "모든 좋아요를 오디오 캐시 한도와 상관없는 별도 폴더에 다운로드해요.",
     "cacheLikesStarting": "준비 중...",
@@ -1073,7 +1111,6 @@
     "hoverPreloadDesc": "커서를 트랙 위에 올려 두면 미리 다운로드해서 바로 재생할 수 있어요",
     "clearCache": "지우기",
     "cacheCleared": "캐시를 지웠어요",
-    "appearance": "모양",
     "accentColor": "강조 색상",
     "backgroundImage": "배경 이미지",
     "none": "없음",
@@ -1409,6 +1446,7 @@
     "layoutLibrary": "라이브러리",
     "layoutHome": "홈",
     "layoutReset": "초기화",
+    "layoutResetDefault": "기본값으로 초기화",
     "layoutDrag": "드래그해서 순서 변경",
     "layoutHide": "숨기기",
     "layoutShow": "보기",
@@ -1488,6 +1526,8 @@
     "manualUpdates": "업데이트를 직접 설치해야 해요",
     "autoplay": "자동 재생",
     "autoplayDesc": "대기열이 끝나면 마지막 곡의 웨이브에서 비슷한 트랙을 이어서 재생해요",
+    "hoverPreviewDuringPlayback": "재생 중 마우스 오버 미리듣기",
+    "hoverPreviewDuringPlaybackDesc": "트랙에 1초 동안 마우스를 올리면 음악이 일시정지되고 짧은 미리듣기가 재생돼요",
     "altUploads": "재생할 수 없는 트랙 대신 사본",
     "altUploadsDesc": "트랙을 재생할 수 없으면 다른 계정에 올라온 같은 곡의 업로드를 찾아 대신 재생해요",
     "searchPlayback": "검색에서 재생",
@@ -1547,7 +1587,27 @@
     "videoNoCodec": "H.264 없음",
     "videoCacheSize": "비디오",
     "videoCacheLimit": "비디오 캐시 한도",
-    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요"
+    "videoCacheLimitDesc": "가장 오랫동안 보지 않은 영상부터 삭제돼요",
+    "layoutPlayer": "플레이어",
+    "layoutPlayerHint": "플레이어를 우클릭해도 버튼을 바꿀 수 있어요",
+    "liveBackground": "라이브 배경",
+    "liveBackgroundDesc": "홈의 플레이어 뒤에 커버 색으로 움직이는 빛을 표시해요",
+    "catAdvanced": "고급",
+    "catAbout": "정보",
+    "sumGeneral": "언어, 시작, 단축키, 필터",
+    "sumAppearance": "테마, 배경화면, 글꼴, 레이아웃",
+    "sumAudio": "음질, 크로스페이드, 가사, 출력",
+    "sumVoice": "음성 비서 Loli",
+    "sumChats": "개인정보, 기기, 키",
+    "sumAccount": "동기화, 휴대폰 연결, 로그아웃",
+    "sumAdvanced": "네트워크, 연동, 저장 공간, 비디오, CSS",
+    "sumAbout": "버전, 업데이트, 도움말, 후원",
+    "sound": "사운드",
+    "lyricsAndComments": "가사와 댓글",
+    "colors": "색상",
+    "wpRemove": "배경화면 삭제",
+    "cacheLimits": "캐시 한도",
+    "likedCacheHint": "좋아요, 오프라인 재생 목록, 저장한 트랙. 오디오 캐시 한도로 삭제되지 않습니다."
   },
   "effects": {
     "title": "효과",
@@ -2156,7 +2216,8 @@
       "provisioning": "등록 중",
       "active": "활성",
       "failed": "실패"
-    }
+    },
+    "desc": "켜 두면 저희 서버가 이 컴퓨터의 인터넷 연결로 SoundCloud에 요청을 보내요"
   },
   "artist": {
     "title": "아티스트",
@@ -3018,5 +3079,28 @@
     "ahead_one": "앞에 {{count}}",
     "ahead_other": "앞에 {{count}}",
     "saved": "저장됨"
+  },
+  "flowRedesign": {
+    "nowPlaying": "지금 재생 중",
+    "paused": "일시정지됨",
+    "openPlayer": "전체 플레이어 열기: {{title}}",
+    "upNext": "다음 곡",
+    "waveTitle": "웨이브",
+    "emptyQueue": "대기열이 비어 있어요",
+    "waveSettings": "웨이브 설정",
+    "vibe": "바이브",
+    "vibeHint": "분위기로 검색",
+    "idleTitle": "내 웨이브",
+    "idleSub": "취향에 맞춘 끝없는 음악",
+    "playWave": "웨이브 재생",
+    "removeLiked": "좋아요에서 제거",
+    "followers_other": "팔로워 {{value}}명",
+    "collapse": "접기",
+    "expand": "펼치기",
+    "emptyLiked": "트랙에 좋아요를 누르면 여기에 나타나요",
+    "emptyArtists": "아티스트를 팔로우하면 여기에 나타나요",
+    "emptyPlaylists": "플레이리스트에 좋아요를 누르면 여기에 나타나요",
+    "emptyHistory": "트랙을 재생하면 여기에 나타나요",
+    "emptyReleases": "팔로우한 아티스트의 새 트랙이 아직 없어요"
   }
 }

@@ -1,37 +1,23 @@
 import {memo} from 'react';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
-import {type Aura, auraRgba} from '../../lib/aura';
 import {Check, Globe, MicVocal} from '../../lib/icons';
 import {userUrn} from '../../lib/ids';
-import {usePerfMode} from '../../lib/perf';
 import {SocialIcon, socialLabel} from './socials';
 import type {ArtistDetail} from './types';
 
 interface ArtistAboutTabProps {
   artist: ArtistDetail;
-  aura: Aura;
 }
 
-function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
+function ArtistAboutTabImpl({ artist }: ArtistAboutTabProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-    const b = usePerfMode().blur(28);
   return (
     <div className="grid lg:grid-cols-3 gap-6 py-2">
       {/* Bio */}
       <div
-        className="lg:col-span-2 p-7 rounded-3xl"
-        style={{
-          background:
-              b > 0
-                  ? 'linear-gradient(165deg, rgb(var(--ink) / 0.05) 0%, rgb(var(--ink) / 0.02) 100%)'
-                  : 'rgb(var(--surface) / 0.85)',
-          border: '0.5px solid rgb(var(--ink) / 0.07)',
-            backdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
-            WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
-          boxShadow: '0 20px 60px rgb(var(--shade) / calc(0.3 * var(--shade-alpha))), inset 0 0.5px 0 rgba(255,255,255,0.06)',
-        }}
+        className="panel p-7 lg:col-span-2"
       >
         <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-40 mb-4 flex items-center gap-2">
           <MicVocal size={11} /> {t('artist.aboutTitle')}
@@ -58,20 +44,8 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
       {/* Side: SC accounts + extra socials */}
       <div className="flex flex-col gap-6">
         {artist.sc_accounts.length > 0 && (
-          <div
-            className="p-5 rounded-3xl"
-            style={{
-              background:
-                  b > 0
-                      ? 'linear-gradient(165deg, rgba(255,85,0,0.08) 0%, rgb(var(--ink) / 0.02) 100%)'
-                      : 'rgba(34,22,18,0.85)',
-              border: '0.5px solid rgba(255,85,0,0.18)',
-                backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-                WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-              boxShadow: `inset 0 0.5px 0 rgba(255,255,255,0.06)`,
-            }}
-          >
-            <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-orange-300/80 mb-3 flex items-center gap-2">
+          <div className="panel p-5">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-40 mb-3 flex items-center gap-2">
               <SocialIcon kind="soundcloud" size={11} />
               {t('artist.scAccounts')}
             </h3>
@@ -84,14 +58,10 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
                     const urn = userUrn(acc.sc_user_id);
                     if (urn) navigate(`/user/${encodeURIComponent(urn)}`);
                   }}
-                  className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer hover:scale-[1.02] transition-all"
-                  style={{
-                    background: 'rgba(255,85,0,0.08)',
-                    border: '0.5px solid rgba(255,85,0,0.16)',
-                  }}
+                  className="group flex cursor-pointer items-center gap-3 rounded-xl bg-ink/[0.04] px-3 py-2.5 text-left transition-colors hover:bg-ink/[0.08]"
                 >
                   <span className="w-7 h-7 rounded-lg flex items-center justify-center bg-ink/[0.04]">
-                    <SocialIcon kind="soundcloud" size={14} className="text-orange-300" />
+                    <SocialIcon kind="soundcloud" size={14} className="text-ink-60" />
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-[12px] font-semibold text-ink-85 truncate">
@@ -113,15 +83,7 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
         )}
 
         {artist.socials.length > 0 && (
-          <div
-            className="p-5 rounded-3xl"
-            style={{
-                background: b > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface) / 0.85)',
-              border: '0.5px solid rgb(var(--ink) / 0.06)',
-                backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-                WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-            }}
-          >
+          <div className="panel p-5">
             <h3 className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-40 mb-3">
               {t('artist.links')}
             </h3>
@@ -133,13 +95,6 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
                   target="_blank"
                   rel="noreferrer"
                   className="group flex items-center gap-3 px-3 py-2 rounded-xl text-[12px] text-ink-70 hover:text-ink transition-colors hover:bg-ink/[0.04]"
-                  style={{ border: '0.5px solid transparent' }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = auraRgba(aura, 0.3);
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = 'transparent';
-                  }}
                 >
                   <span className="w-6 h-6 rounded-md flex items-center justify-center text-ink-45 group-hover:text-ink">
                     <SocialIcon kind={s.kind} size={13} />
@@ -160,15 +115,9 @@ function ArtistAboutTabImpl({ artist, aura }: ArtistAboutTabProps) {
 
 const Stat = memo(
   ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
-    <span
-      className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-[11px] font-semibold"
-      style={{
-        background: 'rgb(var(--ink) / 0.04)',
-        border: '0.5px solid rgb(var(--ink) / 0.08)',
-      }}
-    >
+    <span className="chip-pill">
       <span className="text-ink-45">{icon}</span>
-      <span className="text-ink-40 uppercase tracking-[0.18em] text-[10px]">{label}</span>
+      <span className="text-[10px] uppercase tracking-[0.16em] text-ink-40">{label}</span>
       <span className="text-ink-85">{value}</span>
     </span>
   ),

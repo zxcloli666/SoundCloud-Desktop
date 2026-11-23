@@ -62,8 +62,8 @@ export const CustomCssEditor = forwardRef<
   };
 
   return (
-    <div className="rounded-2xl border border-ink/[0.07] bg-shade-30 overflow-hidden focus-within:border-ink/[0.14] transition-colors duration-200">
-      <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-ink/[0.05] bg-ink/[0.02]">
+    <div className="overflow-hidden rounded-[12px] border border-[color:var(--set-line)] bg-shade-30 transition-colors duration-150 focus-within:border-[color:var(--shell-line-hi)]">
+      <div className="flex items-center justify-between gap-3 border-b border-[color:var(--set-rule)] bg-ink/[0.02] px-3 py-1.5">
         <div className="flex items-center gap-2.5 min-w-0 pl-1">
           <span className="font-mono text-[11.5px] text-ink-55 truncate">custom.css</span>
           {value.trim() && <StatusPill live={live} />}
@@ -98,12 +98,12 @@ export const CustomCssEditor = forwardRef<
         className="block w-full min-h-[240px] max-h-[520px] resize-y bg-transparent px-4 py-3 font-mono text-[12.5px] leading-[1.65] text-ink-85 placeholder:text-ink-20 outline-none"
         style={{ tabSize: 2, caretColor: 'var(--color-accent)' }}
       />
-      <div className="flex items-center justify-between gap-3 px-4 py-2 border-t border-ink/[0.05] text-[11px]">
+      <div className="flex items-center justify-between gap-3 border-t border-[color:var(--set-rule)] px-4 py-2 text-[11.5px]">
         <span className="text-ink-30 tabular-nums">
           {t('settings.customCssLines', { count: lines })}
         </span>
         {blocked > 0 && (
-          <span className="flex items-center gap-1.5 text-amber-300/70 min-w-0">
+          <span className="flex min-w-0 items-center gap-1.5 text-amber-400">
             <AlertCircle size={12} />
             <span className="truncate">{t('settings.customCssBlocked', { count: blocked })}</span>
           </span>

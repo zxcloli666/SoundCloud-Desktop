@@ -37,7 +37,7 @@ export function ModelsCard() {
       {models.length === 0 ? (
         <Empty icon={<HardDrive size={22} />} text={t('voice.models.none')} />
       ) : (
-        <div className="divide-y divide-ink/[0.05]">
+        <div className="set-group divide-y divide-[color:var(--set-rule)]">
           {models.map((model) => (
             <ModelRow key={model.id} model={model} />
           ))}

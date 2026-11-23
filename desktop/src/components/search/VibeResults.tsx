@@ -2,18 +2,13 @@ import { RefreshCw, Sparkles } from 'lucide-react';
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRememberQuery, useVibe } from '../../lib/search';
-import { Atmosphere } from './Atmosphere';
 import { SearchError, SearchState } from './SearchState';
 import { TrackWall } from './TrackWall';
-import { genreColor, vibeEnergy } from './utils';
-
-const NO_TINT: string[] = [];
 
 export const VibeResults = memo(function VibeResults({ q }: { q: string }) {
   const { t } = useTranslation();
   const remember = useRememberQuery(q);
   const vibe = useVibe(q);
-  const top = vibe.data?.atmosphere?.topGenres ?? NO_TINT;
 
   const body = (() => {
     if (vibe.isError) return <SearchError error={vibe.error} onRetry={vibe.restart} />;
@@ -47,12 +42,5 @@ export const VibeResults = memo(function VibeResults({ q }: { q: string }) {
     return <TrackWall results={vibe} kind="vibe" onOpen={remember} />;
   })();
 
-  return (
-    <>
-      <div className="relative -z-10">
-        <Atmosphere tint={top.slice(0, 2).map(genreColor)} energy={vibeEnergy(top)} />
-      </div>
-      {body}
-    </>
-  );
+  return body;
 });

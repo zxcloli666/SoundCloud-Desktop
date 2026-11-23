@@ -67,28 +67,15 @@ export function ThemePicker({
             key={theme.id}
             type="button"
             onClick={() => onChange(theme.id)}
-            className={`flex cursor-pointer flex-col gap-2.5 rounded-xl border p-2.5 text-left transition-all duration-200 ${
-              active
-                ? 'text-ink'
-                : 'border-ink/[0.05] bg-ink/[0.02] text-ink-45 hover:bg-ink/[0.05] hover:text-ink-70'
-            }`}
-            style={
-              active
-                ? {
-                    background:
-                      'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
-                    borderColor: 'var(--color-accent)',
-                    boxShadow: '0 0 16px var(--color-accent-glow)',
-                  }
-                : undefined
-            }
+            data-active={active}
+            className="set-tile gap-0"
           >
-            <div className="flex h-10 items-center rounded-lg bg-shade-30 px-2">
+            <div className="set-tile-art flex h-10 items-center bg-shade-30 px-2">
               <div className="w-full">
                 <Sketch theme={theme.id} />
               </div>
             </div>
-            <span className="text-[12.5px] font-semibold">{t(theme.labelKey)}</span>
+            <span className="set-tile-label">{t(theme.labelKey)}</span>
           </button>
         );
       })}

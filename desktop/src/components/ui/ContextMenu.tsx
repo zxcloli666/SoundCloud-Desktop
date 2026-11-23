@@ -1,7 +1,6 @@
 import * as Popover from '@radix-ui/react-popover';
 import React, { useMemo, useRef } from 'react';
 import { Check } from '../../lib/icons';
-import { usePerfMode } from '../../lib/perf';
 import {
   type ContextMenuEntry,
   type ContextMenuItem,
@@ -69,7 +68,6 @@ function MenuEntries({ entries, onDone }: { entries: ContextMenuEntry[]; onDone:
 export const ContextMenuHost = React.memo(() => {
   const menu = useContextMenuStore((s) => s.menu);
   const close = useContextMenuStore((s) => s.close);
-  const blur = usePerfMode().blur(28);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const anchor = useMemo(() => {
@@ -112,14 +110,7 @@ export const ContextMenuHost = React.memo(() => {
                 moveFocus(e.currentTarget, e.key);
               }
             }}
-            className="ctx-menu z-[300] min-w-[232px] max-w-[300px] select-none rounded-[14px] p-1.5 outline-none"
-            style={{
-              background: blur > 0 ? 'rgb(var(--surface) / 0.86)' : 'rgb(var(--surface))',
-              backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
-              WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.8)` : undefined,
-              border: '1px solid rgb(var(--ink) / 0.09)',
-              boxShadow: '0 18px 50px rgb(var(--shade) / calc(0.55 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
+            className="ctx-menu surface-pop z-[300] min-w-[232px] max-w-[300px] select-none rounded-xl p-1.5 outline-none"
           >
             {menu.header && (
               <>

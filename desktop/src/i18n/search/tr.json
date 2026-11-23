@@ -201,7 +201,7 @@
     "kahve ısmarla",
     "sponsor"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "görünümü özelleştir",
     "uygulamayı güzelleştir",
     "renkler ve stil",
@@ -350,6 +350,13 @@
     "ana ekran düzeni",
     "sürükle bırak"
   ],
+  "sidebar.quickAccess": [
+    "kenar çubuğunda geçmiş",
+    "beğenileri sabitle",
+    "geçmişi menüden kaldır",
+    "kitaplık kısayolları",
+    "kısayollar"
+  ],
   "settings.layoutPinned": [
     "sabitlenen listeler",
     "sol menüdeki playlist",
@@ -481,6 +488,14 @@
     "sonraki şarkı yok",
     "radyo modu"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "müziğin üstüne önizleme",
+    "üzerine gelince ses",
+    "imleç gelince duraklıyor",
+    "parça kendiliğinden çalıyor",
+    "kısa bölüm dinle",
+    "müzik kendi kendine durdu"
+  ],
   "settings.altUploads": [
     "şarkı oynamıyor",
     "bu parça kullanılamıyor",
@@ -553,7 +568,13 @@
     "soundcloud açılmıyor",
     "dns sorunu"
   ],
-  "call.title": ["p2p", "eşler arası", "peer ağı", "relay", "ağ yardımı"],
+  "call.title": [
+    "p2p",
+    "eşler arası",
+    "peer ağı",
+    "relay",
+    "ağ yardımı"
+  ],
   "settings.discordRpc": [
     "discord'da dinlediğim görünsün",
     "discord durumu",
@@ -1281,5 +1302,41 @@
     "yeniden bağla",
     "bağlantıyı kes",
     "ek izinler"
+  ],
+  "settings.liveBackground": [
+    "hareketli arka plan",
+    "canlı arka plan",
+    "kapak ışığı",
+    "oynatıcı arka planı",
+    "ana sayfa animasyonu",
+    "animasyonu kapat",
+    "sabit arka plan",
+    "arka plan efekti"
+  ],
+  "settings.themesAutoUpdate": [
+    "temaları otomatik güncelle",
+    "tema güncellemeleri",
+    "temalar kendiliğinden güncellensin"
+  ],
+  "settings.sound": [
+    "ses ayarları",
+    "kalite ve seviye",
+    "nasıl duyuluyor",
+    "ses işleme"
+  ],
+  "settings.lyricsAndComments": [
+    "şarkı sözü ayarları",
+    "sözler ve yorumlar",
+    "parça yorumları"
+  ],
+  "settings.cacheLikes": [
+    "tüm beğenileri indir",
+    "çevrimdışı beğeniler",
+    "favorileri kaydet"
+  ],
+  "settings.cacheLimits": [
+    "önbellek sınırı",
+    "en fazla önbellek",
+    "ne kadar yer kullansın"
   ]
 }

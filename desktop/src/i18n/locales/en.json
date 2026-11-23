@@ -19,6 +19,8 @@
     "home": "Home",
     "moments": "Moments",
     "reload": "Reload interface",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode",
     "search": "Search",
     "discover": "Discover",
     "library": "Library",
@@ -27,14 +29,17 @@
     "following": "Following",
     "settings": "Settings",
     "collapse": "Collapse",
-    "expand": "Expand"
+    "expand": "Expand",
+    "forward": "Forward",
+    "minimize": "Minimize",
+    "maximize": "Maximize"
   },
   "sidebar": {
     "quickAccess": "Quick Access",
     "pinPlaylist": "Pin playlist",
     "unpinPlaylist": "Unpin playlist",
-    "pinLikes": "Pin likes",
-    "unpinLikes": "Unpin likes",
+    "pin": "Pin to sidebar",
+    "unpin": "Unpin",
     "pinned": "Pinned to sidebar",
     "unpinned": "Removed from sidebar",
     "pinArtist": "Pin to sidebar",
@@ -81,6 +86,8 @@
     "volume": "Volume",
     "volumeReset": "Reset volume to 100%",
     "volumeResetHint": "Double-click to reset to 100%",
+    "volumeType": "Type a volume",
+    "volumePercent": "Volume in percent",
     "autoplay": "Autoplay",
     "autoplayOn": "Similar tracks will keep playing after the queue",
     "autoplayOff": "Playback stops when the queue ends",
@@ -88,7 +95,33 @@
     "copyArtist": "Artist",
     "copyBoth": "Artist and title",
     "copyLink": "Link",
-    "copiedShort": "Copied"
+    "copiedShort": "Copied",
+    "seek": "Seek",
+    "abLoopName": "A-B loop",
+    "qualityName": "Quality"
+  },
+  "queue": {
+    "remove": "Remove from queue",
+    "played": "Played",
+    "added": "Added by you",
+    "fromWave": "From your wave",
+    "fromArtistWave": "From the artist's wave",
+    "fromSimilar": "Similar tracks",
+    "fromLikes": "From your likes",
+    "fromSuperlikes": "From your superlikes",
+    "fromPlaylist": "From {{name}}",
+    "fromPlaylistAny": "From the playlist",
+    "summary_one": "{{count}} track · {{time}}",
+    "summary_other": "{{count}} tracks · {{time}}",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "cleared": "Queue cleared",
+    "undo": "Undo",
+    "waveFailed": "Couldn't start the wave",
+    "seek": "Seek",
+    "play": "Play",
+    "pause": "Pause"
   },
   "auth": {
     "signIn": "Sign in with SoundCloud",
@@ -220,7 +253,13 @@
       "unsupportedTitle": "Not a track, playlist or profile link",
       "unreachableTitle": "Couldn't reach SoundCloud",
       "unreachableBody": "Try again in a moment."
-    }
+    },
+    "layout": {
+      "tiles": "Tiles",
+      "list": "List"
+    },
+    "artists": "Artists",
+    "artistsUsers": "Artists and users"
   },
   "sharing": {
     "public": "Public",
@@ -326,7 +365,6 @@
     "showLess": "Show less",
     "relatedEmpty": "Nothing related yet",
     "noWaveform": "No waveform for this track",
-    "roomFor": "A room tuned to this track",
     "feat": "feat.",
     "remix": "Remix",
     "prod": "prod.",
@@ -509,7 +547,9 @@
       "clear": "Clear search",
       "empty": "No matches in this user's content",
       "error": "Couldn't search this profile"
-    }
+    },
+    "myMusic": "My music",
+    "myMusicEmpty": "Like some tracks and your soundprint will appear here."
   },
   "library": {
     "soundprint": "Your soundprint",
@@ -835,7 +875,8 @@
     "recommended": "Recommended For You",
     "startListening": "Start Listening",
     "startLikingTitle": "Like tracks — more music will appear here",
-    "startLikingDesc": "The more likes, the better recommendations and richer home page"
+    "startLikingDesc": "The more likes, the better recommendations and richer home page",
+    "shelf": "Shelf"
   },
   "soundwave": {
     "tagline": "Your personal radio — picked just for you",
@@ -1063,7 +1104,6 @@
     "dropCount_other": "{{count}} items"
   },
   "settings": {
-    "title": "Settings",
     "search": "Search",
     "searchClear": "Clear",
     "searchEmpty": "Nothing found",
@@ -1071,7 +1111,7 @@
     "total": "Total",
     "audioCacheSize": "Audio",
     "assetsCacheSize": "Images & assets",
-    "likedCacheSize": "Likes, offline playlists and saved tracks (protected cache)",
+    "likedCacheSize": "Likes and offline",
     "cacheLikes": "Cache liked tracks",
     "cacheLikesDesc": "Downloads all likes into a separate folder that bypasses the audio cache limit.",
     "cacheLikesStarting": "Preparing...",
@@ -1089,7 +1129,6 @@
     "hoverPreloadDesc": "Download a track in advance when the cursor rests on it, so it starts instantly",
     "clearCache": "Clear",
     "cacheCleared": "Cache cleared",
-    "appearance": "Appearance",
     "accentColor": "Accent color",
     "backgroundImage": "Background image",
     "none": "None",
@@ -1426,6 +1465,7 @@
     "layoutLibrary": "Library",
     "layoutHome": "Home",
     "layoutReset": "Reset",
+    "layoutResetDefault": "Reset to default",
     "layoutDrag": "Drag to reorder",
     "layoutHide": "Hide",
     "layoutShow": "Show",
@@ -1505,6 +1545,8 @@
     "manualUpdates": "Updates are installed manually",
     "autoplay": "Autoplay",
     "autoplayDesc": "When the queue runs out, keep playing similar tracks from the wave of the last one",
+    "hoverPreviewDuringPlayback": "Hover preview while music plays",
+    "hoverPreviewDuringPlaybackDesc": "Hovering a track for a second pauses your music and plays a short preview",
     "altUploads": "Copy instead of an unavailable track",
     "altUploadsDesc": "If a track can't be played, an upload of the same track on another account plays instead when one is found",
     "searchPlayback": "Playing from search",
@@ -1564,7 +1606,27 @@
     "videoNoCodec": "No H.264",
     "videoCacheSize": "Video",
     "videoCacheLimit": "Video cache limit",
-    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first"
+    "videoCacheLimitDesc": "Clips you have not watched for the longest time are deleted first",
+    "layoutPlayer": "Player",
+    "layoutPlayerHint": "You can also right-click the player to switch buttons",
+    "liveBackground": "Live background",
+    "liveBackgroundDesc": "Animated glow from the cover behind the player on Home",
+    "catAdvanced": "Advanced",
+    "catAbout": "About",
+    "sumGeneral": "Language, startup, hotkeys and filters",
+    "sumAppearance": "Theme, wallpaper, font and layout",
+    "sumAudio": "Quality, crossfade, lyrics and output",
+    "sumVoice": "Loli, the voice assistant",
+    "sumChats": "Privacy, devices and keys",
+    "sumAccount": "Sync, phone access and sign out",
+    "sumAdvanced": "Network, integrations, storage, video and CSS",
+    "sumAbout": "Version, updates, help and support",
+    "sound": "Sound",
+    "lyricsAndComments": "Lyrics and comments",
+    "colors": "Colors",
+    "wpRemove": "Remove wallpaper",
+    "cacheLimits": "Cache limits",
+    "likedCacheHint": "Liked tracks, offline playlists and saved tracks. The audio cache limit never deletes them."
   },
   "effects": {
     "title": "Effects",
@@ -2321,7 +2383,8 @@
       "provisioning": "registering",
       "active": "active",
       "failed": "failed"
-    }
+    },
+    "desc": "While it is on, our servers send SoundCloud requests through your internet connection"
   },
   "artist": {
     "title": "Artist",
@@ -3080,5 +3143,29 @@
     "ahead_one": "{{count}} ahead",
     "ahead_other": "{{count}} ahead",
     "saved": "Saved"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Now playing",
+    "paused": "Paused",
+    "openPlayer": "Open full player: {{title}}",
+    "upNext": "Up next",
+    "waveTitle": "Wave",
+    "emptyQueue": "Nothing queued yet",
+    "waveSettings": "Wave settings",
+    "vibe": "Vibe",
+    "vibeHint": "Search by mood",
+    "idleTitle": "Your wave",
+    "idleSub": "Endless music picked for you",
+    "playWave": "Play the wave",
+    "removeLiked": "Remove from liked",
+    "followers_one": "{{value}} follower",
+    "followers_other": "{{value}} followers",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "emptyLiked": "Like a track and it shows up here",
+    "emptyArtists": "Follow an artist and they show up here",
+    "emptyPlaylists": "Like a playlist and it shows up here",
+    "emptyHistory": "Play a track and it shows up here",
+    "emptyReleases": "Nothing new from your artists lately"
   }
 }

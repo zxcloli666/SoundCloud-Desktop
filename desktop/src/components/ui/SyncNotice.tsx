@@ -6,9 +6,9 @@ import type { CollectionSyncInfo } from '../../lib/collection-sync';
 import { helpUrl } from '../../lib/help-url';
 import { ExternalLink, Loader2, Lock, RotateCcw } from '../../lib/icons';
 import { usePremium } from '../../lib/premium-cache';
-import type { WaitScope } from '../sync-wait/scope';
-import { SyncWait } from '../sync-wait/SyncWait';
 import { syncTimeText } from '../sync/useSyncCopy';
+import { SyncWait } from '../sync-wait/SyncWait';
+import type { WaitScope } from '../sync-wait/scope';
 
 export type SyncNoticeKind = 'failed' | 'syncing' | 'stalled' | 'refused';
 
@@ -29,7 +29,7 @@ const REFUSED_TEXT: Record<string, string> = {
 const WAIT_TICK_MS = 60_000;
 
 const ACTION =
-  'inline-flex cursor-pointer items-center gap-2 rounded-full border border-ink/10 bg-ink/[0.05] px-3.5 py-1.5 text-[12px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.09] hover:text-ink-95';
+  'inline-flex cursor-pointer items-center gap-2 rounded-xl border border-ink/10 bg-ink/[0.05] px-3.5 py-2 text-[12px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.09] hover:text-ink-95';
 
 export interface SyncedQuery {
   isError: boolean;
@@ -85,7 +85,10 @@ export const SyncNotice = React.memo(function SyncNotice({
       );
     }
     return (
-      <div className="flex flex-col items-center gap-3">
+      <div
+        data-ui="sync-notice"
+        className="flex flex-col items-center gap-3 rounded-2xl border border-ink/10 bg-surface/70 px-5 py-4 shadow-[0_14px_42px_rgb(var(--shade)/0.12)]"
+      >
         <div className="flex items-center justify-center gap-2 text-[13px] text-ink-30">
           <Loader2 size={14} className="animate-spin" />
           {note}
@@ -102,7 +105,10 @@ export const SyncNotice = React.memo(function SyncNotice({
       );
     }
     return (
-      <div className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-30">
+      <div
+        data-ui="sync-notice"
+        className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-45 rounded-2xl border border-ink/10 bg-surface/70 px-5 py-4 shadow-[0_14px_42px_rgb(var(--shade)/0.12)]"
+      >
         {note}
         <button
           type="button"
@@ -123,7 +129,10 @@ export const SyncNotice = React.memo(function SyncNotice({
     const message = text ?? t(codeText ?? DEFAULT_TEXT.refused);
     const retryLeft = ((info?.retryAt ?? now) - now) / 1000;
     return (
-      <div className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-30">
+      <div
+        data-ui="sync-notice"
+        className="flex flex-col items-center gap-3 text-center text-[13px] text-ink-45 rounded-2xl border border-ink/10 bg-surface/70 px-5 py-4 shadow-[0_14px_42px_rgb(var(--shade)/0.12)]"
+      >
         {unavailable
           ? `${message} · ${t('sync.retryIn', { time: syncTimeText(t, retryLeft) })}`
           : message}
@@ -138,7 +147,10 @@ export const SyncNotice = React.memo(function SyncNotice({
   }
 
   return (
-    <div className="flex flex-col items-center gap-3 text-[13px] text-ink-30">
+    <div
+      data-ui="sync-notice"
+      className="flex flex-col items-center gap-3 text-[13px] text-ink-45 rounded-2xl border border-ink/10 bg-surface/70 px-5 py-4 shadow-[0_14px_42px_rgb(var(--shade)/0.12)]"
+    >
       {text ?? t(DEFAULT_TEXT.failed)}
       <button type="button" onClick={onRetry} className={ACTION}>
         <RotateCcw size={12} />

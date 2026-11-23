@@ -8,7 +8,7 @@ import { useNetCheckStore } from '../../../lib/net/check';
 import { notifyError } from '../../../lib/notify';
 import { ReportButton } from '../../ui/ReportButton';
 import { ActionButton } from '../ActionButton';
-import { Card, Divider, Row } from '../primitives';
+import { Card, Row } from '../primitives';
 
 export function HelpCard() {
   const { t, i18n } = useTranslation();
@@ -21,46 +21,38 @@ export function HelpCard() {
     <Card title={t('settings.help')} desc={t('settings.helpDesc')} icon={<LifeBuoy size={17} />}>
       <Row title={t('settings.helpErrors')} desc={t('settings.helpErrorsDesc')}>
         <ActionButton
-          icon={<BookOpen size={12} />}
+          icon={<BookOpen size={13} />}
           label={t('settings.helpErrorsOpen')}
           onClick={() => openUrl(helpUrl('errors', i18n.language))}
         />
       </Row>
-      <Divider />
       <Row title={t('settings.helpNetCheck')} desc={t('settings.helpNetCheckDesc')}>
         <ActionButton
-          icon={<Activity size={12} />}
+          icon={<Activity size={13} />}
           label={t('settings.helpNetCheckOpen')}
           onClick={() => useNetCheckStore.getState().openCheck()}
         />
       </Row>
-      <Divider />
       <Row title={t('diag.report')} desc={t('diag.reportDesc')}>
-        <ReportButton
-          trigger="manual"
-          className="flex items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.05] px-3 py-1.5 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.09] cursor-pointer disabled:opacity-50"
-        />
+        <ReportButton trigger="manual" className="set-btn" />
       </Row>
-      <Divider />
       <Row title={t('settings.helpLog')} desc={t('settings.helpLogDesc')}>
         <ActionButton
-          icon={<FolderOpen size={12} />}
+          icon={<FolderOpen size={13} />}
           label={t('settings.helpLogOpen')}
           onClick={revealLog}
         />
       </Row>
-      <Divider />
       <Row title={t('settings.helpDiscord')} desc={t('settings.helpDiscordDesc')}>
         <ActionButton
-          icon={<MessageCircle size={12} />}
+          icon={<MessageCircle size={13} />}
           label={t('settings.helpDiscordOpen')}
           onClick={() => openUrl(DISCORD_URL)}
         />
       </Row>
-      <Divider />
       <Row title={t('settings.helpTelegram')} desc={t('settings.helpTelegramDesc')}>
         <ActionButton
-          icon={<Send size={12} />}
+          icon={<Send size={13} />}
           label={t('settings.helpTelegramOpen')}
           onClick={() => openUrl(TELEGRAM_URL)}
         />

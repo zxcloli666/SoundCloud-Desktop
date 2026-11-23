@@ -55,7 +55,7 @@ export function ActivationCard() {
 
   return (
     <Card title={t('voice.activation.title')} icon={<Hand size={17} />}>
-      <div className="divide-y divide-ink/[0.05]">
+      <div className="set-group divide-y divide-[color:var(--set-rule)]">
         <Block
           data-ui="settings-row"
           icon={<Keyboard size={14} />}

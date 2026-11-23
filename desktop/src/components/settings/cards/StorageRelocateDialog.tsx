@@ -39,9 +39,7 @@ const ICON_BADGE = {
 function PathTile({ label, path, accent }: { label: string; path: string; accent?: boolean }) {
   return (
     <div className="min-w-0 flex-1 rounded-2xl px-4 py-3" style={accent ? ACCENT_TILE : PLAIN_TILE}>
-      <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-35 font-semibold">
-        {label}
-      </p>
+      <p className="text-[10.5px] uppercase tracking-[0.12em] text-ink-35 font-semibold">{label}</p>
       <p className="mt-1 text-[12px] text-ink-80 font-mono truncate" title={path} dir="rtl">
         <bdi>{path}</bdi>
       </p>

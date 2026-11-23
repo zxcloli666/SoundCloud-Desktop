@@ -18,26 +18,12 @@ export const HideListenedToggle = React.memo(function HideListenedToggle({
       type="button"
       onClick={() => onChange(!value)}
       title={t(value ? 'soundwave.hideListenedOn' : 'soundwave.hideListenedOff')}
-      className="flex items-center gap-1.5 px-3 h-8 rounded-full border transition-colors duration-200 text-[11px] font-medium cursor-pointer"
-      style={{
-        background: value ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.06)',
-        borderColor: value ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.08)',
-        color: value ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.7)',
-      }}
+      data-on={value || undefined}
+      className="chip-toggle"
     >
       <Clock size={12} />
       <span>{t('soundwave.hideListenedLabel')}</span>
-      <span
-        className="ml-1 w-[22px] h-[12px] rounded-full relative transition-colors"
-        style={{
-          background: value ? 'var(--color-accent)' : 'rgb(var(--ink) / 0.18)',
-        }}
-      >
-        <span
-          className="absolute top-[1px] w-[10px] h-[10px] rounded-full bg-white transition-all"
-          style={{ left: value ? '10px' : '1px' }}
-        />
-      </span>
+      <span className="chip-toggle-switch" />
     </button>
   );
 });

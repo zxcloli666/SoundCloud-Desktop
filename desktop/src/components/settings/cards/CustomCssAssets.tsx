@@ -13,7 +13,7 @@ import {
 import { Copy, Trash2, Upload } from '../../../lib/icons';
 
 const ICON_BUTTON =
-  'w-8 h-8 shrink-0 rounded-lg flex items-center justify-center text-ink-40 hover:text-ink-80 hover:bg-ink/[0.08] transition-all cursor-pointer';
+  'flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-[9px] text-ink-45 transition-colors hover:bg-ink/[0.07] hover:text-ink';
 
 function AssetRow({
   name,
@@ -27,13 +27,13 @@ function AssetRow({
   const { t } = useTranslation();
   const src = cssAssetHttpUrl(name);
   return (
-    <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-ink/[0.04] border border-ink/[0.06] animate-fade-in-up">
-      <div className="w-10 h-10 shrink-0 rounded-lg overflow-hidden bg-ink/[0.05] border border-ink/[0.06]">
+    <div className="flex items-center gap-3 rounded-[10px] bg-[var(--set-well)] py-1.5 pr-1.5 pl-2 animate-fade-in-up">
+      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-[7px] bg-ink/[0.05]">
         {src && <img src={src} alt="" className="w-full h-full object-cover" />}
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-[13px] text-ink-85 truncate">{name}</div>
-        <div className="font-mono text-[11px] text-ink-35 truncate">{cssAssetSnippet(name)}</div>
+        <div className="truncate font-mono text-[11.5px] text-ink-40">{cssAssetSnippet(name)}</div>
       </div>
       <button
         type="button"
@@ -91,13 +91,11 @@ export function CustomCssAssets() {
   };
 
   return (
-    <div data-ui="settings-row" className="space-y-2">
+    <div data-ui="settings-row" className="set-row space-y-2.5 py-3">
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-ink-30">
-            {t('settings.customCssAssets')}
-          </span>
-          <p className="text-[11.5px] text-ink-35 leading-snug">
+          <p className="text-[13.5px] font-medium text-ink-90">{t('settings.customCssAssets')}</p>
+          <p className="mt-0.5 text-[12px] leading-snug text-ink-45">
             {t('settings.customCssAssetsHint')}
           </p>
         </div>
@@ -111,12 +109,8 @@ export function CustomCssAssets() {
             e.target.value = '';
           }}
         />
-        <button
-          type="button"
-          onClick={() => fileInput.current?.click()}
-          className="shrink-0 inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-ink/[0.04] border border-ink/[0.06] text-[12.5px] font-medium text-ink-60 hover:text-ink-85 hover:bg-ink/[0.07] transition-all cursor-pointer"
-        >
-          <Upload size={14} />
+        <button type="button" onClick={() => fileInput.current?.click()} className="set-btn">
+          <Upload size={13} />
           {t('settings.customCssAssetAdd')}
         </button>
       </div>

@@ -2,19 +2,15 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../lib/api';
-import { type Aura, auraRgba } from '../../lib/aura';
 import { Loader2 } from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
 import { useAuthStore } from '../../stores/auth';
 
 interface FollowBtnProps {
   userUrn: string;
-  aura: Aura;
 }
 
-export function FollowBtn({ userUrn, aura }: FollowBtnProps) {
+export function FollowBtn({ userUrn }: FollowBtnProps) {
   const { t } = useTranslation();
-    const b = usePerfMode().blur(20);
   const currentUser = useAuthStore((s) => s.user);
   const qc = useQueryClient();
 
@@ -60,33 +56,12 @@ export function FollowBtn({ userUrn, aura }: FollowBtnProps) {
       type="button"
       onClick={toggle}
       disabled={busy}
-      className={`group relative overflow-hidden inline-flex items-center justify-center gap-2 px-7 h-11 rounded-full text-[13px] font-semibold tracking-wide transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] cursor-pointer disabled:opacity-60 ${
+      className={`inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-7 text-[13px] font-semibold transition-colors duration-200 disabled:opacity-60 ${
         following
-          ? 'text-ink-80 hover:text-ink'
-          : 'text-paper hover:scale-[1.03] active:scale-[0.97]'
+          ? 'border border-ink/[0.14] bg-ink/[0.06] text-ink-80 hover:bg-ink/[0.1] hover:text-ink'
+          : 'bg-accent text-accent-contrast hover:bg-accent-hover'
       }`}
-      style={{
-        background: following
-            ? b > 0
-                ? 'rgb(var(--ink) / 0.06)'
-                : 'rgb(var(--surface-hi) / 0.85)'
-          : 'linear-gradient(180deg, rgb(var(--ink)), rgb(var(--ink) / 0.9))',
-        border: following
-          ? '0.5px solid rgb(var(--ink) / 0.12)'
-          : '0.5px solid rgb(var(--ink) / 0.4)',
-        boxShadow: following
-          ? 'inset 0 0.5px 0 rgb(var(--ink) / 0.08)'
-          : `0 12px 32px ${auraRgba(aura, 0.28)}, inset 0 1px 0 rgb(var(--ink) / 0.6)`,
-          backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-          WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-      }}
     >
-      <span
-        className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.25), transparent)',
-        }}
-      />
       {busy ? (
         <Loader2 size={14} className="animate-spin" />
       ) : following ? (

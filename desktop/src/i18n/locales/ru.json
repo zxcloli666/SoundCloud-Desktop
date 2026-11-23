@@ -19,6 +19,8 @@
     "home": "Главная",
     "moments": "Моменты",
     "reload": "Перезагрузить интерфейс",
+    "lightMode": "Светлая тема",
+    "darkMode": "Тёмная тема",
     "search": "Поиск",
     "discover": "Каталог",
     "library": "Библиотека",
@@ -27,14 +29,17 @@
     "following": "Подписки",
     "settings": "Настройки",
     "collapse": "Свернуть",
-    "expand": "Развернуть"
+    "expand": "Развернуть",
+    "forward": "Вперёд",
+    "minimize": "Свернуть",
+    "maximize": "Развернуть"
   },
   "sidebar": {
     "quickAccess": "Быстрый доступ",
     "pinPlaylist": "Закрепить плейлист",
     "unpinPlaylist": "Открепить плейлист",
-    "pinLikes": "Закрепить лайки",
-    "unpinLikes": "Открепить лайки",
+    "pin": "Закрепить в сайдбаре",
+    "unpin": "Открепить",
     "pinned": "Плейлист закреплён в сайдбаре",
     "unpinned": "Плейлист убран из сайдбара",
     "pinArtist": "Закрепить в сайдбаре",
@@ -81,6 +86,8 @@
     "volume": "Громкость",
     "volumeReset": "Сбросить громкость до 100%",
     "volumeResetHint": "Двойной клик сбрасывает до 100%",
+    "volumeType": "Ввести громкость",
+    "volumePercent": "Громкость в процентах",
     "autoplay": "Автопродолжение",
     "autoplayOn": "После очереди продолжат играть похожие треки",
     "autoplayOff": "Воспроизведение остановится в конце очереди",
@@ -88,7 +95,37 @@
     "copyArtist": "Исполнитель",
     "copyBoth": "Исполнитель и название",
     "copyLink": "Ссылка",
-    "copiedShort": "Скопировано"
+    "copiedShort": "Скопировано",
+    "seek": "Перемотка",
+    "abLoopName": "Цикл A-B",
+    "qualityName": "Качество"
+  },
+  "queue": {
+    "remove": "Убрать из очереди",
+    "played": "Прослушано",
+    "added": "Добавлено тобой",
+    "fromWave": "Из твоей волны",
+    "fromArtistWave": "Из волны артиста",
+    "fromSimilar": "Похожие треки",
+    "fromLikes": "Из твоих лайков",
+    "fromSuperlikes": "Из суперлайков",
+    "fromPlaylist": "Из «{{name}}»",
+    "fromPlaylistAny": "Из плейлиста",
+    "summary_one": "{{count}} трек · {{time}}",
+    "summary_few": "{{count}} трека · {{time}}",
+    "summary_many": "{{count}} треков · {{time}}",
+    "summary_other": "{{count}} трека · {{time}}",
+    "minutes_one": "{{count}} мин",
+    "minutes_few": "{{count}} мин",
+    "minutes_many": "{{count}} мин",
+    "minutes_other": "{{count}} мин",
+    "hoursMinutes": "{{hours}} ч {{minutes}} мин",
+    "cleared": "Очередь очищена",
+    "undo": "Вернуть",
+    "waveFailed": "Не удалось запустить волну",
+    "seek": "Перемотка",
+    "play": "Слушать",
+    "pause": "Пауза"
   },
   "auth": {
     "signIn": "Войти через SoundCloud",
@@ -220,7 +257,13 @@
       "unsupportedTitle": "Это не ссылка на трек, плейлист или профиль",
       "unreachableTitle": "Не удалось связаться с SoundCloud",
       "unreachableBody": "Попробуй ещё раз чуть позже."
-    }
+    },
+    "layout": {
+      "tiles": "Плитки",
+      "list": "Список"
+    },
+    "artists": "Артисты",
+    "artistsUsers": "Артисты и пользователи"
   },
   "sharing": {
     "public": "Публичный",
@@ -327,7 +370,6 @@
     "showLess": "Свернуть",
     "relatedEmpty": "Похожего пока нет",
     "noWaveform": "У трека нет волны",
-    "roomFor": "Комната под этот трек",
     "feat": "feat.",
     "remix": "ремикс",
     "prod": "prod.",
@@ -515,7 +557,9 @@
       "clear": "Очистить",
       "empty": "В контенте этого пользователя ничего не найдено",
       "error": "Не удалось выполнить поиск по профилю"
-    }
+    },
+    "myMusic": "Моя музыка",
+    "myMusicEmpty": "Лайкни пару треков, и здесь появится твой звуковой отпечаток."
   },
   "library": {
     "soundprint": "Твой звуковой отпечаток",
@@ -848,7 +892,8 @@
     "recommended": "Рекомендации для вас",
     "startListening": "Начните слушать",
     "startLikingTitle": "Лайкайте треки — здесь появится больше музыки",
-    "startLikingDesc": "Чем больше лайков, тем точнее рекомендации и насыщеннее главная страница"
+    "startLikingDesc": "Чем больше лайков, тем точнее рекомендации и насыщеннее главная страница",
+    "shelf": "Полка"
   },
   "soundwave": {
     "tagline": "Твоя личная волна — подобрали под тебя",
@@ -971,11 +1016,11 @@
     "fileCount_one": "{{count}} файл",
     "fileCount_few": "{{count}} файла",
     "fileCount_many": "{{count}} файлов",
-    "storeOfLimit": "из {{limit}} · лимит кеша",
+    "storeOfLimit": "из {{limit}} · лимит кэша",
     "storeNoLimit": "лимит не задан",
     "storeCacheOff": "кэш выключен · треки удаляются после прослушивания",
     "legendLikes": "лайки и сохранённые · {{size}} под замком",
-    "legendCache": "кеш · {{size}}",
+    "legendCache": "кэш · {{size}}",
     "legendFree": "свободно {{size}}",
     "likesCoverage": "Покрытие лайков",
     "coverageOf": "/ {{total}} скачано",
@@ -1012,7 +1057,7 @@
     "actDownload": "Скачать на устройство",
     "actSave": "Сохранить в файл",
     "actRefetch": "Перекачать",
-    "removeCached": "Убрать из кеша",
+    "removeCached": "Убрать из кэша",
     "bulkBusy": "Уже идёт другое скачивание — дождитесь его или отмените",
     "bulkBusy_likes": "Сейчас скачиваются лайки — дождитесь или отмените",
     "bulkBusy_playlist": "Сейчас скачивается другой плейлист — дождитесь или отмените",
@@ -1088,7 +1133,6 @@
     "dropCount_other": "{{count}} объекта"
   },
   "settings": {
-    "title": "Настройки",
     "search": "Поиск",
     "searchClear": "Сбросить",
     "searchEmpty": "Ничего не найдено",
@@ -1096,7 +1140,7 @@
     "total": "Всего",
     "audioCacheSize": "Аудио",
     "assetsCacheSize": "Изображения и ассеты",
-    "likedCacheSize": "Лайки, офлайн-плейлисты и сохранённые треки (защищённый кэш)",
+    "likedCacheSize": "Лайки и офлайн",
     "cacheLikes": "Закэшировать лайки",
     "cacheLikesDesc": "Скачивает все лайки в отдельную папку. Не удаляется при превышении лимита аудиокэша.",
     "cacheLikesStarting": "Подготовка...",
@@ -1114,7 +1158,6 @@
     "hoverPreloadDesc": "Скачивать трек заранее, когда курсор задерживается на нём, чтобы он включался сразу",
     "clearCache": "Очистить",
     "cacheCleared": "Кэш очищен",
-    "appearance": "Оформление",
     "accentColor": "Цвет акцента",
     "backgroundImage": "Фоновое изображение",
     "none": "Нет",
@@ -1463,6 +1506,7 @@
     "layoutLibrary": "Библиотека",
     "layoutHome": "Главная",
     "layoutReset": "Сбросить",
+    "layoutResetDefault": "Сбросить по умолчанию",
     "layoutDrag": "Перетащите, чтобы поменять порядок",
     "layoutHide": "Скрыть",
     "layoutShow": "Показать",
@@ -1542,6 +1586,8 @@
     "manualUpdates": "Обновления ставятся вручную",
     "autoplay": "Автопродолжение",
     "autoplayDesc": "Когда очередь закончится, дальше играют похожие треки из волны от последнего",
+    "hoverPreviewDuringPlayback": "Предпрослушивание поверх музыки",
+    "hoverPreviewDuringPlaybackDesc": "Если задержать курсор на треке, музыка встанет на паузу и сыграет короткий отрывок",
     "altUploads": "Копия вместо недоступного трека",
     "altUploadsDesc": "Если трек не отдаётся, играет загрузка того же трека на другом аккаунте, если она нашлась",
     "searchPlayback": "Воспроизведение из поиска",
@@ -1601,7 +1647,27 @@
     "videoNoCodec": "Нет H.264",
     "videoCacheSize": "Видео",
     "videoCacheLimit": "Лимит кэша видео",
-    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели"
+    "videoCacheLimitDesc": "Первыми удаляются ролики, которые вы дольше всего не смотрели",
+    "layoutPlayer": "Плеер",
+    "layoutPlayerHint": "Кнопки можно включать и правой кнопкой мыши по плееру",
+    "liveBackground": "Живой фон",
+    "liveBackgroundDesc": "Анимированное свечение из обложки за плеером на главной",
+    "catAdvanced": "Дополнительно",
+    "catAbout": "О приложении",
+    "sumGeneral": "Язык, запуск, горячие клавиши и фильтры",
+    "sumAppearance": "Тема, обои, шрифт и раскладка",
+    "sumAudio": "Качество, кроссфейд, текст и вывод звука",
+    "sumVoice": "Голосовой ассистент Лоля",
+    "sumChats": "Приватность, устройства и ключи",
+    "sumAccount": "Синхронизация, телефон и выход",
+    "sumAdvanced": "Сеть, интеграции, хранилище, видео и CSS",
+    "sumAbout": "Версия, обновления, помощь и поддержка",
+    "sound": "Звучание",
+    "lyricsAndComments": "Текст и комментарии",
+    "colors": "Цвета",
+    "wpRemove": "Удалить обои",
+    "cacheLimits": "Лимиты кэша",
+    "likedCacheHint": "Лайки, офлайн-плейлисты и сохранённые треки. Лимит аудиокэша их не удаляет."
   },
   "effects": {
     "title": "Эффекты",
@@ -2375,7 +2441,8 @@
       "provisioning": "регистрация",
       "active": "активен",
       "failed": "ошибка"
-    }
+    },
+    "desc": "Пока включено, наши серверы отправляют запросы к SoundCloud через ваше интернет-подключение"
   },
   "artist": {
     "title": "Артист",
@@ -3183,5 +3250,31 @@
     "ahead_few": "{{count}} впереди",
     "ahead_many": "{{count}} впереди",
     "ahead_other": "{{count}} впереди"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Сейчас играет",
+    "paused": "На паузе",
+    "openPlayer": "Открыть большой плеер: {{title}}",
+    "upNext": "Далее",
+    "waveTitle": "Волна",
+    "emptyQueue": "Очередь пока пуста",
+    "waveSettings": "Настройки волны",
+    "vibe": "Вайб",
+    "vibeHint": "Поиск по настроению",
+    "idleTitle": "Твоя волна",
+    "idleSub": "Бесконечная музыка под твой вкус",
+    "playWave": "Запустить волну",
+    "removeLiked": "Убрать из лайков",
+    "followers_one": "{{value}} подписчик",
+    "followers_few": "{{value}} подписчика",
+    "followers_many": "{{value}} подписчиков",
+    "followers_other": "{{value}} подписчика",
+    "collapse": "Свернуть",
+    "expand": "Развернуть",
+    "emptyLiked": "Лайкни трек, и он появится здесь",
+    "emptyArtists": "Подпишись на артиста, и он появится здесь",
+    "emptyPlaylists": "Лайкни плейлист, и он появится здесь",
+    "emptyHistory": "Включи трек, и он появится здесь",
+    "emptyReleases": "У твоих артистов пока ничего нового"
   }
 }

@@ -320,7 +320,7 @@ type HistoryRow = Omit<HistoryEntry, 'trackUrn'> & { trackUrn: string | null };
 
 const hasTrackUrn = (row: HistoryRow): row is HistoryEntry => !!row.trackUrn;
 
-export function useHistory(limit = 50) {
+export function useHistory(limit = 50, enabled = true) {
   const query = useInfiniteQuery({
     queryKey: ['history'],
     queryFn: async ({ pageParam = 0 }) => {
@@ -329,6 +329,7 @@ export function useHistory(limit = 50) {
       );
     },
     initialPageParam: 0,
+    enabled,
     gcTime: INFINITE_GC_MS,
     maxPages: 8,
     getNextPageParam: (last, _all, lastOffset) => {

@@ -1,4 +1,3 @@
-import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { AlbumCast } from '../components/album/AlbumCast';
 import { AlbumHero } from '../components/album/AlbumHero';
@@ -6,15 +5,13 @@ import { AlbumTrackList } from '../components/album/AlbumTrackList';
 import { useAlbumDetail } from '../components/album/useAlbumData';
 import { useArtistStar } from '../components/artist/useArtistData';
 import { OfflineCopyLink } from '../components/offline/OfflineCopyLink';
-import { AuraField } from '../components/user/AuraField';
+import { LoadErrorState } from '../components/ui/LoadErrorState';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { albumScope } from '../lib/bulk-cache';
 import { Loader2 } from '../lib/icons';
 
 export function AlbumPage() {
   const { id } = useParams<{ id: string }>();
-  const { t } = useTranslation();
-
   const album = useAlbumDetail(id);
   const data = album.data;
   const { hasStar, aura } = useArtistStar(data?.primary_artist?.id);
@@ -30,7 +27,11 @@ export function AlbumPage() {
   if (album.error || !data) {
     return (
       <div className="relative w-full min-h-screen flex flex-col items-center justify-center gap-5 text-ink-40 text-sm">
-        {t('common.error')}
+        <LoadErrorState
+          error={album.error}
+          retrying={album.isFetching}
+          onRetry={() => void album.refetch()}
+        />
         {id && <OfflineCopyLink scope={albumScope(id)} />}
       </div>
     );
@@ -40,15 +41,13 @@ export function AlbumPage() {
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
       <div data-ui="page" data-page="album" className="relative w-full min-h-screen">
-        <AuraField aura={aura} isStar={hasStar} />
-
         <div
-          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32 flex flex-col gap-8"
+          className="@container relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32 flex flex-col gap-8"
           style={{ isolation: 'isolate' }}
         >
           <AlbumHero album={data} hasStar={hasStar} aura={aura} />
-          <AlbumCast artists={data.artists} aura={aura} />
-          <AlbumTrackList tracks={data.tracks} aura={aura} />
+          <AlbumCast artists={data.artists} />
+          <AlbumTrackList tracks={data.tracks} />
         </div>
       </div>
     </>

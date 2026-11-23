@@ -7,8 +7,8 @@ import {
   setAutostartEnabled,
   setAutostartMinimized,
 } from '../../../lib/autostart';
-import { AlertCircle } from '../../../lib/icons';
 import { Row, Toggle } from '../primitives';
+import { Notice } from './Notice';
 
 export function AutostartRows() {
   const { t } = useTranslation();
@@ -44,7 +44,7 @@ export function AutostartRows() {
   };
 
   return (
-    <div className="mt-4 border-t border-ink/[0.05] pt-4">
+    <>
       <Row title={t('settings.autostart')} desc={t('settings.autostartDesc')}>
         <Toggle
           checked={state.enabled}
@@ -61,14 +61,7 @@ export function AutostartRows() {
           label={t('settings.autostartMinimized')}
         />
       </Row>
-      {state.enabled && !state.trayAvailable && (
-        <div className="mt-3 flex items-start gap-2.5 rounded-2xl border border-amber-400/15 bg-amber-400/[0.05] px-3.5 py-2.5">
-          <AlertCircle size={14} className="shrink-0 mt-px text-amber-300/90" />
-          <p className="min-w-0 text-[11.5px] leading-snug text-ink-60">
-            {t('settings.autostartNoTray')}
-          </p>
-        </div>
-      )}
-    </div>
+      {state.enabled && !state.trayAvailable && <Notice>{t('settings.autostartNoTray')}</Notice>}
+    </>
   );
 }

@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { type Aura, auraRgba } from '../../lib/aura';
 import { fc } from '../../lib/formatters';
-import { usePerfMode } from '../../lib/perf';
 import { useScrollEdges } from '../ui/useScrollEdges';
 
 export type TabId = 'popular' | 'tracks' | 'playlists' | 'likes' | 'followers' | 'following';
@@ -16,21 +14,18 @@ interface TabDockProps<T extends string = string> {
   tabs: ReadonlyArray<TabDescriptor<T>>;
   active: T;
   onChange: (id: T) => void;
-  aura: Aura;
 }
 
 const useIsoLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
 
 function edgeFade(start: boolean, end: boolean) {
   if (!start && !end) return undefined;
-  const from = start ? 'transparent, #000 28px' : '#000';
-  const to = end ? '#000 calc(100% - 28px), transparent' : '#000';
+  const from = start ? 'transparent, rgb(var(--ink)) 28px' : 'rgb(var(--ink))';
+  const to = end ? 'rgb(var(--ink)) calc(100% - 28px), transparent' : 'rgb(var(--ink))';
   return `linear-gradient(90deg, ${from}, ${to})`;
 }
 
-function TabDockImpl<T extends string>({ tabs, active, onChange, aura }: TabDockProps<T>) {
-  const perf = usePerfMode();
-  const dockB = perf.blur(40);
+function TabDockImpl<T extends string>({ tabs, active, onChange }: TabDockProps<T>) {
   const dockRef = useRef<HTMLDivElement>(null);
   const [pill, setPill] = useState<{ x: number; w: number } | null>(null);
   const [overflows, setOverflows] = useState(false);
@@ -137,16 +132,7 @@ function TabDockImpl<T extends string>({ tabs, active, onChange, aura }: TabDock
 
   return (
     <div className="sticky top-3 z-40 flex justify-center pointer-events-none px-2 sm:px-4 min-w-0">
-      <div
-        className="pointer-events-auto flex rounded-2xl min-w-0 max-w-full"
-        style={{
-          background: dockB > 0 ? 'rgb(var(--surface) / 0.55)' : 'rgb(var(--surface) / 0.92)',
-          backdropFilter: dockB > 0 ? `blur(${dockB}px) saturate(180%)` : undefined,
-          WebkitBackdropFilter: dockB > 0 ? `blur(${dockB}px) saturate(180%)` : undefined,
-          boxShadow:
-            '0 24px 60px rgb(var(--shade) / calc(0.45 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
-        }}
-      >
+      <div className="pointer-events-auto flex min-w-0 max-w-full rounded-2xl border border-ink/[0.08] bg-[var(--shell)]">
         <div
           ref={dockRef}
           onPointerDown={onPointerDown}
@@ -164,14 +150,8 @@ function TabDockImpl<T extends string>({ tabs, active, onChange, aura }: TabDock
         >
           {pill && (
             <div
-              className="absolute top-1 bottom-1 sm:top-1.5 sm:bottom-1.5 rounded-xl transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)]"
-              style={{
-                left: pill.x,
-                width: pill.w,
-                background: `linear-gradient(180deg, ${auraRgba(aura, 0.22)}, ${auraRgba(aura, 0.06)})`,
-                border: `0.5px solid ${auraRgba(aura, 0.35)}`,
-                boxShadow: `0 6px 20px ${auraRgba(aura, 0.25)}, inset 0 0.5px 0 rgba(255,255,255,0.12)`,
-              }}
+              className="absolute top-1 bottom-1 rounded-xl bg-ink/[0.09] transition-all duration-300 sm:top-1.5 sm:bottom-1.5"
+              style={{ left: pill.x, width: pill.w }}
             />
           )}
           {tabs.map((tab) => {

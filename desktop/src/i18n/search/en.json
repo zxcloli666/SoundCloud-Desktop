@@ -229,7 +229,7 @@
     "buy a coffee",
     "contribute"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "look and feel",
     "design",
     "customization",
@@ -237,7 +237,10 @@
     "personalize",
     "reset appearance",
     "change how it looks",
-    "visual style"
+    "visual style",
+    "accent color",
+    "color scheme",
+    "colors"
   ],
   "settings.themePreset": [
     "color theme",
@@ -408,6 +411,14 @@
     "library sections",
     "reorder"
   ],
+  "sidebar.quickAccess": [
+    "history in sidebar",
+    "pin likes",
+    "unpin history",
+    "library shortcuts",
+    "sidebar shortcuts",
+    "hide superlikes from sidebar"
+  ],
   "settings.layoutPinned": [
     "pin playlist",
     "playlists in sidebar",
@@ -559,6 +570,15 @@
     "wave after track",
     "music stops after last song",
     "autoplay"
+  ],
+  "settings.hoverPreviewDuringPlayback": [
+    "preview over music",
+    "sample while playing",
+    "hover pauses my song",
+    "track plays on hover",
+    "listen to a snippet",
+    "pause when hovering",
+    "hover sound"
   ],
   "settings.altUploads": [
     "track unavailable",
@@ -1477,5 +1497,51 @@
     "unlink extended access",
     "high quality streams access",
     "extra soundcloud permissions"
+  ],
+  "settings.liveBackground": [
+    "animated background",
+    "moving glow",
+    "cover glow on home",
+    "webgl scene",
+    "live wallpaper",
+    "player background animation",
+    "background lights",
+    "static background"
+  ],
+  "settings.themesAutoUpdate": [
+    "update themes automatically",
+    "theme auto update",
+    "keep themes fresh",
+    "install theme updates",
+    "themes update by themselves"
+  ],
+  "settings.sound": [
+    "audio quality",
+    "sound settings",
+    "how it sounds",
+    "volume leveling",
+    "silence and fades",
+    "sound processing"
+  ],
+  "settings.lyricsAndComments": [
+    "lyrics settings",
+    "song text",
+    "timed comments",
+    "comments over the track",
+    "karaoke settings"
+  ],
+  "settings.cacheLikes": [
+    "download all likes",
+    "save likes offline",
+    "likes without internet",
+    "download my favorites",
+    "offline likes"
+  ],
+  "settings.cacheLimits": [
+    "cache size limit",
+    "max cache size",
+    "how much disk to use",
+    "limit storage",
+    "cache cap"
   ]
 }

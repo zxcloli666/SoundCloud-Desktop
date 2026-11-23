@@ -3,20 +3,20 @@ import { useTranslation } from 'react-i18next';
 import { NavLink } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { changeAppLanguage } from '../../i18n';
-import { Clock, Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
+import { Globe, PanelLeftClose, PanelLeftOpen, Settings } from '../../lib/icons';
 import { moveEntry } from '../../lib/layout';
 import { useReleaseFeed } from '../../lib/new-releases-api';
 import { usePerfMode } from '../../lib/perf';
-import { useSuperlikeCount } from '../../lib/superlikes';
+import { useOwnTenure } from '../../lib/star-tenure';
+import { useLayout } from '../../lib/use-layout';
 import { useAppMode } from '../../stores/app-status';
 import { useAuthStore } from '../../stores/auth';
 import { useSettingsStore } from '../../stores/settings';
 import { ChatNavBadge } from '../chat/shell/ChatNavBadge';
-import { SuperHeart } from '../music/superlike/SuperHeart';
 import { Avatar } from '../ui/Avatar';
+import { useLayoutMenu } from './LayoutMenu';
 import { type IconCmp, NAV_ITEMS } from './nav-items';
 import {
-  ACTIVE,
   IconBox,
   Label,
   ROW,
@@ -26,8 +26,6 @@ import {
 } from './SidebarChrome';
 import { SidebarPins } from './SidebarPins';
 import { SortableSlot, SortableStack } from './SortableStack';
-import { useOwnTenure } from '../../lib/star-tenure';
-import { useLayout } from '../../lib/use-layout';
 import { StarCard } from './StarCard';
 import { StarBadge, useStarSubscription } from './StarSubscription';
 
@@ -44,9 +42,7 @@ const languages = [
 function CountBadge({ count, collapsed }: { count: number; collapsed: boolean }) {
   if (count <= 0) return null;
   if (collapsed) {
-    return (
-      <span className="absolute right-2 top-1.5 size-2 rounded-full bg-accent shadow-[0_0_8px_var(--color-accent-glow)]" />
-    );
+    return <span className="absolute right-2 top-1.5 size-2 rounded-full bg-accent" />;
   }
   return (
     <span className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full bg-accent px-1.5 text-[10.5px] font-black leading-[16px] tabular-nums text-accent-contrast">
@@ -82,14 +78,13 @@ function NavItem({
           isActive
             ? ''
             : alert
-              ? 'text-ink-85 bg-accent/[0.08] ring-1 ring-accent/20 hover:text-ink'
-              : 'text-ink-45 hover:text-ink-80 hover:bg-ink/[0.05]'
+              ? 'text-ink bg-accent/[0.1] hover:bg-accent/[0.16]'
+              : 'text-ink-50 hover:text-ink hover:bg-ink/[0.05]'
         }`
       }
-      style={({ isActive }) => (isActive ? ACTIVE : undefined)}
     >
       <IconBox>
-        <Icon size={18} strokeWidth={1.9} />
+        <Icon size={18} strokeWidth={1.8} />
       </IconBox>
       <Label collapsed={collapsed} className="text-[13px] font-medium pr-3">
         {label}
@@ -112,6 +107,8 @@ export const Sidebar = React.memo(() => {
     })),
   );
   const layout = useLayout('sidebar');
+  const layoutMenu = useLayoutMenu('sidebar');
+  const quickMenu = useLayoutMenu('quick');
   const navIds = layout
     .filter((e) => !e.hidden || (e.id === 'offline' && appMode !== 'online'))
     .map((e) => e.id);
@@ -119,7 +116,6 @@ export const Sidebar = React.memo(() => {
   const { isPremium } = useStarSubscription();
   const ownTenure = useOwnTenure();
   const perf = usePerfMode();
-  const superlikeCount = useSuperlikeCount();
   const { unheard } = useReleaseFeed();
 
   const toggleLanguage = () => {
@@ -127,18 +123,21 @@ export const Sidebar = React.memo(() => {
   };
   const currentLang = languages.find((l) => l.code === i18n.language) ?? languages[0];
 
-  const btnCls = `${ROW} text-ink-45 hover:text-ink-80 hover:bg-ink/[0.05] cursor-pointer`;
+  const btnCls = `${ROW} text-ink-50 hover:text-ink hover:bg-ink/[0.05] cursor-pointer`;
 
   return (
     <aside
       data-ui="sidebar"
-      className="shrink-0 flex flex-col h-full overflow-hidden [@media(max-height:560px)]:overflow-y-auto scrollbar-hide border-r border-ink/[0.05] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
+      onContextMenu={(e) => {
+        if (!e.defaultPrevented) layoutMenu.onContextMenu(e);
+      }}
+      className="shrink-0 flex flex-col h-full overflow-hidden [@media(max-height:560px)]:overflow-y-auto scrollbar-hide border-r border-[color:var(--shell-line)] bg-[var(--shell-side)] pb-3 transition-[width] duration-300 ease-[var(--ease-apple)]"
       style={{
         width: sidebarWidth(collapsed),
         transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
       }}
     >
-      <nav className="flex flex-col gap-0.5 px-2 pt-3">
+      <nav className="flex flex-col gap-2 px-2 pt-3">
         <SortableStack ids={navIds} onMove={moveNav}>
           {navIds.map((id) => {
             const item = NAV_ITEMS[id];
@@ -165,12 +164,16 @@ export const Sidebar = React.memo(() => {
         </SortableStack>
       </nav>
 
-      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-2 space-y-0.5">
+      <div
+        data-ui="quick-access"
+        onContextMenu={quickMenu.onContextMenu}
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-2 space-y-0.5"
+      >
         <div className="relative h-5 mx-1 mb-0.5">
           <span
             className="absolute inset-x-0 top-1/2 h-px"
             style={{
-              background: 'rgb(var(--ink) / 0.07)',
+              background: 'var(--shell-line)',
               opacity: collapsed ? 1 : 0,
               transition: 'opacity 240ms ease',
             }}
@@ -182,24 +185,6 @@ export const Sidebar = React.memo(() => {
             {t('sidebar.quickAccess')}
           </span>
         </div>
-
-        <NavItem
-          to="/library/history"
-          icon={Clock}
-          label={t('library.history')}
-          collapsed={collapsed}
-          title={collapsed ? t('library.history') : undefined}
-        />
-
-        {superlikeCount > 0 && (
-          <NavItem
-            to="/library/superlikes"
-            icon={SuperHeart}
-            label={t('superlikes.title')}
-            collapsed={collapsed}
-            title={collapsed ? t('superlikes.title') : undefined}
-          />
-        )}
 
         <SidebarPins collapsed={collapsed} />
       </div>
@@ -259,13 +244,12 @@ export const Sidebar = React.memo(() => {
             title={collapsed ? user.username : undefined}
             data-ui="profile"
             className={({ isActive }) => `${ROW} ${isActive ? '' : 'hover:bg-ink/[0.05]'}`}
-            style={({ isActive }) => (isActive ? ACTIVE : undefined)}
           >
             <span className="w-10 shrink-0 flex items-center justify-center">
               <Avatar src={user.avatar_url} alt={user.username} size={26} />
             </span>
             <Label collapsed={collapsed} className="flex items-center gap-1.5 pr-3">
-              <span className="text-[12.5px] text-ink-55 truncate font-medium">
+              <span className="text-[12.5px] text-ink-70 truncate font-medium">
                 {user.username}
               </span>
               {isPremium && <StarBadge tier={ownTenure?.tier ?? 0} />}
@@ -273,6 +257,8 @@ export const Sidebar = React.memo(() => {
           </NavLink>
         </div>
       )}
+      {layoutMenu.menu}
+      {quickMenu.menu}
     </aside>
   );
 });

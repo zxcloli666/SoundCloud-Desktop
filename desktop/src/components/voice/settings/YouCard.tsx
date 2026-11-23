@@ -50,7 +50,7 @@ export function YouCard({ canTalk }: { canTalk: boolean }) {
     >
       <fieldset
         disabled={!on}
-        className="min-w-0 divide-y divide-ink/[0.05] transition-opacity duration-500 disabled:opacity-40"
+        className="min-w-0 set-group divide-y divide-[color:var(--set-rule)] transition-opacity duration-500 disabled:opacity-40"
       >
         <Block data-ui="settings-row" icon={<UserRound size={14} />} title={t('voice.you.address')}>
           <AddressPicker />

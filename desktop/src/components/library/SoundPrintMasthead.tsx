@@ -1,198 +1,77 @@
-import {memo} from 'react';
-import {useTranslation} from 'react-i18next';
-import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
-import {art} from '../../lib/formatters';
-import {Loader2, Shuffle, User as UserIcon} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
-import type {Track} from '../../stores/player';
-import {SyncStatusChip} from '../sync/SyncStatusChip';
-import {ArtworkMosaic} from './ArtworkMosaic';
-import {SoundprintBars} from './SoundprintBars';
-import {useShuffleLikes} from './useShuffleLikes';
-import type {Soundprint} from './useSoundprint';
+import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { art } from '../../lib/formatters';
+import { Loader2, Shuffle, User as UserIcon } from '../../lib/icons';
+import { SyncStatusChip } from '../sync/SyncStatusChip';
+import { SoundprintBars } from './SoundprintBars';
+import { useShuffleLikes } from './useShuffleLikes';
+import type { Soundprint } from './useSoundprint';
 
 interface MastheadUser {
-    username: string;
-    avatar_url: string;
+  username: string;
+  avatar_url: string;
 }
 
 function greetingKey(): string {
-    const h = new Date().getHours();
-    if (h < 5) return 'library.greetNight';
-    if (h < 12) return 'library.greetMorning';
-    if (h < 18) return 'library.greetDay';
-    return 'library.greetEvening';
+  const h = new Date().getHours();
+  if (h < 5) return 'library.greetNight';
+  if (h < 12) return 'library.greetMorning';
+  if (h < 18) return 'library.greetDay';
+  return 'library.greetEvening';
 }
 
-/** Tiny "now playing" equalizer — a borrowed flourish that signals the room is
- *  alive. Idle-only (gates on perf.idleAnim, pauses with the global hidden gate). */
-const EqBars = memo(function EqBars({color}: { color: string }) {
-    const perf = usePerfMode();
-    if (!perf.idleAnim) return null;
-    const delays = ['-0.2s', '-0.56s', '-0.08s', '-0.38s'];
-    return (
-        <span className="inline-flex items-end gap-[2px] h-[9px]">
-      {delays.map((d) => (
-          <i
-              key={d}
-              className="sp-eq w-[2px] rounded-full"
-              style={{
-                  height: '9px',
-                  background: color,
-                  transformOrigin: 'bottom',
-                  animation: `sp-eq 900ms ease-in-out ${d} infinite`,
-              }}
-          />
-      ))}
-    </span>
-    );
-});
-
-const AvatarOrb = memo(function AvatarOrb({
-                                              url,
-                                              aura,
-                                              glow,
-                                          }: {
-    url: string | null;
-    aura: Aura;
-    glow: string;
-}) {
-    const perf = usePerfMode();
-    return (
-        <div className="relative shrink-0 w-[84px] h-[84px] md:w-[100px] md:h-[100px]">
-            <div
-                className="absolute -inset-2 rounded-full pointer-events-none transition-[background] duration-500"
-                style={{
-                    background: `radial-gradient(circle, ${auraRgba(aura, 0.45)}, transparent 70%)`,
-                    filter: perf.glow ? 'blur(10px)' : undefined,
-                }}
-            />
-            <div
-                className="relative w-full h-full rounded-full overflow-hidden transition-[border-color,box-shadow] duration-500"
-                style={{border: `0.5px solid ${auraRgba(aura, 0.4)}`, boxShadow: `0 10px 34px ${glow}`}}
-            >
-                {url ? (
-                    <img src={url} alt="" className="w-full h-full object-cover" decoding="async"/>
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-ink/5">
-                        <UserIcon size={30} className="text-ink-25"/>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-});
-
-/** "Sound Print" — your collection as a living portrait of your taste. */
 export const SoundPrintMasthead = memo(function SoundPrintMasthead({
-                                                                       user,
-                                                                       likedTracks,
-                                                                       sound,
-                                                                       selected,
-                                                                       onSelect,
-                                                                   }: {
-    user: MastheadUser;
-    likedTracks: Track[];
-    sound: Soundprint;
-    selected: string | null;
-    onSelect: (genre: string | null) => void;
+  user,
+  sound,
+  selected,
+  onSelect,
+}: {
+  user: MastheadUser;
+  sound: Soundprint;
+  selected: string | null;
+  onSelect: (genre: string | null) => void;
 }) {
-    const {t} = useTranslation();
-    const perf = usePerfMode();
-    const {shuffle, loading} = useShuffleLikes();
-    const b = perf.blur(22);
-    const avatar = art(user.avatar_url, 't300x300');
-    // Glossy, accent-lit "play" surface borrowed from the focus concept.
-    const playSurface = `radial-gradient(125% 125% at 30% 22%, ${sound.aura.orbs[1]}, ${sound.aura.orbs[0]} 70%)`;
-    const playGlow = `inset 0 0 0 1px rgba(255,255,255,0.22), 0 12px 30px ${sound.accentGlow}, 0 0 30px ${sound.accentGlow}`;
+  const { t } = useTranslation();
+  const { shuffle, loading } = useShuffleLikes();
+  const avatar = art(user.avatar_url, 't300x300');
 
-    return (
-        <section
-            className="relative overflow-hidden rounded-[2.25rem] p-6 md:p-8 transition-[box-shadow] duration-500"
-            style={{
-                border: '0.5px solid rgb(var(--ink) / 0.1)',
-                boxShadow: `0 30px 80px rgb(var(--shade) / calc(0.42 * var(--shade-alpha))), 0 0 70px ${sound.accentGlow}`,
-            }}
-        >
-            {/* frost — blurs the page atmosphere behind the slab */}
-            <div
-                className="absolute inset-0 rounded-[inherit] transition-[background] duration-500"
-                style={{
-                    contain: 'strict',
-                    transform: 'translateZ(0)',
-                    backdropFilter: b > 0 ? `blur(${b}px) saturate(150%)` : undefined,
-                    WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(150%)` : undefined,
-                    background:
-                        b > 0
-                            ? `linear-gradient(145deg, ${auraRgba(sound.aura, 0.1)}, rgb(var(--surface) / 0.55))`
-                            : 'rgb(var(--surface) / 0.92)',
-                }}
-            />
-            <ArtworkMosaic tracks={likedTracks}/>
-            {/* dominant-hue wash from the top-left */}
-            <div
-                className="absolute inset-0 pointer-events-none rounded-[inherit] transition-[background] duration-500"
-                style={{
-                    background: `radial-gradient(120% 130% at 6% -12%, ${auraRgba(sound.aura, 0.22)}, transparent 58%)`,
-                }}
-            />
-
-            <div className="relative z-10 flex flex-col gap-6" style={{isolation: 'isolate'}}>
-                <div className="flex items-center gap-5">
-                    <AvatarOrb url={avatar} aura={sound.aura} glow={sound.accentGlow}/>
-                    <div data-ui="greeting" className="min-w-0 flex-1">
-                        <p className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.28em] text-ink-40 font-bold mb-1.5">
-                            <EqBars color={auraRgb(sound.aura)}/>
-                            {t('nav.library')}
-                        </p>
-                        <h1
-                            className="text-[26px] md:text-[34px] font-black tracking-tight leading-[1.05] break-words"
-                            style={{
-                                backgroundImage: sound.aura.nameGradient,
-                                WebkitBackgroundClip: 'text',
-                                backgroundClip: 'text',
-                                color: 'transparent',
-                            }}
-                        >
-                            {t(greetingKey(), {name: user.username})}
-                        </h1>
-                        <SyncStatusChip quietWhenSynced className="mt-3"/>
-                    </div>
-                    <button
-                        type="button"
-                        onClick={shuffle}
-                        disabled={loading}
-                        className="hidden sm:flex shrink-0 items-center gap-2.5 pl-4 pr-5 py-3 rounded-full font-bold text-[14px] cursor-pointer transition-transform duration-300 hover:scale-[1.04] active:scale-95 disabled:opacity-60"
-                        style={{
-                            color: isLight(sound.aura) ? '#0a0a0c' : '#fff',
-                            background: playSurface,
-                            boxShadow: playGlow,
-                        }}
-                    >
-                        {loading ? <Loader2 size={18} className="animate-spin"/> : <Shuffle size={18}/>}
-                        {t('library.playYourSound')}
-                    </button>
-                </div>
-
-                {sound.hasData && (
-                    <SoundprintBars spectrum={sound.spectrum} selected={selected} onSelect={onSelect}/>
-                )}
-
-                <button
-                    type="button"
-                    onClick={shuffle}
-                    disabled={loading}
-                    className="sm:hidden flex w-fit items-center gap-2 px-4 py-3 rounded-2xl font-bold text-[13px] cursor-pointer disabled:opacity-60"
-                    style={{
-                        color: isLight(sound.aura) ? '#0a0a0c' : '#fff',
-                        background: playSurface,
-                        boxShadow: playGlow,
-                    }}
-                >
-                    {loading ? <Loader2 size={16} className="animate-spin"/> : <Shuffle size={16}/>}
-                    {t('library.playYourSound')}
-                </button>
+  return (
+    <section className="panel rounded-2xl p-5 md:p-7">
+      <div className="flex items-center gap-5">
+        <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-full bg-ink/5 ring-1 ring-ink/10 md:h-20 md:w-20">
+          {avatar ? (
+            <img src={avatar} alt="" className="h-full w-full object-cover" decoding="async" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center">
+              <UserIcon size={28} className="text-ink-25" />
             </div>
-        </section>
-    );
+          )}
+        </div>
+        <div data-ui="greeting" className="min-w-0 flex-1">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-40">
+            {t('nav.library')}
+          </p>
+          <h1 className="break-words text-[24px] font-bold leading-tight tracking-tight text-ink md:text-[30px]">
+            {t(greetingKey(), { name: user.username })}
+          </h1>
+          <SyncStatusChip quietWhenSynced className="mt-2.5" />
+        </div>
+        <button
+          type="button"
+          onClick={shuffle}
+          disabled={loading}
+          className="flex shrink-0 cursor-pointer items-center gap-2.5 rounded-full bg-accent py-3 pl-4 pr-5 text-[14px] font-semibold text-accent-contrast transition-colors hover:bg-accent-hover disabled:opacity-60"
+        >
+          {loading ? <Loader2 size={18} className="animate-spin" /> : <Shuffle size={18} />}
+          {t('library.playYourSound')}
+        </button>
+      </div>
+
+      {sound.hasData && (
+        <div className="mt-6 border-t border-ink/[0.08] pt-5">
+          <SoundprintBars spectrum={sound.spectrum} selected={selected} onSelect={onSelect} />
+        </div>
+      )}
+    </section>
+  );
 });

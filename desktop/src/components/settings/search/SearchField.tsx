@@ -1,6 +1,7 @@
 import { type KeyboardEvent, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, X } from '../../../lib/icons';
+import { isMac } from '../../../lib/platform';
 
 export function SearchField({
   value,
@@ -38,10 +39,10 @@ export function SearchField({
   return (
     <div
       data-ui="settings-search"
-      className="relative mb-2.5 flex h-11 items-center rounded-2xl border-[0.5px] border-ink/[0.08] bg-ink/[0.03] transition-[background-color,border-color,box-shadow] duration-200 focus-within:border-ink/[0.18] focus-within:bg-ink/[0.05] focus-within:shadow-[0_0_18px_var(--color-accent-glow)]"
+      className="group/search relative flex h-9 items-center rounded-[10px] border border-[color:var(--shell-line-hi)] bg-[var(--shell-fill)] transition-colors duration-150 hover:bg-[var(--shell-fill-hi)] focus-within:border-accent focus-within:bg-[var(--shell-fill)]"
     >
-      <span className="pointer-events-none absolute left-3.5 text-ink-40">
-        <Search size={15} />
+      <span className="pointer-events-none absolute left-3 text-ink-40">
+        <Search size={14} />
       </span>
       <input
         ref={input}
@@ -58,9 +59,9 @@ export function SearchField({
         onChange={(event) => onChange(event.target.value)}
         onFocus={onFocus}
         onKeyDown={onKeyDown}
-        className="h-full min-w-0 flex-1 bg-transparent pl-10 pr-9 text-[13.5px] font-medium text-ink outline-none placeholder:text-ink-35"
+        className="h-full min-w-0 flex-1 bg-transparent pl-9 pr-9 text-[13px] text-ink-90 outline-none placeholder:text-ink-35 select-text"
       />
-      {value !== '' && (
+      {value !== '' ? (
         <button
           type="button"
           data-ui="settings-search-clear"
@@ -70,10 +71,14 @@ export function SearchField({
             onClear();
             input.current?.focus();
           }}
-          className="absolute right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-ink-40 transition-colors duration-200 hover:bg-ink/[0.08] hover:text-ink-85"
+          className="absolute right-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-ink-40 transition-colors duration-150 hover:bg-ink/[0.08] hover:text-ink-85"
         >
-          <X size={14} />
+          <X size={13} />
         </button>
+      ) : (
+        <kbd className="pointer-events-none absolute right-1.5 flex h-6 items-center rounded-md border border-ink/10 bg-ink/[0.05] px-1.5 text-[10px] font-semibold tracking-wide text-ink-30 transition-opacity duration-150 group-focus-within/search:opacity-0">
+          {isMac() ? '⌘' : 'Ctrl'} F
+        </kbd>
       )}
     </div>
   );

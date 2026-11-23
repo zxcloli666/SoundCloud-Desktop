@@ -21,25 +21,23 @@ export function Panel({
   return (
     <div
       data-ui={dataUi}
-      className="relative overflow-hidden rounded-2xl p-4 transition-[border-color,box-shadow] duration-500"
-      style={{
-        border: `0.5px solid ${checked ? 'var(--color-accent-glow)' : 'rgb(var(--ink) / 0.06)'}`,
-        background:
-          'radial-gradient(120% 90% at 0% 0%, var(--color-accent-glow), transparent 55%), rgb(var(--ink) / 0.02)',
-        boxShadow: checked ? '0 10px 32px rgb(var(--shade) / calc(0.25 * var(--shade-alpha)))' : undefined,
-      }}
+      className="relative overflow-hidden rounded-[12px] bg-[var(--set-well)] p-3.5"
     >
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl border border-ink/[0.06] bg-ink/[0.05] text-ink-70">
+          <div
+            className={`flex size-8 shrink-0 items-center justify-center rounded-[9px] transition-colors duration-150 ${
+              checked ? 'bg-accent/[0.12] text-[var(--color-accent)]' : 'bg-ink/[0.05] text-ink-55'
+            }`}
+          >
             {icon}
           </div>
           <div className="min-w-0">
-            <p className="text-[14px] font-bold tracking-tight text-ink-90">{title}</p>
-            <p className="text-[11.5px] leading-snug text-ink-35">{desc}</p>
+            <p className="text-[13.5px] font-medium text-ink-90">{title}</p>
+            <p className="text-[12px] leading-snug text-ink-45">{desc}</p>
           </div>
         </div>
-        <Toggle checked={checked} onChange={onToggle} />
+        <Toggle checked={checked} onChange={onToggle} label={title} />
       </div>
       {checked && children && <div className="mt-4 space-y-4">{children}</div>}
     </div>
@@ -47,13 +45,9 @@ export function Panel({
 }
 
 export function Label({ children }: { children: ReactNode }) {
-  return (
-    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-35">
-      {children}
-    </p>
-  );
+  return <p className="text-[12.5px] font-medium text-ink-70">{children}</p>;
 }
 
 export function Hint({ children }: { children: ReactNode }) {
-  return <p className="text-[11.5px] leading-snug text-ink-30">{children}</p>;
+  return <p className="text-[12px] leading-snug text-ink-45">{children}</p>;
 }

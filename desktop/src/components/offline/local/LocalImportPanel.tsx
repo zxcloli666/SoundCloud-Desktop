@@ -83,46 +83,18 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
   totalBytes: number;
 }) {
   const { t } = useTranslation();
-  const perf = usePerfMode();
   const folders = useLocalLibrary((s) => s.folders);
   const busy = useLocalLibrary((s) => s.scanning !== null);
-  const blur = perf.blur(24);
 
   return (
-    <section
-      className="relative grid overflow-hidden rounded-[20px] border border-ink/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_-32px_rgb(var(--shade)/calc(0.8*var(--shade-alpha)))] lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]"
-      style={{
-        background:
-          blur > 0
-            ? 'linear-gradient(180deg, rgb(var(--ink) / 0.045), rgb(var(--ink) / 0.018))'
-            : 'rgb(var(--surface))',
-        backdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.25)` : undefined,
-        WebkitBackdropFilter: blur > 0 ? `blur(${blur}px) saturate(1.25)` : undefined,
-      }}
-    >
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-70"
-        style={{
-          background:
-            'linear-gradient(90deg, transparent, var(--color-accent-glow) 18%, transparent 42%)',
-        }}
-      />
-
+    <section className="panel grid overflow-hidden lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
       <div className="flex flex-col gap-3 p-5">
-        <div
-          className="relative flex items-center gap-4 overflow-hidden rounded-[16px] border border-dashed p-4"
-          style={{
-            borderColor: 'var(--color-accent-glow)',
-            background:
-              'radial-gradient(120% 140% at 0% 0%, var(--color-accent-glow), transparent 55%)',
-          }}
-        >
+        <div className="relative flex items-center gap-4 overflow-hidden rounded-[16px] border border-dashed border-accent/40 bg-accent/[0.05] p-4">
           <span
             className="flex size-12 flex-none items-center justify-center rounded-2xl"
             style={{
               background: 'var(--color-accent-glow)',
               color: 'var(--color-accent-hover)',
-              boxShadow: perf.glow ? '0 10px 30px -10px var(--color-accent-glow)' : undefined,
             }}
           >
             <FileMusic size={22} />
@@ -131,9 +103,7 @@ export const LocalImportPanel = React.memo(function LocalImportPanel({
             <div className="text-[14.5px] font-semibold tracking-[-0.01em] text-ink-92">
               {t('local.dropTitle')}
             </div>
-            <div className="mt-0.5 text-[12px] leading-snug text-ink-45">
-              {t('local.dropHint')}
-            </div>
+            <div className="mt-0.5 text-[12px] leading-snug text-ink-45">{t('local.dropHint')}</div>
           </div>
         </div>
 

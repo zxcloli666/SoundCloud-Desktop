@@ -7,33 +7,24 @@ import { activeLook, activeTheme } from '../../../lib/themes/records';
 import { useSettingsStore } from '../../../stores/settings';
 import { useThemesStore } from '../../../stores/themes';
 import { Skeleton } from '../../ui/Skeleton';
-import { Card, Toggle } from '../primitives';
+import { Card, Row, Toggle } from '../primitives';
 import { ThemeDetails } from './ThemeDetails';
 import { type ThemeItem, ThemeSwatch, ThemeTile } from './ThemeTile';
 
 const SEARCH_FROM = 12;
 const STALE_MS = 10 * 60 * 1000;
-const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3';
+const GRID = 'grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2.5';
 
 function NoThemeTile({ active, onSelect }: { active: boolean; onSelect: () => void }) {
   const { t } = useTranslation();
   const accent = useSettingsStore((s) => s.accentColor);
   const bg = useSettingsStore((s) => s.bgPrimary);
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={`group flex flex-col overflow-hidden rounded-2xl border text-left transition-all duration-200 cursor-pointer hover:scale-[1.02] active:scale-[0.98] ${
-        active ? 'border-[var(--color-accent)]' : 'border-ink/[0.06] hover:border-ink/15'
-      }`}
-      style={active ? { boxShadow: '0 0 0 1px var(--color-accent)' } : undefined}
-    >
-      <div className="relative aspect-[16/10] w-full overflow-hidden">
+    <button type="button" onClick={onSelect} data-active={active} className="set-tile">
+      <span className="set-tile-art aspect-[16/10] w-full">
         <ThemeSwatch accent={accent} background={bg} />
-      </div>
-      <div className="px-3 py-2 bg-ink/[0.03] text-[12.5px] font-semibold text-ink-75 truncate">
-        {t('settings.themesNone')}
-      </div>
+      </span>
+      <span className="set-tile-label">{t('settings.themesNone')}</span>
     </button>
   );
 }
@@ -41,13 +32,11 @@ function NoThemeTile({ active, onSelect }: { active: boolean; onSelect: () => vo
 function ErrorState({ onRetry }: { onRetry: () => void }) {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-ink/[0.06] bg-ink/[0.03] px-4 py-3">
-      <span className="text-[12.5px] text-ink-50">{t('settings.themesOffline')}</span>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="rounded-lg bg-ink/[0.06] px-3 py-1.5 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.1] transition-all cursor-pointer"
-      >
+    <div className="flex items-center gap-3 rounded-[10px] bg-[var(--set-well)] py-1.5 pr-1.5 pl-3">
+      <span className="min-w-0 flex-1 text-[12.5px] text-ink-60">
+        {t('settings.themesOffline')}
+      </span>
+      <button type="button" onClick={onRetry} className="set-btn h-7">
         {t('settings.themesRetry')}
       </button>
     </div>
@@ -106,83 +95,76 @@ export function ThemesCard() {
       title={t('settings.themesTitle')}
       icon={<Palette size={17} />}
       action={
-        <Toggle
-          checked={enabled}
-          onChange={() => void setEnabled(!enabled)}
-          label={t('settings.themesTitle')}
-        />
+        <>
+          <button
+            type="button"
+            onClick={() => void refresh(true)}
+            disabled={status === 'loading'}
+            title={t('settings.themesRefresh')}
+            aria-label={t('settings.themesRefresh')}
+            className="set-btn w-8 px-0"
+            data-tone="quiet"
+          >
+            <RefreshCw size={14} className={status === 'loading' ? 'animate-spin' : ''} />
+          </button>
+          <Toggle
+            checked={enabled}
+            onChange={() => void setEnabled(!enabled)}
+            label={t('settings.themesTitle')}
+          />
+        </>
       }
     >
-      <div className="space-y-4">
-        {items.length > SEARCH_FROM && (
-          <div className="relative">
-            <Search
-              size={14}
-              className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-30"
-            />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('settings.themesSearch')}
-              spellCheck={false}
-              className="w-full rounded-xl border border-ink/[0.06] bg-ink/[0.04] py-2.5 pl-10 pr-4 text-[13px] text-ink-80 placeholder:text-ink-25 outline-none transition-all focus:border-ink/[0.12] focus:bg-ink/[0.06]"
-            />
-          </div>
-        )}
-        {status === 'error' && <ErrorState onRetry={() => void refresh(true)} />}
-        <div className={GRID}>
-          {!needle && <NoThemeTile active={plain} onSelect={deactivate} />}
-          {loading &&
-            [0, 1, 2].map((key) => (
-              <Skeleton key={key} rounded="lg" className="aspect-[16/12] w-full" />
-            ))}
-          {shown.map((item) => (
-            <ThemeTile
-              key={item.id}
-              item={item}
-              active={item.id === activeId}
-              busy={busy === item.id}
-              onOpen={setOpenId}
-            />
+      {items.length > SEARCH_FROM && (
+        <div className="relative">
+          <Search size={14} className="absolute top-1/2 left-3 -translate-y-1/2 text-ink-35" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('settings.themesSearch')}
+            spellCheck={false}
+            className="h-9 w-full rounded-[10px] border border-[color:var(--set-line)] bg-[var(--set-well)] pr-3 pl-9 text-[13px] text-ink-90 outline-none transition-colors duration-150 placeholder:text-ink-35 focus:border-accent"
+          />
+        </div>
+      )}
+      {status === 'error' && <ErrorState onRetry={() => void refresh(true)} />}
+      <div className={GRID}>
+        {!needle && <NoThemeTile active={plain} onSelect={deactivate} />}
+        {loading &&
+          [0, 1, 2].map((key) => (
+            <Skeleton key={key} rounded="lg" className="aspect-[16/12] w-full" />
           ))}
-        </div>
-        {catalog && shown.length === 0 && (
-          <p className="text-center text-[12px] text-ink-35">
-            {t(needle ? 'settings.themesNotFound' : 'settings.themesEmpty')}
-          </p>
-        )}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-ink/[0.05] pt-4">
-          <label className="inline-flex items-center gap-3 text-[12.5px] text-ink-60">
-            <Toggle
-              checked={autoUpdate}
-              onChange={() => setAutoUpdate(!autoUpdate)}
-              label={t('settings.themesAutoUpdate')}
-            />
-            {t('settings.themesAutoUpdate')}
-          </label>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => void refresh(true)}
-              disabled={status === 'loading'}
-              title={t('settings.themesRefresh')}
-              aria-label={t('settings.themesRefresh')}
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-ink-45 hover:bg-ink/[0.08] hover:text-ink-85 transition-all cursor-pointer disabled:cursor-default"
-            >
-              <RefreshCw size={14} className={status === 'loading' ? 'animate-spin' : ''} />
-            </button>
-            <button
-              type="button"
-              onClick={() => openUrl(guide)}
-              className="flex items-center gap-2 rounded-xl border border-ink/[0.06] bg-ink/[0.06] px-4 py-2 text-[12px] font-semibold text-ink-75 hover:bg-ink/[0.1] hover:text-ink transition-all cursor-pointer"
-            >
-              <BookOpen size={12} />
-              {t('settings.themesMake')}
-            </button>
-          </div>
-        </div>
+        {shown.map((item) => (
+          <ThemeTile
+            key={item.id}
+            item={item}
+            active={item.id === activeId}
+            busy={busy === item.id}
+            onOpen={setOpenId}
+          />
+        ))}
       </div>
+      {catalog && shown.length === 0 && (
+        <p className="text-center text-[12px] text-ink-40">
+          {t(needle ? 'settings.themesNotFound' : 'settings.themesEmpty')}
+        </p>
+      )}
+      <Row title={t('settings.themesAutoUpdate')}>
+        <Toggle
+          checked={autoUpdate}
+          onChange={() => setAutoUpdate(!autoUpdate)}
+          label={t('settings.themesAutoUpdate')}
+        />
+      </Row>
+      <button
+        type="button"
+        onClick={() => openUrl(guide)}
+        className="flex w-fit cursor-pointer items-center gap-1.5 text-[12px] text-ink-45 transition-colors duration-150 hover:text-ink"
+      >
+        <BookOpen size={12} />
+        {t('settings.themesMake')}
+      </button>
       <ThemeDetails item={openItem} onClose={() => setOpenId(null)} />
     </Card>
   );

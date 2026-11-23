@@ -14,16 +14,14 @@ import {
   useArtistStar,
 } from '../components/artist/useArtistData';
 import { ArtistSoundWave } from '../components/artist/wave';
-import { AuraField } from '../components/user/AuraField';
+import { LoadErrorState } from '../components/ui/LoadErrorState';
 import { USER_PAGE_KEYFRAMES } from '../components/user/keyframes';
 import { type TabDescriptor, TabDock } from '../components/user/TabDock';
 import { Loader2 } from '../lib/icons';
-import {usePerfMode} from '../lib/perf';
 
 export function ArtistPage() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
-    const perf = usePerfMode();
 
   const detail = useArtistDetail(id);
   const artist = detail.data;
@@ -75,7 +73,11 @@ export function ArtistPage() {
   if (detail.error || !artist) {
     return (
       <div className="relative w-full min-h-screen flex items-center justify-center text-ink-40 text-sm">
-        {t('common.error')}
+        <LoadErrorState
+          error={detail.error}
+          retrying={detail.isFetching}
+          onRetry={() => void detail.refetch()}
+        />
       </div>
     );
   }
@@ -84,42 +86,26 @@ export function ArtistPage() {
     <>
       <style>{USER_PAGE_KEYFRAMES}</style>
       <div data-ui="page" data-page="artist" className="relative w-full min-h-screen">
-        <AuraField aura={aura} isStar={hasStar} />
 
         <div
-          className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-32"
+          className="relative z-10 w-full max-w-[1480px] mx-auto px-4 md:px-8 pt-6 md:pt-8 pb-32"
           style={{ isolation: 'isolate' }}
         >
           <ArtistHero artist={artist} hasStar={hasStar} aura={aura} />
 
           <div className="mt-8">
-            <ArtistSoundWave artistId={artist.id} artistName={artist.name} aura={aura} />
+            <ArtistSoundWave artistId={artist.id} artistName={artist.name} />
           </div>
 
           <div className="mt-10 mb-8">
-            <TabDock<ArtistTabId> tabs={tabs} active={tab} onChange={setTab} aura={aura} />
+            <TabDock<ArtistTabId> tabs={tabs} active={tab} onChange={setTab} />
           </div>
 
-          <div
-            className="rounded-[2rem] p-3 md:p-5"
-            style={{
-              background:
-                  perf.blur(28) > 0
-                      ? 'linear-gradient(180deg, rgb(var(--ink) / 0.035) 0%, rgb(var(--ink) / 0.015) 100%)'
-                      : 'rgb(var(--surface) / 0.85)',
-                backdropFilter:
-                    perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
-                WebkitBackdropFilter:
-                    perf.blur(28) > 0 ? `blur(${perf.blur(28)}px) saturate(160%)` : undefined,
-              boxShadow:
-                '0 30px 80px rgb(var(--shade) / calc(0.30 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)',
-            }}
-          >
+          <div className="panel p-3 md:p-5">
             {tab === 'tracks' && (
               <ArtistTracksTab
                 artistId={artist.id}
                 role="primary"
-                aura={aura}
                 sort={primarySort}
                 onSortChange={setPrimarySort}
                 view={primaryView}
@@ -130,17 +116,16 @@ export function ArtistPage() {
               <ArtistTracksTab
                 artistId={artist.id}
                 role="featured"
-                aura={aura}
                 sort={featuredSort}
                 onSortChange={setFeaturedSort}
                 view={featuredView}
                 onViewChange={setFeaturedView}
               />
             )}
-            {tab === 'covers' && <ArtistCoversTab artistId={artist.id} aura={aura} />}
-            {tab === 'albums' && <ArtistAlbumsTab artistId={artist.id} aura={aura} />}
-            {tab === 'related' && <ArtistRelatedTab related={artist.related_artists} aura={aura} />}
-            {tab === 'about' && <ArtistAboutTab artist={artist} aura={aura} />}
+            {tab === 'covers' && <ArtistCoversTab artistId={artist.id} />}
+            {tab === 'albums' && <ArtistAlbumsTab artistId={artist.id} />}
+            {tab === 'related' && <ArtistRelatedTab related={artist.related_artists} />}
+            {tab === 'about' && <ArtistAboutTab artist={artist} />}
           </div>
         </div>
       </div>

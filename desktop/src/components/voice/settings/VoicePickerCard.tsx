@@ -86,7 +86,7 @@ export function VoicePickerCard() {
           />
         ))}
       </div>
-      <div className="mt-5 divide-y divide-ink/[0.05] border-t border-ink/[0.05] pt-1">
+      <div className="set-group mt-3.5 divide-y divide-[color:var(--set-rule)] border-t border-[color:var(--set-rule)]">
         {hasServerVoice(speak.voice) && (
           <Block
             data-ui="settings-row"

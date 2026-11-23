@@ -27,7 +27,11 @@ export const SETTINGS_SECTIONS = [
   'integrations',
   'chats',
   'storage',
+  'video',
+  'css',
   'account',
+  'advanced',
+  'about',
 ] as const;
 export type SettingsSection = (typeof SETTINGS_SECTIONS)[number];
 

@@ -1,23 +1,23 @@
-import {GalleryVerticalEnd, Pause, Play, Sparkles} from 'lucide-react';
-import {memo} from 'react';
-import {useTranslation} from 'react-i18next';
-import {cancelPreload, preloadTrack} from '../../lib/audio';
+import { GalleryVerticalEnd, Pause, Play, Sparkles } from 'lucide-react';
+import { memo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
 import {
   hardStopHoverPreview,
-  PREVIEW_WINDOW_MS,
   startHoverPreview,
   stopHoverPreview,
   useIsPreviewActive,
 } from '../../lib/audioPreview';
-import {art} from '../../lib/formatters';
-import {usePerfMode} from '../../lib/perf';
-import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {useSearchPrefsStore} from '../../stores/searchPrefs';
-import {LikeButton} from '../music/LikeButton';
-import {hashStr, type WallItem} from './utils';
+import { art } from '../../lib/formatters';
+import { usePerfMode } from '../../lib/perf';
+import { useArtistDisplay, useDisplayTitle } from '../../lib/track-display';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { useSearchPrefsStore } from '../../stores/searchPrefs';
+import { LikeButton } from '../music/LikeButton';
+import { PreviewRing } from './PreviewRing';
+import { hashStr, type WallItem } from './utils';
 
 interface CoverTileProps {
   item: WallItem;
@@ -45,7 +45,7 @@ export const CoverTile = memo(function CoverTile({
   onPlay,
   moments,
 }: CoverTileProps) {
-  const {t} = useTranslation();
+  const { t } = useTranslation();
   const perf = usePerfMode();
   const { track, kind, matchedLine, hero } = item;
   const displayTitle = useDisplayTitle(track);
@@ -149,8 +149,11 @@ export const CoverTile = memo(function CoverTile({
             {/* Lyric hit: the matched line is the signal — a pull-quote over the cover. */}
             {matchedLine ? (
               <div
+                data-scheme="dark"
                 className="absolute inset-x-0 bottom-0 px-3 pt-8 pb-3 pointer-events-none"
-                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.82), transparent)' }}
+                style={{
+                  background: 'linear-gradient(to top, rgb(var(--shade) / 0.82), transparent)',
+                }}
               >
                 <p
                   className="font-serif italic text-ink-95 leading-snug border-l-2 pl-2 line-clamp-3"
@@ -161,8 +164,11 @@ export const CoverTile = memo(function CoverTile({
               </div>
             ) : (
               <div
+                data-scheme="dark"
                 className="absolute inset-x-0 bottom-0 px-2.5 pt-8 pb-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.78), transparent)' }}
+                style={{
+                  background: 'linear-gradient(to top, rgb(var(--shade) / 0.78), transparent)',
+                }}
               >
                 <p
                   className={`truncate font-semibold text-ink ${hero ? 'text-sm' : 'text-[12px]'}`}
@@ -182,13 +188,14 @@ export const CoverTile = memo(function CoverTile({
 
             {/* Play affordance */}
             <div
+              data-scheme="dark"
               className={`absolute top-2 right-2 flex items-center justify-center rounded-full transition-all duration-300 ${
                 isThisPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
               }`}
               style={{
                 width: hero ? 40 : 30,
                 height: hero ? 40 : 30,
-                background: 'rgba(0,0,0,0.62)',
+                background: 'rgb(var(--shade) / 0.62)',
                 border: '0.5px solid rgb(var(--ink) / 0.18)',
               }}
             >
@@ -231,40 +238,10 @@ export const CoverTile = memo(function CoverTile({
         {isThis && (
           <div
             className="absolute inset-0 rounded-2xl pointer-events-none"
-            style={{
-              boxShadow: 'inset 0 0 0 2px var(--color-accent), 0 0 24px var(--color-accent-glow)',
-            }}
+            style={{ boxShadow: 'inset 0 0 0 2px var(--color-accent)' }}
           />
         )}
-        {previewing && (
-          <svg
-            className="absolute inset-0 w-full h-full pointer-events-none"
-            viewBox="0 0 100 100"
-            preserveAspectRatio="none"
-            aria-hidden
-          >
-            <rect
-              x="1.5"
-              y="1.5"
-              width="97"
-              height="97"
-              rx="7"
-              fill="none"
-              stroke="var(--color-accent)"
-              strokeWidth="2.6"
-              pathLength={1000}
-              strokeDasharray={1000}
-              style={
-                {
-                  '--tg-ring-len': '1000',
-                  strokeDashoffset: 1000,
-                  animation: `tg-ring-sweep ${PREVIEW_WINDOW_MS}ms linear forwards`,
-                  filter: 'drop-shadow(0 0 5px var(--color-accent-glow))',
-                } as React.CSSProperties
-              }
-            />
-          </svg>
-        )}
+        {previewing && <PreviewRing />}
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ export const ForbiddenGrid = memo(function ForbiddenGrid() {
         return (
           <div
             key={id}
-            className={`flex min-w-[150px] flex-1 items-center gap-2.5 rounded-2xl border border-ink/[0.06] bg-ink/[0.03] px-3 py-2.5 ${
+            className={`flex min-w-[150px] flex-1 items-center gap-2.5 rounded-[10px] border border-[color:var(--set-line)] bg-[var(--set-well)] px-3 py-2.5 ${
               id === 'illegal' ? 'basis-full' : 'basis-[150px]'
             }`}
           >
@@ -64,9 +64,7 @@ export const PolicyLadder = memo(function PolicyLadder() {
           </li>
         ))}
       </ol>
-      <p className="text-[11.5px] leading-snug text-emerald-300/75">
-        {t('chat.settings.policy.keeps')}
-      </p>
+      <p className="text-[11.5px] leading-snug text-ok">{t('chat.settings.policy.keeps')}</p>
     </div>
   );
 });
@@ -76,7 +74,7 @@ export const PrivacyNote = memo(function PrivacyNote() {
   return (
     <div className="flex flex-col gap-2">
       <p className="flex items-start gap-2.5 text-[12px] leading-snug text-ink-65">
-        <Lock size={14} className="mt-px shrink-0 text-emerald-300/80" />
+        <Lock size={14} className="mt-px shrink-0 text-ok" />
         {t('chat.settings.privacy.encrypted')}
       </p>
       <p className="flex items-start gap-2.5 text-[12px] leading-snug text-ink-65">

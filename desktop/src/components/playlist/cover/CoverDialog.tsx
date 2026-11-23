@@ -70,7 +70,7 @@ function ZoomRow({
         <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.1]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />
         </Slider.Track>
-        <Slider.Thumb className="block h-3.5 w-3.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent-glow)] outline-none transition-transform duration-150 hover:scale-110 focus-visible:scale-125 focus-visible:ring-2 focus-visible:ring-accent/50 motion-reduce:transition-none" />
+        <Slider.Thumb className="block h-3.5 w-3.5 rounded-full bg-accent outline-none transition-transform duration-150 hover:scale-110 focus-visible:scale-125 focus-visible:ring-2 focus-visible:ring-accent/50 motion-reduce:transition-none" />
       </Slider.Root>
       <ZoomIn size={15} aria-hidden />
     </div>

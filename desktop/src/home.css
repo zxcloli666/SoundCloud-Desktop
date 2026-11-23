@@ -1,0 +1,196 @@
+.deck-scene {
+  position: absolute;
+  inset: -34% -52%;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(
+    ellipse closest-side,
+    rgb(var(--ink)) 51%,
+    rgb(var(--ink) / 0.7) 72%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse closest-side,
+    rgb(var(--ink)) 51%,
+    rgb(var(--ink) / 0.7) 72%,
+    transparent 100%
+  );
+}
+
+.deck-scene-wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 46% 46% at 50% 50%,
+      color-mix(in srgb, var(--scene-a, var(--color-accent)) 36%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 38% 40% at 56% 56%,
+      color-mix(in srgb, var(--scene-b, var(--color-accent)) 24%, transparent),
+      transparent 72%
+    );
+}
+
+[data-ui="deck-scene"][data-live="true"] .deck-scene-wash {
+  opacity: 0.5;
+}
+
+[data-ui="app"][data-wall] [data-ui="soundwave"],
+[data-ui="app"][data-wall] [data-ui="home-shelf"] {
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid var(--shell-line);
+  border-radius: 24px;
+  background: var(--shell-pane);
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+}
+
+.deck-lyric-in {
+  animation: deck-lyric-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes deck-lyric-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .deck-lyric-in {
+    animation: none;
+  }
+}
+
+[data-perf="light"] .deck-lyric-in {
+  animation: none;
+}
+
+.deck-heading {
+  text-shadow: 0 2px 18px rgb(var(--shade) / 0.4);
+}
+
+[data-scheme="white"] .deck-heading {
+  text-shadow: none;
+}
+
+.deck-capsule {
+  border-color: var(--round-line);
+  background: var(--round-fill);
+  box-shadow: var(--round-shadow);
+}
+
+.deck-time {
+  border-color: var(--round-line);
+  background: color-mix(in srgb, rgb(var(--paper)) 78%, transparent);
+}
+
+.deck-round .pbtn,
+.deck-title .pbtn {
+  border: 1px solid var(--round-line);
+  background: var(--round-fill);
+  box-shadow: var(--round-shadow);
+}
+
+.deck-round .pbtn {
+  width: var(--deck-btn, 46px);
+  height: var(--deck-btn, 46px);
+}
+
+.deck-round [data-ui="player-quality"] {
+  width: calc(var(--deck-btn, 46px) * 2);
+  height: var(--deck-btn, 46px);
+  gap: 7px;
+  border: 1px solid var(--round-line);
+  border-radius: 999px;
+  background: var(--round-fill);
+  box-shadow: var(--round-shadow);
+}
+
+.deck-round [data-ui="player-quality"]:empty {
+  display: none;
+}
+
+.deck-round [data-ui="player-quality"] > span:not([data-ui="player-rating"]) {
+  height: auto;
+  padding: 0;
+  border-color: transparent;
+  background: transparent;
+  color: rgb(var(--ink) / 0.9);
+  font-size: 10.5px;
+}
+
+.deck-round [data-ui="player-rating"] {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+}
+
+.deck-title .pbtn {
+  width: 30px;
+  height: 30px;
+}
+
+.deck-title .pbtn svg {
+  width: 14px;
+  height: 14px;
+}
+
+:is(.deck-round, .deck-title) .pbtn:hover:not(:disabled) {
+  border-color: rgb(var(--ink) / 0.3);
+  background: rgb(var(--ink) / 0.1);
+}
+
+:is(.deck-round, .deck-title) .pbtn:not(.text-accent):not(.text-bad) {
+  color: rgb(var(--ink) / 0.9);
+}
+
+.deck-round [data-ui="player-transport"] {
+  gap: clamp(14px, 1.6vw, 24px);
+}
+
+.deck-round [data-ui="player-transport"] .pbtn {
+  width: 48px;
+  height: 48px;
+}
+
+.deck-round
+  :is([data-ui="player-shuffle"], [data-ui="player-repeat"], [data-ui="player-abloop"]).pbtn {
+  width: 40px;
+  height: 40px;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+.deck-round .npb-play {
+  width: 76px;
+  height: 76px;
+  margin: 0;
+  border: 1px solid var(--disc-line);
+  background: var(--disc);
+  color: var(--disc-ink);
+}
+
+.deck-round .npb-play:hover {
+  border-color: var(--disc-line);
+  background: var(--disc);
+  filter: brightness(1.15);
+}
+
+.deck-round .npb-play svg {
+  width: 28px;
+  height: 28px;
+}
+
+.deck-round .npb-vol-slider {
+  display: none;
+}
+
+.deck-round .npb-vol:is(:hover, :focus-within) .npb-vol-pop {
+  display: block;
+}

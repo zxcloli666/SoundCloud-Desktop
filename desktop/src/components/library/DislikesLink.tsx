@@ -12,9 +12,9 @@ export const DislikesLink = memo(function DislikesLink() {
   return (
     <Link
       to="/library/dislikes"
-      className="group flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-ink/[0.025] ring-1 ring-ink/[0.06] hover:bg-ink/[0.05] hover:ring-ink/[0.1] transition-all duration-300 ease-[var(--ease-apple)]"
+      className="panel group flex items-center gap-3.5 rounded-2xl px-4 py-3 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
     >
-      <span className="w-9 h-9 rounded-xl bg-rose-400/[0.1] ring-1 ring-rose-400/20 text-rose-300/80 flex items-center justify-center shrink-0">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink/[0.06] text-ink-60">
         <ThumbsDown size={15} />
       </span>
       <span className="flex-1 min-w-0">
@@ -25,10 +25,7 @@ export const DislikesLink = memo(function DislikesLink() {
           {t('dislikes.summary', { count })}
         </span>
       </span>
-      <ChevronRight
-        size={16}
-        className="text-ink-30 group-hover:text-ink-70 group-hover:translate-x-0.5 transition-all"
-      />
+      <ChevronRight size={16} className="text-ink-30 transition-colors group-hover:text-ink-70" />
     </Link>
   );
 });

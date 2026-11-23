@@ -1,8 +1,8 @@
 import React from 'react';
-import {type Aura, auraRgba} from '../../lib/aura';
+import type { Aura } from '../../lib/aura';
 import { art } from '../../lib/formatters';
 import { Users } from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
+import { usePerfMode } from '../../lib/perf';
 import type { StarTier } from '../../lib/star-tenure';
 import { StarBadge } from '../layout/StarSubscription';
 
@@ -15,7 +15,7 @@ interface AvatarArtifactProps {
 }
 
 function AvatarArtifactImpl({ username, avatarUrl, hasStar, tier = 0, aura }: AvatarArtifactProps) {
-    const perf = usePerfMode();
+  const perf = usePerfMode();
   const url = art(avatarUrl, 't500x500');
   return (
     <div className="relative shrink-0 self-center @min-[720px]:self-start group w-[148px] h-[148px] @lg:w-[180px] @lg:h-[180px]">
@@ -27,28 +27,18 @@ function AvatarArtifactImpl({ username, avatarUrl, hasStar, tier = 0, aura }: Av
             WebkitMask: 'linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0)',
             WebkitMaskComposite: 'xor',
             maskComposite: 'exclude',
-              filter: perf.glow ? `drop-shadow(0 0 14px ${aura.orbs[0]}aa)` : undefined,
           }}
         >
           <div
             className="absolute -inset-[40%]"
             style={{
               background: `conic-gradient(from 0deg, ${aura.orbs[0]}, ${aura.orbs[1]}, ${aura.orbs[2]}, ${aura.orbs[0]})`,
-                animation: perf.idleAnim ? 'ring-rotate 12s linear infinite' : undefined,
+              animation: perf.idleAnim ? 'ring-rotate 12s linear infinite' : undefined,
             }}
           />
         </div>
       )}
-      <div
-        className="relative w-[148px] h-[148px] @lg:w-[180px] @lg:h-[180px] rounded-[2rem] overflow-hidden"
-        style={{
-          background: 'rgb(var(--ink) / 0.03)',
-          border: '0.5px solid rgb(var(--ink) / 0.10)',
-          boxShadow: hasStar
-            ? `0 30px 60px ${auraRgba(aura, 0.25)}, inset 0 1px 0 rgb(var(--ink) / 0.10)`
-            : '0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgb(var(--ink) / 0.08)',
-        }}
-      >
+      <div className="relative w-[148px] h-[148px] @lg:w-[180px] @lg:h-[180px] rounded-[2rem] overflow-hidden bg-ink/[0.03] ring-1 ring-ink/10">
         {url ? (
           <img
             src={url}
@@ -61,12 +51,7 @@ function AvatarArtifactImpl({ username, avatarUrl, hasStar, tier = 0, aura }: Av
           </div>
         )}
         {hasStar && (
-          <div
-            className="absolute bottom-2 right-2 z-10 pointer-events-none"
-            style={{
-                filter: perf.glow ? `drop-shadow(0 4px 12px ${auraRgba(aura, 0.6)})` : undefined,
-            }}
-          >
+          <div className="absolute bottom-2 right-2 z-10 pointer-events-none">
             <StarBadge size="lg" tier={tier} />
           </div>
         )}

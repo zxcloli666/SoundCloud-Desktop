@@ -8,6 +8,7 @@
   --shade: 0 0 0;
   --shade-alpha: 1;
   --ink-lift: 0;
+  --ink-lift-mix: 0%;
   --glow-alpha: 0.2;
   --ok: 61 220 132;
   --bad: 255 138 128;
@@ -48,12 +49,24 @@
   --color-fuchsia-400: oklch(74% 0.238 322.16);
   --tone-hi: var(--color-white);
   --tone-lo: var(--color-black);
+  --disc: rgb(var(--ink) / 0.13);
+  --disc-ink: rgb(var(--ink));
+  --disc-line: rgb(var(--ink) / 0.26);
+  --round-fill: rgb(var(--paper) / 0.3);
+  --round-line: rgb(var(--ink) / 0.19);
+  --round-shadow: none;
 }
 
 [data-scheme="white"] {
   color-scheme: light;
   --tone-hi: rgb(var(--ink));
   --tone-lo: rgb(var(--paper));
+  --disc: rgb(var(--ink));
+  --disc-ink: rgb(var(--paper));
+  --disc-line: rgb(var(--ink));
+  --round-fill: rgb(var(--surface) / 0.9);
+  --round-line: rgb(var(--ink) / 0.08);
+  --round-shadow: 0 6px 18px rgb(var(--shade) / 0.1);
   --color-chat-cutout: color-mix(in srgb, rgb(var(--ink)) 7%, rgb(var(--paper)));
   --ink: 22 20 28;
   --paper: 245 245 247;
@@ -62,6 +75,7 @@
   --shade: 30 26 46;
   --shade-alpha: 0.32;
   --ink-lift: 0.6;
+  --ink-lift-mix: 36%;
   --glow-alpha: 0.12;
   --ok: 21 128 61;
   --bad: 190 38 28;

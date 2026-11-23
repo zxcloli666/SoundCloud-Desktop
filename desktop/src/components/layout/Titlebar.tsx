@@ -9,99 +9,108 @@ import {
   Fullscreen,
   Home,
   Minus,
+  Moon,
   RefreshCw,
   Square,
+  Sun,
   X,
 } from '../../lib/icons';
 import { reloadApp } from '../../lib/reload';
+import { useScheme } from '../../lib/scheme';
 import { toggleWindowFullscreen } from '../../lib/window';
-import {useSidebarCollapsed} from './SidebarChrome';
-import {GlobalSearch} from './GlobalSearch';
-
-const navCls =
-    'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer disabled:opacity-20 disabled:cursor-default text-ink-45 hover:text-ink hover:bg-ink/[0.08] active:scale-90';
+import { useSettingsStore } from '../../stores/settings';
+import { GlobalSearch } from './GlobalSearch';
+import { useSidebarCollapsed } from './SidebarChrome';
 
 const NavButtons = React.memo(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const canGoBack = location.key !== 'default';
-    // `/` — индекс-роут, который всегда редиректит на стартовую страницу; домашняя
-    // лента живёт на `/home`. Активное состояние и навигация — по нему.
-    const onHome = location.pathname === '/home';
+  const onHome = location.pathname === '/home';
 
   return (
-      <div className="flex items-center gap-1">
+    <div data-ui="titlebar-navigation" className="flex items-center gap-1.5">
       <button
         type="button"
         disabled={!canGoBack}
         onClick={() => navigate(-1)}
-        className={navCls}
-        aria-label="Back"
+        className="shell-btn"
+        aria-label={t('common.back')}
       >
-          <ChevronLeft size={17} strokeWidth={2.5}/>
+        <ChevronLeft size={17} strokeWidth={2.2} />
       </button>
-          <button type="button" onClick={() => navigate(1)} className={navCls} aria-label="Forward">
-              <ChevronRight size={17} strokeWidth={2.5}/>
+      <button
+        type="button"
+        onClick={() => navigate(1)}
+        className="shell-btn"
+        aria-label={t('nav.forward')}
+      >
+        <ChevronRight size={17} strokeWidth={2.2} />
       </button>
       <button
         type="button"
         onClick={() => navigate('/home')}
-        aria-label="Home"
-        className={
-            onHome
-                ? 'w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200 cursor-pointer active:scale-90'
-                : navCls
-        }
-        style={
-            onHome
-                ? {
-                    color: 'rgb(var(--ink))',
-                    background:
-                        'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
-                    boxShadow:
-                        '0 0 16px var(--color-accent-glow), inset 0 0.5px 0 rgba(255,255,255,0.14)',
-                }
-                : undefined
-        }
+        aria-label={t('nav.home')}
+        aria-current={onHome ? 'page' : undefined}
+        className="shell-btn"
       >
-          <Home size={16} strokeWidth={2.2}/>
+        <Home size={16} strokeWidth={2} />
       </button>
       <button
         type="button"
         onClick={() => void reloadApp()}
-        className={navCls}
+        className="shell-btn"
         aria-label={t('nav.reload')}
         title={t('nav.reload')}
       >
-          <RefreshCw size={15} strokeWidth={2.2}/>
+        <RefreshCw size={15} strokeWidth={2} />
       </button>
     </div>
   );
 });
 
-const WinButton = ({
-                       onClick,
-                       danger,
-                       label,
-                       children,
-                   }: {
-    onClick: () => void;
-    danger?: boolean;
-    label: string;
-    children: React.ReactNode;
-}) => (
+const SchemeToggle = React.memo(() => {
+  const { t } = useTranslation();
+  const scheme = useScheme();
+  const setScheme = useSettingsStore((s) => s.setScheme);
+  const label = t(scheme === 'dark' ? 'nav.lightMode' : 'nav.darkMode');
+  return (
     <button
-        type="button"
-        aria-label={label}
-        title={label}
-        onClick={onClick}
-        className={`w-10 h-9 rounded-lg flex items-center justify-center text-ink-30 transition-all duration-150 cursor-pointer ${
-            danger ? 'hover:text-ink hover:bg-red-500/80' : 'hover:text-ink-80 hover:bg-ink/[0.07]'
-        }`}
+      type="button"
+      data-ui="scheme-toggle"
+      className="shell-btn"
+      aria-label={label}
+      title={label}
+      onClick={() => setScheme(scheme === 'dark' ? 'white' : 'dark')}
     >
-        {children}
+      {scheme === 'dark' ? <Sun size={16} strokeWidth={2} /> : <Moon size={16} strokeWidth={2} />}
     </button>
+  );
+});
+
+const WinButton = ({
+  onClick,
+  danger,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  danger?: boolean;
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <button
+    type="button"
+    aria-label={label}
+    title={label}
+    onClick={onClick}
+    className={`w-10 h-9 rounded-lg flex items-center justify-center text-ink-40 transition-colors duration-150 cursor-pointer ${
+      danger ? 'hover:text-white hover:bg-red-500/80' : 'hover:text-ink hover:bg-ink/[0.07]'
+    }`}
+  >
+    {children}
+  </button>
 );
 
 export const WindowControls = React.memo(() => {
@@ -112,13 +121,13 @@ export const WindowControls = React.memo(() => {
       <WinButton onClick={() => void toggleWindowFullscreen()} label={t('kb.fullscreen')}>
         <Fullscreen size={13} />
       </WinButton>
-      <WinButton onClick={() => win.minimize()} label="Minimize">
+      <WinButton onClick={() => win.minimize()} label={t('nav.minimize')}>
         <Minus size={15} />
       </WinButton>
-      <WinButton onClick={() => win.toggleMaximize()} label="Maximize">
+      <WinButton onClick={() => win.toggleMaximize()} label={t('nav.maximize')}>
         <Square size={12} />
       </WinButton>
-      <WinButton onClick={() => win.close()} danger label="Close">
+      <WinButton onClick={() => win.close()} danger label={t('common.close')}>
         <X size={15} />
       </WinButton>
     </div>
@@ -126,69 +135,49 @@ export const WindowControls = React.memo(() => {
 });
 
 export const Titlebar = React.memo(() => {
-    const collapsed = useSidebarCollapsed();
+  const collapsed = useSidebarCollapsed();
 
   return (
     <div
-        data-ui="titlebar"
-        className="relative z-50 h-14 flex items-center gap-3 px-3 select-none shrink-0"
+      data-ui="titlebar"
+      className="relative z-50 h-14 flex items-center gap-3 px-3 select-none shrink-0 border-b border-[color:var(--shell-line)] bg-[var(--shell-top)]"
       data-tauri-drag-region
-        style={{
-            background:
-                'linear-gradient(180deg, rgb(var(--ink) / 0.05) 0%, rgb(var(--ink) / 0.014) 100%)',
-            borderBottom: '0.5px solid rgb(var(--ink) / 0.07)',
-        }}
     >
-        {/* top specular sheen */}
-        <div
-            className="absolute inset-x-0 top-0 h-px pointer-events-none"
+      <div className="flex items-center gap-3 shrink-0" data-tauri-drag-region>
+        <div className="flex items-center" data-tauri-drag-region>
+          <img
+            src={appIcon}
+            alt="SoundCloud"
+            draggable={false}
+            data-tauri-drag-region
+            data-ui="brand"
+            className="w-8 h-8 rounded-[10px] shrink-0"
+          />
+          <span
+            data-tauri-drag-region
+            className="overflow-hidden whitespace-nowrap text-[14px] font-bold tracking-tight text-ink-85"
             style={{
-                background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.14), transparent)',
+              maxWidth: collapsed ? 0 : '140px',
+              opacity: collapsed ? 0 : 1,
+              paddingLeft: collapsed ? 0 : '10px',
+              transition:
+                'max-width 420ms cubic-bezier(0.2,0.8,0.2,1), opacity 280ms ease, padding-left 420ms cubic-bezier(0.2,0.8,0.2,1)',
             }}
-        />
-
-        {/* LEFT: logo (image) + collapsible wordmark + persistent nav */}
-        <div className="flex items-center gap-3 shrink-0" data-tauri-drag-region>
-            <div className="flex items-center" data-tauri-drag-region>
-                <img
-                    src={appIcon}
-                    alt="SoundCloud"
-                    draggable={false}
-                    data-tauri-drag-region
-                    data-ui="brand"
-                    className="w-8 h-8 rounded-[10px] shrink-0"
-                    style={{
-                        boxShadow:
-                            '0 2px 12px var(--color-accent-glow), inset 0 0 0 0.5px rgba(255,255,255,0.1)',
-                    }}
-                />
-                {/* Always rendered; collapses purely via CSS so there's no JS mount/unmount
-              race when the sidebar toggles. max-width + padding fold the reclaimed space. */}
-                <span
-                    data-tauri-drag-region
-                    className="overflow-hidden whitespace-nowrap text-[14px] font-bold tracking-tight text-ink-85"
-                    style={{
-                        maxWidth: collapsed ? 0 : '140px',
-                        opacity: collapsed ? 0 : 1,
-                        paddingLeft: collapsed ? 0 : '10px',
-                        transition:
-                            'max-width 420ms cubic-bezier(0.2,0.8,0.2,1), opacity 280ms ease, padding-left 420ms cubic-bezier(0.2,0.8,0.2,1)',
-                    }}
-                >
+          >
             SoundCloud
           </span>
-            </div>
+        </div>
         <NavButtons />
       </div>
 
-        {/* CENTER: the one global search. Drag region too — Tauri keys off e.target,
-            not ancestors, so the empty space beside the centered field must carry it. */}
-        <div className="flex-1 flex justify-center min-w-0" data-tauri-drag-region>
-            <GlobalSearch/>
-        </div>
+      <div className="flex-1 flex justify-center min-w-0" data-tauri-drag-region>
+        <GlobalSearch />
+      </div>
 
-        {/* RIGHT: window controls */}
+      <div className="flex items-center gap-2 shrink-0">
+        <SchemeToggle />
         <WindowControls />
+      </div>
     </div>
   );
 });

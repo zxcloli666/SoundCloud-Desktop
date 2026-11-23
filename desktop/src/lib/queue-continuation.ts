@@ -15,6 +15,7 @@ import {useSettingsStore} from '../stores/settings';
 import {api} from './api';
 import {fetchAllLikedTracks, fetchAllPlaylistTracks} from './hooks';
 import {trackUrn} from './ids';
+import {setQueueContext} from './queue-context';
 import {fetchSmartWave} from './soundwave';
 import {fetchAllSuperlikedTracks, type SuperlikesPage} from './superlikes';
 
@@ -129,6 +130,7 @@ export function createShuffledLikesContinuationSource(): QueueContinuationSource
  * длины очереди.
  */
 export async function armLikesContinuation(): Promise<void> {
+  setQueueContext({ kind: 'likes' });
   const { shuffle, queue } = usePlayerStore.getState();
   if (shuffle) await armShuffledLikes();
   else setQueueContinuationSource(createLikesContinuationSource(queue.length));
@@ -163,6 +165,7 @@ usePlayerStore.subscribe((state, prev) => {
  * на нём и волна включалась посреди плейлиста. Тот же приём, что и у лайков.
  */
 export function armPlaylistContinuation(playlistUrn: string): void {
+  setQueueContext({ kind: 'playlist', id: playlistUrn });
   if (usePlayerStore.getState().shuffle) {
     setQueueContinuationSource(
       createShuffledContinuationSource('playlist-shuffled', () =>
@@ -198,6 +201,7 @@ function createSuperlikesContinuationSource(alreadyLoaded: number): QueueContinu
 }
 
 export function armSuperlikesContinuation(): void {
+  setQueueContext({ kind: 'superlikes' });
   const { shuffle, queue } = usePlayerStore.getState();
   setQueueContinuationSource(
     shuffle
@@ -233,6 +237,7 @@ function createTrackWaveContinuationSource(seedId: string): QueueContinuationSou
 export async function armTrackWaveContinuation(): Promise<void> {
   const seedUrn = trackUrn(usePlayerStore.getState().currentTrack?.urn);
   if (!seedUrn) return;
+  setQueueContext({ kind: 'similar' });
   const source = createTrackWaveContinuationSource(seedUrn);
   setQueueContinuationSource(source);
   const first = await source.next();

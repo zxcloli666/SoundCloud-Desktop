@@ -1,42 +1,30 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
-import { type Aura, auraRgba } from '../../lib/aura';
 import { ChevronRight } from '../../lib/icons';
-import { usePerfMode } from '../../lib/perf';
 
-/** Library card that opens the year recap while its window is open. */
-export const RecapTeaser = memo(function RecapTeaser({ aura, year }: { aura: Aura; year: number }) {
+export const RecapTeaser = memo(function RecapTeaser({ year }: { year: number }) {
   const { t } = useTranslation();
-  const perf = usePerfMode();
   return (
     <Link
       to="/recap"
-      className="group relative flex items-center gap-5 overflow-hidden rounded-[1.75rem] p-5 pr-6 transition-transform duration-300 hover:scale-[1.005]"
-      style={{
-        border: `0.5px solid ${auraRgba(aura, 0.3)}`,
-        background: `linear-gradient(120deg, color-mix(in srgb, var(--color-accent) 22%, transparent), ${auraRgba(aura, 0.1)} 45%, rgb(var(--ink) / 0.015))`,
-        boxShadow: perf.glow ? '0 0 60px -10px var(--color-accent-glow)' : undefined,
-      }}
+      className="panel group flex items-center gap-5 rounded-3xl p-5 pr-6 transition-colors duration-200 hover:border-ink/[0.14] hover:bg-ink/[0.04]"
     >
       <span
-        className="text-[52px] font-black leading-none tracking-[-0.05em] text-ink"
-        style={{
-          fontFamily: 'var(--font-display)',
-          textShadow: '0 0 40px var(--color-accent-glow)',
-        }}
+        className="text-[44px] leading-none font-black tracking-[-0.05em] text-ink-90 tabular-nums"
+        style={{ fontFamily: 'var(--font-display)' }}
       >
         {year}
       </span>
       <div className="min-w-0 flex-1">
-        <div className="font-mono text-[10.5px] uppercase tracking-[0.24em] text-accent">
-          ✦ {t('recap.title', { year })}
+        <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-40">
+          {t('recap.title', { year })}
         </div>
         <div className="mt-1 text-[14px] font-semibold text-ink-85">{t('recap.teaser')}</div>
       </div>
       <ChevronRight
         size={18}
-        className="text-ink-40 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:text-ink-80"
+        className="shrink-0 text-ink-35 transition-colors group-hover:text-ink-80"
       />
     </Link>
   );

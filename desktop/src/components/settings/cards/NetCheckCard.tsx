@@ -23,24 +23,24 @@ export function NetCheckCard() {
   const time = !running && settled ? checkedTime(settled.atMs, i18n.language) : null;
 
   return (
-    <Card title={t('netCheck.title')} desc={t('netCheck.cardDesc')} icon={<Activity size={17} />}>
-      <div className="flex items-center gap-3">
+    <Card
+      title={t('netCheck.title')}
+      desc={t('netCheck.cardDesc')}
+      icon={<Activity size={17} />}
+      action={
+        <ActionButton icon={<Activity size={13} />} label={t('netCheck.run')} onClick={openCheck} />
+      }
+    >
+      <div className="set-row flex min-h-[48px] items-center gap-2.5 py-3">
         {verdict && <VerdictIcon verdict={verdict} size={14} />}
-        <span className="min-w-0 truncate text-[12.5px] text-ink-70">
+        <span className="min-w-0 truncate text-[13px] text-ink-80">
           {verdict ? verdictTitle(t, verdict) : t('netCheck.never')}
         </span>
         {time && (
-          <span className="shrink-0 text-[11px] text-ink-30">
+          <span className="ml-auto shrink-0 text-[12px] text-ink-40">
             {t('netCheck.checkedAt', { time })}
           </span>
         )}
-        <div className="ml-auto shrink-0">
-          <ActionButton
-            icon={<Activity size={12} />}
-            label={t('netCheck.run')}
-            onClick={openCheck}
-          />
-        </div>
       </div>
     </Card>
   );

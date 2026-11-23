@@ -1,7 +1,5 @@
 import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Aura, auraRgb, auraRgba } from '../../../lib/aura';
-import { usePerfMode } from '../../../lib/perf';
 import type { TimelineBar } from './stats-utils';
 import { useStatsFormat } from './useStatsFormat';
 
@@ -17,14 +15,11 @@ function axisIndexes(count: number): Set<number> {
 export const ActivityChart = memo(function ActivityChart({
   bars,
   unit,
-  aura,
 }: {
   bars: TimelineBar[];
   unit: 'day' | 'month';
-  aura: Aura;
 }) {
   const { t } = useTranslation();
-  const perf = usePerfMode();
   const fmt = useStatsFormat();
   const [hover, setHover] = useState<number | null>(null);
   const max = Math.max(1, ...bars.map((b) => b.plays));
@@ -38,14 +33,13 @@ export const ActivityChart = memo(function ActivityChart({
   const gap = bars.length > 40 ? 2 : bars.length > 14 ? 4 : 8;
   const focus = hover ?? peak;
   const focused = bars[focus];
-  const accent = auraRgb(aura);
 
   if (bars.length === 0) return null;
 
   return (
     <div>
       <div className="flex items-baseline justify-between gap-3 mb-3 min-h-[20px]">
-        <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-ink-45">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-ink-45">
           {hover == null ? t('stats.peak') : label(focused)}
         </span>
         {focused && focused.plays > 0 && (
@@ -70,19 +64,11 @@ export const ActivityChart = memo(function ActivityChart({
             >
               {b.plays > 0 ? (
                 <div
-                  className="w-full rounded-t-[6px] transition-[filter,box-shadow,opacity] duration-300"
+                  className={`w-full rounded-t-[5px] transition-colors duration-200 ${active ? 'bg-accent' : 'bg-ink/[0.16]'}`}
                   style={{
                     height: `${height}%`,
                     transformOrigin: 'bottom',
                     animation: `sp-rise 560ms cubic-bezier(0.2,0.8,0.2,1) ${Math.min(i * 0.012, 0.5).toFixed(3)}s both`,
-                    background: `linear-gradient(180deg, ${accent}, ${auraRgba(aura, 0.14)})`,
-                    opacity: hover == null || active ? 1 : 0.55,
-                    boxShadow: active
-                      ? `0 0 24px ${auraRgba(aura, 0.6)}, inset 0 1px 0 rgb(var(--ink) / 0.5)`
-                      : perf.glow
-                        ? `0 0 14px ${auraRgba(aura, 0.22)}, inset 0 1px 0 rgb(var(--ink) / 0.35)`
-                        : 'inset 0 1px 0 rgb(var(--ink) / 0.35)',
-                    filter: active ? 'brightness(1.15) saturate(1.15)' : undefined,
                   }}
                 />
               ) : (
@@ -96,7 +82,7 @@ export const ActivityChart = memo(function ActivityChart({
         {bars.map((b, i) => (
           <span
             key={b.key}
-            className="flex-1 min-w-0 text-center text-[10px] text-ink-30 tabular-nums whitespace-nowrap overflow-visible"
+            className="min-w-0 flex-1 overflow-visible text-center text-[10px] whitespace-nowrap tabular-nums text-ink-35"
           >
             {axis.has(i) ? axisLabel(b) : ''}
           </span>

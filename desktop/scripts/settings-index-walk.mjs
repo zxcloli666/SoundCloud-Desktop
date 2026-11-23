@@ -121,13 +121,13 @@ function openMarked(ctx, node, report) {
 
 function openScope(ctx, type, node, opening, report) {
   const title = attributeValue(opening, 'title');
-  const desc = attributeValue(opening, 'desc');
+  const notes = [attributeValue(opening, 'desc'), attributeValue(opening, 'info')].filter(Boolean);
   return {
     type,
     node,
     title: title ? keysIn(title, ctx.keyIndex, report) : [],
-    desc: desc ? keysIn(desc, ctx.keyIndex, report) : [],
-    attributes: [title, desc].filter(Boolean),
+    desc: notes.flatMap((note) => keysIn(note, ctx.keyIndex, report)),
+    attributes: [title, ...notes].filter(Boolean),
   };
 }
 

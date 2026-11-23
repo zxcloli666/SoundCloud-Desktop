@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { usePremium } from '../../../lib/premium-cache';
-import { StarAtmosphere } from '../StarAtmosphere';
 import { ChooseView } from './choose/ChooseView';
 import { useBuying } from './flow/derive';
 import { useFlow } from './flow/store';
@@ -16,11 +15,7 @@ import { Panel } from './ui/Panel';
 export const StarShell = memo(function StarShell() {
   return (
     <div data-ui="page" data-page="star" className="relative w-full">
-      <StarAtmosphere />
-      <div
-        className="relative z-10 mx-auto w-full max-w-[1080px] px-4 pb-4 md:px-8"
-        style={{ isolation: 'isolate' }}
-      >
+      <div className="relative mx-auto w-full max-w-[1080px] px-4 pb-4 md:px-8">
         <Header />
         <div className="grid items-start gap-4 min-[1080px]:grid-cols-[minmax(0,1fr)_340px]">
           <Main />

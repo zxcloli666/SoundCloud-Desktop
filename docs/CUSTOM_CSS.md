@@ -2,7 +2,7 @@
 
 [Русская версия](CUSTOM_CSS.ru.md)
 
-Settings > Appearance > Custom CSS lets you restyle the app with your own CSS. Changes apply as you type, in the main window and in the tray mini player. The switch in the card header turns the styles off without deleting them.
+Settings > Advanced > Custom CSS lets you restyle the app with your own CSS. Changes apply as you type, in the main window and in the tray mini player. The switch in the card header turns the styles off without deleting them.
 
 Custom CSS sits on top of a theme from the catalog, so your rules win.
 
@@ -25,13 +25,17 @@ Tailwind class names change from release to release. These attributes do not.
 | Selector | Element |
 |---|---|
 | `[data-ui="app"]` | The whole window frame |
+| `[data-ui="app"][data-wall]` | The window frame while a wallpaper or custom background is on; the side panels turn translucent |
 | `[data-ui="titlebar"]` | Title bar with search and window buttons |
 | `[data-ui="brand"]` | Logo in the title bar |
+| `[data-ui="titlebar-navigation"]` | Back, forward, home and reload buttons in the title bar |
+| `[data-ui="scheme-toggle"]` | Light and dark switch in the title bar |
 | `[data-ui="window-controls"]` | Minimize, maximize, close |
 | `[data-ui="search"]` | Search field in the title bar |
 | `[data-ui="sidebar"]` | Left navigation |
 | `[data-ui="nav-item"]` | A link in the left navigation |
-| `[data-ui="sidebar-pins"]` | Pinned artists in the left navigation |
+| `[data-ui="quick-access"]` | Quick access block in the left navigation: library shortcuts and pins |
+| `[data-ui="sidebar-pins"]` | Quick access rows, pinned playlists and artists in the left navigation |
 | `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
@@ -50,17 +54,40 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player"]` | Floating player bar |
 | `[data-ui="player-art"]` | Cover in the player |
 | `[data-ui="player-title"]` | Track title in the player |
+| `[data-ui="marquee"]` | A long name that scrolls; `data-moving="true"` while it moves |
 | `[data-ui="player-rating"]` | Track rating chip (A, C, F) in the player |
 | `[data-ui="play-button"]` | Play and pause |
+| `[data-ui="player-transport"]` | Shuffle, previous, play, next, repeat group in the player |
+| `[data-ui="player-seek"]` | Waveform seek bar in the player |
+| `[data-ui="player-like"]` | Like button in the player |
+| `[data-ui="player-dislike"]` | Dislike button in the player |
+| `[data-ui="player-playlist"]` | Add to playlist button in the player |
+| `[data-ui="player-album"]` | Open album button in the player |
+| `[data-ui="player-block"]` | Never play again button in the player |
+| `[data-ui="player-quality"]` | Quality and rating slot in the player |
+| `[data-ui="player-shuffle"]` | Shuffle button in the player |
+| `[data-ui="player-repeat"]` | Repeat button in the player |
+| `[data-ui="player-abloop"]` | A-B loop button in the player |
+| `[data-ui="player-together"]` | Listen together button in the player |
+| `[data-ui="player-lyrics"]` | Lyrics button in the player |
+| `[data-ui="player-queue"]` | Queue button in the player |
+| `[data-ui="player-ghosts"]` | Invisible slot that keeps hidden player buttons working for search and hotkeys |
 | `[data-ui="player-tuning"]` | Speed and pitch button in the player |
 | `[data-ui="player-sleep"]` | Sleep timer button in the player |
 | `[data-ui="player-eq"]` | Equalizer button in the player |
 | `[data-ui="player-effects"]` | Effects button in the player (reverb, 8D, bass boost) |
-| `[data-ui="progress"]` | Progress bar |
+| `[data-ui="progress"]` | Progress bar in the full screen player |
 | `[data-ui="volume"]` | Volume |
 | `[data-ui="namecard"]` | Card that opens from the track title |
-| `[data-ui="queue"]` | Queue panel |
-| `[data-ui="queue-item"]` | A track in the queue |
+| `[data-ui="queue"]` | Queue panel, `[data-state]` is `open` or `closed` |
+| `[data-ui="queue-hero"]` | Now playing at the top of the queue: cover, title, progress |
+| `[data-ui="queue-clear"]` | Clear button in the queue header |
+| `[data-ui="queue-close"]` | Close button in the queue header |
+| `[data-ui="queue-played"]` | Played group toggle in the queue |
+| `[data-ui="queue-section"]` | Section label in the queue, `[data-group]` is `added`, `context` or `auto` |
+| `[data-ui="queue-item"]` | A track in the queue, `[data-tone]` is `played`, `now` or `next` |
+| `[data-ui="queue-remove"]` | Remove button on a queue track |
+| `[data-ui="queue-empty"]` | Empty queue with the Play the wave button |
 | `[data-ui="lyrics"]` | Full-screen lyrics |
 | `[data-ui="lyrics-backdrop"]` | Blurred background of the full screen player |
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
@@ -101,8 +128,35 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="track-title"]` | Track title |
 | `[data-ui="artist-name"]` | Artist name next to a track |
 | `[data-ui="like-button"]` | Like button |
-| `[data-ui="greeting"]` | Greeting at the top of Home and Library |
-| `[data-ui="soundwave"]` | "The current" block on Home |
+| `[data-ui="greeting"]` | Greeting at the top of Library |
+| `[data-ui="soundwave"]` | The player deck on top of Home |
+| `[data-ui="deck-scene"]` | Cover colour glow behind the Home deck; `data-live="true"` while the live background is drawn |
+| `[data-ui="deck-status"]` | "Now playing" or "Paused" label in the Home deck |
+| `[data-ui="deck-artist"]` | Artist names in the Home deck |
+| `[data-ui="deck-frame"]` | Square around the big cover that holds the glow |
+| `[data-ui="deck-cover"]` | Big cover in the Home deck |
+| `[data-ui="deck-title"]` | Track title in the Home deck, next to the queue button |
+| `[data-ui="deck-seek"]` | Seek capsule with the waveform and the time inside |
+| `[data-ui="deck-controls"]` | Player buttons in the Home deck |
+| `[data-ui="deck-lyrics"]` | Current and next lyric lines under the player in a narrow window |
+| `[data-ui="deck-lyric-current"]` | Current lyric line under the wave list in a wide window |
+| `[data-ui="deck-lyric-next"]` | Next lyric line under the wave settings in a wide window |
+| `[data-ui="deck-idle"]` | Home deck when nothing is playing |
+| `[data-ui="deck-start"]` | Button that starts the wave when nothing is playing |
+| `[data-ui="wave-pane"]` | Wave list on the left of the Home deck in a wide window |
+| `[data-ui="wave-row"]` | A track in that list |
+| `[data-ui="up-next"]` | Up next list in the Home deck |
+| `[data-ui="up-next-row"]` | A track in the Up next list |
+| `[data-ui="wave-settings"]` | Wave settings box under Up next |
+| `[data-ui="vibe-search"]` | Vibe search button in the Home deck |
+| `[data-ui="home-shelf"]` | Liked, new releases, artists, playlists and history shelf on Home |
+| `[data-ui="shelf-tab"]` | A tab of that shelf; `aria-selected` marks the open one |
+| `[data-ui="shelf-tab-count"]` | Unheard count on the New releases tab |
+| `[data-ui="shelf-actions"]` | Play all and add to queue for new releases, next to the shelf toggle |
+| `[data-ui="shelf-toggle"]` | Collapse and expand button of that shelf |
+| `[data-ui="shelf-card"]` | A card in that shelf |
+| `[data-ui="shelf-locked"]` | New releases teaser without STAR |
+| `[data-ui="river-section"]` | A section of the wave river on Home |
 | `[data-ui="moments-station"]` | "Moments" block on Home |
 | `[data-ui="moments"]` | Moments page |
 | `[data-ui="moments-stage"]` | Swipe area of the Moments page |
@@ -120,8 +174,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="playlist-cover-editor"]` | Cover crop window |
 | `[data-ui="playlist-cover-crop"]` | Square frame you drag and zoom in that window |
 | `[data-ui="user-hero"]` | Top block of a profile page |
+| `[data-ui="my-music"]` | My music block on your own profile |
 | `[data-ui="user-banner"]` | Profile banner above that block |
-| `[data-ui="user-banner-glow"]` | Blurred banner behind the whole block |
 | `[data-ui="track-hero"]` | Top block of a track page |
 | `[data-ui="track-cover-video"]` | Video layer inside the track page cover, fades out when the track stops being current |
 | `[data-ui="discover-hero"]` | Top block of Discover |
@@ -134,6 +188,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="search-tabs"]` | Search mode tabs |
 | `[data-ui="search-strip"]` | Row with the search mode tabs and the view switch |
 | `[data-ui="search-view"]` | Covers / Moments switch in search |
+| `[data-ui="search-layout"]` | Tiles / list switch in search |
+| `[data-ui="search-kinds"]` | Result kind tabs in the list view of catalog search |
 | `[data-ui="search-moments"]` | Moments view inside search |
 | `[data-ui="search-wave-tail"]` | Last card of search moments: continue as a wave |
 | `[data-ui="moments-from-here"]` | "Moments from here" button on a search cover |
@@ -153,11 +209,16 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="avatar"]` | Avatar |
 | `[data-ui="skeleton"]` | Loading placeholder |
 | `[data-ui="error-state"]` | Error message with a retry button |
+| `[data-ui="sync-notice"]` | Notice while a section is syncing or failed to sync |
 | `[data-ui="kbd"]` | Key hint |
 | `[data-ui="card"]` | Settings cards |
 | `[data-ui="settings-nav"]` | Section list in Settings |
-| `[data-ui="settings-nav-item"]` | A section in that list |
+| `[data-ui="settings-nav-item"]` | A section in that list, `[aria-current="page"]` on the open one |
+| `[data-ui="settings-header"]` | Title of the open Settings section |
+| `[data-ui="settings-tabs"]` | Tabs of a section with several pages, like Advanced |
+| `[data-ui="settings-tab"]` | One of those tabs, `[aria-selected="true"]` on the open one |
 | `[data-ui="settings-row"]` | A setting row |
+| `[data-ui="settings-info"]` | Info mark next to a setting, shows a hint on hover |
 | `[data-ui="mobile-access-badge"]` | Extended access status in Settings; `data-state` is `off`, `active` or `relink` |
 | `[data-ui="mobile-link"]` | Extended access link dialog; `data-phase` is `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` or `expired` |
 | `[data-ui="mobile-link-account"]` | Account being linked, in that dialog |
@@ -173,7 +234,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-search-clear"]` | Clear button in the search field |
 | `[data-ui="switch"]` | On/off switch |
 | `[data-ui="segmented"]` | Group of options |
-| `[data-ui="segment"]` | One option in a group |
+| `[data-ui="segment"]` | One option in a group, `data-value` is its id |
 
 States are in attributes too: `aria-current="page"` on the open link or section, `aria-checked` on switches, `aria-selected` or `data-active="true"` on tabs, chips and options. `html[data-perf="beauty"]`, `"medium"` or `"light"` is the performance mode.
 
@@ -344,7 +405,7 @@ A plain background needs no CSS:
 
 Use this when the image belongs to one part of the window: the sidebar, the player, the cards. Works the same on Windows, macOS and Linux.
 
-1. Open Settings > Appearance > Custom CSS > **Your images**.
+1. Open Settings > Advanced > Custom CSS > **Your images**.
 2. Click **Add image** and pick a file: PNG, JPG, WebP, GIF, SVG or AVIF, up to 10 MB. The app copies it into its own folder, the original stays where it was.
 3. Click the copy button next to the file and paste the result into your CSS. It looks like `url("sc-assets/bg.webp")`.
 4. The trash button deletes the file. A rule that points to a deleted file just shows nothing.

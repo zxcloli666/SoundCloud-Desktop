@@ -1,6 +1,5 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePerfMode } from '../../../../lib/perf';
 import { useOwnTenure } from '../../../../lib/star-tenure';
 import { StarBadge } from '../../../layout/StarBadge';
 import { Panel } from '../ui/Panel';
@@ -12,7 +11,6 @@ const GOLD = '#fcd34d';
 export const Tenure = memo(function Tenure() {
   const { t } = useTranslation();
   const tenure = useOwnTenure();
-  const glow = usePerfMode().glow;
   if (!tenure) return null;
   const maxed = tenure.nextTier === null;
   const stroke = maxed ? GOLD : 'var(--color-accent)';
@@ -39,7 +37,6 @@ export const Tenure = memo(function Tenure() {
             strokeDasharray={C}
             strokeDashoffset={C * (1 - Math.min(1, Math.max(0.02, tenure.progress)))}
             className="transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none"
-            style={glow ? { filter: `drop-shadow(0 0 4px ${stroke})` } : undefined}
           />
         </svg>
         <span className="relative text-[22px] font-extrabold leading-none tabular-nums text-ink">

@@ -2,10 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { isRefreshPending } from '../../lib/api';
-import { ChevronLeft, Loader2, RotateCcw } from '../../lib/icons';
+import { AlertCircle, ChevronLeft, Loader2, RotateCcw } from '../../lib/icons';
 
 const BUTTON =
-  'inline-flex items-center gap-1.5 h-9 rounded-full text-[12px] text-ink-70 hover:text-ink bg-ink/[0.05] border border-ink/10 transition-colors cursor-pointer disabled:opacity-50';
+  'inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-ink/10 bg-ink/[0.055] px-4 text-[12px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.18] hover:bg-ink/[0.09] hover:text-ink disabled:opacity-50';
 
 export const LoadErrorState = React.memo(function LoadErrorState({
   error,
@@ -20,16 +20,25 @@ export const LoadErrorState = React.memo(function LoadErrorState({
   const navigate = useNavigate();
 
   return (
-    <div data-ui="error-state" className="relative z-10 flex flex-col items-center gap-4 text-center px-6">
-      <p className="text-ink-40 text-sm">
-        {isRefreshPending(error) ? t('common.stillLoading') : t('common.pageLoadFailed')}
-      </p>
+    <div
+      data-ui="error-state"
+      className="relative z-10 mx-auto flex w-full max-w-[390px] flex-col items-center gap-5 rounded-[24px] border border-ink/10 bg-surface/80 px-7 py-8 text-center shadow-[0_24px_70px_rgb(var(--shade)/0.18)]"
+    >
+      <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-ink/10 bg-ink/[0.05] text-ink-55">
+        <AlertCircle size={21} />
+      </div>
+      <div className="space-y-1.5">
+        <p className="text-[15px] font-semibold text-ink-90">{t('common.pageLoadFailed')}</p>
+        <p className="text-[13px] leading-relaxed text-ink-45">
+          {isRefreshPending(error) ? t('common.stillLoading') : t('common.loadingFromSoundcloud')}
+        </p>
+      </div>
       <div className="flex items-center gap-2">
-        <button type="button" onClick={() => navigate(-1)} className={`${BUTTON} pl-2.5 pr-4`}>
+        <button type="button" onClick={() => navigate(-1)} className={BUTTON}>
           <ChevronLeft size={14} />
           {t('search.back')}
         </button>
-        <button type="button" onClick={onRetry} disabled={retrying} className={`${BUTTON} px-4`}>
+        <button type="button" onClick={onRetry} disabled={retrying} className={BUTTON}>
           {retrying ? <Loader2 size={13} className="animate-spin" /> : <RotateCcw size={13} />}
           {t('common.retry')}
         </button>

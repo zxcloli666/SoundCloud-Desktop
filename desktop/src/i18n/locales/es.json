@@ -19,6 +19,8 @@
     "home": "Inicio",
     "moments": "Momentos",
     "reload": "Recargar interfaz",
+    "lightMode": "Modo claro",
+    "darkMode": "Modo oscuro",
     "search": "Buscar",
     "discover": "Descubrir",
     "library": "Biblioteca",
@@ -27,14 +29,17 @@
     "following": "Siguiendo",
     "settings": "Ajustes",
     "collapse": "Contraer",
-    "expand": "Expandir"
+    "expand": "Expandir",
+    "forward": "Adelante",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar"
   },
   "sidebar": {
     "quickAccess": "Acceso rápido",
     "pinPlaylist": "Fijar playlist",
     "unpinPlaylist": "Desfijar playlist",
-    "pinLikes": "Fijar me gusta",
-    "unpinLikes": "Desfijar me gusta",
+    "pin": "Fijar en la barra lateral",
+    "unpin": "Desfijar",
     "pinned": "Fijada en la barra lateral",
     "unpinned": "Quitada de la barra lateral",
     "pinArtist": "Fijar en la barra lateral",
@@ -81,6 +86,8 @@
     "volume": "Volumen",
     "volumeReset": "Restablecer volumen a 100%",
     "volumeResetHint": "Doble clic para restablecer a 100%",
+    "volumeType": "Escribir volumen",
+    "volumePercent": "Volumen en porcentaje",
     "autoplay": "Reproducción automática",
     "autoplayOn": "Seguirán sonando pistas similares al terminar la cola",
     "autoplayOff": "La reproducción se detiene al terminar la cola",
@@ -88,7 +95,33 @@
     "copyArtist": "Artista",
     "copyBoth": "Artista y título",
     "copyLink": "Enlace",
-    "copiedShort": "Copiado"
+    "copiedShort": "Copiado",
+    "seek": "Buscar",
+    "abLoopName": "Bucle A-B",
+    "qualityName": "Calidad"
+  },
+  "queue": {
+    "remove": "Quitar de la cola",
+    "played": "Escuchadas",
+    "added": "Añadidas por ti",
+    "fromWave": "De tu Wave",
+    "fromArtistWave": "De la Wave del artista",
+    "fromSimilar": "Pistas similares",
+    "fromLikes": "De tus me gusta",
+    "fromSuperlikes": "De tus superlikes",
+    "fromPlaylist": "De {{name}}",
+    "fromPlaylistAny": "De la playlist",
+    "summary_one": "{{count}} pista · {{time}}",
+    "summary_other": "{{count}} pistas · {{time}}",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "cleared": "Cola vaciada",
+    "undo": "Deshacer",
+    "waveFailed": "No se pudo iniciar la Wave",
+    "seek": "Buscar",
+    "play": "Reproducir",
+    "pause": "Pausa"
   },
   "auth": {
     "signIn": "Iniciar sesión con SoundCloud",
@@ -220,7 +253,13 @@
       "unsupportedTitle": "No es un enlace de pista, playlist o perfil",
       "unreachableTitle": "No se pudo conectar con SoundCloud",
       "unreachableBody": "Inténtalo de nuevo en un momento."
-    }
+    },
+    "layout": {
+      "tiles": "Mosaico",
+      "list": "Lista"
+    },
+    "artists": "Artistas",
+    "artistsUsers": "Artistas y usuarios"
   },
   "sharing": {
     "public": "Pública",
@@ -327,7 +366,6 @@
     "showLess": "Mostrar menos",
     "relatedEmpty": "Aún no hay nada relacionado",
     "noWaveform": "Esta pista no tiene forma de onda",
-    "roomFor": "Una sala afinada para esta pista",
     "feat": "feat.",
     "remix": "Remix",
     "prod": "prod.",
@@ -514,7 +552,9 @@
       "clear": "Borrar búsqueda",
       "empty": "No hay coincidencias en el contenido de este usuario",
       "error": "No se pudo buscar en este perfil"
-    }
+    },
+    "myMusic": "Mi música",
+    "myMusicEmpty": "Dale me gusta a algunas canciones y aquí aparecerá tu huella sonora."
   },
   "library": {
     "soundprint": "Tu huella sonora",
@@ -844,7 +884,8 @@
     "recommended": "Recomendado para ti",
     "startListening": "Empieza a escuchar",
     "startLikingTitle": "Dale me gusta a pistas: aquí aparecerá más música",
-    "startLikingDesc": "Cuantos más me gusta, mejores recomendaciones y un inicio más rico"
+    "startLikingDesc": "Cuantos más me gusta, mejores recomendaciones y un inicio más rico",
+    "shelf": "Estante"
   },
   "soundwave": {
     "tagline": "Tu radio personal, elegida para ti",
@@ -1078,7 +1119,6 @@
     "dropCount_many": "{{count}} elementos"
   },
   "settings": {
-    "title": "Ajustes",
     "search": "Buscar",
     "searchClear": "Borrar",
     "searchEmpty": "No se encontró nada",
@@ -1086,7 +1126,7 @@
     "total": "Total",
     "audioCacheSize": "Audio",
     "assetsCacheSize": "Imágenes y recursos",
-    "likedCacheSize": "Me gusta, playlists sin conexión y pistas guardadas (caché protegida)",
+    "likedCacheSize": "Me gusta y sin conexión",
     "cacheLikes": "Guardar en caché las pistas que me gustan",
     "cacheLikesDesc": "Descarga todos tus me gusta en una carpeta aparte que no cuenta para el límite de la caché de audio.",
     "cacheLikesStarting": "Preparando...",
@@ -1104,7 +1144,6 @@
     "hoverPreloadDesc": "Descarga una pista con antelación cuando el cursor se detiene sobre ella, para que empiece al instante",
     "clearCache": "Vaciar",
     "cacheCleared": "Caché vaciada",
-    "appearance": "Apariencia",
     "accentColor": "Color de acento",
     "backgroundImage": "Imagen de fondo",
     "none": "Ninguna",
@@ -1447,6 +1486,7 @@
     "layoutLibrary": "Biblioteca",
     "layoutHome": "Inicio",
     "layoutReset": "Restablecer",
+    "layoutResetDefault": "Restablecer por defecto",
     "layoutDrag": "Arrastra para reordenar",
     "layoutHide": "Ocultar",
     "layoutShow": "Mostrar",
@@ -1526,6 +1566,8 @@
     "manualUpdates": "Las actualizaciones se instalan manualmente",
     "autoplay": "Reproducción automática",
     "autoplayDesc": "Cuando se acabe la cola, sigue reproduciendo pistas similares de la wave de la última",
+    "hoverPreviewDuringPlayback": "Vista previa al pasar el cursor",
+    "hoverPreviewDuringPlaybackDesc": "Si dejas el cursor un segundo sobre una pista, tu música se pausa y suena un fragmento corto",
     "altUploads": "Copia en lugar de una pista no disponible",
     "altUploadsDesc": "Si una pista no se puede reproducir, suena una subida de la misma pista en otra cuenta, si se encuentra",
     "searchPlayback": "Reproducción desde la búsqueda",
@@ -1585,7 +1627,27 @@
     "videoNoCodec": "No H.264",
     "videoCacheSize": "Vídeo",
     "videoCacheLimit": "Límite de la caché de vídeo",
-    "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver"
+    "videoCacheLimitDesc": "Se eliminan primero los clips que llevas más tiempo sin ver",
+    "layoutPlayer": "Reproductor",
+    "layoutPlayerHint": "También puedes hacer clic derecho en el reproductor para cambiar los botones",
+    "liveBackground": "Fondo animado",
+    "liveBackgroundDesc": "Brillo animado de la portada detrás del reproductor en Inicio",
+    "catAdvanced": "Avanzado",
+    "catAbout": "Acerca de",
+    "sumGeneral": "Idioma, inicio, atajos y filtros",
+    "sumAppearance": "Tema, fondo, fuente y diseño",
+    "sumAudio": "Calidad, fundido, letras y salida",
+    "sumVoice": "Loli, la asistente de voz",
+    "sumChats": "Privacidad, dispositivos y claves",
+    "sumAccount": "Sincronización, teléfono y cerrar sesión",
+    "sumAdvanced": "Red, integraciones, almacenamiento, vídeo y CSS",
+    "sumAbout": "Versión, actualizaciones, ayuda y apoyo",
+    "sound": "Sonido",
+    "lyricsAndComments": "Letras y comentarios",
+    "colors": "Colores",
+    "wpRemove": "Quitar fondo",
+    "cacheLimits": "Límites de caché",
+    "likedCacheHint": "Me gusta, playlists sin conexión y pistas guardadas. El límite de caché de audio no las borra."
   },
   "effects": {
     "title": "Efectos",
@@ -2358,7 +2420,8 @@
       "provisioning": "registrando",
       "active": "activo",
       "failed": "error"
-    }
+    },
+    "desc": "Mientras está activo, nuestros servidores envían solicitudes a SoundCloud a través de tu conexión a internet"
   },
   "artist": {
     "title": "Artista",
@@ -3146,5 +3209,30 @@
     "ahead_one": "{{count}} delante",
     "ahead_other": "{{count}} delante",
     "saved": "Guardado"
+  },
+  "flowRedesign": {
+    "nowPlaying": "Reproduciendo",
+    "paused": "En pausa",
+    "openPlayer": "Abrir reproductor completo: {{title}}",
+    "upNext": "A continuación",
+    "waveTitle": "Wave",
+    "emptyQueue": "Aún no hay nada en cola",
+    "waveSettings": "Ajustes de Wave",
+    "vibe": "Vibra",
+    "vibeHint": "Buscar por ánimo",
+    "idleTitle": "Tu Wave",
+    "idleSub": "Música infinita elegida para ti",
+    "playWave": "Reproducir la Wave",
+    "removeLiked": "Quitar de Me gusta",
+    "followers_one": "{{value}} seguidor",
+    "followers_many": "{{value}} de seguidores",
+    "followers_other": "{{value}} seguidores",
+    "collapse": "Contraer",
+    "expand": "Expandir",
+    "emptyLiked": "Dale me gusta a un tema y aparecerá aquí",
+    "emptyArtists": "Sigue a un artista y aparecerá aquí",
+    "emptyPlaylists": "Dale me gusta a una playlist y aparecerá aquí",
+    "emptyHistory": "Reproduce un tema y aparecerá aquí",
+    "emptyReleases": "Tus artistas no han subido nada nuevo últimamente"
   }
 }

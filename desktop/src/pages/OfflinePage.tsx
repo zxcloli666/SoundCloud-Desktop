@@ -1,35 +1,33 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useLocation, useNavigate} from 'react-router-dom';
-import {toast} from 'sonner';
-import {CollectionGrid} from '../components/offline/CollectionGrid';
-import {CollectionHeader} from '../components/offline/CollectionHeader';
-import {ForgeModule} from '../components/offline/ForgeModule';
-import {OFFLINE_KEYFRAMES} from '../components/offline/keyframes';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { CollectionGrid } from '../components/offline/CollectionGrid';
+import { CollectionHeader } from '../components/offline/CollectionHeader';
+import { ForgeModule } from '../components/offline/ForgeModule';
+import { OFFLINE_KEYFRAMES } from '../components/offline/keyframes';
 import {
   buildCollectionEntries,
   filterCollections,
   filterEntries,
   sortEntries,
 } from '../components/offline/lib';
-import {LocalSection} from '../components/offline/local/LocalSection';
-import {useLocalView} from '../components/offline/local/useLocalView';
-import {OfflineHead} from '../components/offline/OfflineHead';
-import {OfflineToolbar} from '../components/offline/OfflineToolbar';
-import {OfflineTrackList} from '../components/offline/OfflineTrackList';
-import {StorageModule} from '../components/offline/StorageModule';
-import type {OfflineEntry, OfflineSection, SortMode} from '../components/offline/types';
-import {useForgeStatus} from '../components/offline/useForgeStatus';
-import {useOfflineLibrary} from '../components/offline/useOfflineLibrary';
-import {Atmosphere} from '../components/search/Atmosphere';
-import {bulkCacheErrorText, useCacheLikes} from '../lib/bulk-cache';
-import {ensureTrackCached} from '../lib/cache';
-import {requestProbe, useHostStatusStore} from '../lib/host-status';
-import {idOf} from '../lib/ids';
-import {usePerfMode} from '../lib/perf';
-import {useAppStatusStore} from '../stores/app-status';
-import {saveOffline} from '../stores/offline-saves';
-import {usePlayerStore} from '../stores/player';
+import { LocalSection } from '../components/offline/local/LocalSection';
+import { useLocalView } from '../components/offline/local/useLocalView';
+import { OfflineHead } from '../components/offline/OfflineHead';
+import { OfflineToolbar } from '../components/offline/OfflineToolbar';
+import { OfflineTrackList } from '../components/offline/OfflineTrackList';
+import { StorageModule } from '../components/offline/StorageModule';
+import type { OfflineEntry, OfflineSection, SortMode } from '../components/offline/types';
+import { useForgeStatus } from '../components/offline/useForgeStatus';
+import { useOfflineLibrary } from '../components/offline/useOfflineLibrary';
+import { bulkCacheErrorText, useCacheLikes } from '../lib/bulk-cache';
+import { ensureTrackCached } from '../lib/cache';
+import { requestProbe, useHostStatusStore } from '../lib/host-status';
+import { idOf } from '../lib/ids';
+import { useAppStatusStore } from '../stores/app-status';
+import { saveOffline } from '../stores/offline-saves';
+import { usePlayerStore } from '../stores/player';
 
 function shuffled<T>(items: T[]): T[] {
   const out = [...items];
@@ -44,7 +42,6 @@ export const OfflinePage = React.memo(() => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const perf = usePerfMode();
   const lib = useOfflineLibrary();
   const forge = useForgeStatus();
   const cacheLikes = useCacheLikes(() => void lib.refreshInventory());
@@ -142,7 +139,9 @@ export const OfflinePage = React.memo(() => {
 
   const playableTracks = useMemo(
     () =>
-      section === 'local' ? local.playable : entries.filter((e) => e.inv !== null).map((e) => e.track),
+      section === 'local'
+        ? local.playable
+        : entries.filter((e) => e.inv !== null).map((e) => e.track),
     [section, local.playable, entries],
   );
 
@@ -210,7 +209,6 @@ export const OfflinePage = React.memo(() => {
   }, []);
 
   const sortable = section === 'cached' && sort === 'custom' && query.trim() === '';
-  const deckBlur = perf.blur(24);
   const emptyText = query.trim()
     ? t('offline.searchEmpty')
     : section === 'likes'
@@ -222,43 +220,24 @@ export const OfflinePage = React.memo(() => {
   return (
     <div data-ui="page" data-page="offline" className="relative min-h-full px-5 py-6 md:px-8">
       <style>{OFFLINE_KEYFRAMES}</style>
-      <Atmosphere tint={['var(--color-accent)', '#6b7a92']} energy={0.4} />
 
       <div
-        className="relative z-10 mx-auto flex w-full max-w-[1180px] flex-col gap-5"
+        className="relative z-10 mx-auto flex w-full max-w-[1320px] flex-col gap-5"
         style={{ isolation: 'isolate' }}
       >
-        <OfflineHead online={online} onTryOnline={handleTryOnline} />
+        <OfflineHead online={online} onTryOnline={handleTryOnline} stats={lib.stats} />
 
         {lib.loading ? (
           <>
-            <div className="h-[224px] animate-pulse rounded-[20px] border border-ink/[0.06] bg-ink/[0.02]" />
-            <div className="h-9 w-2/3 animate-pulse rounded-[11px] border border-ink/[0.06] bg-ink/[0.02]" />
-            <div className="h-[480px] animate-pulse rounded-[18px] border border-ink/[0.06] bg-ink/[0.02]" />
+            <div className="h-[224px] animate-pulse panel" />
+            <div className="h-9 w-2/3 animate-pulse panel" />
+            <div className="h-[480px] animate-pulse panel" />
           </>
         ) : (
           <>
-            <section
-              className="relative grid overflow-hidden rounded-[20px] border border-ink/[0.09] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_24px_60px_-32px_rgb(var(--shade)/calc(0.8*var(--shade-alpha)))] lg:grid-cols-[minmax(0,1.28fr)_1px_minmax(0,1fr)]"
-              style={{
-                background:
-                  deckBlur > 0
-                    ? 'linear-gradient(180deg, rgb(var(--ink) / 0.045), rgb(var(--ink) / 0.018))'
-                    : 'rgb(var(--surface))',
-                backdropFilter: deckBlur > 0 ? `blur(${deckBlur}px) saturate(1.25)` : undefined,
-                WebkitBackdropFilter:
-                  deckBlur > 0 ? `blur(${deckBlur}px) saturate(1.25)` : undefined,
-              }}
-            >
-              <div
-                className="pointer-events-none absolute inset-x-0 top-0 h-px opacity-70"
-                style={{
-                  background:
-                    'linear-gradient(90deg, transparent, var(--color-accent-glow) 18%, transparent 42%)',
-                }}
-              />
+            <section className="panel grid overflow-hidden lg:grid-cols-[minmax(0,1.28fr)_1px_minmax(0,1fr)]">
               <ForgeModule status={forge} forgingTitle={forgingTitle} />
-              <div className="mx-5 h-px bg-[linear-gradient(90deg,transparent,rgb(var(--ink)/0.12)_30%,rgb(var(--ink)/0.12)_70%,transparent)] lg:mx-0 lg:h-auto lg:w-px lg:bg-[linear-gradient(180deg,transparent,rgb(var(--ink)/0.12)_30%,rgb(var(--ink)/0.12)_70%,transparent)]" />
+              <div className="mx-5 h-px bg-ink/[0.09] lg:mx-0 lg:h-auto lg:w-px" />
               <StorageModule
                 totalBytes={lib.stats.totalBytes}
                 likedBytes={lib.stats.likedBytes}

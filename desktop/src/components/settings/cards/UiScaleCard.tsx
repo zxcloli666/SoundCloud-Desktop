@@ -31,34 +31,22 @@ function ScalePreset({
     <button
       type="button"
       onClick={() => onSelect(value)}
+      data-active={active}
       aria-pressed={active}
       title={value === UI_SCALE_DEFAULT ? t('settings.uiScaleDefault') : undefined}
-      className={`flex flex-col items-center justify-end gap-1.5 rounded-2xl border px-2 pt-3 pb-2.5 transition-all duration-200 cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
-        active
-          ? 'text-ink'
-          : 'text-ink-45 hover:text-ink-75 hover:bg-ink/[0.05] border-ink/[0.05] bg-ink/[0.02]'
-      }`}
-      style={
-        active
-          ? {
-              background:
-                'linear-gradient(180deg, var(--color-accent-glow), transparent), rgb(var(--ink) / 0.05)',
-              borderColor: 'var(--color-accent)',
-              boxShadow: '0 0 16px var(--color-accent-glow)',
-            }
-          : undefined
-      }
+      className="set-tile items-center"
     >
-      <span
-        className="font-bold leading-none tracking-tight"
-        style={{ fontSize: `${Math.round(15 * (value / 100))}px` }}
-      >
-        Aa
+      <span className="set-tile-art flex h-10 w-full items-end justify-center pb-1 text-ink-85">
+        <span
+          className="font-semibold leading-none tracking-tight"
+          style={{ fontSize: `${Math.round(16 * (value / 100))}px` }}
+        >
+          Aa
+        </span>
       </span>
-      <span className="text-[11px] font-semibold tabular-nums">{value}%</span>
-      <span
-        className={`h-[3px] w-3 rounded-full ${value === UI_SCALE_DEFAULT ? 'bg-ink/25' : 'bg-transparent'}`}
-      />
+      <span className="set-tile-label flex items-center justify-center gap-1 tabular-nums">
+        {value}%{value === UI_SCALE_DEFAULT && <span className="h-1 w-1 rounded-full bg-ink/40" />}
+      </span>
     </button>
   );
 }
@@ -75,16 +63,16 @@ export function UiScaleCard() {
       desc={t('settings.uiScaleDesc')}
       icon={<Fullscreen size={17} />}
       action={
-        uiScale !== UI_SCALE_DEFAULT && (
-          <button
-            type="button"
-            onClick={() => setUiScale(UI_SCALE_DEFAULT)}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-ink/[0.08] bg-ink/[0.04] px-3 py-1.5 text-[11.5px] font-semibold text-ink-60 transition-colors hover:bg-ink/[0.08] hover:text-ink cursor-pointer"
-          >
-            <RotateCcw size={12} />
-            {t('settings.uiScaleReset')}
-          </button>
-        )
+        <button
+          type="button"
+          onClick={() => setUiScale(UI_SCALE_DEFAULT)}
+          disabled={uiScale === UI_SCALE_DEFAULT}
+          className="set-btn"
+          data-tone="quiet"
+        >
+          <RotateCcw size={13} />
+          {t('settings.uiScaleReset')}
+        </button>
       }
     >
       <div
@@ -95,7 +83,7 @@ export function UiScaleCard() {
           <ScalePreset key={value} value={value} active={value === uiScale} onSelect={setUiScale} />
         ))}
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 px-1 text-[11.5px] text-ink-40">
+      <div className="set-row flex flex-wrap items-center gap-x-5 gap-y-2 py-3 text-[12px] text-ink-45">
         <span className="inline-flex items-center gap-2">
           <KeyCaps labels={[mod, '+']} size="sm" />
           <KeyCaps labels={[mod, '−']} size="sm" />

@@ -14,7 +14,7 @@ export function NotificationsCard() {
 
   return (
     <Card title={t('settings.notifications')} icon={<Bell size={17} />}>
-      <Row title={t('settings.showErrorToasts')} desc={t('settings.showErrorToastsDesc')}>
+      <Row title={t('settings.showErrorToasts')} info={t('settings.showErrorToastsDesc')}>
         <Toggle checked={showErrorToasts} onChange={() => setShowErrorToasts(!showErrorToasts)} />
       </Row>
       <Row
@@ -24,7 +24,7 @@ export function NotificationsCard() {
             <PremiumBadge />
           </>
         }
-        desc={t('settings.releaseNotificationsDesc')}
+        info={t('settings.releaseNotificationsDesc')}
       >
         {premium ? (
           <Toggle

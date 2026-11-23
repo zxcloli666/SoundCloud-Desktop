@@ -100,10 +100,10 @@ export function HotkeyRecorder({
       onBlur={stop}
       aria-label={t('hotkeys.assign', { action: label })}
       title={recording ? t('hotkeys.recordHint') : t('hotkeys.assign', { action: label })}
-      className={`relative min-w-[156px] h-9 px-2.5 rounded-xl border flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer outline-none ${
+      className={`relative flex h-8 min-w-[148px] cursor-pointer items-center justify-center gap-2 rounded-[10px] border px-2.5 outline-none transition-colors duration-150 ${
         recording
-          ? 'border-accent/60 bg-accent/[0.08]'
-          : 'border-ink/[0.07] bg-shade-20 hover:border-ink/[0.14] hover:bg-ink/[0.04] focus-visible:border-ink/25'
+          ? 'border-accent bg-accent/[0.08]'
+          : 'border-[color:var(--set-line)] bg-[var(--set-well)] hover:border-[color:var(--shell-line-hi)] hover:bg-[var(--set-well-hi)] focus-visible:border-accent'
       }`}
       style={recording ? { boxShadow: '0 0 0 3px var(--color-accent-glow)' } : undefined}
     >

@@ -129,7 +129,11 @@ export function paletteFromPixels(data: Uint8ClampedArray): CoverPalette {
   return { average, primary, secondary, accent: accentFromRgb(primary) };
 }
 
-function loadPalette(src: string): Promise<CoverPalette | null> {
+export function sampleCover<T>(
+  src: string,
+  size: number,
+  sample: (pixels: Uint8ClampedArray) => T,
+): Promise<T | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -137,15 +141,15 @@ function loadPalette(src: string): Promise<CoverPalette | null> {
     img.onload = () => {
       try {
         const canvas = document.createElement('canvas');
-        canvas.width = SAMPLE;
-        canvas.height = SAMPLE;
+        canvas.width = size;
+        canvas.height = size;
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         if (!ctx) {
           resolve(null);
           return;
         }
-        ctx.drawImage(img, 0, 0, SAMPLE, SAMPLE);
-        resolve(paletteFromPixels(ctx.getImageData(0, 0, SAMPLE, SAMPLE).data));
+        ctx.drawImage(img, 0, 0, size, size);
+        resolve(sample(ctx.getImageData(0, 0, size, size).data));
       } catch {
         resolve(null);
       }
@@ -162,7 +166,7 @@ export function extractPalette(src: string): Promise<CoverPalette | null> {
     cache.set(src, hit);
     return hit;
   }
-  const pending = loadPalette(src);
+  const pending = sampleCover(src, SAMPLE, paletteFromPixels);
   cache.set(src, pending);
   if (cache.size > CACHE_LIMIT) {
     const oldest = cache.keys().next().value;

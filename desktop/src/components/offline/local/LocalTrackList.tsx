@@ -9,11 +9,11 @@ import {
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import React, { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { HeadCell } from '../../music/columns/HeadCell';
+import { useColumnVars } from '../../music/columns/useColumnVars';
 import { VirtualList } from '../../ui/VirtualList';
 import { LOCAL_ROW_HEIGHT, LocalRowClone, LocalTrackRow, SortableLocalRow } from './LocalTrackRow';
 import type { LocalRow } from './lib';
-import { HeadCell } from '../../music/columns/HeadCell';
-import { useColumnVars } from '../../music/columns/useColumnVars';
 
 interface LocalTrackListProps {
   rows: LocalRow[];
@@ -43,7 +43,7 @@ export const LocalTrackList = React.memo(function LocalTrackList({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-[18px] border border-dashed border-ink/[0.08] bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
+      <div className="panel rounded-[18px] border-dashed bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
         {emptyText}
       </div>
     );

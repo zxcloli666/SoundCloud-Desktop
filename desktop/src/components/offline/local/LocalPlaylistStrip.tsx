@@ -7,7 +7,7 @@ import { LocalPlaylistCover } from './LocalPlaylistCover';
 import { PlaylistNameInput } from './PlaylistNameInput';
 
 const TILE =
-  'group flex w-[148px] flex-none cursor-pointer flex-col gap-2.5 rounded-[16px] border border-ink/[0.07] bg-ink/[0.02] p-2.5 text-left transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:border-ink/[0.13] hover:bg-ink/[0.04]';
+  'panel group flex w-[148px] flex-none cursor-pointer flex-col gap-2.5 rounded-[16px] p-2.5 text-left transition-all duration-300 ease-[var(--ease-apple)] hover:-translate-y-0.5 hover:border-ink/[0.13] hover:bg-ink/[0.04]';
 
 const NewPlaylistTile = React.memo(function NewPlaylistTile({
   onCreated,

@@ -19,14 +19,7 @@ export const GiftTicket = memo(function GiftTicket({
     <div
       data-ui="star-gift-ticket"
       data-redeemed={redeemed || undefined}
-      className="relative flex items-stretch overflow-hidden rounded-[16px]"
-      style={{
-        background: redeemed
-          ? 'rgb(var(--ink) / 0.03)'
-          : 'linear-gradient(110deg, color-mix(in srgb, var(--color-accent) 16%, transparent), rgb(var(--ink) / 0.02) 60%)',
-        boxShadow: 'inset 0 0 0 1px rgb(var(--ink) / 0.09)',
-        opacity: redeemed ? 0.6 : 1,
-      }}
+      className={`relative flex items-stretch overflow-hidden rounded-[16px] border border-ink/[0.09] ${redeemed ? 'bg-ink/[0.03] opacity-60' : 'bg-accent/[0.07]'}`}
     >
       <div className="flex w-[78px] shrink-0 flex-col items-center justify-center gap-1 border-r border-dashed border-ink/15 py-3">
         <Gift size={18} className="text-accent" />

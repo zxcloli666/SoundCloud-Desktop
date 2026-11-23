@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { setWaveContext } from '../../../lib/queue-context';
 import { fetchSmartWave, type SmartWaveSeedKind } from '../../../lib/soundwave';
 import { followWave, sendWaveFeedback, type WaveTally } from '../../../lib/wave-feedback';
 import type { Track } from '../../../stores/player';
@@ -15,6 +16,8 @@ export function useInfiniteWave(opts: {
   hideListened?: boolean;
   minTail?: number;
   batchLimit?: number;
+  visibleLimit?: number;
+  onWaveTracksChange?: (tracks: Track[]) => void;
 }) {
   const {
     enabled,
@@ -27,6 +30,8 @@ export function useInfiniteWave(opts: {
     hideListened,
     minTail = 4,
     batchLimit = 10,
+    visibleLimit = 5,
+    onWaveTracksChange,
   } = opts;
 
   const tallyRef = useRef<WaveTally>({
@@ -42,6 +47,7 @@ export function useInfiniteWave(opts: {
   const languagesRef = useRef(languages);
   const filterRef = useRef(filterTrack);
   const hideListenedRef = useRef(hideListened);
+  const onWaveTracksChangeRef = useRef(onWaveTracksChange);
 
   useEffect(() => {
     languagesRef.current = languages;
@@ -52,6 +58,10 @@ export function useInfiniteWave(opts: {
   useEffect(() => {
     hideListenedRef.current = hideListened;
   }, [hideListened]);
+
+  useEffect(() => {
+    onWaveTracksChangeRef.current = onWaveTracksChange;
+  }, [onWaveTracksChange]);
 
   useEffect(() => {
     shelfCursorRef.current = initialCursor;
@@ -74,6 +84,45 @@ export function useInfiniteWave(opts: {
     tallyRef.current.positives = 0;
     tallyRef.current.decided.clear();
 
+    const fillVisibleWave = async () => {
+      const filterFn = filterRef.current;
+      const visible = initialTracks.filter((track) => !filterFn || filterFn(track));
+      for (const track of visible) tallyRef.current.owned.add(track.urn);
+      let cursor = shelfCursorRef.current ?? '';
+      let pagesRead = 0;
+
+      while (live && visible.length < visibleLimit && pagesRead < 8) {
+        pagesRead += 1;
+        const batch = await fetchSmartWave({
+          seedKind,
+          seedId,
+          cursor: cursor || undefined,
+          limit: batchLimit,
+          languages: languagesRef.current,
+          hideListened: hideListenedRef.current,
+        });
+        const nextCursor = batch.cursor ?? '';
+        const known = new Set(visible.map((track) => track.urn));
+        const fresh = batch.tracks.filter(
+          (track) => !known.has(track.urn) && (!filterFn || filterFn(track)),
+        );
+        if (fresh.length > 0) {
+          visible.push(...fresh);
+          for (const track of fresh) tallyRef.current.owned.add(track.urn);
+        }
+        if (!nextCursor || nextCursor === cursor) break;
+        cursor = nextCursor;
+      }
+
+      if (!live) return;
+      cursorRef.current = cursor;
+      if (visible.length >= visibleLimit) onWaveTracksChangeRef.current?.(visible);
+    };
+
+    void fillVisibleWave().catch((error) =>
+      console.debug('[soundwave] initial wave fill failed:', error),
+    );
+
     const refill = async (cursor: string) => {
       const batch = await fetchSmartWave({
         seedKind,
@@ -88,8 +137,13 @@ export function useInfiniteWave(opts: {
       const existing = new Set(usePlayerStore.getState().queue.map((t) => t.urn));
       const fresh = batch.tracks.filter((t) => !existing.has(t.urn) && (!filterFn || filterFn(t)));
       if (fresh.length > 0) {
-        usePlayerStore.getState().addToQueue(fresh);
         for (const t of fresh) tallyRef.current.owned.add(t.urn);
+        usePlayerStore.getState().addToQueue(fresh);
+        const { queue, queueIndex } = usePlayerStore.getState();
+        const waveTail = queue
+          .slice(Math.max(0, queueIndex))
+          .filter((track) => tallyRef.current.owned.has(track.urn));
+        if (waveTail.length >= visibleLimit) onWaveTracksChangeRef.current?.(waveTail);
       }
     };
 
@@ -97,6 +151,7 @@ export function useInfiniteWave(opts: {
       const { queue, queueIndex, currentTrack, isPlaying } = state;
       if (state.playSeq !== prev.playSeq) {
         waveSessionRef.current = queue.every((t) => tallyRef.current.owned.has(t.urn));
+        if (waveSessionRef.current) setWaveContext(seedKind);
       }
       const trackChanged = currentTrack?.urn !== prev.currentTrack?.urn;
       if (
@@ -107,7 +162,6 @@ export function useInfiniteWave(opts: {
       ) {
         return;
       }
-      if (fetchingRef.current) return;
 
       const owned = tallyRef.current.owned;
       const onWave = !!currentTrack && owned.has(currentTrack.urn);
@@ -117,6 +171,14 @@ export function useInfiniteWave(opts: {
       const needsRefill =
         waveSessionRef.current && onWave && waveAhead <= minTail && (isPlaying || remaining <= 0);
       const ping = trackChanged && (onWave || leftWave);
+
+      if (!needsRefill) {
+        const waveTail = queue
+          .slice(Math.max(0, queueIndex))
+          .filter((track) => owned.has(track.urn));
+        if (waveTail.length >= visibleLimit) onWaveTracksChangeRef.current?.(waveTail);
+      }
+      if (fetchingRef.current) return;
       if (!needsRefill && !ping) return;
 
       fetchingRef.current = true;
@@ -139,5 +201,5 @@ export function useInfiniteWave(opts: {
       live = false;
       unsubscribe();
     };
-  }, [enabled, seedKind, seedId, minTail, batchLimit]);
+  }, [enabled, seedKind, seedId, initialTracks, minTail, batchLimit, visibleLimit]);
 }

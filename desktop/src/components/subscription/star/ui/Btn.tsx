@@ -1,7 +1,7 @@
-import { type CSSProperties, memo, type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 
 const TONE = {
-  primary: 'text-accent-contrast hover:-translate-y-px',
+  primary: 'bg-accent text-accent-contrast hover:bg-accent-hover',
   ghost: 'border border-ink/[0.10] bg-ink/[0.05] text-ink-85 hover:bg-ink/[0.09] hover:text-ink',
   quiet: 'text-ink-50 hover:bg-ink/[0.05] hover:text-ink-90',
   bad: 'border border-bad/40 bg-bad/[0.08] text-bad hover:bg-bad/[0.14]',
@@ -12,11 +12,6 @@ const SIZE = {
   md: 'h-10 rounded-[12px] px-4 text-[13px]',
   lg: 'h-12 rounded-[14px] px-5 text-[14px]',
 } as const;
-
-const PRIMARY: CSSProperties = {
-  background: 'linear-gradient(180deg, var(--color-accent-hover), var(--color-accent))',
-  boxShadow: '0 10px 28px -12px var(--color-accent), inset 0 1px 0 rgba(255,255,255,0.35)',
-};
 
 export const Btn = memo(function Btn({
   children,
@@ -43,8 +38,7 @@ export const Btn = memo(function Btn({
       disabled={disabled}
       data-star-act={act}
       onClick={onClick}
-      className={`inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[transform,background-color,color,opacity] duration-200 ease-[var(--ease-apple)] active:scale-[0.97] disabled:cursor-default disabled:opacity-45 ${SIZE[size]} ${TONE[tone]} ${wide ? 'w-full' : ''}`}
-      style={tone === 'primary' ? PRIMARY : undefined}
+      className={`inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap font-semibold transition-[background-color,color,opacity] duration-200 ease-[var(--ease-apple)] active:scale-[0.97] disabled:cursor-default disabled:opacity-45 ${SIZE[size]} ${TONE[tone]} ${wide ? 'w-full' : ''}`}
     >
       {children}
     </button>

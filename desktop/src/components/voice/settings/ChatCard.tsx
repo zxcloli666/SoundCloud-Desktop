@@ -37,7 +37,7 @@ export function ChatCard() {
 
   return (
     <Card title={t('voice.chat.title')} icon={<MessageCircleHeart size={17} />}>
-      <div className="divide-y divide-ink/[0.05]">
+      <div className="set-group divide-y divide-[color:var(--set-rule)]">
         <Block
           data-ui="settings-row"
           icon={<ShieldCheck size={14} />}

@@ -1,72 +1,48 @@
-import {memo} from 'react';
-import {cancelPreload, preloadTrack} from '../../lib/audio';
-import {type Aura, auraRgb, auraRgba, isLight} from '../../lib/aura';
-import {art, dur, fc} from '../../lib/formatters';
-import {headphones11, heart11, ListPlus, Music, pauseBlack14, pauseWhite14, playBlack14, playWhite14,} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useRowPick} from '../../lib/useRowPick';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {useTrackColumns} from '../music/columns/TrackColumns';
-import {AddToPlaylistDialog} from '../music/AddToPlaylistDialog';
-import {LikeButton} from '../music/LikeButton';
-import {PlayNextButton} from '../music/PlayNextButton';
-import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
+import { memo } from 'react';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
+import { art, dur, fc } from '../../lib/formatters';
+import { headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
+import { useRowPick } from '../../lib/useRowPick';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { useTrackColumns } from '../music/columns/TrackColumns';
+import { LikeButton } from '../music/LikeButton';
+import { PlayNextButton } from '../music/PlayNextButton';
+import { SaveOfflineRowButton } from '../music/SaveOfflineButton';
+import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 interface AlbumTrackRowProps {
   track: Track;
   position: number;
   queue: Track[];
-  aura: Aura;
 }
 
-function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps) {
+function AlbumTrackRowImpl({ track, position, queue }: AlbumTrackRowProps) {
   const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const pick = useRowPick(track);
   const columns = useTrackColumns();
   const cover = art(track.artwork_url, 't200x200');
-  const lightAura = isLight(aura);
-  const playIcon = lightAura ? playBlack14 : playWhite14;
-  const pauseIcon = lightAura ? pauseBlack14 : pauseWhite14;
-  const hoverB = usePerfMode().blur(16);
 
   return (
-    <div {...mark}
+    <div
+      {...mark}
       onContextMenu={onContextMenu}
       {...pick}
-      className="@container group flex items-center gap-4 px-4 py-2.5 rounded-2xl transition-all duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] select-none"
-      style={{
-        background: isThis
-          ? `linear-gradient(90deg, ${auraRgba(aura, 0.16)}, ${auraRgba(aura, 0.04)} 70%, transparent)`
-          : undefined,
-        boxShadow: isThis ? `inset 0 0 0 1px ${auraRgba(aura, 0.35)}` : undefined,
-      }}
-      onMouseEnter={(e) => {
-        preloadTrack(track);
-        if (!isThis) e.currentTarget.style.background = 'rgb(var(--ink) / 0.04)';
-      }}
-      onMouseLeave={(e) => {
-        cancelPreload();
-        if (!isThis) e.currentTarget.style.background = '';
-      }}
+      className={`@container group flex select-none items-center gap-4 rounded-2xl px-4 py-2.5 transition-colors duration-200 ${isThis ? 'bg-accent/[0.07] ring-1 ring-accent/20' : 'hover:bg-ink/[0.04]'}`}
+      onMouseEnter={() => preloadTrack(track)}
+      onMouseLeave={cancelPreload}
     >
       <div
         className="w-10 h-10 flex items-center justify-center shrink-0 cursor-pointer relative"
         onClick={togglePlay}
       >
         {isThisPlaying ? (
-          <div
-            className="w-9 h-9 rounded-full flex items-center justify-center"
-            style={{
-              background: auraRgb(aura),
-              boxShadow: `0 0 24px ${auraRgba(aura, 0.5)}`,
-            }}
-          >
-            {pauseIcon}
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent text-accent-contrast">
+            {pauseWhite14}
           </div>
         ) : (
           <>
@@ -74,32 +50,23 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
               {position}
             </span>
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <div
-                className="w-9 h-9 rounded-full flex items-center justify-center"
-                style={{
-                  background: lightAura
-                      ? auraRgba(aura, 0.85)
-                      : hoverB > 0
-                          ? 'rgb(var(--ink) / 0.12)'
-                          : 'rgba(54,54,60,0.92)',
-                  boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
-                  backdropFilter: hoverB > 0 ? `blur(${hoverB}px)` : undefined,
-                  WebkitBackdropFilter: hoverB > 0 ? `blur(${hoverB}px)` : undefined,
-                }}
-              >
-                {playIcon}
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-ink/10">
+                {playWhite14}
               </div>
             </div>
           </>
         )}
       </div>
 
-      <div
-        className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 transition-transform duration-500 group-hover:scale-105"
-        style={{ boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)' }}
-      >
+      <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-lg ring-1 ring-ink/[0.08]">
         {cover ? (
-          <img data-ui="artwork" src={cover} alt="" className="w-full h-full object-cover" loading="lazy" />
+          <img
+            data-ui="artwork"
+            src={cover}
+            alt=""
+            className="w-full h-full object-cover"
+            loading="lazy"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-ink/[0.04]">
             <Music size={14} className="text-ink-20" />
@@ -141,7 +108,10 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
         </span>
       )}
 
-      <div className="flex shrink-0 items-center justify-end gap-0.5" style={{ width: columns.actions }}>
+      <div
+        className="flex shrink-0 items-center justify-end gap-0.5"
+        style={{ width: columns.actions }}
+      >
         <LikeButton track={track} />
         <SaveOfflineRowButton track={track} />
         <AddToPlaylistDialog trackUrns={[track.urn]}>
@@ -168,12 +138,8 @@ function AlbumTrackRowImpl({ track, position, queue, aura }: AlbumTrackRowProps)
 const areEqual = (prev: AlbumTrackRowProps, next: AlbumTrackRowProps) =>
   prev.track.urn === next.track.urn &&
   prev.position === next.position &&
-  prev.aura.id === next.aura.id &&
-  prev.aura.accent[0] === next.aura.accent[0] &&
-  prev.aura.accent[1] === next.aura.accent[1] &&
-  prev.aura.accent[2] === next.aura.accent[2] &&
   prev.track.user_favorite === next.track.user_favorite &&
-    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
-    sameVideos(prev.track.videos, next.track.videos);
+  sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
+  sameVideos(prev.track.videos, next.track.videos);
 
 export const AlbumTrackRow = memo(AlbumTrackRowImpl, areEqual);

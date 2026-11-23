@@ -11,7 +11,7 @@ export function OverlayPreview({ url }: { url: string }) {
   return (
     <div
       data-scheme="dark"
-      className="relative h-[156px] overflow-hidden rounded-xl border border-ink/[0.06]"
+      className="relative h-[156px] overflow-hidden rounded-[10px] border border-[color:var(--set-line)]"
       style={{ background: `${CHECKER}, rgba(0,0,0,0.35)` }}
     >
       <iframe

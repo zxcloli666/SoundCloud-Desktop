@@ -1,0 +1,278 @@
+:root,
+[data-scheme] {
+  --shell: var(--bg-primary, rgb(var(--paper)));
+  --shell-side-solid: color-mix(in srgb, var(--shell) 94%, rgb(var(--ink)));
+  --shell-side: var(--shell-side-solid);
+  --shell-top: var(--shell);
+  --shell-line: rgb(var(--ink) / 0.08);
+  --shell-line-hi: rgb(var(--ink) / 0.16);
+  --shell-fill: rgb(var(--ink) / 0.045);
+  --shell-fill-hi: rgb(var(--ink) / 0.09);
+}
+
+[data-ui="app"][data-wall] {
+  --wall-veil: var(--veil-dark, 50%);
+  --wall-pane: var(--pane-dark, 74%);
+  --ink-lift: var(--lift-dark, 0.5);
+  --ink-lift-mix: var(--lift-mix-dark, 30%);
+  --shell-side: rgb(var(--paper) / 0.56);
+  --shell-top: rgb(var(--paper) / 0.38);
+  --shell-veil: rgb(var(--paper) / 0.5);
+  --shell-pane: rgb(var(--paper) / 0.74);
+  --shell-pane-hi: var(--shell-pane);
+}
+
+@supports (color: color-mix(in srgb, red, red)) {
+  [data-ui="app"][data-wall] {
+    --shell-side: color-mix(in srgb, var(--shell-side-solid) 56%, transparent);
+    --shell-top: color-mix(in srgb, var(--shell) 38%, transparent);
+    --shell-veil: color-mix(in srgb, var(--shell) var(--wall-veil), transparent);
+    --shell-pane: color-mix(in srgb, var(--shell) var(--wall-pane), transparent);
+    --shell-pane-hi: color-mix(in srgb, var(--shell-pane) 94%, rgb(var(--ink)));
+  }
+}
+
+[data-scheme="white"] [data-ui="app"][data-wall] {
+  --wall-veil: var(--veil-white, 50%);
+  --wall-pane: var(--pane-white, 74%);
+  --ink-lift: var(--lift-white, 0.85);
+  --ink-lift-mix: var(--lift-mix-white, 51%);
+}
+
+[data-ui="app"][data-wall] [data-ui="main"] {
+  background: var(--shell-veil);
+}
+
+[data-ui="app"][data-wall] [data-ui="sidebar"],
+[data-ui="app"][data-wall] [data-ui="chat-dock"],
+[data-ui="app"][data-wall] [data-ui="titlebar"] {
+  backdrop-filter: blur(var(--glass-blur-soft));
+  -webkit-backdrop-filter: blur(var(--glass-blur-soft));
+}
+
+.surface-pop {
+  background: rgb(var(--surface-hi));
+  border: 1px solid var(--shell-line-hi);
+  box-shadow: 0 14px 36px rgb(var(--shade) / calc(0.4 * var(--shade-alpha)));
+}
+
+.shell-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex: none;
+  cursor: pointer;
+  border: 1px solid var(--shell-line);
+  border-radius: 0.5rem;
+  background: var(--shell-fill);
+  color: rgb(var(--ink) / 0.6);
+  transition:
+    color 150ms,
+    background-color 150ms,
+    border-color 150ms;
+}
+
+.shell-btn:hover:not(:disabled),
+.shell-btn:focus-visible {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.shell-btn:disabled {
+  cursor: default;
+  opacity: 0.3;
+}
+
+.shell-btn[aria-current="page"] {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.nav-row {
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+
+[data-ui="sidebar"] nav .nav-row {
+  height: 42px;
+  background: rgb(var(--ink) / 0.025);
+}
+
+[data-ui="sidebar"] nav .nav-row:hover:not([aria-current="page"]) {
+  border-color: rgb(var(--ink) / 0.08);
+  background: rgb(var(--ink) / 0.05);
+}
+
+.nav-row[aria-current="page"] {
+  border-color: rgb(var(--ink) / 0.2);
+  background: linear-gradient(90deg, rgb(var(--ink) / 0.1), rgb(var(--ink) / 0.04));
+  box-shadow:
+    inset 0 1px rgb(var(--ink) / 0.08),
+    0 8px 20px rgb(var(--shade) / calc(0.25 * var(--shade-alpha)));
+  color: rgb(var(--ink));
+}
+
+.nav-row[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  width: 3px;
+  height: 18px;
+  border-radius: 999px;
+  background: rgb(var(--ink));
+  transform: translateY(-50%);
+}
+
+.chip-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2rem;
+  padding: 0 0.75rem;
+  cursor: pointer;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-fill);
+  color: rgb(var(--ink) / 0.65);
+  font-size: 11px;
+  font-weight: 500;
+  transition:
+    color 150ms,
+    background-color 150ms,
+    border-color 150ms;
+}
+
+.chip-toggle:hover {
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.chip-toggle[data-on] {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+.chip-toggle-switch {
+  position: relative;
+  width: 22px;
+  height: 12px;
+  margin-left: 0.25rem;
+  border-radius: 999px;
+  background: rgb(var(--ink) / 0.2);
+  transition: background-color 150ms;
+}
+
+.chip-toggle-switch::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(var(--paper));
+  transition: transform 150ms;
+}
+
+.chip-toggle[data-on] .chip-toggle-switch {
+  background: var(--color-accent);
+}
+
+.chip-toggle[data-on] .chip-toggle-switch::after {
+  background: var(--color-accent-contrast);
+  transform: translateX(10px);
+}
+
+.chip-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 2rem;
+  padding: 2px;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-fill);
+}
+
+.chip-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 100%;
+  min-width: 1.75rem;
+  padding: 0 0.625rem;
+  cursor: pointer;
+  border-radius: 999px;
+  color: rgb(var(--ink) / 0.5);
+  font-size: 12px;
+  font-weight: 500;
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+
+.chip-seg:hover {
+  color: rgb(var(--ink));
+}
+
+.chip-seg[aria-checked="true"],
+.chip-seg[aria-selected="true"] {
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+}
+
+@layer components {
+  .panel {
+    border: 1px solid var(--shell-line);
+    border-radius: 1.25rem;
+    background: rgb(var(--ink) / 0.02);
+  }
+
+  .panel-fill {
+    border-radius: 0.875rem;
+    background: var(--shell-fill);
+  }
+}
+
+.chip-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--shell-line);
+  border-radius: 999px;
+  background: var(--shell-fill);
+  color: rgb(var(--ink) / 0.6);
+  font-size: 11px;
+  font-weight: 600;
+  transition:
+    color 150ms,
+    background-color 150ms,
+    border-color 150ms;
+}
+
+a.chip-pill:hover,
+button.chip-pill:hover:not(:disabled) {
+  border-color: var(--shell-line-hi);
+  background: var(--shell-fill-hi);
+  color: rgb(var(--ink));
+  cursor: pointer;
+}
+
+[data-ui="app"][data-wall] .glass,
+[data-ui="app"][data-wall] .glass-flat,
+[data-ui="app"][data-wall] .glass-featured,
+[data-ui="app"][data-wall] .panel {
+  background: var(--shell-pane);
+}
+
+[data-ui="app"][data-wall] :is(a, button).panel:hover {
+  background: var(--shell-pane-hi);
+}

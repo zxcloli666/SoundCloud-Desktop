@@ -33,7 +33,7 @@ export interface MomentsSource {
 }
 
 const REFILL_AT = 3;
-const PREFETCH = 1;
+const PREFETCH = 2;
 const FAILED_SKIP_MS = 1200;
 
 export function useMomentsFeed(source: MomentsSource) {
@@ -74,6 +74,11 @@ export function useMomentsFeed(source: MomentsSource) {
   const currentUrn = current?.urn;
   const resting = !current && (status === 'empty' || index > 0);
 
+  useEffect(() => {
+    if (status !== 'ready') return;
+    for (const track of tracks.slice(index, index + PREFETCH + 1)) prefetchMoment(track);
+  }, [index, status, tracks]);
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: replays only when the card under focus changes.
   useEffect(() => {
     if (!current) return;
@@ -82,13 +87,15 @@ export function useMomentsFeed(source: MomentsSource) {
     playedKeyRef.current = key;
     const soft = fresh || moveRef.current === 'end';
     void playMoment(current, soft ? AUTO_CROSSFADE_MS : SWIPE_CROSSFADE_MS).then((ok) => {
+      if (alive && ok) {
+        for (const next of tracks.slice(index + 1, index + 1 + PREFETCH)) prefetchMoment(next);
+      }
       if (!alive || ok) return;
       setTimeout(() => {
         const list = sourceRef.current.tracks;
         if (alive && list[indexRef.current]?.urn === current.urn) go(1, 'quiet');
       }, FAILED_SKIP_MS);
     });
-    for (const next of tracks.slice(index + 1, index + 1 + PREFETCH)) prefetchMoment(next);
     return () => {
       alive = false;
     };

@@ -1,7 +1,6 @@
 import { CloudOff, RefreshCw, Sparkles } from 'lucide-react';
 import { memo, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { usePerfMode } from '../../lib/perf';
 import { type SearchErrorKind, searchErrorKind } from '../../lib/search';
 
 interface SearchStateProps {
@@ -21,54 +20,25 @@ export const SearchState = memo(function SearchState({
   ctaIcon,
   onAction,
 }: SearchStateProps) {
-  const b = usePerfMode().blur(40);
   return (
-    <div className="flex justify-center px-4 pt-14">
-      <div
-        className="w-full max-w-[460px] flex flex-col items-center gap-5 p-10 rounded-[2.25rem] text-center"
-        style={{
-          background:
-            b > 0
-              ? 'linear-gradient(165deg, rgb(var(--ink) / 0.06), rgb(var(--ink) / 0.02))'
-              : 'rgb(var(--surface) / 0.85)',
-          border: '0.5px solid rgb(var(--ink) / 0.1)',
-          backdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
-          WebkitBackdropFilter: b > 0 ? `blur(${b}px) saturate(160%)` : undefined,
-          boxShadow: '0 30px 80px rgb(var(--shade) / calc(0.4 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.06)',
-          isolation: 'isolate',
-        }}
-      >
-        <div
-          className="w-16 h-16 flex items-center justify-center rounded-2xl text-accent"
-          style={{
-            background: 'rgb(var(--ink) / 0.04)',
-            border: '0.5px solid rgb(var(--ink) / 0.08)',
-            boxShadow: '0 0 30px var(--color-accent-glow)',
-          }}
-        >
-          {icon}
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <p className="text-lg font-bold text-ink-90">{title}</p>
-          {body && <p className="text-[13px] leading-relaxed text-ink-45">{body}</p>}
-        </div>
-        {cta && onAction && (
-          <button
-            type="button"
-            onClick={onAction}
-            className="inline-flex items-center gap-2 h-11 px-6 rounded-full text-[13px] font-semibold cursor-pointer transition-transform duration-500 hover:scale-[1.03] active:scale-[0.97]"
-            style={{
-              color: 'var(--color-accent-contrast)',
-              background: 'linear-gradient(180deg, var(--color-accent), var(--color-accent-hover))',
-              boxShadow:
-                '0 12px 32px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.25)',
-            }}
-          >
-            {ctaIcon}
-            {cta}
-          </button>
-        )}
+    <div className="flex flex-col items-center gap-4 px-4 pt-16 text-center">
+      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-ink/[0.05] text-ink-40">
+        {icon}
       </div>
+      <div className="flex max-w-[420px] flex-col gap-1.5">
+        <p className="text-[16px] font-semibold text-ink-90">{title}</p>
+        {body && <p className="text-[13px] leading-relaxed text-ink-45">{body}</p>}
+      </div>
+      {cta && onAction && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-xl border border-ink/10 bg-ink/[0.055] px-4 text-[12px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.18] hover:bg-ink/[0.09] hover:text-ink"
+        >
+          {ctaIcon}
+          {cta}
+        </button>
+      )}
     </div>
   );
 });
@@ -130,11 +100,7 @@ export const StripSkeleton = memo(function StripSkeleton() {
   return (
     <div className="flex gap-3 px-4 py-2">
       {[0, 1, 2, 3, 4].map((i) => (
-        <div
-          key={i}
-          className="h-11 w-32 shrink-0 rounded-full skeleton-shimmer"
-          style={{ background: 'rgb(var(--ink) / 0.04)' }}
-        />
+        <div key={i} className="h-11 w-32 shrink-0 rounded-full bg-ink/[0.04] skeleton-shimmer" />
       ))}
     </div>
   );

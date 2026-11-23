@@ -1,26 +1,25 @@
-import {useQueryClient} from '@tanstack/react-query';
-import React, {useEffect, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {toast} from 'sonner';
-import {api} from '../../lib/api';
-import {forgetOfflineLike} from '../../lib/cache';
-import {clearDislike} from '../../lib/dislike-actions';
-import {trackTasteWrite} from '../../lib/events';
-import {fc} from '../../lib/formatters';
-import {invalidateAllLikesCache} from '../../lib/hooks';
-import {Check, Download, LinkIcon, Loader2, pauseCurrent16, playCurrent16,} from '../../lib/icons';
-import {optimisticToggleLike, setLikedUrn, useLiked} from '../../lib/likes';
-import {rememberLikedUrn} from '../../lib/offline-index';
-import {cleanPermalink} from '../../lib/permalink';
-import {useSuperliked} from '../../lib/superlikes';
-import {saveTrackFile} from '../../lib/track-actions';
-import type {Track} from '../../stores/player';
-import {HoldHeart} from '../music/superlike/HoldHeart';
-import {heartTitle} from '../music/superlike/heart-title';
-import type {HeartGesture} from '../music/superlike/useHeartGesture';
-import {useSuperlikeGesture} from '../music/superlike/useSuperlikeGesture';
+import { useQueryClient } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import { api } from '../../lib/api';
+import { forgetOfflineLike } from '../../lib/cache';
+import { clearDislike } from '../../lib/dislike-actions';
+import { trackTasteWrite } from '../../lib/events';
+import { fc } from '../../lib/formatters';
+import { invalidateAllLikesCache } from '../../lib/hooks';
+import { Check, Download, LinkIcon, Loader2, pauseCurrent16, playCurrent16 } from '../../lib/icons';
+import { optimisticToggleLike, setLikedUrn, useLiked } from '../../lib/likes';
+import { rememberLikedUrn } from '../../lib/offline-index';
+import { cleanPermalink } from '../../lib/permalink';
+import { useSuperliked } from '../../lib/superlikes';
+import { saveTrackFile } from '../../lib/track-actions';
+import type { Track } from '../../stores/player';
+import { HoldHeart } from '../music/superlike/HoldHeart';
+import { heartTitle } from '../music/superlike/heart-title';
+import type { HeartGesture } from '../music/superlike/useHeartGesture';
+import { useSuperlikeGesture } from '../music/superlike/useSuperlikeGesture';
 
-/** Accent like-chip: icon + count, glows accent when active. */
 const EngagementChip = React.memo(function EngagementChip({
   active,
   icon,
@@ -42,10 +41,10 @@ const EngagementChip = React.memo(function EngagementChip({
       {...handlers}
       title={title}
       aria-label={label}
-      className={`inline-flex items-center gap-1.5 px-3.5 h-11 rounded-2xl text-[12.5px] font-semibold tabular-nums border transition-all duration-300 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.96] ${
+      className={`inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-2xl border px-3.5 text-[12.5px] font-semibold tabular-nums transition-colors duration-200 ${
         active
-          ? 'bg-accent/15 border-accent/30 text-accent shadow-[0_0_18px_var(--color-accent-glow)]'
-          : 'bg-ink/[0.04] border-ink/[0.07] text-ink-65 hover:bg-ink/[0.07] hover:text-ink-90 hover:border-ink/[0.12]'
+          ? 'border-accent/30 bg-accent/12 text-accent'
+          : 'border-ink/[0.07] bg-ink/[0.04] text-ink-65 hover:border-ink/[0.12] hover:bg-ink/[0.07] hover:text-ink-90'
       }`}
     >
       {icon}
@@ -103,7 +102,6 @@ export const LikeBtn = React.memo(({ trackUrn, count }: { trackUrn: string; coun
   );
 });
 
-/** Icon-only button for the utility rail. */
 export const IconAction = React.memo(function IconAction({
   icon,
   label,
@@ -121,10 +119,8 @@ export const IconAction = React.memo(function IconAction({
       onClick={onClick}
       title={label}
       aria-label={label}
-      className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
-        active
-          ? 'text-accent bg-accent/15'
-          : 'text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07]'
+      className={`inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-colors duration-200 ${
+        active ? 'bg-accent/15 text-accent' : 'text-ink-60 hover:bg-ink/[0.07] hover:text-ink-95'
       }`}
     >
       {icon}
@@ -150,10 +146,8 @@ export const CopyIconAction = React.memo(function CopyIconAction({ url }: { url?
       onClick={copy}
       title={copied ? t('auth.copied') : t('auth.copyLink')}
       aria-label={copied ? t('auth.copied') : t('auth.copyLink')}
-      className={`inline-flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer ${
-        copied
-          ? 'text-emerald-400 bg-emerald-500/12'
-          : 'text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07]'
+      className={`inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl transition-colors duration-200 ${
+        copied ? 'bg-ok/10 text-ok' : 'text-ink-60 hover:bg-ink/[0.07] hover:text-ink-95'
       }`}
     >
       {copied ? <Check size={16} /> : <LinkIcon size={16} />}
@@ -186,14 +180,13 @@ export const DownloadButton = React.memo(({ track }: { track: Track }) => {
       disabled={loading}
       title={t('track.download')}
       aria-label={t('track.download')}
-      className="inline-flex items-center justify-center w-10 h-10 rounded-xl text-ink-60 hover:text-ink-95 hover:bg-ink/[0.07] transition-all duration-200 cursor-pointer disabled:opacity-50"
+      className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-ink-60 transition-colors duration-200 hover:bg-ink/[0.07] hover:text-ink-95 disabled:opacity-50"
     >
       {loading ? <Loader2 size={16} className="animate-spin" /> : <Download size={16} />}
     </button>
   );
 });
 
-/** Big primary play/pause pill — the room's main transport. Uses the user's accent. */
 export const PlayPill = React.memo(function PlayPill({
   isPlaying,
   onClick,
@@ -206,20 +199,11 @@ export const PlayPill = React.memo(function PlayPill({
     <button
       type="button"
       onClick={onClick}
-      className={`group relative overflow-hidden inline-flex items-center gap-2.5 pl-4 pr-6 h-11 rounded-full text-[14px] font-semibold transition-all duration-500 ease-[var(--ease-apple)] cursor-pointer hover:scale-[1.03] active:scale-[0.97] ${
-        isPlaying ? 'bg-ink text-paper' : 'bg-accent text-accent-contrast'
-      }`}
-      style={{
-        boxShadow: '0 12px 32px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.3)',
-      }}
+      className="inline-flex h-11 cursor-pointer items-center gap-3 rounded-full bg-accent pr-5 pl-2 text-[13px] font-semibold text-accent-contrast transition-colors hover:bg-accent-hover"
     >
-      <span
-        className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-[var(--ease-apple)] pointer-events-none"
-        style={{
-          background: 'linear-gradient(90deg, transparent, rgb(var(--ink) / 0.28), transparent)',
-        }}
-      />
-      {isPlaying ? pauseCurrent16 : playCurrent16}
+      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-shade-15">
+        {isPlaying ? pauseCurrent16 : playCurrent16}
+      </span>
       {isPlaying ? t('track.pause') : t('track.play')}
     </button>
   );

@@ -197,7 +197,7 @@
     "apoiar",
     "sponsor"
   ],
-  "settings.appearance": [
+  "settings.colors": [
     "personalizar o visual",
     "deixar o app bonito",
     "cores e estilo",
@@ -345,6 +345,13 @@
     "layout da home",
     "arrastar e soltar"
   ],
+  "sidebar.quickAccess": [
+    "histórico na barra lateral",
+    "fixar curtidas",
+    "tirar histórico do menu",
+    "atalhos da biblioteca",
+    "atalhos"
+  ],
   "settings.layoutPinned": [
     "listas fixadas",
     "playlists na barra lateral",
@@ -473,6 +480,14 @@
     "sem próxima música",
     "modo rádio"
   ],
+  "settings.hoverPreviewDuringPlayback": [
+    "prévia sobre a música",
+    "trecho ao passar o mouse",
+    "pausa ao passar o cursor",
+    "toca ao passar em cima",
+    "ouvir um pedaço",
+    "minha música parou sozinha"
+  ],
   "settings.altUploads": [
     "a música não toca",
     "faixa indisponível",
@@ -545,7 +560,13 @@
     "soundcloud não abre",
     "problema de dns"
   ],
-  "call.title": ["p2p", "peer to peer", "rede peer", "relay", "ajuda de rede"],
+  "call.title": [
+    "p2p",
+    "peer to peer",
+    "rede peer",
+    "relay",
+    "ajuda de rede"
+  ],
   "settings.discordRpc": [
     "mostrar no discord o que ouço",
     "status do discord",
@@ -1269,5 +1290,41 @@
     "reconectar soundcloud",
     "desconectar acesso",
     "permissões extras"
+  ],
+  "settings.liveBackground": [
+    "fundo animado",
+    "brilho em movimento",
+    "fundo do player",
+    "fundo ao vivo",
+    "animação do início",
+    "desligar animação",
+    "fundo estático",
+    "luz da capa"
+  ],
+  "settings.themesAutoUpdate": [
+    "atualizar temas automaticamente",
+    "temas sempre atualizados",
+    "instalar atualizações de temas"
+  ],
+  "settings.sound": [
+    "ajustes de som",
+    "qualidade e volume",
+    "como soa",
+    "processamento de áudio"
+  ],
+  "settings.lyricsAndComments": [
+    "ajustes de letra",
+    "letra e comentários",
+    "comentários na faixa"
+  ],
+  "settings.cacheLikes": [
+    "baixar todas as curtidas",
+    "curtidas offline",
+    "salvar favoritos"
+  ],
+  "settings.cacheLimits": [
+    "limite de cache",
+    "tamanho máximo do cache",
+    "quanto disco usar"
   ]
 }

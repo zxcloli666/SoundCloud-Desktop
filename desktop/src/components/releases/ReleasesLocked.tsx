@@ -3,7 +3,7 @@ import { Bell, Lock, Sparkles } from '../../lib/icons';
 import { usePerfMode } from '../../lib/perf';
 import { StarCta } from '../star-moments/StarCta';
 
-const HUES = [18, 200, 285, 150, 340];
+export const TEASER_HUES = [18, 200, 285, 150, 340];
 
 export function ReleasesLocked() {
   const { t } = useTranslation();
@@ -17,7 +17,7 @@ export function ReleasesLocked() {
         className="pointer-events-none flex gap-4 select-none"
         style={{ filter: blur ? `blur(${blur}px)` : undefined, opacity: blur ? 0.85 : 0.4 }}
       >
-        {HUES.map((hue) => (
+        {TEASER_HUES.map((hue) => (
           <div key={hue} className="w-[176px] shrink-0">
             <div
               className="aspect-square rounded-[22px]"

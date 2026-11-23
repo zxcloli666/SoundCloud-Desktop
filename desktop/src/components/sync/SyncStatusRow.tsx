@@ -8,21 +8,14 @@ function SyncRow({ status }: { status: SyncStatus }) {
   const { t } = useTranslation();
   const { hint, action } = useSyncCopy(status);
   return (
-    <div className="mb-4 border-b border-ink/[0.05] pb-4">
-      <Row title={t('sync.title')} desc={hint}>
-        <SyncStatusBadge status={status} withAction={false} className="max-w-full" />
-        {action && (
-          <button
-            type="button"
-            onClick={action.run}
-            disabled={action.disabled}
-            className="cursor-pointer rounded-full border border-ink/10 bg-ink/[0.05] px-3 py-1.5 text-[11.5px] font-semibold text-ink-75 transition-colors hover:border-ink/[0.16] hover:bg-ink/[0.09] hover:text-ink-95 disabled:cursor-default disabled:opacity-40"
-          >
-            {action.label}
-          </button>
-        )}
-      </Row>
-    </div>
+    <Row title={t('sync.title')} desc={hint}>
+      <SyncStatusBadge status={status} withAction={false} className="max-w-full" />
+      {action && (
+        <button type="button" onClick={action.run} disabled={action.disabled} className="set-btn">
+          {action.label}
+        </button>
+      )}
+    </Row>
   );
 }
 

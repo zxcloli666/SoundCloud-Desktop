@@ -10,7 +10,7 @@ export function YoungNote({ me, now }: { me: Device; now: Millis }) {
   const { t } = useTranslation();
   const wait = grownIn(me, now);
   return (
-    <div className="mb-3 flex items-center gap-3 rounded-2xl border border-ink/[0.06] bg-ink/[0.025] px-3 py-2.5">
+    <div className="mb-3 flex items-center gap-3 rounded-[10px] bg-[var(--set-well)] px-3 py-2.5">
       <HistoryRing size={30} stroke={2} tone="wait" progress={(now - me.createdAt) / AGE_RULE_MS}>
         <Lock size={11} className="text-ink-55" />
       </HistoryRing>

@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { type SearchPlayback, useSettingsStore } from '../../../stores/settings';
-import { Segmented } from '../primitives';
+import { Row, Segmented } from '../primitives';
 
 const OPTIONS: SearchPlayback[] = ['similar', 'results'];
 
@@ -10,17 +10,14 @@ export function SearchPlaybackPicker() {
   const setSearchPlayback = useSettingsStore((s) => s.setSearchPlayback);
 
   return (
-    <div data-ui="settings-row" className="space-y-3 py-3 first:pt-0 last:pb-0">
-      <div className="min-w-0">
-        <div className="text-[13.5px] text-ink-80 font-medium">
-          {t('settings.searchPlayback')}
-        </div>
-        <p className="text-[11.5px] text-ink-35 mt-0.5 leading-snug">
-          {searchPlayback === 'similar'
-            ? t('settings.searchPlaybackSimilarDesc')
-            : t('settings.searchPlaybackResultsDesc')}
-        </p>
-      </div>
+    <Row
+      title={t('settings.searchPlayback')}
+      info={
+        searchPlayback === 'similar'
+          ? t('settings.searchPlaybackSimilarDesc')
+          : t('settings.searchPlaybackResultsDesc')
+      }
+    >
       <Segmented
         value={searchPlayback}
         onChange={setSearchPlayback}
@@ -32,6 +29,6 @@ export function SearchPlaybackPicker() {
               : t('settings.searchPlaybackResults'),
         }))}
       />
-    </div>
+    </Row>
   );
 }

@@ -1,10 +1,9 @@
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { type Aura, auraRgba } from '../../lib/aura';
+import type { Aura } from '../../lib/aura';
 import { dur } from '../../lib/formatters';
 import { Calendar, Check, Disc3, ListMusic, MicVocal } from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
 import { PlaylistLikeBtn } from '../playlist/PlaylistActions';
 import { Avatar } from '../ui/Avatar';
 import { GlassHeroPanel } from '../ui/GlassHeroPanel';
@@ -32,44 +31,27 @@ const ArtistChip = memo(function ArtistChip({
   name,
   role,
   avatarUrl,
-  aura,
 }: {
   id: string;
   name: string;
   role: string;
   avatarUrl?: string;
-  aura: Aura;
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-    const b = usePerfMode().blur(16);
   const isPrimary = role === 'primary';
   const subLabel = ROLE_LABEL_KEY[role] ? t(ROLE_LABEL_KEY[role]) : role;
   return (
     <button
       type="button"
       onClick={() => navigate(`/artist/${encodeURIComponent(id)}`)}
-      className="group inline-flex items-center gap-2.5 pl-1 pr-3.5 py-1 rounded-full cursor-pointer transition-all duration-300 hover:scale-105"
-      style={{
-        background: isPrimary
-          ? `linear-gradient(135deg, ${auraRgba(aura, 0.18)}, ${auraRgba(aura, 0.04)})`
-            : b > 0
-                ? 'rgb(var(--ink) / 0.04)'
-                : 'rgb(var(--surface-hi) / 0.85)',
-        boxShadow: isPrimary
-          ? `inset 0 0 0 1px ${auraRgba(aura, 0.35)}`
-          : 'inset 0 0 0 1px rgb(var(--ink) / 0.08)',
-          backdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-          WebkitBackdropFilter: b > 0 ? `blur(${b}px)` : undefined,
-      }}
+      className={`group inline-flex cursor-pointer items-center gap-2.5 rounded-full py-1 pl-1 pr-3.5 ring-1 transition-colors duration-200 hover:bg-ink/[0.08] ${isPrimary ? 'bg-ink/[0.07] ring-ink/20' : 'bg-ink/[0.04] ring-ink/10'}`}
     >
       <span className="relative w-7 h-7 rounded-full overflow-hidden ring-1 ring-ink/15">
         <Avatar src={avatarUrl} alt={name} size={28} />
       </span>
       <span className="flex flex-col items-start leading-tight">
-        <span className="text-[12px] font-semibold text-ink-90 group-hover:text-ink">
-          {name}
-        </span>
+        <span className="text-[12px] font-semibold text-ink-90 group-hover:text-ink">{name}</span>
         <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-ink-35">
           {subLabel}
         </span>
@@ -80,7 +62,6 @@ const ArtistChip = memo(function ArtistChip({
 
 function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
   const { t } = useTranslation();
-    const perf = usePerfMode();
   const kind = (album.type ?? 'album').toLowerCase();
   const kindLabel = t(`artist.kind.${kind}`, { defaultValue: kind });
 
@@ -97,31 +78,11 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
   }, [album.tracks, album.artists]);
 
   return (
-    <GlassHeroPanel hasStar={hasStar} aura={aura} className="@container">
-        {album.cover_url &&
-            perf.bloom &&
-            (() => {
-                const hb = perf.blur(50);
-                return (
-                    <div
-                        className="absolute -top-10 left-6 @min-[512px]:left-10 w-[220px] h-[220px] @min-[512px]:w-[280px] @min-[512px]:h-[280px] pointer-events-none rounded-[3rem] overflow-hidden opacity-50"
-                        style={{
-                            filter: `blur(${hb}px)`,
-                            transform: 'translateZ(0)',
-                            contain: 'strict',
-                        }}
-                    >
-                        <img
-                            src={album.cover_url}
-                            alt=""
-                            className="w-full h-full object-cover scale-150"
-                            decoding="async"
-                        />
-                    </div>
-                );
-            })()}
-
-      <div data-ui="album-hero" className="relative p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start">
+    <GlassHeroPanel className="@container">
+      <div
+        data-ui="album-hero"
+        className="relative p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start"
+      >
         <AlbumCoverArtifact
           title={album.title}
           coverUrl={album.cover_url}
@@ -131,32 +92,11 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
 
         <div className="flex-1 min-w-0 flex flex-col gap-5 text-center @min-[740px]:text-left">
           <div className="flex flex-wrap items-center gap-2 justify-center @min-[740px]:justify-start">
-            <span
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.28em]"
-              style={{
-                background: hasStar
-                  ? `linear-gradient(135deg, ${auraRgba(aura, 0.25)}, ${auraRgba(aura, 0.08)})`
-                    : perf.blur(12) > 0
-                        ? 'rgb(var(--ink) / 0.05)'
-                        : 'rgb(var(--surface-hi) / 0.85)',
-                color: hasStar ? 'rgb(var(--ink))' : 'rgb(var(--ink) / 0.7)',
-                boxShadow: hasStar
-                  ? `inset 0 0 0 1px ${auraRgba(aura, 0.4)}`
-                  : 'inset 0 0 0 1px rgb(var(--ink) / 0.08)',
-                  backdropFilter: perf.blur(12) > 0 ? `blur(${perf.blur(12)}px)` : undefined,
-                  WebkitBackdropFilter: perf.blur(12) > 0 ? `blur(${perf.blur(12)}px)` : undefined,
-              }}
-            >
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-ink/[0.05] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-ink-70 ring-1 ring-ink/10">
               <Disc3 size={11} /> {kindLabel}
             </span>
             {album.confidence >= 0.7 && (
-              <span
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300"
-                style={{
-                  background: 'rgba(16,185,129,0.08)',
-                  boxShadow: 'inset 0 0 0 1px rgba(16,185,129,0.22)',
-                }}
-              >
+              <span className="inline-flex items-center gap-1 rounded-full bg-ok/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ok ring-1 ring-ok/25">
                 <Check size={11} /> {t('album.verified')}
               </span>
             )}
@@ -167,15 +107,13 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
             style={
               hasStar
                 ? {
-                    background: aura.nameGradient,
+                    backgroundImage: aura.nameGradient,
                     backgroundSize: '200% auto',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
-                      animation: perf.idleAnim ? 'prismatic-shift 6s linear infinite' : undefined,
-                    filter: 'drop-shadow(0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha))))',
                   }
-                : { color: 'rgb(var(--ink))', textShadow: '0 8px 24px rgb(var(--shade) / calc(0.5 * var(--shade-alpha)))' }
+                : { color: 'rgb(var(--ink))' }
             }
           >
             {album.title}
@@ -189,7 +127,6 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                   name={album.primary_artist.name}
                   role="primary"
                   avatarUrl={album.primary_artist.avatar_url}
-                  aura={aura}
                 />
               )}
               {featured.map((a) => (
@@ -199,7 +136,6 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
                   name={a.name}
                   role={a.role}
                   avatarUrl={a.avatar_url}
-                  aura={aura}
                 />
               ))}
             </div>
@@ -216,14 +152,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
               <InfoChip icon={<MicVocal size={11} />}>{dur(totalDuration)}</InfoChip>
             )}
             {indexedCount < album.tracks.length && (
-              <span
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.16em]"
-                style={{
-                  background: auraRgba(aura, 0.12),
-                  color: 'rgb(var(--ink))',
-                  boxShadow: `inset 0 0 0 1px ${auraRgba(aura, 0.3)}`,
-                }}
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink ring-1 ring-accent/30">
                 {t('album.availability', {
                   indexed: indexedCount,
                   total: album.tracks.length,
@@ -233,7 +162,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
           </div>
 
           <div className="flex flex-wrap items-center gap-3 pt-1 justify-center @min-[740px]:justify-start">
-            <AlbumPlayButton tracks={album.tracks} aura={aura} />
+            <AlbumPlayButton tracks={album.tracks} />
             {album.sc_playlist_urn && <PlaylistLikeBtn playlistUrn={album.sc_playlist_urn} />}
             <AlbumSaveButton album={album} />
           </div>
