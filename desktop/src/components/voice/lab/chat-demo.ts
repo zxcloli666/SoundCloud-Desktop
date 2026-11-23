@@ -2,7 +2,7 @@ import { emit } from '@tauri-apps/api/event';
 import type { ChatEvent, ChatRequest } from '../../../lib/voice/chat/types';
 import type { Entity, EntityKind } from '../../../lib/voice/types';
 import { setSpeech } from './engine';
-import { KHOCHU_M, KHOCHU_Z, SCRIPTONITE } from './fixtures';
+import { KHOCHU_M, KHOCHU_Z, PSYCHOSIS } from './fixtures';
 
 const THINK_MS = 900;
 const WORD_MS = 70;
@@ -149,7 +149,7 @@ export function cancelChatDemo(id: string) {
 }
 
 export function resolveDemo(kinds: EntityKind[]): Entity[] {
-  return [KHOCHU_Z, KHOCHU_M, SCRIPTONITE].filter((e) => kinds.includes(e.kind));
+  return [KHOCHU_Z, KHOCHU_M, PSYCHOSIS].filter((e) => kinds.includes(e.kind));
 }
 
 function heard(id: string, text: string, chatless: boolean) {

@@ -332,7 +332,7 @@ test('help says «скажи» only to an informal listener', async () => {
   const said = async (address?: Address | null, lang: 'ru' | 'en' = 'ru') =>
     (await execute(help, fakePort(), { ...ctx([], lang), address })).outcome.speech;
   const today = await said();
-  assert.match(today, /^Скажите: включи Скриптонита, пауза/);
+  assert.match(today, /^Скажите: включи Психосиса, пауза/);
   assert.equal(await said(null), today);
   assert.equal(await said('formal'), today);
   assert.equal(await said('informal'), today.replace(/^Скажите:/, 'Скажи:'));

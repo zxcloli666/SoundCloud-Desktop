@@ -105,7 +105,7 @@ function formal(v: ReplyVars): boolean {
 }
 
 const RU_HELP =
-  'включи Скриптонита, пауза, дальше, громкость пятьдесят, лайк, перемешай, мои лайки, что играет';
+  'включи Психосиса, пауза, дальше, громкость пятьдесят, лайк, перемешай, мои лайки, что играет';
 
 const RU: Record<ReplyKey, Line> = {
   play_artist: (v) => ({ speech: `Включаю ${v.name}`, display: v.name ?? '' }),
