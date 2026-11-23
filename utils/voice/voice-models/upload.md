@@ -54,6 +54,18 @@ Total 75220808 bytes. Source: sherpa-onnx `asr-models` release `sherpa-onnx-zipf
 | voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/tokens.txt | 5020 | 0ef7d736bf4de3ef947292e4b119ef13f6808cd5f3aec225a843a7135ac1c2ce |
 | voice-models/sherpa-onnx-zipformer-gigaspeech-2023-12-12/1/bpe.vocab | 12552 | 803718d32d9858e47a5f764ae58c538ea370ecb5db3d58e98a8cda0b31bf4111 |
 
+## sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8 (version 1, asr, en, CC-BY-4.0)
+
+Total 661296952 bytes. Source: sherpa-onnx `asr-models` release `sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8.tar.bz2`: NVIDIA parakeet-tdt-0.6b-v2 (CC BY 4.0), exported by sherpa-onnx; the encoder, decoder, joiner and `tokens.txt` unchanged. The exact pass of English, as GigaAM is for Russian. `bpe.vocab` is ours, for name hints: the release has no `bpe.model`, so it is one `piece\t-1` line per token of `tokens.txt` without the `<...>` tokens; equal scores split a hint into the fewest pieces.
+
+| target path | size | sha256 |
+|---|---|---|
+| voice-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/1/encoder.int8.onnx | 652282309 | 92a10bd9c23936ea0566c29f963bc57c2a5df4261b6a8921c39abea66557ca8b |
+| voice-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/1/decoder.int8.onnx | 7257753 | 4d097bae3bac5c96018d5293ba39f1b657296102b142affda40378f38b020f41 |
+| voice-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/1/joiner.int8.onnx | 1739080 | 77a29f3e5ac7d37074e0af465391b80f314015d5b97f0f90c6c7767f1d56f428 |
+| voice-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/1/tokens.txt | 9384 | ec182b70dd42113aff6c5372c75cac58c952443eb22322f57bbd7f53977d497d |
+| voice-models/sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8/1/bpe.vocab | 8426 | 0299b149a26c71168b74cbe4382a45bd453ac85c19e6d24824bffa69138423fc |
+
 ## kokoro-multi-lang-v1_0 (version 1, tts, en, Apache-2.0)
 
 Total 353762203 bytes. Source: sherpa-onnx `tts-models` release `kokoro-multi-lang-v1_0.tar.bz2`, unchanged. Only these three files: the engine passes our own phonemes, so the lexicons, `dict/`, the zh fst files and espeak data are not shipped. Speakers used: af_heart 3, am_michael 16 (read from the model's `speaker2id` metadata). The int8 build of the same model (`kokoro-int8-multi-lang-v1_0`, 142404640 bytes) was shipped first and is slower than real time on Apple M1; this one takes about half the time on two threads.

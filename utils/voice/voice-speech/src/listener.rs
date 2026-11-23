@@ -5,7 +5,7 @@ use sherpa_onnx::{SileroVadModelConfig, VadModelConfig, VoiceActivityDetector};
 
 use crate::SAMPLE_RATE;
 use crate::batch::Batch;
-use crate::exact::Exact;
+use crate::exact::{Exact, ExactKind};
 use crate::streaming::Streaming;
 
 const PREROLL: usize = SAMPLE_RATE as usize / 2;
@@ -24,7 +24,7 @@ pub struct Options {
     pub threads: i32,
     pub hotwords: Vec<String>,
     pub hotwords_score: f32,
-    pub exact_dir: Option<PathBuf>,
+    pub exact: Option<(PathBuf, ExactKind)>,
     pub exact_hotwords_score: f32,
     pub exact_threads: i32,
 }
@@ -81,9 +81,10 @@ impl Listener {
                 options.hotwords_score,
             )?),
         };
-        let exact = match &options.exact_dir {
-            Some(dir) => Some(Exact::open(
+        let exact = match &options.exact {
+            Some((dir, kind)) => Some(Exact::open(
                 dir,
+                *kind,
                 options.exact_threads,
                 &options.hotwords,
                 options.exact_hotwords_score,

@@ -6,6 +6,7 @@ mod spoken;
 mod streaming;
 mod wav;
 
+pub use exact::ExactKind;
 pub use listener::{Event, Listener, Model, Options};
 pub use resample::to_16k;
 pub use wav::read_mono;

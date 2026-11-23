@@ -2,9 +2,16 @@ use std::env;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use voice_speech::{Event, Listener, Model, Options, SAMPLE_RATE, read_mono, to_16k};
+use voice_speech::{Event, ExactKind, Listener, Model, Options, SAMPLE_RATE, read_mono, to_16k};
 
 const CHUNK: usize = SAMPLE_RATE as usize / 10;
+
+fn exact_kind() -> ExactKind {
+    match env::var("EXACT_KIND").as_deref() {
+        Ok("pieces") => ExactKind::Pieces,
+        _ => ExactKind::Letters,
+    }
+}
 
 fn main() {
     let mut args = env::args().skip(1);
@@ -39,7 +46,7 @@ fn main() {
         threads: 2,
         hotwords,
         hotwords_score: score("HOTWORDS_SCORE", 1.5),
-        exact_dir: env::var_os("EXACT_DIR").map(PathBuf::from),
+        exact: env::var_os("EXACT_DIR").map(|dir| (PathBuf::from(dir), exact_kind())),
         exact_hotwords_score: score("EXACT_HOTWORDS_SCORE", 0.5),
         exact_threads: 4,
     };
