@@ -63,10 +63,7 @@ export const RoomHero = React.memo(function RoomHero({
   const year = track.release_year ?? album?.year;
 
   return (
-    <section
-      data-ui="track-hero"
-      className="@container relative rounded-3xl border border-ink/[0.08] bg-ink/[0.025]"
-    >
+    <section data-ui="track-hero" className="@container panel relative rounded-3xl">
       <div className="relative p-6 @min-[512px]:p-8 flex flex-col gap-7">
         <div className="flex flex-col @min-[740px]:flex-row items-center @min-[740px]:items-start gap-6 @min-[740px]:gap-8">
           <TrackCover

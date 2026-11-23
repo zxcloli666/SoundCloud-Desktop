@@ -27,7 +27,7 @@ import { type Track, usePlayerStore } from '../stores/player';
 
 function HeroSkeleton() {
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-6 @min-[512px]:p-8">
+    <div className="panel relative overflow-hidden rounded-3xl p-6 @min-[512px]:p-8">
       <div className="flex flex-col @min-[740px]:flex-row gap-8">
         <div className="w-[180px] h-[180px] @min-[512px]:w-[220px] @min-[512px]:h-[220px] rounded-[1.7rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start" />
         <div className="flex-1 space-y-4 w-full">

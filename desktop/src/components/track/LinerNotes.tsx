@@ -84,7 +84,7 @@ export const LinerNotes = React.memo(function LinerNotes({
   if (isrc) credits.push({ label: t('track.isrc'), value: isrc });
 
   return (
-    <section className="space-y-6 rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-6 @min-[512px]:p-7">
+    <section className="panel space-y-6 rounded-3xl p-6 @min-[512px]:p-7">
       <div className="flex flex-wrap gap-2.5">
         <StatOrb value={track.playback_count} label={t('track.plays')} />
         <StatOrb value={track.favoritings_count ?? track.likes_count} label={t('track.likes')} />

@@ -40,7 +40,7 @@ export const VoiceCard = React.memo(function VoiceCard({
         <div className="pb-3">
           <div
             data-ui="comment"
-            className="group relative rounded-2xl border border-ink/[0.07] bg-ink/[0.03] p-4 transition-colors duration-200 hover:border-ink/[0.11] hover:bg-ink/[0.045]"
+            className="panel group relative rounded-2xl bg-ink/[0.03] p-4 transition-colors duration-200 hover:border-ink/[0.11] hover:bg-ink/[0.045]"
           >
             <div className="flex gap-3">
               <button type="button" onClick={goUser} className="shrink-0 cursor-pointer">
@@ -127,7 +127,7 @@ export const CommentForm = React.memo(function CommentForm({
   };
 
   return (
-    <div className="rounded-2xl border border-ink/[0.08] bg-ink/[0.04] px-4 py-3 transition-colors focus-within:border-ink/[0.16]">
+    <div className="panel rounded-2xl bg-ink/[0.04] px-4 py-3 transition-colors focus-within:border-ink/[0.16]">
       {isCurrent && (
         <div className="mb-2 flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-accent">
           <Clock size={10} />

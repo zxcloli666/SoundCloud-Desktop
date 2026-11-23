@@ -12,7 +12,7 @@ interface FavUser {
   avatar_url: string;
 }
 
-const PANEL = 'rounded-3xl border border-ink/[0.08] bg-ink/[0.025]';
+const PANEL = 'panel rounded-3xl';
 
 export const RoomSleeve = React.memo(function RoomSleeve({
   track,
