@@ -31,7 +31,7 @@ export const LocalPlaylistHeader = React.memo(function LocalPlaylistHeader({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-[18px] border border-ink/[0.07] bg-ink/[0.02] p-3 pr-4">
+    <div className="panel flex flex-wrap items-center gap-4 rounded-[18px] p-3 pr-4">
       <button
         type="button"
         onClick={onBack}

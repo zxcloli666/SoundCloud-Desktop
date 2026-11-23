@@ -72,7 +72,7 @@ export const OfflineTrackList = React.memo(function OfflineTrackList({
 
   if (entries.length === 0) {
     return (
-      <div className="rounded-[18px] border border-dashed border-ink/[0.08] bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
+      <div className="panel rounded-[18px] border-dashed bg-ink/[0.015] px-5 py-12 text-center text-[13px] text-ink-30">
         {emptyText}
       </div>
     );
