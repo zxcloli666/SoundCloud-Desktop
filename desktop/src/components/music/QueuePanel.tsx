@@ -6,6 +6,7 @@ import { QueueEmpty } from './queue/QueueEmpty';
 import { QueueHeader } from './queue/QueueHeader';
 import { QueueHero } from './queue/QueueHero';
 import { QueueList } from './queue/QueueList';
+import { useDockInset } from './queue/use-dock-inset';
 import { useHeroGone } from './queue/use-hero-gone';
 
 const EXIT_MS = 460;
@@ -20,7 +21,13 @@ function paletteStyle(palette: CoverPalette | null): CSSProperties {
   return { '--q-c1': `rgb(${one})`, '--q-c2': `rgb(${two})` } as CSSProperties;
 }
 
-function QueueFrame({ phase, onClose }: { phase: Phase; onClose: () => void }) {
+interface FrameProps {
+  phase: Phase;
+  docked: boolean;
+  onClose: () => void;
+}
+
+function QueueFrame({ phase, docked, onClose }: FrameProps) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -28,6 +35,7 @@ function QueueFrame({ phase, onClose }: { phase: Phase; onClose: () => void }) {
   const empty = usePlayerStore((s) => s.queue.length === 0 && !s.currentTrack);
   const palette = useCoverPalette(true);
   const { gone, sentinelRef } = useHeroGone(scrollRef);
+  const dock = useDockInset(docked);
 
   useEffect(() => {
     if (phase === 'open') panelRef.current?.focus({ preventScroll: true });
@@ -45,8 +53,8 @@ function QueueFrame({ phase, onClose }: { phase: Phase; onClose: () => void }) {
         tabIndex={-1}
         data-ui="queue"
         data-state={phase}
-        style={paletteStyle(palette)}
-        className="queue-panel fixed top-16 right-2 bottom-2 z-50 flex flex-col overflow-hidden outline-none"
+        style={{ ...paletteStyle(palette), '--queue-dock': `${dock}px` } as CSSProperties}
+        className="queue-panel fixed top-16 z-50 flex flex-col overflow-hidden outline-none"
       >
         <div className="queue-bg absolute inset-0" />
         <div
@@ -83,7 +91,7 @@ function QueueFrame({ phase, onClose }: { phase: Phase; onClose: () => void }) {
 }
 
 export const QueuePanel = React.memo(
-  ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  ({ open, docked = false, onClose }: { open: boolean; docked?: boolean; onClose: () => void }) => {
     const [mounted, setMounted] = useState(open);
     const [phase, setPhase] = useState<Phase>('closed');
 
@@ -105,6 +113,6 @@ export const QueuePanel = React.memo(
     }, [open]);
 
     if (!mounted) return null;
-    return <QueueFrame phase={phase} onClose={onClose} />;
+    return <QueueFrame phase={phase} docked={docked} onClose={onClose} />;
   },
 );

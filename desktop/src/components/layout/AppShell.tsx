@@ -537,7 +537,7 @@ export const AppShell = React.memo(() => {
       <MobileLinkHost />
       {queueUsed.current && (
         <Suspense fallback={null}>
-          <QueuePanel open={queueOpen} onClose={onQueueClose} />
+          <QueuePanel open={queueOpen} docked={!hideNowPlaying} onClose={onQueueClose} />
         </Suspense>
       )}
       {lyricsOpen && (

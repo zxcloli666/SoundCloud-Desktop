@@ -52,6 +52,9 @@
 }
 
 .queue-panel {
+  --queue-gap: 0.5rem;
+  right: var(--queue-gap);
+  bottom: calc(var(--queue-dock, 0px) + var(--queue-gap));
   width: clamp(360px, 25vw, 420px);
   border: 1px solid var(--queue-line);
   border-radius: 24px;
