@@ -23,7 +23,7 @@ const FAR_SEC = 10;
 const MOVED_SEC = 0.1;
 const START_PATIENCE_MS = 4_000;
 const HOP_SEC = 3;
-const LAG_MAX_SEC = 0.6;
+const LAG_MAX_SEC = 0.3;
 const EARLY_SEC = 1;
 const HAVE_METADATA = 1;
 const HAVE_CURRENT_DATA = 2;
@@ -180,12 +180,12 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
 
   const rejoin = (target: number, rate: number) => {
     const behind = (target - video.currentTime) / rate;
-    if (video.paused || behind < 0) return park(target, rate, leadOf(target));
-    const sincePlay = performance.now() - playedAt;
-    if (!rolls() && sincePlay < START_PATIENCE_MS) return;
-    if (rolls() && sincePlay < START_PATIENCE_MS) startLag = Math.min(behind, LAG_MAX_SEC);
+    const starting = !video.paused && performance.now() - playedAt < START_PATIENCE_MS;
+    if (starting && !rolls()) return;
+    if (starting && behind > 0) startLag = Math.min(behind, LAG_MAX_SEC);
     const ahead = target + (LEAD_MIN_SEC + startLag) * rate;
-    if (behind > HOP_SEC || !buffered(video, ahead)) return park(target, rate, leadOf(target));
+    const near = !video.paused && behind > 0 && behind < HOP_SEC;
+    if (!near || !buffered(video, ahead)) return park(target, rate, leadOf(target));
     rollFrom(ahead);
     video.currentTime = ahead;
   };
