@@ -19,7 +19,10 @@ export function ArtistPanel({ users, onEnd }: { users: SCUser[]; onEnd?: () => v
           round
           cover={art(user.avatar_url, 't300x300')}
           title={user.username}
-          subtitle={t('flowRedesign.followers', { count: fc(user.followers_count) })}
+          subtitle={t('flowRedesign.followers', {
+            count: user.followers_count ?? 0,
+            value: fc(user.followers_count),
+          })}
           coverLabel={user.username}
           onOpen={() => navigate(`/user/${encodeURIComponent(user.urn)}`)}
         />

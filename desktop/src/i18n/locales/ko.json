@@ -3087,7 +3087,7 @@
     "idleSub": "취향에 맞춘 끝없는 음악",
     "playWave": "웨이브 재생",
     "removeLiked": "좋아요에서 제거",
-    "followers": "팔로워 {{count}}명",
+    "followers_other": "팔로워 {{value}}명",
     "collapse": "접기",
     "expand": "펼치기",
     "emptyLiked": "트랙에 좋아요를 누르면 여기에 나타나요",
