@@ -14,6 +14,7 @@
   --wall-veil: var(--veil-dark, 50%);
   --wall-pane: var(--pane-dark, 74%);
   --ink-lift: var(--lift-dark, 0.5);
+  --ink-lift-mix: var(--lift-mix-dark, 30%);
   --shell-side: rgb(var(--paper) / 0.56);
   --shell-top: rgb(var(--paper) / 0.38);
   --shell-veil: rgb(var(--paper) / 0.5);
@@ -35,6 +36,7 @@
   --wall-veil: var(--veil-white, 50%);
   --wall-pane: var(--pane-white, 74%);
   --ink-lift: var(--lift-white, 0.85);
+  --ink-lift-mix: var(--lift-mix-white, 51%);
 }
 
 [data-ui="app"][data-wall] [data-ui="main"] {

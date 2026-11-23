@@ -26,6 +26,8 @@ export function useWallTone(url: string | null, dim: number, opacity: number): v
       root.setProperty('--pane-white', percent(34 + 40 * white));
       root.setProperty('--lift-dark', (0.5 * dark).toFixed(3));
       root.setProperty('--lift-white', (0.6 + 0.25 * white).toFixed(3));
+      root.setProperty('--lift-mix-dark', percent(30 * dark));
+      root.setProperty('--lift-mix-white', percent(60 * (0.6 + 0.25 * white)));
     });
     return () => {
       live = false;

@@ -8,6 +8,7 @@
   --shade: 0 0 0;
   --shade-alpha: 1;
   --ink-lift: 0;
+  --ink-lift-mix: 0%;
   --glow-alpha: 0.2;
   --ok: 61 220 132;
   --bad: 255 138 128;
@@ -74,6 +75,7 @@
   --shade: 30 26 46;
   --shade-alpha: 0.32;
   --ink-lift: 0.6;
+  --ink-lift-mix: 36%;
   --glow-alpha: 0.12;
   --ok: 21 128 61;
   --bad: 190 38 28;
