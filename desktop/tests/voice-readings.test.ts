@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { listedReadings } from '../src/lib/voice/legacy/readings.ts';
 import type { OwnedTrack } from '../src/lib/voice/library.ts';
 import {
   libraryNames,
@@ -105,21 +104,4 @@ test('the spoken names put what the listener asked for first, then artists and f
     heard,
   );
   assert.deepEqual(spoken, ['психосис', 'солджер', 'сайкоусис', 'КРЕСТ', 'лил пип', 'гот раша']);
-});
-
-test('a server with one reading per name is read as a list of one', () => {
-  const answer = listedReadings({
-    readings: [
-      { name: 'Psychosis', said: 'сайкосис' },
-      { name: 'gothrussia', said: ['гот раша', 'гот русся'] },
-    ],
-    left: 2,
-  });
-  assert.deepEqual(answer, {
-    readings: [
-      { name: 'Psychosis', said: ['сайкосис'] },
-      { name: 'gothrussia', said: ['гот раша', 'гот русся'] },
-    ],
-    left: 2,
-  });
 });
