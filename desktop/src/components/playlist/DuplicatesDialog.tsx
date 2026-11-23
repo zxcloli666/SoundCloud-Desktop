@@ -83,7 +83,7 @@ function Body({
 
       {groups.length === 0 ? (
         <div className="flex flex-col items-center gap-3 px-5 pb-8 pt-6 text-center">
-          <CircleCheck size={32} className="text-emerald-400" />
+          <CircleCheck size={32} className="text-ok" />
           <p className="text-[13px] text-ink-50">{t('playlist.dupesNone')}</p>
           <Dialog.Close className="mt-1 cursor-pointer rounded-xl px-4 py-2 text-[13px] font-medium text-ink-60 transition-all hover:bg-ink/[0.06] hover:text-ink-90">
             {t('common.close')}
@@ -100,7 +100,7 @@ function Body({
                 <div className="flex items-center gap-3 rounded-xl px-2 py-1.5">
                   <Line track={group.keep} />
                   <span
-                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-400"
+                    className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ok/15 text-ok"
                     title={t('playlist.dupesKeep')}
                   >
                     <Check size={13} />
@@ -116,7 +116,7 @@ function Body({
                       aria-checked={on}
                       onClick={() => toggle(index)}
                       className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-2 py-1.5 text-left transition-all duration-200 ${
-                        on ? 'bg-red-500/[0.07]' : 'opacity-50 hover:opacity-80'
+                        on ? 'bg-bad/[0.07]' : 'opacity-50 hover:opacity-80'
                       }`}
                     >
                       <Line track={track} />
@@ -126,7 +126,7 @@ function Body({
                       <span
                         className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all duration-200 ${
                           on
-                            ? 'border-red-400/40 bg-red-500/20 text-red-300'
+                            ? 'border-bad/40 bg-bad/20 text-bad'
                             : 'border-ink/[0.15] text-transparent'
                         }`}
                       >
@@ -146,7 +146,7 @@ function Body({
               type="button"
               onClick={confirm}
               disabled={removed.size === 0}
-              className="cursor-pointer rounded-xl border border-red-500/20 bg-red-500/15 px-4 py-2 text-[13px] font-semibold tabular-nums text-red-400 transition-all hover:bg-red-500/25 disabled:cursor-not-allowed disabled:opacity-40"
+              className="cursor-pointer rounded-xl border border-bad/20 bg-bad/15 px-4 py-2 text-[13px] font-semibold tabular-nums text-bad transition-colors hover:bg-bad/25 disabled:cursor-not-allowed disabled:opacity-40"
             >
               {t('playlist.dupesRemove', { count: removed.size })}
             </button>

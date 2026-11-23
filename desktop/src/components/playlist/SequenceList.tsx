@@ -1,20 +1,19 @@
-import type {DragEndEvent} from '@dnd-kit/core';
-import React, {useCallback, useMemo, useRef} from 'react';
-import {useTranslation} from 'react-i18next';
-import {Clock, ListMusic, Loader2, Search} from '../../lib/icons';
-import {filterTracks} from '../../lib/text-match';
-import type {Track} from '../../stores/player';
-import {SortableVirtualList} from '../ui/SortableVirtualList';
-import {VirtualList} from '../ui/VirtualList';
-import {SequenceFilter} from './SequenceFilter';
-import {SEQUENCE_REMOVE_SHAPE, SEQUENCE_SHAPE, SEQUENCE_SORTABLE_SHAPE, TrackColumns} from '../music/columns/TrackColumns';
-import {SequenceRow, SequenceRowOverlay, SortableSequenceRow} from './SequenceRow';
-
-const PANEL = {
-  background: 'rgb(var(--ink) / 0.02)',
-  border: '0.5px solid rgb(var(--ink) / 0.06)',
-  boxShadow: '0 24px 60px rgb(var(--shade) / calc(0.28 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.04)',
-} as const;
+import type { DragEndEvent } from '@dnd-kit/core';
+import React, { useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Clock, ListMusic, Loader2, Search } from '../../lib/icons';
+import { filterTracks } from '../../lib/text-match';
+import type { Track } from '../../stores/player';
+import {
+  SEQUENCE_REMOVE_SHAPE,
+  SEQUENCE_SHAPE,
+  SEQUENCE_SORTABLE_SHAPE,
+  TrackColumns,
+} from '../music/columns/TrackColumns';
+import { SortableVirtualList } from '../ui/SortableVirtualList';
+import { VirtualList } from '../ui/VirtualList';
+import { SequenceFilter } from './SequenceFilter';
+import { SequenceRow, SequenceRowOverlay, SortableSequenceRow } from './SequenceRow';
 
 function urnOf(track: Track) {
   return track.urn;
@@ -118,7 +117,7 @@ export const SequenceList = React.memo(function SequenceList({
     ) : undefined;
 
   return (
-    <div className="rounded-[2rem] p-3 md:p-4" style={PANEL}>
+    <div className="rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-3 md:p-4">
       <Header count={visible.length} total={tracks.length} filter={filter} toolbar={toolbar} />
       {visible.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-16 text-center">
@@ -141,45 +140,45 @@ export const SequenceList = React.memo(function SequenceList({
         </div>
       ) : reorderable && onRemove && !filtering ? (
         <TrackColumns shape={SEQUENCE_SORTABLE_SHAPE}>
-        <SortableVirtualList
-          items={tracks}
-          getId={urnOf}
-          rowHeight={68}
-          overscan={12}
-          className="space-y-0.5"
-          onDragEnd={onDragEnd}
-          renderItem={(track, i) => (
-            <SortableSequenceRow
-              track={track}
-              index={i}
-              queue={getQueue}
-              onRemove={onRemove}
-              onPlay={onPlay}
-            />
-          )}
-          renderOverlay={(track, i) => (
-            <SequenceRowOverlay track={track} index={i} queue={getQueue} />
-          )}
-        />
+          <SortableVirtualList
+            items={tracks}
+            getId={urnOf}
+            rowHeight={68}
+            overscan={12}
+            className="space-y-0.5"
+            onDragEnd={onDragEnd}
+            renderItem={(track, i) => (
+              <SortableSequenceRow
+                track={track}
+                index={i}
+                queue={getQueue}
+                onRemove={onRemove}
+                onPlay={onPlay}
+              />
+            )}
+            renderOverlay={(track, i) => (
+              <SequenceRowOverlay track={track} index={i} queue={getQueue} />
+            )}
+          />
         </TrackColumns>
       ) : (
         <TrackColumns shape={onRemove ? SEQUENCE_REMOVE_SHAPE : SEQUENCE_SHAPE}>
-        <VirtualList
-          items={visible}
-          rowHeight={68}
-          overscan={10}
-          className="space-y-0.5"
-          getItemKey={(tr) => tr.urn}
-          renderItem={(track, i) => (
-            <SequenceRow
-              track={track}
-              index={i}
-              queue={getQueue}
-              onRemove={onRemove}
-              onPlay={onPlay}
-            />
-          )}
-        />
+          <VirtualList
+            items={visible}
+            rowHeight={68}
+            overscan={10}
+            className="space-y-0.5"
+            getItemKey={(tr) => tr.urn}
+            renderItem={(track, i) => (
+              <SequenceRow
+                track={track}
+                index={i}
+                queue={getQueue}
+                onRemove={onRemove}
+                onPlay={onPlay}
+              />
+            )}
+          />
         </TrackColumns>
       )}
       {sentinel}

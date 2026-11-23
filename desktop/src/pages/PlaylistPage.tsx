@@ -1,46 +1,46 @@
-import type {DragEndEvent} from '@dnd-kit/core';
+import type { DragEndEvent } from '@dnd-kit/core';
 import * as Dialog from '@radix-ui/react-dialog';
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams} from 'react-router-dom';
-import {toast} from 'sonner';
-import {useShallow} from 'zustand/shallow';
-import {TrackSortMenu} from '../components/music/TrackSortMenu';
-import {OfflineCopyLink} from '../components/offline/OfflineCopyLink';
-import {CrateLedger} from '../components/playlist/CrateLedger';
-import {EditPlaylistDialog} from '../components/playlist/EditPlaylistDialog';
-import {PLAYLIST_KEYFRAMES} from '../components/playlist/keyframes';
-import {MoreCrates} from '../components/playlist/MoreCrates';
-import {PlaylistHero} from '../components/playlist/PlaylistHero';
-import {SequenceList} from '../components/playlist/SequenceList';
-import {SetRibbon} from '../components/playlist/SetRibbon';
-import {usePlaylistAura} from '../components/playlist/usePlaylistAura';
-import {WaitStrip} from '../components/sync-wait/WaitStrip';
-import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
-import {SyncNotice, syncNoticeOf} from '../components/ui/SyncNotice';
-import {playlistScope} from '../lib/bulk-cache';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useShallow } from 'zustand/shallow';
+import { TrackSortMenu } from '../components/music/TrackSortMenu';
+import { OfflineCopyLink } from '../components/offline/OfflineCopyLink';
+import { CrateLedger } from '../components/playlist/CrateLedger';
+import { EditPlaylistDialog } from '../components/playlist/EditPlaylistDialog';
+import { PLAYLIST_KEYFRAMES } from '../components/playlist/keyframes';
+import { MoreCrates } from '../components/playlist/MoreCrates';
+import { PlaylistHero } from '../components/playlist/PlaylistHero';
+import { SequenceList } from '../components/playlist/SequenceList';
+import { SetRibbon } from '../components/playlist/SetRibbon';
+import { usePlaylistGenres } from '../components/playlist/usePlaylistGenres';
+import { WaitStrip } from '../components/sync-wait/WaitStrip';
+import { LoadErrorState, RefreshPendingHint } from '../components/ui/LoadErrorState';
+import { SyncNotice, syncNoticeOf } from '../components/ui/SyncNotice';
+import { playlistScope } from '../lib/bulk-cache';
 import {
-    useDeletePlaylist,
-    useInfiniteScroll,
-    usePlaylist,
-    usePlaylistTracks,
-    useRemoveFromPlaylist,
-    useUpdatePlaylistTracks,
+  useDeletePlaylist,
+  useInfiniteScroll,
+  usePlaylist,
+  usePlaylistTracks,
+  useRemoveFromPlaylist,
+  useUpdatePlaylistTracks,
 } from '../lib/hooks';
-import {AlertCircle, Check, ChevronLeft, ListMusic, X} from '../lib/icons';
-import {rawPlaylistCover} from '../lib/playlist-cover';
-import {usePlaylistDelivery} from '../lib/playlist-delivery';
-import {armPlaylistContinuation} from '../lib/queue-continuation';
-import {isWaitKind} from '../lib/sync-wait';
-import {type ArrangeMode, arrangeTracks} from '../lib/track-order';
-import {sortTracks, type TrackSort} from '../lib/track-sort';
-import {useAuthStore} from '../stores/auth';
-import {type Track, usePlayerStore} from '../stores/player';
-import {useSettingsStore} from '../stores/settings';
+import { AlertCircle, Check, ChevronLeft, ListMusic, X } from '../lib/icons';
+import { rawPlaylistCover } from '../lib/playlist-cover';
+import { usePlaylistDelivery } from '../lib/playlist-delivery';
+import { armPlaylistContinuation } from '../lib/queue-continuation';
+import { isWaitKind } from '../lib/sync-wait';
+import { type ArrangeMode, arrangeTracks } from '../lib/track-order';
+import { sortTracks, type TrackSort } from '../lib/track-sort';
+import { useAuthStore } from '../stores/auth';
+import { type Track, usePlayerStore } from '../stores/player';
+import { useSettingsStore } from '../stores/settings';
 
 function HeroSkeleton() {
   return (
-    <div className="relative rounded-[2.5rem] overflow-hidden glass-featured p-6 @min-[512px]:p-10">
+    <div className="relative overflow-hidden rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-6 @min-[512px]:p-10">
       <div className="flex flex-col @min-[740px]:flex-row gap-10">
         <div className="w-[150px] h-[150px] @min-[512px]:w-[200px] @min-[512px]:h-[200px] rounded-[1.7rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start" />
         <div className="flex-1 space-y-4 w-full">
@@ -179,7 +179,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
     })),
   );
 
-  const aura = usePlaylistAura(ownTracks, playlist?.genre);
+  const genres = usePlaylistGenres(ownTracks, playlist?.genre);
   const scrollRef = useInfiniteScroll(hasNextPage ?? false, isFetchingNextPage, fetchNextPage);
 
   const handleDragEnd = useCallback(
@@ -465,7 +465,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
         <PlaylistHero
           playlist={playlist}
           tracks={ownTracks}
-          aura={aura}
+          genres={genres}
           isOwner={isOwner}
           isPlaying={isPlayingFromThis}
           isPinned={isPinned}
@@ -481,16 +481,10 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           delivery={delivery}
         />
 
-        <CrateLedger playlist={playlist} tracks={ownTracks} accentGlow={aura.accentGlow} />
+        <CrateLedger playlist={playlist} tracks={ownTracks} />
 
         {tracks.length > 1 && (
-          <div
-            className="rounded-[2rem] p-5 md:p-6"
-            style={{
-              background: 'rgb(var(--ink) / 0.025)',
-              border: '0.5px solid rgb(var(--ink) / 0.06)',
-            }}
-          >
+          <div className="rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-5 md:p-6">
             <div className="flex items-center gap-2 mb-4 text-[11px] font-bold uppercase tracking-[0.22em] text-ink-45">
               {t('playlist.theSet')}
             </div>
@@ -530,8 +524,8 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
           <Dialog.Overlay className="fixed inset-0 bg-shade-60 backdrop-blur-sm z-50 animate-fade-in" />
           <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-[380px] max-w-[calc(100vw-32px)] max-h-[calc(100vh-48px)] overflow-y-auto rounded-2xl glass border border-ink/[0.08] shadow-2xl animate-fade-in-up p-6 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
-                <AlertCircle size={20} className="text-red-400" />
+              <div className="w-10 h-10 rounded-full bg-bad/10 flex items-center justify-center shrink-0">
+                <AlertCircle size={20} className="text-bad" />
               </div>
               <Dialog.Title className="text-[15px] font-bold text-ink-90">
                 {t('playlist.delete')}
@@ -551,7 +545,7 @@ export const PlaylistPage = React.memo(function PlaylistPage() {
                 type="button"
                 onClick={handleDelete}
                 disabled={deletePlaylist.isPending}
-                className="px-4 py-2 rounded-xl text-[13px] font-semibold bg-red-500/15 text-red-400 hover:bg-red-500/25 border border-red-500/20 transition-all cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-xl text-[13px] font-semibold bg-bad/15 text-bad hover:bg-bad/25 border border-bad/20 transition-colors cursor-pointer disabled:opacity-50"
               >
                 {deletePlaylist.isPending ? t('common.loading') : t('playlist.delete')}
               </button>

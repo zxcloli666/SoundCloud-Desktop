@@ -1,23 +1,28 @@
 import React from 'react';
-import {useTranslation} from 'react-i18next';
-import {cancelPreload, preloadTrack} from '../../lib/audio';
-import {art, dur, fc} from '../../lib/formatters';
-import {headphones9, heart9, musicIcon12, pauseWhite12, playWhite12, Trash2,} from '../../lib/icons';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useRowPick} from '../../lib/useRowPick';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {useTrackColumns} from '../music/columns/TrackColumns';
-import {LikeButton} from '../music/LikeButton';
-import {PlayNextButton} from '../music/PlayNextButton';
-import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
-import {genreColor} from '../search/utils';
-import {DragGrip, LIFTED_ROW_STYLE, useSortableRow} from '../ui/SortableVirtualList';
+import { useTranslation } from 'react-i18next';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
+import { art, dur, fc } from '../../lib/formatters';
+import {
+  headphones9,
+  heart9,
+  musicIcon12,
+  pauseWhite12,
+  playWhite12,
+  Trash2,
+} from '../../lib/icons';
+import { useRowPick } from '../../lib/useRowPick';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { useTrackColumns } from '../music/columns/TrackColumns';
+import { LikeButton } from '../music/LikeButton';
+import { PlayNextButton } from '../music/PlayNextButton';
+import { SaveOfflineRowButton } from '../music/SaveOfflineButton';
+import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
+import { genreColor } from '../search/utils';
+import { DragGrip, LIFTED_ROW_STYLE, useSortableRow } from '../ui/SortableVirtualList';
 
-/** Shared row body. The left hue-tick is colored by THIS track's genre, so the
- *  sequence visibly shifts color as you flip the crate. */
 function RowBody({
   track,
   index,
@@ -43,7 +48,6 @@ function RowBody({
           style={{
             background: hue,
             opacity: isThis ? 1 : 0.4,
-            boxShadow: isThis ? `0 0 10px ${hue}` : undefined,
           }}
         />
       )}
@@ -54,7 +58,7 @@ function RowBody({
         onMouseLeave={cancelPreload}
       >
         {isThisPlaying ? (
-          <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center shadow-[0_0_12px_var(--color-accent-glow)]">
+          <div className="w-7 h-7 rounded-full bg-accent text-accent-contrast flex items-center justify-center">
             {pauseWhite12}
           </div>
         ) : (
@@ -156,7 +160,7 @@ function RemoveButton({ urn, onRemove }: { urn: string; onRemove: (urn: string) 
     <button
       type="button"
       onClick={() => onRemove(urn)}
-      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-ink-20 hover:text-red-400 hover:bg-red-400/10 transition-all duration-200 shrink-0"
+      className="opacity-0 group-hover:opacity-100 w-7 h-7 rounded-lg flex items-center justify-center text-ink-20 hover:text-bad hover:bg-bad/10 transition-all duration-200 shrink-0"
       title={t('playlist.removeTrack')}
     >
       <Trash2 size={13} />
@@ -164,7 +168,6 @@ function RemoveButton({ urn, onRemove }: { urn: string; onRemove: (urn: string) 
   );
 }
 
-/** Owner row — drag-to-reorder with a "pulled sleeve" tilt; remove on hover. */
 export const SortableSequenceRow = React.memo(
   function SortableSequenceRow({
     track,
@@ -216,8 +219,6 @@ export const SortableSequenceRow = React.memo(
     sameVideos(prev.track.videos, next.track.videos),
 );
 
-/** Floating copy rendered by DragOverlay while reordering — stays mounted even if
- *  the source row windows out of the virtual list, so long auto-scroll drags work. */
 export function SequenceRowOverlay({
   track,
   index,
@@ -263,11 +264,7 @@ export const SequenceRow = React.memo(
     const onContextMenu = useTrackContextMenu(track);
     const pick = useRowPick(track);
     return (
-      <div
-        className={`${ROW_BASE} ${activeCls(isThis)}`}
-        onContextMenu={onContextMenu}
-        {...pick}
-      >
+      <div className={`${ROW_BASE} ${activeCls(isThis)}`} onContextMenu={onContextMenu} {...pick}>
         <RowBody
           track={track}
           index={index}

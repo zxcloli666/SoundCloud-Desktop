@@ -51,9 +51,7 @@ const ArtistChip = memo(function ArtistChip({
         <Avatar src={avatarUrl} alt={name} size={28} />
       </span>
       <span className="flex flex-col items-start leading-tight">
-        <span className="text-[12px] font-semibold text-ink-90 group-hover:text-ink">
-          {name}
-        </span>
+        <span className="text-[12px] font-semibold text-ink-90 group-hover:text-ink">{name}</span>
         <span className="text-[9px] font-bold uppercase tracking-[0.18em] text-ink-35">
           {subLabel}
         </span>
@@ -81,7 +79,10 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
 
   return (
     <GlassHeroPanel className="@container">
-      <div data-ui="album-hero" className="relative p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start">
+      <div
+        data-ui="album-hero"
+        className="relative p-6 @min-[512px]:p-10 flex flex-col @min-[740px]:flex-row gap-8 @min-[740px]:gap-12 items-center @min-[740px]:items-start"
+      >
         <AlbumCoverArtifact
           title={album.title}
           coverUrl={album.cover_url}
@@ -95,9 +96,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
               <Disc3 size={11} /> {kindLabel}
             </span>
             {album.confidence >= 0.7 && (
-              <span
-                className="inline-flex items-center gap-1 rounded-full bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-emerald-400 ring-1 ring-emerald-400/25"
-              >
+              <span className="inline-flex items-center gap-1 rounded-full bg-ok/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ok ring-1 ring-ok/25">
                 <Check size={11} /> {t('album.verified')}
               </span>
             )}
@@ -153,9 +152,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
               <InfoChip icon={<MicVocal size={11} />}>{dur(totalDuration)}</InfoChip>
             )}
             {indexedCount < album.tracks.length && (
-              <span
-                className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink ring-1 ring-accent/30"
-              >
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-ink ring-1 ring-accent/30">
                 {t('album.availability', {
                   indexed: indexedCount,
                   total: album.tracks.length,
