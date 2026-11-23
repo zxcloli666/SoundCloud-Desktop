@@ -1,9 +1,5 @@
 import { memo, type ReactNode } from 'react';
 
-const SHADOW = {
-  boxShadow: '0 20px 50px -34px rgb(var(--shade) / calc(0.9 * var(--shade-alpha)))',
-};
-
 export const Panel = memo(function Panel({
   children,
   className = '',
@@ -21,8 +17,7 @@ export const Panel = memo(function Panel({
     <section
       data-ui={ui}
       data-step={step}
-      className={`rounded-[20px] border border-ink/[0.08] bg-surface/70 ${pad ? 'p-4 sm:p-5' : ''} ${className}`}
-      style={SHADOW}
+      className={`panel ${pad ? 'p-4 sm:p-5' : ''} ${className}`}
     >
       {children}
     </section>

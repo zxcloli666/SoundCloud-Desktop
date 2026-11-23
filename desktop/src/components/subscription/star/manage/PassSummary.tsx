@@ -68,7 +68,6 @@ export const PassSummary = memo(function PassSummary() {
     <aside
       data-ui="star-pass-summary"
       className="overflow-hidden rounded-[22px] border border-ink/[0.08] bg-surface"
-      style={{ boxShadow: '0 30px 70px -40px rgb(var(--shade) / calc(1 * var(--shade-alpha)))' }}
     >
       <div className="flex items-center gap-3 px-5 pt-5">
         <StarBadge size="lg" tier={tier} />

@@ -89,7 +89,7 @@ const PlanTile = memo(function PlanTile({
           {t(`starpass.plan.${monthsKey(plan.months)}`)}
         </span>
         {plan.savings_pct > 0 && (
-          <span className="rounded-full bg-accent px-1.5 py-0.5 text-[10.5px] font-bold tabular-nums text-accent-contrast">
+          <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10.5px] font-bold tabular-nums text-accent">
             −{plan.savings_pct}%
           </span>
         )}

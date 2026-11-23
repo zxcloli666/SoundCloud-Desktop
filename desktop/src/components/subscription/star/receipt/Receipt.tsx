@@ -22,7 +22,6 @@ export const Receipt = memo(function Receipt() {
     <aside
       data-ui="star-receipt"
       className="relative rounded-[22px] border border-ink/[0.08] bg-surface"
-      style={{ boxShadow: '0 30px 70px -40px rgb(var(--shade) / calc(1 * var(--shade-alpha)))' }}
     >
       <Head />
       <div className="flex flex-col gap-2.5 px-5 pb-4 pt-4">

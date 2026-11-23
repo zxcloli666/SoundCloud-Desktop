@@ -1701,24 +1701,6 @@ select,
   }
 }
 
-@keyframes star-sheen {
-  0% {
-    transform: translate3d(-120%, 0, 0) skewX(-18deg);
-  }
-  55%, 100% {
-    transform: translate3d(320%, 0, 0) skewX(-18deg);
-  }
-}
-
-@keyframes star-halo {
-  0%, 100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(-4vw, 3vh, 0);
-  }
-}
-
 .star-in,
 .star-stagger > * {
   animation: star-in 0.42s var(--ease-apple) both;
@@ -1748,16 +1730,11 @@ select,
   animation: star-pulse 2.2s ease-in-out infinite;
 }
 
-.star-sheen {
-  animation: star-sheen 3.4s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .star-in,
   .star-stagger > *,
   .star-pop,
-  .star-pulse,
-  .star-sheen {
+  .star-pulse {
     animation: none !important;
   }
 }

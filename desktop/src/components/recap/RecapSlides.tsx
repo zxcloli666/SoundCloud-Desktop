@@ -43,7 +43,7 @@ function Frame({ eyebrow, children }: { eyebrow?: string; children: ReactNode })
   return (
     <div className="flex h-full flex-col items-center justify-center px-2 text-center">
       {eyebrow && (
-        <div className="mb-5 font-mono text-[11px] uppercase tracking-[0.32em] text-accent">
+        <div className="mb-5 font-mono text-[11px] uppercase tracking-[0.32em] text-ink-45">
           {eyebrow}
         </div>
       )}
@@ -62,7 +62,7 @@ function Giant({
   return (
     <div
       className="font-black leading-[0.9] tracking-[-0.04em] text-ink"
-      style={{ ...DISPLAY, fontSize: size, textShadow: '0 0 60px var(--color-accent-glow)' }}
+      style={{ ...DISPLAY, fontSize: size }}
     >
       {children}
     </div>
@@ -108,12 +108,7 @@ const ArtistSlide = memo(function ArtistSlide({ stats }: { stats: ListeningStats
   const cover = art(top.artworkUrl, 't500x500');
   return (
     <Frame eyebrow={t('stats.topArtist')}>
-      <div
-        className="mb-7 size-[clamp(140px,22vw,220px)] overflow-hidden rounded-full bg-ink/[0.06]"
-        style={{
-          boxShadow: '0 0 0 1px rgba(255,255,255,0.12), 0 30px 90px -20px var(--color-accent-glow)',
-        }}
-      >
+      <div className="mb-7 size-[clamp(140px,22vw,220px)] overflow-hidden rounded-full bg-ink/[0.06] ring-1 ring-ink/[0.12]">
         {cover && <img src={cover} alt="" className="size-full object-cover" draggable={false} />}
       </div>
       <Giant size="clamp(36px, 7vw, 84px)">{top.artistName}</Giant>
@@ -136,7 +131,7 @@ const TracksSlide = memo(function TracksSlide({ stats }: { stats: ListeningStats
               className="flex items-center gap-4 rounded-[16px] border border-ink/[0.08] bg-ink/[0.03] px-3 py-2.5 animate-in fade-in slide-in-from-bottom-2 fill-mode-both duration-500"
               style={{ animationDelay: `${120 + i * 110}ms` }}
             >
-              <span className="w-8 text-center text-[26px] font-black text-accent" style={DISPLAY}>
+              <span className="w-8 text-center text-[26px] font-black text-ink-30" style={DISPLAY}>
                 {i + 1}
               </span>
               <div className="size-11 shrink-0 overflow-hidden rounded-[9px] bg-ink/[0.06]">
@@ -145,14 +140,10 @@ const TracksSlide = memo(function TracksSlide({ stats }: { stats: ListeningStats
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="truncate text-[14px] font-semibold text-ink-90">
-                  {track.title}
-                </div>
+                <div className="truncate text-[14px] font-semibold text-ink-90">{track.title}</div>
                 <div className="truncate text-[12px] text-ink-40">{track.artistName}</div>
               </div>
-              <span className="font-mono text-[11px] text-ink-40">
-                {fmt.number(track.plays)}×
-              </span>
+              <span className="font-mono text-[11px] text-ink-40">{fmt.number(track.plays)}×</span>
             </li>
           );
         })}
