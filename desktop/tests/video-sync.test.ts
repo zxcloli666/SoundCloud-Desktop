@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { clockTime, syncStep, videoTarget } from '../src/lib/video-sync.ts';
+import {
+  clockTime,
+  LEAD_MIN_SEC,
+  leadFor,
+  parkStep,
+  syncStep,
+  videoTarget,
+} from '../src/lib/video-sync.ts';
 
 test('the clock runs on from the last tick at the player rate', () => {
   const clock = { pos: 10, at: 1_000, rate: 1, playing: true };
@@ -56,4 +63,22 @@ test('the player speed carries into the video rate', () => {
 
 test('an unknown duration never ends the clip', () => {
   assert.deepEqual(syncStep(500, 500, Number.NaN, 1), { kind: 'hold', rate: 1 });
+});
+
+test('a parked video waits for its moment and starts on it', () => {
+  assert.equal(parkStep(10, 12, true), 'wait');
+  assert.equal(parkStep(11.99, 12, true), 'play');
+  assert.equal(parkStep(12.3, 12, true), 'play');
+});
+
+test('a parked video that is late parks again only when it can go on or the wait is too long', () => {
+  assert.equal(parkStep(13, 12, false), 'wait');
+  assert.equal(parkStep(13, 12, true), 'again');
+  assert.equal(parkStep(16.5, 12, false), 'again');
+});
+
+test('the lead follows the wait and stays in bounds', () => {
+  assert.equal(leadFor(0), LEAD_MIN_SEC);
+  assert.equal(leadFor(2), 1.6);
+  assert.equal(leadFor(60), 4);
 });
