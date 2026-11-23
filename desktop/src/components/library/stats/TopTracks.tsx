@@ -29,11 +29,11 @@ const TrackRow = memo(function TrackRow({
   const { t } = useTranslation();
   const navigate = useNavigate();
   const fmt = useStatsFormat();
-  const { isThis, isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const cover = art(entry.artworkUrl, 't200x200');
   const lead = rank === 1;
   return (
-    <div
+    <div {...mark}
       className="group relative flex items-center gap-3 px-2 py-2 rounded-2xl overflow-hidden transition-colors hover:bg-ink/[0.04]"
       style={isThis ? { background: auraRgba(aura, 0.1) } : undefined}
     >

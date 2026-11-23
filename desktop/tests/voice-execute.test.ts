@@ -144,14 +144,31 @@ test('a port failure turns into a failed outcome', async () => {
   assert.equal(res.outcome.speech, 'Не получилось');
 });
 
-function chatting(end: TurnEnd, undo = false) {
+function chatting(end: TurnEnd, undo = false, after: Partial<ChatStep> = {}) {
   const asked: string[] = [];
   const chat = async (cmd: { heard: string }): Promise<ChatStep> => {
     asked.push(cmd.heard);
-    return { end, stack: [], undo };
+    return { end, stack: [], undo, ask: false, talk: null, ...after };
   };
   return { asked, chat };
 }
+
+test('a reply that asks or starts a conversation tells the engine to keep listening', async () => {
+  const end: TurnEnd = { status: 'ok', say: 'Какой жанр включить?', marks: [] };
+  const { chat } = chatting(end, false, { ask: true, talk: true });
+  const res = await execute(command('none', { heard: 'давай поболтаем' }), fakePort(), {
+    ...ctx(),
+    chat,
+  });
+  assert.deepEqual(res.outcome, {
+    ok: true,
+    speech: '',
+    display: 'Какой жанр включить?',
+    undo: false,
+    ask: true,
+    talk: true,
+  });
+});
 
 test('no intent goes to the chat when it is on and returns the reply as display only', async () => {
   const { asked, chat } = chatting({ status: 'ok', say: 'Привет!', marks: [] }, true);

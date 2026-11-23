@@ -48,6 +48,8 @@ export interface ToolEnv {
   now: number;
   stack: UndoEntry[];
   undo: boolean;
+  ask: boolean;
+  talk: boolean | null;
 }
 
 export interface ChatTool {

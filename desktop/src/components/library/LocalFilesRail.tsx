@@ -13,11 +13,11 @@ const PREVIEW = 14;
 const LOCAL_SECTION = { section: 'local' };
 
 const LocalTile = React.memo(function LocalTile({ row, queue }: { row: LocalRow; queue: Track[] }) {
-  const { isThisPlaying, togglePlay } = useTrackPlay(row.track, queue);
+  const { isThisPlaying, togglePlay, mark } = useTrackPlay(row.track, queue);
   const artwork = art(row.track.artwork_url, 't300x300');
 
   return (
-    <div className="group w-[150px] shrink-0 select-none">
+    <div {...mark} className="group w-[150px] shrink-0 select-none">
       <button
         type="button"
         onClick={togglePlay}

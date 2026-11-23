@@ -10,6 +10,7 @@ import {
   ListX,
   MessageCircle,
   MicVocal,
+  Moon,
   Music,
   Pause,
   Play,
@@ -23,14 +24,18 @@ import {
   SkipBack,
   SkipForward,
   Sparkles,
+  Star,
+  ThumbsDown,
   User,
+  Users,
   Volume2,
   VolumeX,
+  Waves,
 } from '../../lib/icons';
 import type { ToolMark } from '../../lib/voice/chat/types';
 import type { DoneItem } from '../../lib/voice/runtime';
 import type { EntityKind, Intent } from '../../lib/voice/types';
-import { AudioWaveform, Brain, Eraser, Gauge, Undo2 } from './icons';
+import { AudioWaveform, Brain, Ear, Eraser, Gauge, Undo2 } from './icons';
 
 export function kindIcon(kind: EntityKind, size: number): ReactNode {
   if (kind === 'artist') return <User size={size} />;
@@ -93,6 +98,14 @@ const TOOL_ICONS: Record<string, (size: number) => ReactNode> = {
   add_to_playlist: (s) => <ListPlus size={s} />,
   remember: (s) => <Brain size={s} />,
   forget: (s) => <Eraser size={s} />,
+  sleep_timer: (s) => <Moon size={s} />,
+  effect: (s) => <Waves size={s} />,
+  dislike: (s) => <ThumbsDown size={s} />,
+  superlike: (s) => <Star size={s} />,
+  together: (s) => <Users size={s} />,
+  open_rooms: (s) => <Radio size={s} />,
+  ask_user: (s) => <Ear size={s} />,
+  talk_mode: (s) => <MessageCircle size={s} />,
 };
 
 export function markIcon(mark: ToolMark, size: number): ReactNode {

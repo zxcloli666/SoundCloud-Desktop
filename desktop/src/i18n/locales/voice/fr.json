@@ -49,7 +49,8 @@
       "hush": "Chut",
       "downloading": "Voix : téléchargement des modèles",
       "openModels": "Ouvrir les modèles",
-      "askOne": "C'est bien celui-ci ?"
+      "askOne": "C'est bien celui-ci ?",
+      "talk": "Conversation"
     },
     "error": {
       "mic_denied": "Pas d'accès au microphone",
@@ -77,22 +78,25 @@
       "hold": "Maintenir",
       "tap": "Tap",
       "headset": "Bouton du casque",
-      "gesture": {
-        "off": "Off",
-        "double": "2×",
-        "triple": "3×"
+      "learnNow": "Appuyez sur le casque comme pour l'appeler",
+      "learnSingle": "Un appui met en pause. Appuyez 2 ou 3 fois",
+      "learnMissed": "Aucun appui n'est arrivé",
+      "rebind": "Refaire",
+      "bound": {
+        "double": "2 appuis",
+        "triple": "3 appuis",
+        "next": "Appui « piste suivante »",
+        "previous": "Appui « piste précédente »"
       },
-      "headsetHow_one": "Appuyez {{count}} fois sur le bouton",
-      "headsetHow_other": "Appuyez {{count}} fois de suite sur le bouton",
-      "headsetHow_many": "Appuyez {{count}} fois de suite sur le bouton",
-      "test": "Tester",
-      "pressNow_one": "Appuyez {{count}} fois",
-      "pressNow_other": "Appuyez {{count}} fois maintenant",
-      "pressNow_many": "Appuyez {{count}} fois maintenant",
       "stopTest": "Stop",
-      "headsetWorks": "Fonctionne",
       "again": "Encore",
       "wake": "Par le nom",
+      "follow": "Écouter après la réponse",
+      "followOff": "Non",
+      "talk": "Conversation jusqu'au silence",
+      "talkHow": "Dites « on discute » et continuez sans le mot d'éveil",
+      "seconds_one": "{{count}} s",
+      "seconds_other": "{{count}} s",
       "names": "Répond à",
       "needsEcho": "Sans annulation d'écho, la musique le déclenche",
       "echoOn": "Activer",
@@ -184,7 +188,23 @@
         "queue_clear": "Vider la file d'attente",
         "add_to_playlist": "Ajouter à une playlist",
         "remember": "Retenir",
-        "forget": "Oublier"
+        "forget": "Oublier",
+        "list_tracks": "Listes",
+        "play_list": "Lire depuis la liste",
+        "screen": "Écran",
+        "press": "Appuyer",
+        "type_text": "Saisir",
+        "scroll": "Défiler",
+        "play_screen": "Lire depuis l'écran",
+        "open_item": "Ouvrir",
+        "sleep_timer": "Minuterie",
+        "effect": "Effet",
+        "dislike": "Je n'aime pas",
+        "superlike": "Superlike",
+        "together": "Ensemble",
+        "open_rooms": "Salons ouverts",
+        "ask_user": "À l’écoute",
+        "talk_mode": "Conversation"
       }
     },
     "you": {
@@ -259,7 +279,8 @@
       },
       "voice": "Voix : {{name}}",
       "name": {
-        "qwen-codec": "Décodeur vocal"
+        "qwen-codec": "Décodeur vocal",
+        "sherpa-onnx-nemo-transducer-giga-am-v3-russian-2025-12-16": "Reconnaissance précise"
       }
     },
     "credits": {

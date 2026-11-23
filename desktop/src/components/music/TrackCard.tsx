@@ -30,7 +30,7 @@ export const TrackCard = React.memo(
   function TrackCard({ track, queue, onPlay }: TrackCardProps) {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { isThisPlaying, togglePlay: togglePlayRaw } = useTrackPlay(track, queue, onPlay);
+    const { isThisPlaying, togglePlay: togglePlayRaw, mark } = useTrackPlay(track, queue, onPlay);
     const showPlayingOverlay = useAutoHide(isThisPlaying);
     const clusterId = useClusterFeedback();
     const togglePlay = React.useCallback(() => {
@@ -49,7 +49,7 @@ export const TrackCard = React.memo(
     const isWanted = artistDisplay.availability !== 'indexed';
 
     return (
-      <div
+      <div {...mark}
         data-ui="track-card"
         className="group relative select-none"
         onMouseEnter={() => preloadTrack(track)}

@@ -32,6 +32,10 @@ pub struct StateEvent {
     pub source: Source,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub input: Option<String>,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub follow: bool,
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub talking: bool,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -88,8 +92,6 @@ pub struct CommandEvent {
     pub kind_hint: Option<&'static str>,
     pub number: Option<u32>,
     pub decision: Option<DecisionEvent>,
-    #[serde(skip_serializing_if = "std::ops::Not::not")]
-    pub talk: bool,
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub chatless: bool,
     #[serde(skip_serializing_if = "Vec::is_empty")]
@@ -262,6 +264,8 @@ pub struct Outcome {
     pub speech: String,
     pub display: String,
     pub undo: bool,
+    pub ask: bool,
+    pub talk: Option<bool>,
 }
 
 #[cfg(test)]

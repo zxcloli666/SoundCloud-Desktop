@@ -996,6 +996,20 @@
     "moriarty",
     "chamar o moriarty"
   ],
+  "voice.activation.follow": [
+    "responder sem palavra de ativação",
+    "continuar ouvindo",
+    "seguir conversando",
+    "microfone aberto depois da resposta",
+    "não chamar de novo"
+  ],
+  "voice.activation.talk": [
+    "modo conversa",
+    "bater papo com a assistente",
+    "diálogo contínuo",
+    "falar sem botão",
+    "conversa longa"
+  ],
   "voice.mics.title": [
     "microfone",
     "escolher microfone",

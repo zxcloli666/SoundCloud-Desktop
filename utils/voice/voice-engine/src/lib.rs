@@ -2,6 +2,7 @@ mod cache;
 mod catalog;
 mod clip;
 mod config;
+mod cut_short;
 mod draft;
 mod event;
 mod fell_quiet;
@@ -49,15 +50,16 @@ use voice_resolve::Entity;
 pub use catalog::{Candidates, Catalog};
 pub use clip::Clip;
 pub use config::{
-    Activation, Boosts, Config, Echo, Headset, Language, Listen, ListenMode, Speak, SpeakMode, Wake,
+    Activation, Boosts, Config, Echo, Follow, Headset, Language, Listen, ListenMode, Speak,
+    SpeakMode, Wake,
 };
 pub use event::{
     Ahead, CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, HeardEvent, LevelEvent,
     Looked, Outcome, PartialEvent, ScoredEvent, Source, Spoke, State, StateEvent, Timed, TurnEvent,
     WakeEvent,
 };
-pub use gesture::{Press, Presses};
-pub use models::{ASR_EN, ASR_RU, VAD, hearing, required};
+pub use gesture::{LEARN_FOR, Learned, Learner, Press, Presses, Signal, WINDOW};
+pub use models::{ASR_EN, ASR_RU, EXACT_RU, VAD, hearing, required};
 pub use output::Output;
 pub use server::{Ask, Said, Server};
 pub use stream::{Resampled, Stream};
@@ -97,13 +99,15 @@ pub struct Timing {
     pub server: Duration,
     pub release: Duration,
     pub opening: Duration,
+    pub pause: Duration,
+    pub unfinished_pause: Duration,
 }
 
 impl Default for Timing {
     fn default() -> Self {
         Self {
             no_speech: Duration::from_secs(4),
-            max_utterance: Duration::from_secs(12),
+            max_utterance: Duration::from_secs(25),
             ask: Duration::from_secs(8),
             done: Duration::from_secs(10),
             lookup: Duration::from_millis(1200),
@@ -112,6 +116,8 @@ impl Default for Timing {
             server: Duration::from_secs(100),
             release: Duration::from_millis(80),
             opening: Duration::from_millis(700),
+            pause: Duration::from_millis(400),
+            unfinished_pause: Duration::from_millis(1500),
         }
     }
 }

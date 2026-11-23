@@ -53,12 +53,12 @@ export const ScheduleRow = React.memo(function ScheduleRow({
   leading?: string;
 }) {
   const { t } = useTranslation();
-  const { isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+  const { isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
   const onContextMenu = useTrackContextMenu(track);
   const cover = art(track.artwork_url, 't200x200');
 
   return (
-    <div
+    <div {...mark}
       onContextMenu={onContextMenu}
       className={`group relative flex items-center gap-3.5 rounded-xl border py-2 pl-2.5 pr-3 transition-colors ${
         isThisPlaying

@@ -1125,6 +1125,20 @@
     "llamar a moriarty",
     "sound reproduce"
   ],
+  "voice.activation.follow": [
+    "responder sin palabra de activación",
+    "seguir escuchando",
+    "continuar hablando",
+    "micrófono abierto tras responder",
+    "no volver a llamar"
+  ],
+  "voice.activation.talk": [
+    "modo conversación",
+    "charlar con la asistente",
+    "diálogo continuo",
+    "hablar sin botón",
+    "conversación larga"
+  ],
   "voice.mics.title": [
     "micrófono",
     "micro",

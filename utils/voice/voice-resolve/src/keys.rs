@@ -274,8 +274,12 @@ const ONE_WORD: f32 = 0.9;
 const STRICT_SLACK: f32 = 0.2;
 const CREDIT_MIN: f32 = 0.88;
 const SAID_MIN: f32 = 0.75;
+const SAID_EXACT: f32 = 0.95;
+const WEAK_HALF: f32 = 0.5;
 const FALLBACK_FACTOR: f32 = 0.92;
 const ALIAS_FACTOR: f32 = 0.96;
+const CREDIT_LIFT: f32 = 1.03;
+const WEAK_MIN_CHARS: usize = 6;
 
 pub fn near(a: &str, b: &str) -> f32 {
     voice_nlu::similarity(a, b).min(voice_nlu::strict_similarity(a, b) + STRICT_SLACK)
@@ -302,11 +306,19 @@ fn combo(query: &QueryKeys, artist: &str, name: &str) -> f32 {
             let right: String = qc[p..].iter().collect();
             let s1 = near(&left, first);
             let s2 = near(&right, second);
-            if s1 < 0.6 || s2 < 0.6 {
+            let (exact, other) = (s1.max(s2), s1.min(s2));
+            let long = l1.min(second.chars().count()) >= WEAK_MIN_CHARS;
+            let said = exact >= SAID_EXACT && long;
+            if other < WEAK_HALF || (other < 0.6 && !said) {
                 continue;
             }
             let (w1, w2) = (l1 as f32, second.chars().count() as f32);
-            best = best.max((s1 * w1 + s2 * w2) / (w1 + w2));
+            let split = (s1 * w1 + s2 * w2) / (w1 + w2);
+            best = best.max(if said {
+                split.max((close * CREDIT_LIFT).min(1.0))
+            } else {
+                split
+            });
         }
     }
     best

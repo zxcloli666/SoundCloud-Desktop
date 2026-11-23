@@ -49,12 +49,12 @@ interface Props {
 /** Cover + title/artist row rendered above the waveform. */
 export const WaveTrackHeader = React.memo(
   function WaveTrackHeader({ track, queue, isCurrent }: Props) {
-    const { isThisPlaying, togglePlay } = useTrackPlay(track, queue);
+    const { isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue);
     const showPlayingOverlay = useAutoHide(isThisPlaying);
     const cover = art(track.artwork_url, 't200x200');
 
     return (
-      <div className="flex items-center gap-3 min-w-0">
+      <div {...mark} className="flex items-center gap-3 min-w-0">
         <button
           type="button"
           onClick={togglePlay}

@@ -28,6 +28,37 @@ struct Hit {
     artist_aliases: Vec<String>,
 }
 
+#[derive(Deserialize)]
+struct Shown {
+    urn: String,
+    title: String,
+    #[serde(default)]
+    user: Option<Uploader>,
+    #[serde(default)]
+    enrichment: Option<Enrichment>,
+    #[serde(default)]
+    playback_count: Option<u64>,
+    #[serde(default)]
+    likes_count: Option<u64>,
+}
+
+#[derive(Deserialize)]
+struct Uploader {
+    #[serde(default)]
+    username: String,
+}
+
+#[derive(Deserialize)]
+struct Enrichment {
+    #[serde(default)]
+    primary_artist: Option<Named>,
+}
+
+#[derive(Deserialize)]
+struct Named {
+    name: String,
+}
+
 pub fn request(variants: &[Variant], kinds: &[Kind]) -> Request {
     let lookup = Lookup {
         variants: variants.to_vec(),
@@ -55,8 +86,40 @@ pub fn entities(body: &Value) -> Vec<Entity> {
         .collect()
 }
 
+pub fn shown(kind: Kind, page: &Value) -> Vec<Entity> {
+    let Some(items) = page.get("collection").and_then(Value::as_array) else {
+        return Vec::new();
+    };
+    items
+        .iter()
+        .filter_map(|item| serde_json::from_value::<Shown>(item.clone()).ok())
+        .map(|hit| shown_entity(kind, hit))
+        .collect()
+}
+
+fn shown_entity(kind: Kind, hit: Shown) -> Entity {
+    let named = hit
+        .enrichment
+        .and_then(|e| e.primary_artist)
+        .map(|a| a.name);
+    let artist = named
+        .or(hit.user.map(|u| u.username))
+        .filter(|a| !a.trim().is_empty());
+    Entity {
+        kind,
+        name: hit.title,
+        artist,
+        popularity: hit.playback_count.or(hit.likes_count).unwrap_or(0),
+        id: hit.urn,
+        aliases: Vec::new(),
+        artist_aliases: Vec::new(),
+    }
+}
+
 pub fn partial(body: &Value) -> bool {
-    body.get("partial").and_then(Value::as_bool).unwrap_or(false)
+    body.get("partial")
+        .and_then(Value::as_bool)
+        .unwrap_or(false)
 }
 
 pub fn timed_out(refusal: &Value) -> bool {
@@ -140,6 +203,30 @@ mod tests {
     }
 
     #[test]
+    fn an_app_search_page_becomes_entities_of_its_shelf() {
+        let tracks = serde_json::json!({"collection": [
+            {"urn": "soundcloud:tracks:2", "title": "gothrussia", "user": {"username": "Psychosis"}, "playback_count": 23000},
+            {"urn": "soundcloud:tracks:3", "title": "Притон", "user": {"username": "Label"}, "enrichment": {"primary_artist": {"name": "Скриптонит"}}},
+            {"title": "no urn"}
+        ], "has_more": false});
+        let found = shown(Kind::Track, &tracks);
+        assert_eq!(found.len(), 2);
+        assert_eq!(found[0].id, "soundcloud:tracks:2");
+        assert_eq!(found[0].artist.as_deref(), Some("Psychosis"));
+        assert_eq!(found[0].popularity, 23000);
+        assert_eq!(found[1].artist.as_deref(), Some("Скриптонит"));
+        let playlists = serde_json::json!({"collection": [
+            {"urn": "soundcloud:playlists:7", "title": "Качалка", "user": {"username": ""}, "likes_count": 40}
+        ]});
+        let list = shown(Kind::Playlist, &playlists);
+        assert_eq!(
+            (list[0].kind, list[0].artist.clone(), list[0].popularity),
+            (Kind::Playlist, None, 40)
+        );
+        assert!(shown(Kind::Track, &serde_json::json!({"error": "x"})).is_empty());
+    }
+
+    #[test]
     fn the_request_lists_texts_then_artist_and_title_then_fallbacks() {
         let variant =
             |text: &str, artist: Option<&str>, title: Option<&str>, fallback: bool| Variant {
@@ -210,7 +297,11 @@ mod tests {
             kept_fillers: true,
             ..said("для тебя звери", None)
         };
-        let variants = vec![said("Звери", Some(Kind::Artist)), said("звери", None), fuller];
+        let variants = vec![
+            said("Звери", Some(Kind::Artist)),
+            said("звери", None),
+            fuller,
+        ];
         let request = request(&variants, &Kind::ALL);
         assert!(request.known);
         let body = serde_json::to_value(&request).unwrap();

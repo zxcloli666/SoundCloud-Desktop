@@ -2,17 +2,17 @@ use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
+use crate::app::diagnostics;
+use crate::rt::AppHandle;
 use souvlaki::{
     MediaControlEvent, MediaControls, MediaMetadata as SmtcMetadata, MediaPlayback, MediaPosition,
     PlatformConfig,
 };
-use crate::app::diagnostics;
-use crate::rt::AppHandle;
 use tauri::{Emitter, Manager};
 
 use crate::audio::state::AudioState;
 use crate::audio::types::MediaCmd;
-use voice_engine::{Press, Presses};
+use voice_engine::{Press, Presses, Signal};
 
 struct Headset {
     presses: Mutex<Presses>,
@@ -29,7 +29,21 @@ fn is_playing(handle: &AppHandle) -> bool {
         .is_some_and(|player| !player.is_paused() && !player.empty())
 }
 
+fn skip(handle: &AppHandle, signal: Signal, event: &str) {
+    if crate::voice::headset_signal(handle, signal) {
+        return;
+    }
+    if crate::voice::headset_calls(handle, signal) {
+        crate::voice::headset_gesture(handle);
+        return;
+    }
+    handle.emit(event, ()).ok();
+}
+
 fn play_pause(handle: &AppHandle, headset: &Headset, event: &str) {
+    if crate::voice::headset_signal(handle, Signal::Toggle) {
+        return;
+    }
     let need = crate::voice::headset_presses(handle);
     if need == 0 {
         handle.emit(event, ()).ok();
@@ -114,11 +128,9 @@ pub fn start_media_controls(app: &AppHandle) {
                     MediaControlEvent::Toggle => {
                         play_pause(&event_handle, &headset, "media:toggle")
                     }
-                    MediaControlEvent::Next => {
-                        event_handle.emit("media:next", ()).ok();
-                    }
+                    MediaControlEvent::Next => skip(&event_handle, Signal::Next, "media:next"),
                     MediaControlEvent::Previous => {
-                        event_handle.emit("media:prev", ()).ok();
+                        skip(&event_handle, Signal::Previous, "media:prev")
                     }
                     MediaControlEvent::SetPosition(MediaPosition(pos)) => {
                         event_handle.emit("media:seek", pos.as_secs_f64()).ok();

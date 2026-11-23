@@ -7,7 +7,10 @@ import { marked } from '../readings';
 import { type HudView, useVoiceRuntime } from '../runtime';
 import { type RowReply, useVoiceStore } from '../store';
 import type { Entity, HeardEvent, VoiceCommand, VoiceSource } from '../types';
-import { appPort, briefOf } from './app-port';
+import { appPort, briefOf, screenNow } from './app-port';
+import { effectNow, sleepNow } from './app-sound';
+import { tasteNow } from './app-taste';
+import { roomNow } from './app-together';
 import { buildBody } from './body';
 import { buildContext, candidatesOf, QUEUE_TAIL } from './context';
 import { dialogMessages, withExchange } from './dialog';
@@ -21,20 +24,30 @@ import type { ChatStep } from './step';
 import { chatTools, runTool, toolsOf } from './tools';
 import { MAX_ROUNDS, runTurn } from './turn';
 import type { CallResult, ChatBody, ChatTool, ToolEnv, TurnEnd } from './types';
+import { type Turn, unansweredTurns } from './unanswered';
 
 const REPLY_KEPT = 600;
+const UNANSWERED_MS = 20_000;
 
 const early = chatAhead(chatIpc.chat, (id) => void chatIpc.cancel(id).catch(() => {}));
 const send = withRest(early.send);
 
-let active: { id: string; abort: AbortController } | null = null;
+interface Active extends Turn {
+  abort: AbortController;
+}
+
+let active: Active | null = null;
+const unanswered = unansweredTurns(UNANSWERED_MS);
 
 export function chatOn(): boolean {
   return useVoiceStore.getState().config.llm && getIsPremium();
 }
 
 export function stopChat(id: string) {
-  if (active?.id === id) active.abort.abort();
+  if (active?.id === id) {
+    unanswered.leave(active, Date.now());
+    active.abort.abort();
+  }
   void chatIpc.cancel(id).catch(() => {});
 }
 
@@ -60,8 +73,16 @@ function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unkn
     next: appPort.upNext(QUEUE_TAIL),
     candidates,
     page: pageName(currentPage()),
+    screen: screenNow(),
     now: new Date(),
     appLanguage: useSettingsStore.getState().language,
+    extras: {
+      ...tasteNow(shot.track?.urn),
+      sleep: sleepNow(Date.now()),
+      effect: effectNow(),
+      room: roomNow(),
+      talking: useVoiceRuntime.getState().talking,
+    },
   });
 }
 
@@ -117,7 +138,9 @@ function bodyOf(
 export function startChatAhead(heard: HeardEvent) {
   if (!startsAhead(heard, { on: chatOn(), resting: send.resting() })) return;
   const tools = chatTools(playerPort, appPort, []);
-  const { body } = bodyOf(heard.heard, playerPort, tools, [], Date.now(), voiced(heard.source));
+  const now = Date.now();
+  const text = unanswered.text(heard.id, heard.heard, now, active);
+  const { body } = bodyOf(text, playerPort, tools, [], now, voiced(heard.source));
   early.start({ id: heard.id, speak: speaks(heard.source), body: body([]) });
 }
 
@@ -134,13 +157,22 @@ export async function chatStep(
   port: PlayerPort,
   ctx: ExecuteContext,
 ): Promise<ChatStep> {
-  const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
-  if (cmd.talk) early.drop(cmd.id);
+  const env: ToolEnv = {
+    cmd,
+    lang: ctx.lang,
+    now: ctx.now,
+    stack: ctx.stack,
+    undo: false,
+    ask: false,
+    talk: null,
+  };
   const offered = toolsOf(cmd, port, appPort);
   const quiet = voiced(cmd.source);
-  const { tools, body } = bodyOf(cmd.heard, port, offered, candidatesOf(cmd), ctx.now, quiet);
+  const text = unanswered.text(cmd.id, cmd.heard, ctx.now, active);
+  const { tools, body } = bodyOf(text, port, offered, candidatesOf(cmd), ctx.now, quiet);
   const abort = new AbortController();
-  active = { id: cmd.id, abort };
+  const turn: Active = { id: cmd.id, heard: cmd.heard, abort, answered: false };
+  active = turn;
   if (!send.resting()) openChatHud(cmd);
   const end = await runTurn({
     id: cmd.id,
@@ -150,17 +182,24 @@ export async function chatStep(
     body,
     send,
     act: (name, args) => runTool(tools, name, args, env),
-    onSay: appendSay,
-    onMark: addMark,
+    onSay: (delta) => {
+      turn.answered = true;
+      appendSay(delta);
+    },
+    onMark: (mark) => {
+      turn.answered = true;
+      addMark(mark);
+    },
   }).finally(() => {
     if (active?.abort === abort) active = null;
   });
   if (end.status === 'ok') {
+    unanswered.clear();
     if (end.kept) useVoiceStore.getState().learnReadings(marked(end.kept));
-    const said = { at: Date.now(), user: cmd.heard, assistant: end.kept ?? end.say };
+    const said = { at: Date.now(), user: text, assistant: end.kept ?? end.say };
     useVoiceRuntime.setState((s) => ({ dialog: withExchange(s.dialog, said) }));
   }
-  return { end, stack: env.stack, undo: env.undo };
+  return { end, stack: env.stack, undo: env.undo, ask: env.ask, talk: env.talk };
 }
 
 export function closeChatHud(id: string, res: StepResult, undo: string | null) {

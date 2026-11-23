@@ -31,13 +31,13 @@ const FreshLead = memo(function FreshLead({track, queue, heard}: { track: Track;
     const {t} = useTranslation();
     const perf = usePerfMode();
     const aura = useTrackAura(track.genre);
-    const {isThis, isThisPlaying, togglePlay} = useTrackPlay(track, queue);
+    const {isThis, isThisPlaying, togglePlay, mark} = useTrackPlay(track, queue);
     const onContextMenu = useTrackContextMenu(track);
     const cover = art(track.artwork_url, 't500x500');
     const when = whenLabel(track);
 
     return (
-        <div
+        <div {...mark}
             onContextMenu={onContextMenu}
             className="relative flex items-center gap-5 p-4 rounded-[1.75rem] overflow-hidden"
             style={{
@@ -103,13 +103,13 @@ const FreshDropRow = memo(function FreshDropRow({
     queue: Track[];
     heard: boolean;
 }) {
-    const {isThis, isThisPlaying, togglePlay} = useTrackPlay(track, queue);
+    const {isThis, isThisPlaying, togglePlay, mark} = useTrackPlay(track, queue);
     const onContextMenu = useTrackContextMenu(track);
     const cover = art(track.artwork_url, 't200x200');
     const when = whenLabel(track);
 
     return (
-        <div
+        <div {...mark}
             onContextMenu={onContextMenu}
             className={`group flex items-center gap-3.5 px-3 py-2.5 rounded-2xl transition-colors duration-200 ${
                 isThis ? 'bg-ink/[0.05]' : 'hover:bg-ink/[0.035]'

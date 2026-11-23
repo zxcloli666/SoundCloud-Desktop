@@ -336,7 +336,7 @@ impl Core {
 
     pub fn settle(&mut self) {
         if self.reply.is_none() {
-            return self.go_idle();
+            return self.wind_down();
         }
         self.phase = Phase::Speaking;
         self.rest(Instant::now());
@@ -344,7 +344,7 @@ impl Core {
 
     fn unspoken(&mut self) {
         if matches!(self.phase, Phase::Speaking) {
-            self.go_idle();
+            self.wind_down();
         }
     }
 
@@ -382,7 +382,7 @@ impl Core {
         let spoke = self.audible();
         self.drop_reply();
         if matches!(self.phase, Phase::Speaking) {
-            self.go_idle();
+            self.wind_down();
         } else if spoke {
             self.emit_state(self.state(), None);
         }
@@ -446,7 +446,7 @@ impl Core {
             self.emit(Event::Spoke(spoke));
         }
         if matches!(self.phase, Phase::Speaking) {
-            self.go_idle();
+            self.wind_down();
         } else {
             self.emit_state(self.state(), None);
         }

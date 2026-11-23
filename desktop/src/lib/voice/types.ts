@@ -1,5 +1,5 @@
 export type VoiceLanguage = 'ru' | 'en';
-export type HeadsetGesture = 'off' | 'double' | 'triple';
+export type HeadsetGesture = 'off' | 'double' | 'triple' | 'next' | 'previous';
 export type ListenMode = 'chosen' | 'where_i_speak' | 'everywhere';
 export type SpeakMode = 'with_music' | 'device' | 'where_i_listen';
 export type EchoMode = 'auto' | 'on' | 'off';
@@ -47,6 +47,11 @@ export interface RelationConfig {
   own: string;
 }
 
+export interface FollowConfig {
+  after: number;
+  talk: number;
+}
+
 export interface VoiceConfig {
   enabled: boolean;
   language: VoiceLanguage;
@@ -56,9 +61,10 @@ export interface VoiceConfig {
   duck: number;
   echo: EchoMode;
   llm: boolean;
-  boosts: { artists: string[] };
+  boosts: { artists: string[]; spoken: string[] };
   listener: ListenerConfig;
   relation: RelationConfig;
+  follow: FollowConfig;
 }
 
 export interface EngineConfig extends VoiceConfig {
@@ -73,6 +79,8 @@ export interface StateEvent {
   state: EngineState;
   source: VoiceSource;
   input?: string;
+  follow?: boolean;
+  talking?: boolean;
 }
 
 export interface HeardEvent {
@@ -156,7 +164,6 @@ export interface VoiceCommand {
   kind_hint: EntityKind | null;
   number: number | null;
   decision: Decision | null;
-  talk?: boolean;
   chatless?: boolean;
   candidates?: Entity[];
   group?: string;
@@ -227,6 +234,8 @@ export interface Outcome {
   speech: string;
   display: string;
   undo: boolean;
+  ask?: boolean;
+  talk?: boolean;
 }
 
 export interface Status {

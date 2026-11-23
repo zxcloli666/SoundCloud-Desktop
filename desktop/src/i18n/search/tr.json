@@ -1007,6 +1007,20 @@
     "moriarty",
     "moriarty'yi çağır"
   ],
+  "voice.activation.follow": [
+    "uyandırma sözü olmadan cevap",
+    "yanıttan sonra dinlemeye devam",
+    "konuşmaya devam",
+    "mikrofon açık kalsın",
+    "tekrar çağırma"
+  ],
+  "voice.activation.talk": [
+    "sohbet modu",
+    "asistanla sohbet",
+    "kesintisiz diyalog",
+    "düğmesiz konuşma",
+    "uzun sohbet"
+  ],
   "voice.mics.title": [
     "mikrofon",
     "mikrofon seç",

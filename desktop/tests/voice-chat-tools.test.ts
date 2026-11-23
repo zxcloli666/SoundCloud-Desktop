@@ -49,14 +49,25 @@ test('only the tools the model must hear back from ask for another round', () =>
   const { tools } = setup();
   assert.deepEqual(
     tools.filter((t) => t.returns).map((t) => t.name),
-    ['play', 'queue_add', 'search', 'get_settings', 'queue_list'],
+    [
+      'play',
+      'queue_add',
+      'search',
+      'list_tracks',
+      'get_settings',
+      'queue_list',
+      'screen',
+      'scroll',
+      'together',
+      'open_rooms',
+    ],
   );
 });
 
-test('every tool has a chip label in all five interface languages and none is left over', () => {
+test('every tool has a chip label in every interface language and none is left over', () => {
   const { tools } = setup();
   const names = tools.map((t) => t.name).sort();
-  for (const lang of ['en', 'ru', 'tr', 'ko', 'pt']) {
+  for (const lang of ['en', 'ru', 'es', 'fr', 'tr', 'ko', 'pt']) {
     const file = new URL(`../src/i18n/locales/voice/${lang}.json`, import.meta.url);
     const labels: Record<string, string> = JSON.parse(readFileSync(file, 'utf8')).voice.chat.tools;
     assert.deepEqual(Object.keys(labels).sort(), names, lang);
@@ -355,6 +366,224 @@ test('speed, lyrics, queue and the playlist picker call the app', async () => {
   assert.deepEqual(app.calls, ['speed:2', 'lyrics:true', 'queue_clear', 'pick_playlist']);
 });
 
+test('ask_user and talk_mode only mark the turn for the engine', async () => {
+  const { app, env, run } = setup();
+  assert.equal((await run('ask_user')).returns, false);
+  assert.equal(env.ask, true);
+  assert.equal(env.talk, null);
+  await run('talk_mode', { on: true });
+  assert.equal(env.talk, true);
+  await run('talk_mode', { on: false });
+  assert.equal(env.talk, false);
+  assert.deepEqual(app.calls, []);
+});
+
+test('the sleep timer pauses later, at the track end or turns off', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('sleep_timer', { when: 'minutes', minutes: 30 })).result, {
+    ok: true,
+    minutes: 30,
+  });
+  await run('sleep_timer', { when: 'track_end' });
+  await run('sleep_timer', { when: 'off' });
+  const wrong = await run('sleep_timer', { when: 'minutes', minutes: 0 });
+  assert.equal(wrong.result.reason, 'bad_minutes');
+  assert.equal(wrong.returns, true);
+  assert.deepEqual(app.calls, ['sleep:30', 'sleep:track_end', 'sleep:off']);
+});
+
+test('the sleep timer needs something playing, but turning it off never does', async () => {
+  const { app, run } = setup(fakePort({ track: null, queue: [] }));
+  assert.equal(
+    (await run('sleep_timer', { when: 'minutes', minutes: 15 })).result.reason,
+    'nothing_playing',
+  );
+  assert.equal((await run('sleep_timer', { when: 'off' })).result.ok, true);
+  assert.deepEqual(app.calls, ['sleep:off']);
+});
+
+test('effects switch by name and an unknown effect is refused before the app', async () => {
+  const { app, run } = setup();
+  await run('effect', { name: 'slowed_reverb' });
+  await run('effect', { name: 'off' });
+  assert.equal((await run('effect', { name: 'vaporwave' })).result.reason, 'bad_args:name');
+  assert.deepEqual(app.calls, ['effect:slowed_reverb', 'effect:off']);
+});
+
+test('dislike and superlike rate the current track and a full quota goes back to the model', async () => {
+  const { app, run } = setup();
+  assert.equal((await run('dislike', { on: true })).returns, false);
+  assert.equal((await run('superlike', { on: true })).result.ok, true);
+  const full = await run('superlike', { on: true });
+  assert.deepEqual(full.result, { ok: false, reason: 'quota_full' });
+  assert.equal(full.returns, true);
+  await run('superlike', { on: false });
+  assert.deepEqual(app.calls, [
+    'dislike:true',
+    'superlike:true',
+    'superlike:true',
+    'superlike:false',
+  ]);
+});
+
+test('together opens a room with a copied invite, refuses a second one and leaves', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('together', { act: 'invite' })).result, {
+    ok: false,
+    reason: 'no_room',
+  });
+  assert.deepEqual((await run('together', { act: 'start' })).result, {
+    ok: true,
+    code: 'K7M2QP',
+    invite_copied: true,
+  });
+  assert.equal((await run('together', { act: 'join', code: 'ABC234' })).result.reason, 'in_room');
+  assert.deepEqual((await run('together', { act: 'leave' })).result, { ok: true, code: null });
+  assert.equal((await run('together', { act: 'join', code: 'AB' })).result.reason, 'bad_code');
+  assert.deepEqual(app.calls, [
+    'together:invite:::false',
+    'together:start:::false',
+    'together:join:ABC234::false',
+    'together:leave:::false',
+    'together:join:AB::false',
+  ]);
+});
+
+test('open rooms go back to the model and a public room is joined by its host or any', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('open_rooms', {})).result, {
+    ok: true,
+    rooms: [{ host: 'Mira', track: 'Faded - Psychosis', listeners: 3, capacity: 8, full: false }],
+  });
+  assert.equal(
+    (await run('together', { act: 'join', host: 'Oleg' })).result.reason,
+    'no_open_room',
+  );
+  assert.deepEqual((await run('together', { act: 'join', host: 'Mira' })).result, {
+    ok: true,
+    code: 'OPEN42',
+  });
+  assert.equal((await run('together', { act: 'visibility', open: true })).result.ok, true);
+  await run('together', { act: 'leave' });
+  assert.equal((await run('together', { act: 'join' })).result.code, 'OPEN42');
+  assert.deepEqual(app.calls, [
+    'open_rooms',
+    'together:join::Oleg:false',
+    'together:join::Mira:false',
+    'together:visibility:::true',
+    'together:leave:::false',
+    'together:join:::false',
+  ]);
+});
+
+function superlikes(count: number) {
+  return Array.from({ length: count }, (_, at) => ({
+    n: at + 1,
+    title: `Super ${at + 1}`,
+    artist: 'Psychosis',
+    id: `soundcloud:tracks:${at + 1}`,
+  }));
+}
+
+test('list_tracks reads a numbered page of a list and goes back to the model', async () => {
+  const { app, run } = setup();
+  app.lists.superlikes = superlikes(12);
+  const read = await run('list_tracks', { list: 'superlikes', from: 9, count: 2 });
+  assert.deepEqual(read.result, {
+    ok: true,
+    list: 'superlikes',
+    from: 9,
+    tracks: app.lists.superlikes.slice(8, 10),
+  });
+  assert.equal(read.returns, true);
+  await run('list_tracks', { list: 'history' });
+  await run('list_tracks', { list: 'likes', from: -3, count: 500 });
+  assert.deepEqual(app.calls, ['list:superlikes:9:2', 'list:history:1:10', 'list:likes:1:30']);
+  assert.equal((await run('list_tracks', { list: 'playlists' })).result.ok, false);
+});
+
+test('list_tracks with an artist keeps only their tracks with numbers of the whole list', async () => {
+  const { app, run } = setup();
+  const other = { n: 2, title: 'грааль', artist: 'smerrrt', id: 'soundcloud:tracks:2' };
+  const wanted = { n: 3, title: 'gothrussia', artist: 'Psychosis', id: 'soundcloud:tracks:3' };
+  app.lists.likes = [{ ...wanted, n: 1, title: 'soldier' }, other, wanted];
+  const read = await run('list_tracks', { list: 'likes', artist: 'Psychosis' });
+  assert.deepEqual(read.result, {
+    ok: true,
+    list: 'likes',
+    from: 1,
+    artist: 'Psychosis',
+    tracks: [{ ...wanted, n: 1, title: 'soldier' }, wanted],
+  });
+  assert.deepEqual(app.calls, ['list:likes:1:10:Psychosis']);
+});
+
+test('play_list plays from a number of a list, and voice undo brings back what played', async () => {
+  const { player, env, run } = setup();
+  const played = await run('play_list', { list: 'superlikes', n: 9 });
+  assert.deepEqual(played.result, { ok: true, started: 'Track 309' });
+  assert.equal(played.returns, false);
+  assert.equal(played.mark.intent, 'play');
+  assert.equal(played.mark.text, 'Track 309');
+  assert.deepEqual(player.calls, ['list:superlikes:9']);
+  assert.equal(env.stack.length, 1);
+  assert.equal(env.undo, true);
+  assert.deepEqual((await run('undo')).result, { ok: true });
+  assert.equal(player.state.track?.urn, 'soundcloud:tracks:1');
+  assert.equal(player.state.queue.length, 3);
+});
+
+test('play_list jumps inside the queue and says so when the number is past its end', async () => {
+  const { player, env, run } = setup();
+  assert.equal((await run('play_list', { list: 'queue', n: 2 })).result.ok, true);
+  assert.equal(player.state.track?.urn, 'soundcloud:tracks:3');
+  const past = await run('play_list', { list: 'queue', n: 5 });
+  assert.deepEqual(past.result, { ok: false, reason: 'not_found' });
+  assert.equal(past.returns, true);
+  assert.equal(env.stack.length, 1);
+});
+
+test('screen tools press, type and open through the app and fail on what is not there', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('screen')).result, { ok: true, screen: app.view });
+  assert.deepEqual((await run('press', { ref: 'c1' })).result, { ok: true });
+  assert.deepEqual((await run('press', { ref: 'c9' })).result, {
+    ok: false,
+    reason: 'unknown_ref',
+  });
+  const typed = await run('type_text', { ref: 'c2', text: 'психосис', submit: true });
+  assert.deepEqual(typed.result, { ok: true });
+  assert.equal((await run('type_text', { ref: 'c1', text: 'x' })).result.ok, false);
+  const scrolled = await run('scroll', { to: 'bottom' });
+  assert.equal(scrolled.returns, true);
+  assert.deepEqual(scrolled.result, { ok: true, screen: { ...app.view, more_below: false } });
+  assert.equal((await run('scroll', { to: 'left' })).result.ok, false);
+  assert.deepEqual((await run('open_item', { kind: 'artist', id: 'a9' })).result, { ok: true });
+  assert.equal((await run('open_item', { kind: 'artist', id: '' })).result.ok, false);
+  assert.deepEqual(app.calls, [
+    'screen',
+    'press:c1',
+    'press:c9',
+    'type:c2:психосис:true',
+    'type:c1:x:false',
+    'scroll:bottom',
+    'item:artist:a9',
+  ]);
+});
+
+test('play_screen plays a track of the screen, can be undone, and says when it is not there', async () => {
+  const { app, env, run } = setup();
+  const played = await run('play_screen', { n: 2 });
+  assert.deepEqual(played.result, { ok: true, started: 'Track 1' });
+  assert.equal(played.mark.intent, 'play');
+  assert.equal(env.stack.length, 1);
+  assert.equal(env.undo, true);
+  const missing = await run('play_screen', { n: 7 });
+  assert.deepEqual(missing.result, { ok: false, reason: 'not_on_screen' });
+  assert.equal(missing.returns, true);
+  assert.deepEqual(app.calls, ['row:2', 'row:7']);
+});
+
 test('remember and forget keep notes through the app', async () => {
   const { app, run } = setup();
   assert.deepEqual((await run('remember', { note: 'Любит джаз' })).result, { ok: true });
@@ -400,12 +629,13 @@ test('undo reverts the last voice action and reports when there is none', async 
   assert.equal(env.stack.length, 0);
 });
 
-test('a phrase heard as talk is offered no tools, any other phrase is offered all of them', () => {
+test('every phrase is offered all the tools and the assistant decides what to do', () => {
   const all = chatTools(fakePort(), fakeApp(), []).map((t) => t.name);
-  const offered = (talk: boolean) => toolsOf(command('none', { talk }), fakePort(), fakeApp());
-  assert.deepEqual(offered(true), []);
-  assert.deepEqual(
-    offered(false).map((t) => t.name),
-    all,
-  );
+  for (const heard of ['не лайкай', 'включи психосис гот раша', 'привет']) {
+    const offered = toolsOf(command('none', { heard }), fakePort(), fakeApp());
+    assert.deepEqual(
+      offered.map((t) => t.name),
+      all,
+    );
+  }
 });

@@ -10,6 +10,8 @@ import type {
   ToolEnv,
   ToolMark,
 } from '../src/lib/voice/chat/types';
+import type { Screen } from '../src/lib/voice/screen/shape';
+import type { Listed, TrackList } from '../src/lib/voice/track-lists';
 import type { Entity } from '../src/lib/voice/types';
 import { command } from './voice-fake-port.ts';
 
@@ -23,18 +25,37 @@ export const TRACK: Entity = {
 
 export interface FakeApp extends AppPort {
   calls: string[];
+  superlikes: number;
+  room: string | null;
   notes: string[];
   values: Record<SettingKey, SettingValue>;
   found: Entity[];
   queue: Brief[];
+  lists: Partial<Record<TrackList, Listed[]>>;
+  view: Screen;
+  rows: number;
 }
 
 export function fakeApp(): FakeApp {
   const calls: string[] = [];
   const app: FakeApp = {
     calls,
+    superlikes: 1,
+    room: null,
     notes: [],
     found: [],
+    lists: {},
+    rows: 3,
+    view: {
+      page: 'search',
+      title: 'Поиск',
+      tracks: [{ n: 1, title: 'gothrussia', artist: 'Psychosis', id: 'soundcloud:tracks:2' }],
+      controls: [
+        { ref: 'c1', role: 'tab', label: 'Треки', current: true },
+        { ref: 'c2', role: 'field', label: 'Поиск', value: 'гот раша' },
+      ],
+      more_below: true,
+    },
     queue: [{ title: 'Track 2', artist: 'Скриптонит' }],
     values: {
       theme: 'dark',
@@ -72,6 +93,36 @@ export function fakeApp(): FakeApp {
       calls.push(`lyrics:${open}`);
     },
     upNext: (limit) => app.queue.slice(0, limit),
+    listTracks: async (list, from, count, artist) => {
+      calls.push(`list:${list}:${from}:${count}${artist ? `:${artist}` : ''}`);
+      const all = app.lists[list] ?? [];
+      const kept = artist ? all.filter((track) => track.artist === artist) : all;
+      return kept.slice(from - 1, from - 1 + count);
+    },
+    screen: async () => {
+      calls.push('screen');
+      return app.view;
+    },
+    press: (ref) => {
+      calls.push(`press:${ref}`);
+      return app.view.controls.some((c) => c.ref === ref);
+    },
+    typeInto: (ref, text, submit) => {
+      calls.push(`type:${ref}:${text}:${submit}`);
+      return app.view.controls.some((c) => c.ref === ref && c.role === 'field');
+    },
+    scroll: async (to) => {
+      calls.push(`scroll:${to}`);
+      return { ...app.view, more_below: to !== 'bottom' };
+    },
+    playRow: (n) => {
+      calls.push(`row:${n}`);
+      return n >= 1 && n <= app.rows;
+    },
+    openItem: (kind, id) => {
+      calls.push(`item:${kind}:${id}`);
+      return id.length > 0;
+    },
     clearQueue: () => {
       calls.push('queue_clear');
       app.queue = [];
@@ -95,6 +146,41 @@ export function fakeApp(): FakeApp {
       app.notes = res.notes;
       return res.state;
     },
+    setSleep: (plan) => {
+      calls.push(`sleep:${typeof plan === 'string' ? plan : plan.minutes}`);
+    },
+    setEffect: (effect) => {
+      calls.push(`effect:${effect}`);
+    },
+    dislike: async (on) => {
+      calls.push(`dislike:${on}`);
+      return 'ok';
+    },
+    superlike: (on) => {
+      calls.push(`superlike:${on}`);
+      if (!on) return 'ok';
+      if (app.superlikes === 0) return 'quota_full';
+      app.superlikes -= 1;
+      return 'ok';
+    },
+    together: async ({ act, code, host, open }) => {
+      calls.push(`together:${act}:${code}:${host}:${open}`);
+      if (app.room) {
+        if (act === 'start' || act === 'join') return { state: 'in_room' };
+        const was = app.room;
+        if (act === 'leave') app.room = null;
+        return { state: 'ok', code: act === 'leave' ? null : was };
+      }
+      if (act !== 'start' && act !== 'join') return { state: 'no_room' };
+      if (act === 'join' && code && code.length !== 6) return { state: 'bad_code' };
+      if (act === 'join' && !code && host && host !== 'Mira') return { state: 'no_open_room' };
+      app.room = act === 'join' ? code || 'OPEN42' : 'K7M2QP';
+      return { state: 'ok', code: app.room };
+    },
+    openRooms: async () => {
+      calls.push('open_rooms');
+      return [{ host: 'Mira', track: 'Faded - Psychosis', listeners: 3, capacity: 8, full: false }];
+    },
   };
   return app;
 }
@@ -106,6 +192,8 @@ export function toolEnv(extra: Partial<ToolEnv> = {}): ToolEnv {
     now: 1000,
     stack: [],
     undo: false,
+    ask: false,
+    talk: null,
     ...extra,
   };
 }

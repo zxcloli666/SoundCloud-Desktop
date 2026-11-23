@@ -5,6 +5,7 @@ import type { TFunction } from 'i18next';
 import { failureLine } from '../src/components/voice/chatFailure.ts';
 import { afterError, type DismissPort, dismiss, voiceComing } from '../src/lib/voice/hud.ts';
 import type { HudView } from '../src/lib/voice/runtime';
+import type { EngineState } from '../src/lib/voice/types';
 
 type ChatHud = Extract<HudView, { kind: 'chat' }>;
 
@@ -20,14 +21,14 @@ function chatHud(phase: ChatHud['phase']): ChatHud {
   };
 }
 
-function dismissed(hud: HudView): string[] {
+function dismissed(hud: HudView, engine: EngineState = 'thinking'): string[] {
   const calls: string[] = [];
   const port: DismissPort = {
     stopChat: (id) => calls.push(`stop_chat:${id}`),
     cancelEngine: () => calls.push('cancel_engine'),
     hide: () => calls.push('hide'),
   };
-  dismiss(hud, port);
+  dismiss(hud, engine, port);
   return calls;
 }
 
@@ -39,6 +40,15 @@ test('closing the chat island stops the turn and the speech in every phase', () 
       phase,
     );
   }
+});
+
+test('closing an old reply while the user speaks again keeps the new listening', () => {
+  assert.deepEqual(dismissed(chatHud('done'), 'listening'), ['stop_chat:turn-1', 'hide']);
+  assert.deepEqual(dismissed({ kind: 'speaking' }, 'listening'), ['hide']);
+  assert.deepEqual(dismissed({ kind: 'listening', source: 'hud' }, 'listening'), [
+    'cancel_engine',
+    'hide',
+  ]);
 });
 
 test('closing a busy island cancels the engine, a finished one only hides', () => {

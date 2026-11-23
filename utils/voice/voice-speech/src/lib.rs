@@ -1,4 +1,5 @@
 mod batch;
+mod exact;
 mod listener;
 mod resample;
 mod spoken;

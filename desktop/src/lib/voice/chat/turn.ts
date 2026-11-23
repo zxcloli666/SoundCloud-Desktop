@@ -1,6 +1,6 @@
 import type { CallResult, ChatBody, ChatEvent, ChatRequest, Ran, ToolMark, TurnEnd } from './types';
 
-export const MAX_ROUNDS = 3;
+export const MAX_ROUNDS = 8;
 export const MAX_ACTIONS = 8;
 export const LAST_EVENT_WAIT_MS = 5000;
 

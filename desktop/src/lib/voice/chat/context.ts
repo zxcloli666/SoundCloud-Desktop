@@ -1,3 +1,4 @@
+import type { Screen } from '../screen/shape';
 import type { Entity, VoiceCommand } from '../types';
 import type { RepeatMode } from '../undo';
 
@@ -8,6 +9,24 @@ const CANDIDATES_MAX = 5;
 export interface Brief {
   title: string;
   artist: string;
+}
+
+export type SleepShown = { minutes_left: number } | 'track_end';
+
+export interface RoomShown {
+  role: 'host' | 'guest';
+  code: string;
+  listeners: number;
+  open?: true;
+}
+
+export interface Extras {
+  disliked: boolean;
+  superliked: boolean;
+  sleep: SleepShown | null;
+  effect: string | null;
+  room: RoomShown | null;
+  talking?: boolean;
 }
 
 export interface ContextInput {
@@ -22,8 +41,10 @@ export interface ContextInput {
   next: Brief[];
   candidates: Entity[];
   page: string;
+  screen: Screen | null;
   now: Date;
   appLanguage: string;
+  extras?: Extras;
 }
 
 function two(n: number): string {
@@ -49,6 +70,23 @@ export function entityRef(entity: Entity) {
   };
 }
 
+function taste(extras: Extras | undefined) {
+  return {
+    ...(extras?.disliked ? { disliked: true } : {}),
+    ...(extras?.superliked ? { superliked: true } : {}),
+  };
+}
+
+function extrasShown(extras: Extras | undefined) {
+  if (!extras) return {};
+  return {
+    ...(extras.sleep ? { sleep_timer: extras.sleep } : {}),
+    ...(extras.effect ? { effect: extras.effect } : {}),
+    ...(extras.room ? { together: extras.room } : {}),
+    ...(extras.talking ? { talk_mode: true } : {}),
+  };
+}
+
 export function buildContext(input: ContextInput): Record<string, unknown> {
   const candidates = input.candidates.map(entityRef);
   return {
@@ -57,6 +95,7 @@ export function buildContext(input: ContextInput): Record<string, unknown> {
           title: input.track.title,
           artist: input.track.artist,
           liked: input.liked,
+          ...taste(input.extras),
           position: Math.round(input.position),
           duration: Math.round(input.duration),
         }
@@ -70,6 +109,8 @@ export function buildContext(input: ContextInput): Record<string, unknown> {
     time: localTime(input.now),
     weekday: WEEKDAYS[input.now.getDay()],
     app_language: input.appLanguage,
+    ...extrasShown(input.extras),
     ...(candidates.length > 0 ? { candidates } : {}),
+    ...(input.screen ? { screen: input.screen } : {}),
   };
 }

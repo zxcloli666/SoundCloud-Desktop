@@ -46,6 +46,9 @@ impl Core {
         let Some(source) = step.map(|plan| plan.origin.source) else {
             return self.emit(Event::Cancelled(TurnEvent { id }));
         };
+        if let Some(plan) = self.plan.as_mut() {
+            plan.chatted = true;
+        }
         let speak = speak && self.config.speak.replies && voiced(source);
         let least = self.opening();
         let longest = self.longest();

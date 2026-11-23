@@ -21,8 +21,9 @@ const READ_PER_CHAR_MS = 55;
 const READ_MAX_MS = 30_000;
 const AFTER_SPEECH_MS = 4000;
 
-function hideAfter(hud: HudView, spoken: boolean): number | undefined {
+function hideAfter(hud: HudView, spoken: boolean, following: boolean): number | undefined {
   if (hud.kind !== 'chat') return HIDE_AFTER[hud.kind];
+  if (following) return undefined;
   if (hud.phase === 'live') return undefined;
   if (hud.phase === 'failed' && replyLength() === 0) return HIDE_AFTER.failed;
   if (spoken) return AFTER_SPEECH_MS;
@@ -49,6 +50,7 @@ const handlers: IslandHandlers = {
 export function VoiceIsland() {
   const hud = useVoiceRuntime((s) => s.hud);
   const speaking = useVoiceRuntime((s) => s.engine === 'speaking');
+  const following = useVoiceRuntime((s) => s.following && s.engine === 'listening');
   const coming = useVoiceRuntime((s) => voiceComing(s.hud, s.engine, s.previewing));
   const settingsOpen = useVoiceRuntime((s) => s.settingsOpen);
   const summary = useVoiceRuntime(useShallow((s) => summarize(s.models)));
@@ -65,7 +67,7 @@ export function VoiceIsland() {
     if (hud.kind === 'hidden') hovered.current = false;
     arm.current = () => {
       clearTimeout(timer);
-      const wait = hideAfter(hud, spokenRef.current === hud);
+      const wait = hideAfter(hud, spokenRef.current === hud, following);
       if (!wait || hovered.current || speaking || coming) return;
       timer = setTimeout(() => {
         if (hudRef.current !== hud) return;
@@ -75,7 +77,7 @@ export function VoiceIsland() {
     };
     arm.current();
     return () => clearTimeout(timer);
-  }, [hud, speaking, coming]);
+  }, [hud, speaking, coming, following]);
 
   const hover = (over: boolean) => {
     hovered.current = over;
