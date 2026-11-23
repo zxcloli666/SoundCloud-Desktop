@@ -4,7 +4,7 @@ import { useMainScroll } from './useMainScroll';
 
 interface VirtualGridProps<T> {
   items: T[];
-  itemHeight: number;
+  itemHeight: number | ((itemWidth: number) => number);
   minColumnWidth: number;
   gap?: number;
   overscan?: number;
@@ -53,7 +53,9 @@ export function VirtualGrid<T>({
     };
   }, [gap, items.length, minColumnWidth, width]);
 
-  const rowHeight = itemHeight + gap;
+  const cellHeight =
+    typeof itemHeight === 'function' ? Math.ceil(itemHeight(itemWidth)) : itemHeight;
+  const rowHeight = cellHeight + gap;
 
   const virtualizer = useVirtualizer({
     count: rowCount,
@@ -62,6 +64,10 @@ export function VirtualGrid<T>({
     overscan,
     scrollMargin,
   });
+
+  useEffect(() => {
+    if (rowHeight > 0) virtualizer.measure();
+  }, [virtualizer, rowHeight]);
 
   if (disabled) {
     return (
@@ -102,7 +108,7 @@ export function VirtualGrid<T>({
               top: 0,
               left: 0,
               width: '100%',
-              height: itemHeight,
+              height: cellHeight,
               transform: `translateY(${virtualRow.start - scrollMargin}px)`,
             }}
           >
@@ -116,7 +122,7 @@ export function VirtualGrid<T>({
                     top: 0,
                     left: columnIndex * (itemWidth + gap),
                     width: itemWidth,
-                    height: itemHeight,
+                    height: cellHeight,
                   }}
                 >
                   {renderItem(item, itemIndex)}

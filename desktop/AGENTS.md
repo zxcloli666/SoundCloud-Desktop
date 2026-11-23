@@ -62,7 +62,7 @@ desktop/
                      AvatarArtifact, FollowBtn, useUserAura
       discover/      DiscoverHero, DiscoverSpotlight, AlbumsCatalog,
                      ArtistsCatalog, *GridCard, FilterRow, InfiniteSentinel,
-                     useDebouncedValue, visuals
+                     useDebouncedValue, CatalogEmpty
       moments/       лента «Моменты»: MomentCard, MomentsStage, жесты, use-moments-feed
                      (играет через preview-канал, не через плеер; lib/moments/channel)
       auth/          QrCode, QrLinkSheet, useQrLink

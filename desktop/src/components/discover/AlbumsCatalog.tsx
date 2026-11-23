@@ -1,6 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { type Aura, auraRgba } from '../../lib/aura';
 import {
   type AlbumKindFilter,
   type AlbumSort,
@@ -14,16 +13,14 @@ import { Disc3 } from '../../lib/icons';
 import { Skeleton } from '../ui/Skeleton';
 import { SyncNotice } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
-import { AlbumGridCard } from './AlbumGridCard';
+import { ALBUM_CARD_TEXT, AlbumGridCard } from './AlbumGridCard';
+import { CatalogEmpty } from './CatalogEmpty';
 import { FilterRow } from './FilterRow';
 import { InfiniteSentinel } from './InfiniteSentinel';
 
-interface AlbumsCatalogProps {
-  aura: Aura;
-  query: string;
-}
+const cardHeight = (width: number) => width + ALBUM_CARD_TEXT;
 
-function AlbumsCatalogImpl({ aura, query }: AlbumsCatalogProps) {
+function AlbumsCatalogImpl({ query }: { query: string }) {
   const { t } = useTranslation();
   const [kind, setKind] = useState<AlbumKindFilter>('all');
   const [sort, setSort] = useState<AlbumSort>('recent');
@@ -53,27 +50,21 @@ function AlbumsCatalogImpl({ aura, query }: AlbumsCatalogProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <FilterRow options={kindOptions} active={kind} onChange={setKind} aura={aura} />
-        <FilterRow options={sortOptions} active={sort} onChange={setSort} aura={aura} size="sm" />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <FilterRow options={kindOptions} active={kind} onChange={setKind} />
+        <FilterRow options={sortOptions} active={sort} onChange={setSort} />
       </div>
 
       {useYearBuckets ? (
-        <YearBucketsView kind={kind} aura={aura} />
+        <YearBucketsView kind={kind} />
       ) : (
-        <FlatAlbumsView sort={sort} kind={kind} query={query} aura={aura} />
+        <FlatAlbumsView sort={sort} kind={kind} query={query} />
       )}
     </div>
   );
 }
 
-const YearBucketsView = memo(function YearBucketsView({
-  kind,
-  aura,
-}: {
-  kind: AlbumKindFilter;
-  aura: Aura;
-}) {
+const YearBucketsView = memo(function YearBucketsView({ kind }: { kind: AlbumKindFilter }) {
   const { data, isLoading, isError, refetch } = useDiscoverAlbumsByYear({
     kind,
     years: 8,
@@ -92,9 +83,9 @@ const YearBucketsView = memo(function YearBucketsView({
   if (buckets.length === 0) return <EmptyAlbums query="" />;
 
   return (
-    <div className="flex flex-col gap-12">
+    <div className="flex flex-col gap-10">
       {buckets.map((bucket) => (
-        <YearGroup key={bucket.year} year={bucket.year} items={bucket.items} aura={aura} />
+        <YearGroup key={bucket.year} year={bucket.year} items={bucket.items} />
       ))}
     </div>
   );
@@ -104,12 +95,10 @@ const FlatAlbumsView = memo(function FlatAlbumsView({
   sort,
   kind,
   query,
-  aura,
 }: {
   sort: AlbumSort;
   kind: AlbumKindFilter;
   query: string;
-  aura: Aura;
 }) {
   const albumsQuery = useDiscoverAlbums({ sort, kind, q: query });
   const items = useMemo(() => flattenPages(albumsQuery.data), [albumsQuery.data]);
@@ -138,12 +127,12 @@ const FlatAlbumsView = memo(function FlatAlbumsView({
       ) : (
         <VirtualGrid
           items={items}
-          itemHeight={300}
+          itemHeight={cardHeight}
           minColumnWidth={180}
           gap={20}
           overscan={3}
           getItemKey={(a) => a.id}
-          renderItem={(a) => <AlbumGridCard album={a} aura={aura} />}
+          renderItem={(a) => <AlbumGridCard album={a} />}
         />
       )}
 
@@ -165,47 +154,26 @@ const FlatAlbumsView = memo(function FlatAlbumsView({
 const YearGroup = memo(function YearGroup({
   year,
   items,
-  aura,
 }: {
   year: number;
   items: CatalogAlbum[];
-  aura: Aura;
 }) {
-  const { t } = useTranslation();
   return (
-    <div className="flex flex-col @min-[512px]:flex-row @min-[512px]:gap-8 gap-4">
-      <div className="@min-[512px]:w-[200px] @min-[512px]:shrink-0 flex @min-[512px]:flex-col @min-[512px]:items-end items-center @min-[512px]:sticky @min-[512px]:top-24 self-start">
-        <div className="flex items-baseline gap-3 @min-[512px]:flex-col @min-[512px]:items-end @min-[512px]:gap-1 min-w-0 max-w-full">
-          <span
-            className="font-black leading-none tabular-nums tracking-tight whitespace-nowrap text-[clamp(48px,7vw,80px)]"
-            style={{
-              background: `linear-gradient(180deg, ${auraRgba(aura, 0.95)}, ${auraRgba(aura, 0.4)})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: `drop-shadow(0 4px 24px ${auraRgba(aura, 0.35)})`,
-            }}
-          >
-            {year}
-          </span>
-          <span className="text-[10px] font-bold uppercase tracking-[0.22em] text-ink-30 @min-[512px]:text-right whitespace-nowrap">
-            {t('artist.releaseYear')} · {items.length}
-          </span>
-        </div>
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <VirtualGrid
-          items={items}
-          itemHeight={300}
-          minColumnWidth={180}
-          gap={20}
-          overscan={1}
-          getItemKey={(album) => album.id}
-          renderItem={(album) => <AlbumGridCard album={album} aura={aura} />}
-        />
-      </div>
-    </div>
+    <section className="flex flex-col gap-4">
+      <h3 className="flex items-baseline gap-2.5 tabular-nums">
+        <span className="text-[16px] font-bold tracking-tight text-ink-90">{year}</span>
+        <span className="text-[12px] text-ink-30">{items.length}</span>
+      </h3>
+      <VirtualGrid
+        items={items}
+        itemHeight={cardHeight}
+        minColumnWidth={180}
+        gap={20}
+        overscan={1}
+        getItemKey={(album) => album.id}
+        renderItem={(album) => <AlbumGridCard album={album} />}
+      />
+    </section>
   );
 });
 
@@ -220,27 +188,31 @@ const RefineHint = memo(function RefineHint() {
   );
 });
 
-const SkeletonGrid = memo(function SkeletonGrid() {
+const SkeletonCards = memo(function SkeletonCards({ count }: { count: number }) {
   return (
-    <div className="grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
-      {Array.from({ length: 10 }).map((_, i) => (
-        <Skeleton key={i} className="h-[300px] rounded-3xl" />
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-5">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex flex-col">
+          <Skeleton className="aspect-square w-full rounded-2xl" />
+          <Skeleton className="mt-3 h-3 w-3/4 rounded-full" />
+          <Skeleton className="mt-2 h-2.5 w-1/2 rounded-full" />
+        </div>
       ))}
     </div>
   );
 });
 
+const SkeletonGrid = memo(function SkeletonGrid() {
+  return <SkeletonCards count={10} />;
+});
+
 const YearBucketsSkeleton = memo(function YearBucketsSkeleton() {
   return (
-    <div className="flex flex-col gap-12">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="flex flex-col @min-[512px]:flex-row @min-[512px]:gap-8 gap-4">
-          <Skeleton className="@min-[512px]:w-[200px] h-[64px] rounded-2xl" />
-          <div className="flex-1 grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
-            {Array.from({ length: 5 }).map((_, j) => (
-              <Skeleton key={j} className="h-[300px] rounded-3xl" />
-            ))}
-          </div>
+    <div className="flex flex-col gap-10">
+      {Array.from({ length: 2 }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-4">
+          <Skeleton className="h-4 w-16 rounded-full" />
+          <SkeletonCards count={5} />
         </div>
       ))}
     </div>
@@ -250,20 +222,10 @@ const YearBucketsSkeleton = memo(function YearBucketsSkeleton() {
 const EmptyAlbums = memo(function EmptyAlbums({ query }: { query: string }) {
   const { t } = useTranslation();
   return (
-    <div className="py-24 flex flex-col items-center gap-4">
-      <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center"
-        style={{
-          background: 'rgb(var(--ink) / 0.03)',
-          border: '0.5px solid rgb(var(--ink) / 0.06)',
-        }}
-      >
-        <Disc3 size={24} className="text-ink-15" />
-      </div>
-      <p className="text-ink-30 text-sm">
-        {query ? t('discover.noMatches', { query }) : t('discover.noAlbums')}
-      </p>
-    </div>
+    <CatalogEmpty
+      icon={<Disc3 size={22} />}
+      text={query ? t('discover.noMatches', { query }) : t('discover.noAlbums')}
+    />
   );
 });
 

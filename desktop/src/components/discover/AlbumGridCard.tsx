@@ -1,153 +1,63 @@
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { type Aura, auraRgba } from '../../lib/aura';
 import type { CatalogAlbum } from '../../lib/discover';
 import { dur } from '../../lib/formatters';
-import { Disc3, ListMusic, Star } from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
-import { gradientForId, monogramOf } from './visuals';
+import { Disc3, Star } from '../../lib/icons';
 
-interface AlbumGridCardProps {
-  album: CatalogAlbum;
-  aura: Aura;
-}
+export const ALBUM_CARD_TEXT = 70;
 
-function AlbumGridCardImpl({ album, aura }: AlbumGridCardProps) {
+function AlbumGridCardImpl({ album }: { album: CatalogAlbum }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
-    const perf = usePerfMode();
   const kindLabel = t(`artist.kind.${album.type}`, { defaultValue: album.type });
-  const initials = monogramOf(album.title);
-  const [g1, g2, g3] = useMemo(() => gradientForId(album.id, 3), [album.id]);
-    const cardBlur = perf.blur(20);
-    const badgeBlur = perf.blur(12);
-    const discBlur = perf.blur(10);
+  const facts = [
+    t('album.tracksCount', { count: album.track_count }),
+    album.total_duration_ms > 0 ? dur(album.total_duration_ms) : null,
+    album.release_year,
+  ].filter(Boolean);
 
   return (
     <button
       type="button"
       onClick={() => navigate(`/album/${encodeURIComponent(album.id)}`)}
-      className="group relative h-full w-full flex flex-col gap-3 text-left p-3 rounded-3xl cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:scale-[1.03] overflow-hidden"
-      style={{
-          background: cardBlur > 0 ? 'rgb(var(--ink) / 0.03)' : 'rgb(var(--surface-hi) / 0.92)',
-        border: '0.5px solid rgb(var(--ink) / 0.06)',
-          backdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(140%)` : undefined,
-          WebkitBackdropFilter: cardBlur > 0 ? `blur(${cardBlur}px) saturate(140%)` : undefined,
-      }}
+      className="group flex h-full w-full cursor-pointer flex-col text-left"
     >
-        {perf.bloom && (
-            <div
-                className="absolute -inset-x-10 -top-16 h-32 pointer-events-none opacity-0 group-hover:opacity-80 transition-opacity duration-700"
-                style={{
-                    background: `radial-gradient(60% 80% at 50% 50%, ${g1}80, transparent 70%)`,
-                    filter: `blur(${perf.blur(40)}px)`,
-                    mixBlendMode: 'screen',
-                }}
-            />
-        )}
-
-      <div
-        className="relative aspect-square rounded-2xl overflow-hidden"
-        style={{
-          background: `linear-gradient(135deg, ${g1} 0%, ${g2} 55%, ${g3} 100%)`,
-          boxShadow: `0 20px 40px rgb(var(--shade) / calc(0.45 * var(--shade-alpha))), inset 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.18)`,
-        }}
-      >
+      <div className="relative aspect-square w-full overflow-hidden rounded-2xl bg-ink/[0.05] ring-1 ring-ink/[0.08] transition-shadow duration-300 group-hover:ring-ink/20">
         {album.cover_url ? (
           <img
             src={album.cover_url}
-            alt={album.title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]"
+            alt=""
+            className="h-full w-full object-cover"
             decoding="async"
             loading="lazy"
             draggable={false}
           />
         ) : (
-          <>
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  'radial-gradient(120% 80% at 30% 10%, rgb(var(--ink) / 0.20) 0%, transparent 60%)',
-                mixBlendMode: 'overlay',
-              }}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span
-                className="text-ink-95 font-black tracking-tight select-none"
-                style={{
-                  fontSize: 'clamp(40px, 5vw, 64px)',
-                  textShadow: '0 8px 24px rgba(0,0,0,0.55)',
-                }}
-              >
-                {initials}
-              </span>
-            </div>
-            <div
-              className="absolute bottom-2 right-2 w-8 h-8 rounded-full flex items-center justify-center"
-              style={{
-                  background: discBlur > 0 ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.6)',
-                  backdropFilter: discBlur > 0 ? `blur(${discBlur}px)` : undefined,
-                  WebkitBackdropFilter: discBlur > 0 ? `blur(${discBlur}px)` : undefined,
-                border: '0.5px solid rgb(var(--ink) / 0.16)',
-              }}
-            >
-              <Disc3 size={14} className="text-ink-70" />
-            </div>
-          </>
-        )}
-
-        <div
-          className="absolute top-2 left-2 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-[0.18em]"
-          style={{
-              background: badgeBlur > 0 ? 'rgba(0,0,0,0.55)' : 'rgba(0,0,0,0.72)',
-            color: '#fff',
-              backdropFilter: badgeBlur > 0 ? `blur(${badgeBlur}px)` : undefined,
-              WebkitBackdropFilter: badgeBlur > 0 ? `blur(${badgeBlur}px)` : undefined,
-            border: '0.5px solid rgb(var(--ink) / 0.12)',
-          }}
-        >
-          {kindLabel}
-        </div>
-        {album.star && (
-          <div
-            className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center"
-            style={{
-              background: `linear-gradient(135deg, ${auraRgba(aura, 0.6)}, ${auraRgba(aura, 0.15)})`,
-              boxShadow: `0 0 12px ${auraRgba(aura, 0.6)}, inset 0 0 0 1px ${auraRgba(aura, 0.7)}`,
-            }}
-          >
-            <Star size={11} className="text-ink" fill="currentColor" />
+          <div className="flex h-full w-full items-center justify-center">
+            <Disc3 size={30} className="text-ink-20" />
           </div>
         )}
-      </div>
-
-      <div className="px-1 min-w-0 flex flex-col gap-1">
-        <p className="text-[13.5px] font-semibold text-ink-90 truncate group-hover:text-ink">
-          {album.title}
-        </p>
-        <p className="text-[11px] text-ink-45 truncate">{album.primary_artist.name}</p>
-        <div className="flex items-center gap-1.5 mt-0.5">
-          <span className="inline-flex items-center gap-1 text-[10px] tabular-nums text-ink-30">
-            <ListMusic size={10} /> {album.track_count}
+        <span
+          data-scheme="dark"
+          className="absolute top-2.5 left-2.5 rounded-full bg-black/60 px-2 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-ink-90"
+        >
+          {kindLabel}
+        </span>
+        {album.star && (
+          <span
+            data-scheme="dark"
+            className="absolute top-2.5 right-2.5 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-accent"
+          >
+            <Star size={11} fill="currentColor" />
           </span>
-          {album.total_duration_ms > 0 && (
-            <>
-              <span className="text-ink-15">·</span>
-              <span className="text-[10px] tabular-nums text-ink-30">
-                {dur(album.total_duration_ms)}
-              </span>
-            </>
-          )}
-          {album.release_year != null && (
-            <>
-              <span className="text-ink-15">·</span>
-              <span className="text-[10px] tabular-nums text-ink-30">{album.release_year}</span>
-            </>
-          )}
-        </div>
+        )}
       </div>
+      <p className="mt-3 truncate text-[13px] font-medium text-ink-90 transition-colors group-hover:text-ink">
+        {album.title}
+      </p>
+      <p className="mt-0.5 truncate text-[11.5px] text-ink-45">{album.primary_artist.name}</p>
+      <p className="mt-0.5 truncate text-[10.5px] tabular-nums text-ink-30">{facts.join(' · ')}</p>
     </button>
   );
 }

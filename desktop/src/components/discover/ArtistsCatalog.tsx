@@ -1,6 +1,5 @@
 import { memo, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import type { Aura } from '../../lib/aura';
 import {
   type ArtistSort,
   flattenPages,
@@ -14,15 +13,13 @@ import { Skeleton } from '../ui/Skeleton';
 import { SyncNotice } from '../ui/SyncNotice';
 import { VirtualGrid } from '../ui/VirtualGrid';
 import { ArtistGridCard } from './ArtistGridCard';
+import { CatalogEmpty } from './CatalogEmpty';
 import { FilterRow } from './FilterRow';
 import { InfiniteSentinel } from './InfiniteSentinel';
 
-interface ArtistsCatalogProps {
-  aura: Aura;
-  query: string;
-}
+const ARTIST_CARD_HEIGHT = 232;
 
-function ArtistsCatalogImpl({ aura, query }: ArtistsCatalogProps) {
+function ArtistsCatalogImpl({ query }: { query: string }) {
   const { t } = useTranslation();
   const [sort, setSort] = useState<ArtistSort>('popular');
   const [tag, setTag] = useState<TagFilter>('all');
@@ -68,9 +65,9 @@ function ArtistsCatalogImpl({ aura, query }: ArtistsCatalogProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
-        <FilterRow options={tagOptions} active={tag} onChange={setTag} aura={aura} />
-        <FilterRow options={sortOptions} active={sort} onChange={setSort} aura={aura} size="sm" />
+      <div className="flex flex-col gap-3">
+        <FilterRow options={sortOptions} active={sort} onChange={setSort} />
+        <FilterRow options={tagOptions} active={tag} onChange={setTag} wrap />
       </div>
 
       {isInitialLoading ? (
@@ -84,9 +81,9 @@ function ArtistsCatalogImpl({ aura, query }: ArtistsCatalogProps) {
       ) : (
         <VirtualGrid
           items={items}
-          itemHeight={320}
-          minColumnWidth={210}
-          gap={20}
+          itemHeight={ARTIST_CARD_HEIGHT}
+          minColumnWidth={200}
+          gap={12}
           overscan={3}
           getItemKey={(a) => a.id}
           renderItem={(a) => <ArtistGridCard artist={a} />}
@@ -121,9 +118,17 @@ const RefineHint = memo(function RefineHint() {
 
 const SkeletonGrid = memo(function SkeletonGrid() {
   return (
-    <div className="grid grid-cols-2 @min-[384px]:grid-cols-3 @min-[512px]:grid-cols-4 @min-[740px]:grid-cols-5 gap-5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3">
       {Array.from({ length: 10 }).map((_, i) => (
-        <Skeleton key={i} className="h-[320px] rounded-3xl" />
+        <div
+          key={i}
+          className="flex flex-col items-center pt-4"
+          style={{ height: ARTIST_CARD_HEIGHT }}
+        >
+          <Skeleton className="h-[92px] w-[92px] rounded-full" />
+          <Skeleton className="mt-4 h-3 w-24 rounded-full" />
+          <Skeleton className="mt-2 h-2.5 w-16 rounded-full" />
+        </div>
       ))}
     </div>
   );
@@ -132,20 +137,10 @@ const SkeletonGrid = memo(function SkeletonGrid() {
 const EmptyArtists = memo(function EmptyArtists({ query }: { query: string }) {
   const { t } = useTranslation();
   return (
-    <div className="py-24 flex flex-col items-center gap-4">
-      <div
-        className="w-16 h-16 rounded-2xl flex items-center justify-center"
-        style={{
-          background: 'rgb(var(--ink) / 0.03)',
-          border: '0.5px solid rgb(var(--ink) / 0.06)',
-        }}
-      >
-        <Users size={24} className="text-ink-15" />
-      </div>
-      <p className="text-ink-30 text-sm">
-        {query ? t('discover.noMatches', { query }) : t('discover.noArtists')}
-      </p>
-    </div>
+    <CatalogEmpty
+      icon={<Users size={22} />}
+      text={query ? t('discover.noMatches', { query }) : t('discover.noArtists')}
+    />
   );
 });
 
