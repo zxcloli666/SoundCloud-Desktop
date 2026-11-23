@@ -80,6 +80,7 @@ async fn serve(cache: Arc<VideoCache>, name: String, range: Option<String>) -> R
         response = response.header("Content-Range", format!("bytes {start}-{end}/{len}"));
     }
     let body = Reading {
+        reader: cache.new_reader(),
         cache,
         reel,
         file,
@@ -117,6 +118,7 @@ async fn open_whole(path: &Path) -> Option<Open> {
 }
 
 struct Reading {
+    reader: u64,
     cache: Arc<VideoCache>,
     reel: Option<Arc<Reel>>,
     file: File,
@@ -147,7 +149,7 @@ impl Reading {
         let Some(reel) = &self.reel else {
             return Ok(self.end);
         };
-        let ready = self.cache.ready(reel, self.at).await;
+        let ready = self.cache.ready(reel, self.reader, self.at).await;
         ready
             .map(|end| end.min(self.end))
             .map_err(std::io::Error::other)
@@ -244,7 +246,7 @@ mod tests {
                 .reply(&filter)
                 .await
         });
-        while !reel.asks_elsewhere(1_000_000) {
+        while reel.gap().is_some_and(|gap| gap.reader == 0) {
             tokio::task::yield_now().await;
         }
         assert!(!asked.is_finished());

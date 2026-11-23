@@ -10,6 +10,7 @@ pub mod commands;
 pub mod server;
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
@@ -28,6 +29,7 @@ pub struct VideoCache {
     client: wreq::Client,
     desk: Mutex<Desk>,
     poke: watch::Sender<()>,
+    readers: AtomicU64,
 }
 
 impl VideoCache {
@@ -45,6 +47,7 @@ impl VideoCache {
             client,
             desk: Mutex::default(),
             poke: watch::Sender::new(()),
+            readers: AtomicU64::new(0),
         })
     }
 
@@ -73,13 +76,12 @@ impl VideoCache {
         self.desk().named(name)
     }
 
-    pub async fn ready(&self, reel: &Arc<Reel>, at: u64) -> Result<u64, String> {
-        if let Some(end) = reel.run_end(at) {
-            return Ok(end);
-        }
-        reel.want(at);
-        self.bring_front(reel);
-        reel.ready(at).await
+    pub async fn ready(&self, reel: &Arc<Reel>, reader: u64, at: u64) -> Result<u64, String> {
+        reel.ready(reader, at, || self.bring_front(reel)).await
+    }
+
+    pub fn new_reader(&self) -> u64 {
+        self.readers.fetch_add(1, Ordering::Relaxed) + 1
     }
 
     fn reel_of(&self, url: &str) -> Result<(String, Option<Arc<Reel>>), String> {

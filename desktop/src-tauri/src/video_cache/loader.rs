@@ -1,5 +1,6 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
 
 use super::VideoCache;
 use super::fetch::{self, Miss};
@@ -7,6 +8,7 @@ use super::reel::{Gap, Reel};
 use crate::app::diagnostics;
 
 const TRIES: usize = 3;
+const LOOK_EVERY: Duration = Duration::from_millis(500);
 
 impl VideoCache {
     pub fn start(self: &Arc<Self>) {
@@ -39,7 +41,7 @@ impl VideoCache {
                     reel.fail(err);
                 }
             }
-            () = self.called_away(reel, &at) => {}
+            () = self.called_away(reel, &gap, &at) => {}
         }
     }
 
@@ -56,15 +58,15 @@ impl VideoCache {
         Err(last)
     }
 
-    async fn called_away(&self, reel: &Arc<Reel>, at: &AtomicU64) {
+    async fn called_away(&self, reel: &Arc<Reel>, gap: &Gap, at: &AtomicU64) {
         let mut poked = self.poke.subscribe();
         loop {
             let current = self.desk().current();
             let mine = current.is_some_and(|current| Arc::ptr_eq(&current, reel));
-            if !mine || reel.asks_elsewhere(at.load(Ordering::Relaxed)) {
+            if !mine || reel.asks_elsewhere(gap, at.load(Ordering::Relaxed)) {
                 return;
             }
-            poked.changed().await.ok();
+            tokio::time::timeout(LOOK_EVERY, poked.changed()).await.ok();
         }
     }
 }

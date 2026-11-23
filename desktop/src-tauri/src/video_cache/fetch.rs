@@ -198,10 +198,12 @@ mod tests {
         let closed = Gap {
             start: 10,
             end: Some(20),
+            reader: 0,
         };
         let open = Gap {
             start: 0,
             end: None,
+            reader: 0,
         };
         assert_eq!(range_of(&closed), "bytes=10-19");
         assert_eq!(range_of(&open), "bytes=0-");

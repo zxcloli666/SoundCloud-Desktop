@@ -157,14 +157,18 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
     }, HOLD_FRAME_MS);
   };
 
+  const settle = () => {
+    ready ||= video.readyState >= (wantPlay ? HAVE_FUTURE_DATA : HAVE_CURRENT_DATA);
+  };
+
   const onPlaying = () => {
-    clearWait();
-    ready = true;
+    settle();
+    if (ready) clearWait();
     sync();
   };
 
   const onSeeked = () => {
-    if (video.readyState >= HAVE_CURRENT_DATA) ready = true;
+    settle();
     if (playAfterSeek && !stopped) {
       playAfterSeek = false;
       void video.play().catch(() => {});
@@ -191,6 +195,7 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   const events: Array<[string, () => void]> = [
     ['loadedmetadata', sync],
     ['loadeddata', onLoadedData],
+    ['canplay', onPlaying],
     ['playing', onPlaying],
     ['seeked', onSeeked],
     ['timeupdate', onTime],
