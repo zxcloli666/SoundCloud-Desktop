@@ -3186,6 +3186,7 @@
     "emptyLiked": "Dale me gusta a un tema y aparecerá aquí",
     "emptyArtists": "Sigue a un artista y aparecerá aquí",
     "emptyPlaylists": "Dale me gusta a una playlist y aparecerá aquí",
-    "emptyHistory": "Reproduce un tema y aparecerá aquí"
+    "emptyHistory": "Reproduce un tema y aparecerá aquí",
+    "emptyReleases": "Tus artistas no han subido nada nuevo últimamente"
   }
 }

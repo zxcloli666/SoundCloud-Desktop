@@ -9,6 +9,7 @@ interface Props {
   subtitle?: string;
   round?: boolean;
   active?: boolean;
+  dimmed?: boolean;
   coverLabel: string;
   onOpen: () => void;
   overlay?: ReactNode;
@@ -22,6 +23,7 @@ export function ShelfCard({
   subtitle,
   round,
   active,
+  dimmed,
   coverLabel,
   onOpen,
   overlay,
@@ -39,9 +41,11 @@ export function ShelfCard({
           type="button"
           aria-label={coverLabel}
           onClick={onOpen}
-          className={`group relative block aspect-square w-full cursor-pointer overflow-hidden bg-ink/[0.06] outline-none ring-1 transition-shadow focus-visible:ring-2 focus-visible:ring-accent/70 ${
+          className={`group relative block aspect-square w-full cursor-pointer overflow-hidden bg-ink/[0.06] outline-none ring-1 transition-[box-shadow,opacity] focus-visible:ring-2 focus-visible:ring-accent/70 ${
             round ? 'rounded-full' : 'rounded-[11px]'
-          } ${active ? 'ring-2 ring-accent' : 'ring-ink/[0.08] hover:ring-ink/[0.2]'}`}
+          } ${active ? 'ring-2 ring-accent' : 'ring-ink/[0.08] hover:ring-ink/[0.2]'} ${
+            dimmed ? 'opacity-70 hover:opacity-100 focus-visible:opacity-100' : ''
+          }`}
         >
           {cover && (
             <img

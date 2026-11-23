@@ -3120,6 +3120,7 @@
     "emptyLiked": "Like a track and it shows up here",
     "emptyArtists": "Follow an artist and they show up here",
     "emptyPlaylists": "Like a playlist and it shows up here",
-    "emptyHistory": "Play a track and it shows up here"
+    "emptyHistory": "Play a track and it shows up here",
+    "emptyReleases": "Nothing new from your artists lately"
   }
 }

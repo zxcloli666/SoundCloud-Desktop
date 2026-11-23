@@ -24,7 +24,7 @@ import type { VideoKind } from './player';
 
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
-export type HomeShelfTab = 'liked' | 'artists' | 'playlists' | 'history';
+export type HomeShelfTab = 'liked' | 'releases' | 'artists' | 'playlists' | 'history';
 export type CloseAction = 'tray' | 'quit';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq' | 'uq';

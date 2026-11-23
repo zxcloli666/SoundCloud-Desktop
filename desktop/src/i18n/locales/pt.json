@@ -3236,6 +3236,7 @@
     "emptyLiked": "Curta uma faixa e ela aparece aqui",
     "emptyArtists": "Siga um artista e ele aparece aqui",
     "emptyPlaylists": "Curta uma playlist e ela aparece aqui",
-    "emptyHistory": "Toque uma faixa e ela aparece aqui"
+    "emptyHistory": "Toque uma faixa e ela aparece aqui",
+    "emptyReleases": "Nada novo dos seus artistas por enquanto"
   }
 }

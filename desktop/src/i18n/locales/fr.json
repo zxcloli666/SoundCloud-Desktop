@@ -3186,6 +3186,7 @@
     "emptyLiked": "Aime un titre et il apparaîtra ici",
     "emptyArtists": "Suis un artiste et il apparaîtra ici",
     "emptyPlaylists": "Aime une playlist et elle apparaîtra ici",
-    "emptyHistory": "Écoute un titre et il apparaîtra ici"
+    "emptyHistory": "Écoute un titre et il apparaîtra ici",
+    "emptyReleases": "Rien de neuf chez tes artistes ces derniers temps"
   }
 }

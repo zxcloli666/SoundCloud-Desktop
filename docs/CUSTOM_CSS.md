@@ -141,10 +141,13 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="up-next-row"]` | A track in the Up next list |
 | `[data-ui="wave-settings"]` | Wave settings box under Up next |
 | `[data-ui="vibe-search"]` | Vibe search button in the Home deck |
-| `[data-ui="home-shelf"]` | Liked, artists, playlists and history shelf on Home |
+| `[data-ui="home-shelf"]` | Liked, new releases, artists, playlists and history shelf on Home |
 | `[data-ui="shelf-tab"]` | A tab of that shelf; `aria-selected` marks the open one |
+| `[data-ui="shelf-tab-count"]` | Unheard count on the New releases tab |
+| `[data-ui="shelf-actions"]` | Play all and add to queue for new releases, next to the shelf toggle |
 | `[data-ui="shelf-toggle"]` | Collapse and expand button of that shelf |
 | `[data-ui="shelf-card"]` | A card in that shelf |
+| `[data-ui="shelf-locked"]` | New releases teaser without STAR |
 | `[data-ui="river-section"]` | A section of the wave river on Home |
 | `[data-ui="moments-station"]` | "Moments" block on Home |
 | `[data-ui="moments"]` | Moments page |
