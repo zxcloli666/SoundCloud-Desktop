@@ -1620,6 +1620,7 @@
     "zoneFixed": "Previous, play and next always stay in the center",
     "liveBackground": "Live background",
     "liveBackgroundDesc": "Animated glow from the cover behind the player on Home",
+    "deckCoverOpacity": "Cover on Home",
     "catAdvanced": "Advanced",
     "catAbout": "About",
     "sumGeneral": "Language, startup, hotkeys and filters",

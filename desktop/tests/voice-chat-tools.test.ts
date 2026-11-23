@@ -353,6 +353,7 @@ test('setting values: switches, choices and ranges', () => {
   assert.equal(parseSetting('stream_quality', 'ultra'), null);
   assert.equal(parseSetting('voice_speed', '1,17'), 1.15);
   assert.equal(parseSetting('voice_speed', '9'), 1.3);
+  assert.equal(parseSetting('home_cover_opacity', '42'), 40);
   assert.equal(parseSetting('crossfade', ''), null);
 });
 

@@ -1,20 +1,20 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {useTranslation} from 'react-i18next';
-import {art} from '../../../lib/formatters';
-import {Eye, MicVocal} from '../../../lib/icons';
-import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../../lib/track-display';
-import {useVideoOpaque} from '../../../lib/video-element';
-import type {Track} from '../../../stores/player';
-import {useSettingsStore} from '../../../stores/settings';
+import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { art } from '../../../lib/formatters';
+import { Eye, MicVocal } from '../../../lib/icons';
+import { useArtistDisplay, useArtistLinkItems, useDisplayTitle } from '../../../lib/track-display';
+import { useVideoOpaque } from '../../../lib/video-element';
+import type { Track } from '../../../stores/player';
+import { useSettingsStore } from '../../../stores/settings';
 import { ProgressSlider, ProgressTime } from '../../layout/player/ProgressSlider';
 import { PlaybackRateSlider } from '../../layout/player/tuning';
-import {ControlVolumeBtn, VolumeLabel, VolumeSlider} from '../../layout/VolumeControls';
-import {AltUploadMark} from '../AltUploadMark';
-import {ArtistNameLinks} from '../ArtistNameLinks';
-import {CoverFade} from './CoverFade';
-import {Controls} from './LyricsControls';
-import {MediaView} from './MediaView';
-import {PlayerVideo} from './TrackVideo';
+import { ControlVolumeBtn, VolumeLabel, VolumeSlider } from '../../layout/VolumeControls';
+import { CoverFade } from '../../ui/CoverFade';
+import { AltUploadMark } from '../AltUploadMark';
+import { ArtistNameLinks } from '../ArtistNameLinks';
+import { Controls } from './LyricsControls';
+import { MediaView } from './MediaView';
+import { PlayerVideo } from './TrackVideo';
 
 export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt?: string }) => {
   const { t } = useTranslation();
@@ -31,6 +31,7 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
   const videoOver = opaque === 'player-cover';
   const behind = opaque === 'player-background';
   const coverOpacity = useSettingsStore((s) => s.videoCoverOpacity);
+  const setCoverOpacity = useSettingsStore((s) => s.setVideoCoverOpacity);
   const switchTimerRef = useRef<number | null>(null);
 
   const prevUrlRef = useRef(track.artwork_url);
@@ -88,7 +89,11 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ease-[var(--ease-apple)] ${loaded ? 'opacity-100' : 'opacity-0'}`}
               />
               {inCover && <PlayerVideo track={track} host="player-cover" />}
-              <OpenButton label={t('track.viewArtwork')} plain={videoOver} onClick={() => setView(videoOver ? 'video' : 'art')} />
+              <OpenButton
+                label={t('track.viewArtwork')}
+                plain={videoOver}
+                onClick={() => setView(videoOver ? 'video' : 'art')}
+              />
             </>
           ) : (
             <>
@@ -96,15 +101,28 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
                 <MicVocal size={48} className="text-ink-10" />
               </div>
               {inCover && <PlayerVideo track={track} host="player-cover" />}
-              {videoOver && <OpenButton label={t('track.viewArtwork')} plain onClick={() => setView('video')} />}
+              {videoOver && (
+                <OpenButton label={t('track.viewArtwork')} plain onClick={() => setView('video')} />
+              )}
             </>
           )}
         </div>
-        {behind && <CoverFade />}
+        {behind && (
+          <CoverFade
+            value={coverOpacity}
+            onChange={setCoverOpacity}
+            label={t('settings.videoCoverOpacity')}
+            ui="lyrics-cover-fade"
+          />
+        )}
       </div>
 
       {view === 'art' && artwork500 && (
-        <MediaView title={displayTitle} subtitle={artistDisplay.primary} onClose={() => setView(null)}>
+        <MediaView
+          title={displayTitle}
+          subtitle={artistDisplay.primary}
+          onClose={() => setView(null)}
+        >
           <img
             src={artwork500}
             alt={displayTitle}
@@ -115,7 +133,12 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
         </MediaView>
       )}
       {view === 'video' && (
-        <MediaView wide title={displayTitle} subtitle={artistDisplay.primary} onClose={() => setView(null)}>
+        <MediaView
+          wide
+          title={displayTitle}
+          subtitle={artistDisplay.primary}
+          onClose={() => setView(null)}
+        >
           <PlayerVideo track={track} host="player-view" />
         </MediaView>
       )}
@@ -156,7 +179,15 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
   );
 });
 
-function OpenButton({ label, plain, onClick }: { label: string; plain: boolean; onClick: () => void }) {
+function OpenButton({
+  label,
+  plain,
+  onClick,
+}: {
+  label: string;
+  plain: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

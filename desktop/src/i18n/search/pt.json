@@ -568,13 +568,7 @@
     "soundcloud não abre",
     "problema de dns"
   ],
-  "call.title": [
-    "p2p",
-    "peer to peer",
-    "rede peer",
-    "relay",
-    "ajuda de rede"
-  ],
+  "call.title": ["p2p", "peer to peer", "rede peer", "relay", "ajuda de rede"],
   "settings.discordRpc": [
     "mostrar no discord o que ouço",
     "status do discord",
@@ -1256,13 +1250,7 @@
     "apagar a capa",
     "capa cobre o video"
   ],
-  "settings.videoClip": [
-    "videoclipe",
-    "clipe oficial",
-    "clipe do youtube",
-    "music video",
-    "mv"
-  ],
+  "settings.videoClip": ["videoclipe", "clipe oficial", "clipe do youtube", "music video", "mv"],
   "settings.videoLoop": [
     "vídeo em loop",
     "loop curto",
@@ -1309,30 +1297,20 @@
     "fundo estático",
     "luz da capa"
   ],
+  "settings.deckCoverOpacity": [
+    "opacidade da capa no início",
+    "capa transparente no início",
+    "ver o brilho através da capa",
+    "apagar a capa grande",
+    "esconder a capa do início"
+  ],
   "settings.themesAutoUpdate": [
     "atualizar temas automaticamente",
     "temas sempre atualizados",
     "instalar atualizações de temas"
   ],
-  "settings.sound": [
-    "ajustes de som",
-    "qualidade e volume",
-    "como soa",
-    "processamento de áudio"
-  ],
-  "settings.lyricsAndComments": [
-    "ajustes de letra",
-    "letra e comentários",
-    "comentários na faixa"
-  ],
-  "settings.cacheLikes": [
-    "baixar todas as curtidas",
-    "curtidas offline",
-    "salvar favoritos"
-  ],
-  "settings.cacheLimits": [
-    "limite de cache",
-    "tamanho máximo do cache",
-    "quanto disco usar"
-  ]
+  "settings.sound": ["ajustes de som", "qualidade e volume", "como soa", "processamento de áudio"],
+  "settings.lyricsAndComments": ["ajustes de letra", "letra e comentários", "comentários na faixa"],
+  "settings.cacheLikes": ["baixar todas as curtidas", "curtidas offline", "salvar favoritos"],
+  "settings.cacheLimits": ["limite de cache", "tamanho máximo do cache", "quanto disco usar"]
 }

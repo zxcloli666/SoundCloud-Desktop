@@ -32,6 +32,7 @@ export const SETTING_RULES = {
   wave_hide_listened: SWITCH,
   lyrics_highlight: choice(['word', 'line']),
   lyrics_visualizer: SWITCH,
+  home_cover_opacity: range(0, 100, 5),
   floating_comments: SWITCH,
   spoken_replies: SWITCH,
   voice_speed: range(0.8, 1.3, 0.05),

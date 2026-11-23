@@ -1454,13 +1454,7 @@
     "fade the artwork",
     "cover covers the video"
   ],
-  "settings.videoClip": [
-    "music video",
-    "official video",
-    "youtube clip",
-    "videoclip",
-    "mv"
-  ],
+  "settings.videoClip": ["music video", "official video", "youtube clip", "videoclip", "mv"],
   "settings.videoLoop": [
     "looping video",
     "short loop",
@@ -1517,6 +1511,15 @@
     "player background animation",
     "background lights",
     "static background"
+  ],
+  "settings.deckCoverOpacity": [
+    "home cover opacity",
+    "transparent artwork on home",
+    "see the glow through the cover",
+    "fade the big cover",
+    "dim deck artwork",
+    "hide cover on home page",
+    "track avatar opacity"
   ],
   "settings.themesAutoUpdate": [
     "update themes automatically",

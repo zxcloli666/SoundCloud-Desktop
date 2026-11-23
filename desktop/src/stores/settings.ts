@@ -197,6 +197,7 @@ export interface SettingsState {
   layouts: LayoutState;
   riverHidden: RiverHiddenEntry[];
   liveBackground: boolean;
+  deckCoverOpacity: number;
   homeShelfTab: HomeShelfTab;
   homeShelfOpen: boolean;
   setAccentColor: (color: string) => void;
@@ -302,6 +303,7 @@ export interface SettingsState {
   resetLayout: (scope: LayoutScope) => void;
   setRiverHidden: (ids: RiverHiddenEntry[]) => void;
   setLiveBackground: (v: boolean) => void;
+  setDeckCoverOpacity: (opacity: number) => void;
   setHomeShelfTab: (tab: HomeShelfTab) => void;
   setHomeShelfOpen: (open: boolean) => void;
   resetTheme: () => void;
@@ -407,6 +409,7 @@ const DEFAULTS = {
   layouts: EMPTY_LAYOUT,
   riverHidden: [] as RiverHiddenEntry[],
   liveBackground: true,
+  deckCoverOpacity: 1,
   homeShelfTab: 'liked' as HomeShelfTab,
   homeShelfOpen: true,
 };
@@ -612,6 +615,8 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       setRiverHidden: (riverHidden) => set({ riverHidden }),
       setLiveBackground: (liveBackground) => set({ liveBackground }),
+      setDeckCoverOpacity: (opacity) =>
+        set({ deckCoverOpacity: Math.min(1, Math.max(0, opacity)) }),
       setHomeShelfTab: (homeShelfTab) => set({ homeShelfTab }),
       setHomeShelfOpen: (homeShelfOpen) => set({ homeShelfOpen }),
       resetTheme: () =>
@@ -772,6 +777,7 @@ export const useSettingsStore = create<SettingsState>()(
         layouts: s.layouts,
         riverHidden: s.riverHidden,
         liveBackground: s.liveBackground,
+        deckCoverOpacity: s.deckCoverOpacity,
         homeShelfTab: s.homeShelfTab,
         homeShelfOpen: s.homeShelfOpen,
       }),

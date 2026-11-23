@@ -47,6 +47,8 @@ export function WallpaperCard() {
   const rotationOrder = useSettingsStore((s) => s.wallpaperRotationOrder);
   const liveBackground = useSettingsStore((s) => s.liveBackground);
   const setLiveBackground = useSettingsStore((s) => s.setLiveBackground);
+  const deckCoverOpacity = useSettingsStore((s) => s.deckCoverOpacity);
+  const setDeckCoverOpacity = useSettingsStore((s) => s.setDeckCoverOpacity);
 
   const [wallpapers, setWallpapers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -367,6 +369,19 @@ export function WallpaperCard() {
           checked={liveBackground}
           onChange={() => setLiveBackground(!liveBackground)}
           label={t('settings.liveBackground')}
+        />
+      </Row>
+      <Row
+        title={t('settings.deckCoverOpacity')}
+        value={<span className="set-chip">{Math.round(deckCoverOpacity * 100)}%</span>}
+        stacked
+      >
+        <RangeSlider
+          value={deckCoverOpacity}
+          min={0}
+          max={1}
+          step={0.05}
+          onChange={setDeckCoverOpacity}
         />
       </Row>
     </Card>

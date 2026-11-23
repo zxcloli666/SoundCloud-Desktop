@@ -1641,6 +1641,7 @@
     "zoneFixed": "Anterior, reproducir y siguiente siempre en el centro",
     "liveBackground": "Fondo animado",
     "liveBackgroundDesc": "Brillo animado de la portada detrás del reproductor en Inicio",
+    "deckCoverOpacity": "Portada en Inicio",
     "catAdvanced": "Avanzado",
     "catAbout": "Acerca de",
     "sumGeneral": "Idioma, inicio, atajos y filtros",

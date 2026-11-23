@@ -1662,6 +1662,7 @@
     "zoneFixed": "Anterior, play e próxima ficam sempre no centro",
     "liveBackground": "Fundo animado",
     "liveBackgroundDesc": "Brilho animado da capa atrás do player no Início",
+    "deckCoverOpacity": "Capa no Início",
     "catAdvanced": "Avançado",
     "catAbout": "Sobre",
     "sumGeneral": "Idioma, inicialização, atalhos e filtros",
