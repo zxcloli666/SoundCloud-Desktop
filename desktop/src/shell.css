@@ -11,16 +11,19 @@
 }
 
 [data-ui="app"][data-wall] {
+  --wall-clash: var(--wall-bright, 1);
+  --wall-t: clamp(0, (var(--wall-clash) - 0.4) / 0.3, 1);
   --shell-side: color-mix(in srgb, var(--shell-side-solid) 56%, transparent);
   --shell-top: color-mix(in srgb, var(--shell) 38%, transparent);
-  --shell-veil: color-mix(in srgb, var(--shell) 50%, transparent);
-  --shell-pane: color-mix(in srgb, var(--shell) 74%, transparent);
+  --shell-veil: color-mix(in srgb, var(--shell) calc(22% + 28% * var(--wall-t)), transparent);
+  --shell-pane: color-mix(in srgb, var(--shell) calc(34% + 40% * var(--wall-t)), transparent);
   --shell-pane-hi: color-mix(in srgb, var(--shell-pane) 94%, rgb(var(--ink)));
-  --ink-lift: 0.5;
+  --ink-lift: calc(0.5 * var(--wall-t));
 }
 
 [data-scheme="white"] [data-ui="app"][data-wall] {
-  --ink-lift: 0.85;
+  --wall-clash: var(--wall-dark, 1);
+  --ink-lift: calc(0.6 + 0.25 * var(--wall-t));
 }
 
 [data-ui="app"][data-wall] [data-ui="main"] {
