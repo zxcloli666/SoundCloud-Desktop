@@ -30,13 +30,8 @@ const TrackRow = memo(function TrackRow({
   const cover = art(entry.artworkUrl, 't200x200');
   return (
     <div
-      className={`group relative flex items-center gap-3 overflow-hidden rounded-2xl px-2 py-2 transition-colors ${isThis ? 'bg-ink/[0.06]' : 'hover:bg-ink/[0.04]'}`}
+      className={`group relative flex items-center gap-3 rounded-2xl px-2 py-2 transition-colors ${isThis ? 'bg-ink/[0.06]' : 'hover:bg-ink/[0.04]'}`}
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-1 left-0 rounded-2xl bg-ink/[0.035]"
-        style={{ width: `${(entry.plays / max) * 100}%` }}
-      />
       <span
         className={`relative w-6 text-right text-[13px] font-bold tabular-nums ${rank === 1 ? 'text-ink-80' : 'text-ink-30'}`}
       >
@@ -81,6 +76,12 @@ const TrackRow = memo(function TrackRow({
         >
           {entry.artistName}
         </button>
+        <div className="mt-1.5 h-[3px] max-w-[220px] overflow-hidden rounded-full bg-ink/[0.06]">
+          <div
+            className="h-full rounded-full bg-ink/[0.3]"
+            style={{ width: `${Math.max(4, (entry.plays / max) * 100)}%` }}
+          />
+        </div>
       </div>
       <span className="relative shrink-0 text-right">
         <span className="block text-[13px] font-bold tabular-nums text-ink-80">
