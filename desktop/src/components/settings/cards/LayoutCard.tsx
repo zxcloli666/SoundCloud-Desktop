@@ -18,6 +18,12 @@ const SCOPES: Array<{ id: LayoutScope; labelKey: string }> = [
   { id: 'player', labelKey: 'settings.layoutPlayer' },
 ];
 
+const TAB_ROWS: Partial<Record<LayoutScope, readonly string[]>> = {
+  sidebar: ['sidebar.quickAccess', 'settings.layoutPinned'],
+  home: ['settings.layoutRiverSections'],
+  player: ['settings.layoutPlacement'],
+};
+
 const HINTS: Record<LayoutScope, string> = {
   sidebar: 'settings.layoutSidebarHint',
   quick: 'settings.layoutSidebarHint',
@@ -111,7 +117,11 @@ export function LayoutCard() {
           value={tab}
           onChange={setTab}
           full
-          options={SCOPES.map((s) => ({ id: s.id, label: t(s.labelKey) }))}
+          options={SCOPES.map((s) => ({
+            id: s.id,
+            label: t(s.labelKey),
+            holds: TAB_ROWS[s.id]?.map((key) => t(key)),
+          }))}
         />
         <p className="px-0.5 text-[12px] leading-snug text-ink-45">{t(HINTS[scope])}</p>
         {tab !== 'player' && <BlocksEditor key={scope} scope={scope} />}

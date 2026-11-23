@@ -157,7 +157,13 @@ export function Segmented<T extends string>({
   full = false,
 }: {
   value: T;
-  options: ReadonlyArray<{ id: T; label: string; disabled?: boolean; adornment?: ReactNode }>;
+  options: ReadonlyArray<{
+    id: T;
+    label: string;
+    disabled?: boolean;
+    adornment?: ReactNode;
+    holds?: readonly string[];
+  }>;
   onChange: (v: T) => void;
   columns?: number;
   full?: boolean;
@@ -185,6 +191,7 @@ export function Segmented<T extends string>({
             data-ui="segment"
             data-value={o.id}
             data-active={active ? 'true' : 'false'}
+            data-search-holds={o.holds?.join('\n')}
             onClick={() => onChange(o.id)}
             className="set-seg-item"
           >
