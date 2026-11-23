@@ -13,7 +13,8 @@ export const DECK_COVER_SIZE = 'min(100%, clamp(168px, min(33vw, 35vh), 320px))'
 
 function Cover({ src, title }: { src: string | null; title: string }) {
   const { t } = useTranslation();
-  const [failed, setFailed] = useState(false);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const failed = failedSrc === src;
   return (
     <button
       type="button"
@@ -28,7 +29,7 @@ function Cover({ src, title }: { src: string | null; title: string }) {
           src={src}
           alt=""
           draggable={false}
-          onError={() => setFailed(true)}
+          onError={() => setFailedSrc(src)}
           className="size-full object-cover"
         />
       ) : (
