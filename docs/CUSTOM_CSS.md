@@ -138,6 +138,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="deck-artist"]` | Artist names in the Home deck |
 | `[data-ui="deck-frame"]` | Square around the big cover that holds the glow |
 | `[data-ui="deck-cover"]` | Big cover in the Home deck |
+| `[data-ui="deck-cover-fade"]` | Cover opacity slider shown on hover over the Home deck cover |
 | `[data-ui="deck-title"]` | Track title in the Home deck with its `title` button zone |
 | `[data-ui="deck-seek"]` | Seek capsule with the waveform and the time inside |
 | `[data-ui="deck-controls"]` | Player buttons in the Home deck; `data-fit` is `flank` with the side zones beside the seek capsule or `tray` with them in a row under the buttons |

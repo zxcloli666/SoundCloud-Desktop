@@ -85,6 +85,7 @@ export function fakeApp(): FakeApp {
       wave_hide_listened: true,
       lyrics_highlight: 'word',
       lyrics_visualizer: false,
+      home_cover_opacity: 100,
       floating_comments: true,
       spoken_replies: true,
       voice_speed: 1,

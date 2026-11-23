@@ -1672,6 +1672,7 @@
     "zoneFixed": "Önceki, oynat ve sonraki hep ortada",
     "liveBackground": "Canlı arka plan",
     "liveBackgroundDesc": "Ana sayfada oynatıcının arkasında kapaktan gelen hareketli ışık",
+    "deckCoverOpacity": "Ana sayfadaki kapak",
     "catAdvanced": "Gelişmiş",
     "catAbout": "Hakkında",
     "sumGeneral": "Dil, başlangıç, kısayollar ve filtreler",

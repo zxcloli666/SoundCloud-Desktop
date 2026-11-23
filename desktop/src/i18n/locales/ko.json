@@ -1601,6 +1601,7 @@
     "zoneFixed": "이전, 재생, 다음은 항상 가운데에 있어요",
     "liveBackground": "라이브 배경",
     "liveBackgroundDesc": "홈의 플레이어 뒤에 커버 색으로 움직이는 빛을 표시해요",
+    "deckCoverOpacity": "홈 커버",
     "catAdvanced": "고급",
     "catAbout": "정보",
     "sumGeneral": "언어, 시작, 단축키, 필터",

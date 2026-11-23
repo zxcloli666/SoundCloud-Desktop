@@ -576,13 +576,7 @@
     "soundcloud açılmıyor",
     "dns sorunu"
   ],
-  "call.title": [
-    "p2p",
-    "eşler arası",
-    "peer ağı",
-    "relay",
-    "ağ yardımı"
-  ],
+  "call.title": ["p2p", "eşler arası", "peer ağı", "relay", "ağ yardımı"],
   "settings.discordRpc": [
     "discord'da dinlediğim görünsün",
     "discord durumu",
@@ -1268,13 +1262,7 @@
     "kapagi soldur",
     "kapak videoyu kapatiyor"
   ],
-  "settings.videoClip": [
-    "müzik klibi",
-    "resmi klip",
-    "youtube klibi",
-    "videoklip",
-    "music video"
-  ],
+  "settings.videoClip": ["müzik klibi", "resmi klip", "youtube klibi", "videoklip", "music video"],
   "settings.videoLoop": [
     "döngülü video",
     "kısa döngü",
@@ -1321,30 +1309,20 @@
     "sabit arka plan",
     "arka plan efekti"
   ],
+  "settings.deckCoverOpacity": [
+    "ana sayfa kapak saydamlığı",
+    "ana sayfada saydam kapak",
+    "kapağın arkasındaki ışık",
+    "büyük kapağı soldur",
+    "ana sayfada kapağı gizle"
+  ],
   "settings.themesAutoUpdate": [
     "temaları otomatik güncelle",
     "tema güncellemeleri",
     "temalar kendiliğinden güncellensin"
   ],
-  "settings.sound": [
-    "ses ayarları",
-    "kalite ve seviye",
-    "nasıl duyuluyor",
-    "ses işleme"
-  ],
-  "settings.lyricsAndComments": [
-    "şarkı sözü ayarları",
-    "sözler ve yorumlar",
-    "parça yorumları"
-  ],
-  "settings.cacheLikes": [
-    "tüm beğenileri indir",
-    "çevrimdışı beğeniler",
-    "favorileri kaydet"
-  ],
-  "settings.cacheLimits": [
-    "önbellek sınırı",
-    "en fazla önbellek",
-    "ne kadar yer kullansın"
-  ]
+  "settings.sound": ["ses ayarları", "kalite ve seviye", "nasıl duyuluyor", "ses işleme"],
+  "settings.lyricsAndComments": ["şarkı sözü ayarları", "sözler ve yorumlar", "parça yorumları"],
+  "settings.cacheLikes": ["tüm beğenileri indir", "çevrimdışı beğeniler", "favorileri kaydet"],
+  "settings.cacheLimits": ["önbellek sınırı", "en fazla önbellek", "ne kadar yer kullansın"]
 }

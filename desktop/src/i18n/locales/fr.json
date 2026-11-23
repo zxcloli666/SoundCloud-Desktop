@@ -1641,6 +1641,7 @@
     "zoneFixed": "Précédent, lecture et suivant restent toujours au centre",
     "liveBackground": "Fond animé",
     "liveBackgroundDesc": "Halo animé de la pochette derrière le lecteur sur l'accueil",
+    "deckCoverOpacity": "Pochette sur l'accueil",
     "catAdvanced": "Avancé",
     "catAbout": "À propos",
     "sumGeneral": "Langue, démarrage, raccourcis et filtres",

@@ -1412,13 +1412,7 @@
     "estomper la pochette",
     "la pochette cache la vidéo"
   ],
-  "settings.videoClip": [
-    "clip vidéo",
-    "clip officiel",
-    "clip youtube",
-    "vidéoclip",
-    "mv"
-  ],
+  "settings.videoClip": ["clip vidéo", "clip officiel", "clip youtube", "vidéoclip", "mv"],
   "settings.videoLoop": [
     "vidéo en boucle",
     "courte boucle",
@@ -1476,6 +1470,13 @@
     "fond statique",
     "lumière de la pochette"
   ],
+  "settings.deckCoverOpacity": [
+    "opacité de la pochette sur l'accueil",
+    "pochette transparente à l'accueil",
+    "voir le halo à travers la pochette",
+    "estomper la grande pochette",
+    "masquer la pochette de l'accueil"
+  ],
   "settings.themesAutoUpdate": [
     "mettre à jour les thèmes automatiquement",
     "thèmes à jour",
@@ -1497,9 +1498,5 @@
     "likes hors ligne",
     "enregistrer mes favoris"
   ],
-  "settings.cacheLimits": [
-    "limite du cache",
-    "taille max du cache",
-    "combien d'espace utiliser"
-  ]
+  "settings.cacheLimits": ["limite du cache", "taille max du cache", "combien d'espace utiliser"]
 }

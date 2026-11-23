@@ -1412,13 +1412,7 @@
     "desvanecer la carátula",
     "la portada tapa el video"
   ],
-  "settings.videoClip": [
-    "videoclip",
-    "video oficial",
-    "clip de youtube",
-    "clip musical",
-    "mv"
-  ],
+  "settings.videoClip": ["videoclip", "video oficial", "clip de youtube", "clip musical", "mv"],
   "settings.videoLoop": [
     "video en bucle",
     "loop corto",
@@ -1476,17 +1470,19 @@
     "fondo estático",
     "luz de la portada"
   ],
+  "settings.deckCoverOpacity": [
+    "opacidad de la portada en inicio",
+    "portada transparente en inicio",
+    "ver el brillo a través de la portada",
+    "atenuar la portada grande",
+    "ocultar la portada de inicio"
+  ],
   "settings.themesAutoUpdate": [
     "actualizar temas automáticamente",
     "temas al día",
     "instalar actualizaciones de temas"
   ],
-  "settings.sound": [
-    "ajustes de sonido",
-    "calidad y volumen",
-    "cómo suena",
-    "procesado de audio"
-  ],
+  "settings.sound": ["ajustes de sonido", "calidad y volumen", "cómo suena", "procesado de audio"],
   "settings.lyricsAndComments": [
     "ajustes de letras",
     "letra y comentarios",
@@ -1497,9 +1493,5 @@
     "likes sin conexión",
     "guardar favoritos"
   ],
-  "settings.cacheLimits": [
-    "límite de caché",
-    "tamaño máximo de caché",
-    "cuánto disco usar"
-  ]
+  "settings.cacheLimits": ["límite de caché", "tamaño máximo de caché", "cuánto disco usar"]
 }
