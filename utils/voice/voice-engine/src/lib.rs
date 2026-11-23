@@ -2,6 +2,7 @@ mod cache;
 mod catalog;
 mod clip;
 mod config;
+mod cut_short;
 mod draft;
 mod event;
 mod fell_quiet;

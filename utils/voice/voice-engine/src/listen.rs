@@ -9,6 +9,7 @@ use voice_speech::{Event as Heard, Listener, Options};
 
 use crate::Timing;
 use crate::config::{Echo, Language, ListenMode as Mode};
+use crate::cut_short::cut_short;
 use crate::event::{Event, PartialEvent, Source, State};
 use crate::fell_quiet::Loudness;
 use crate::hotwords;
@@ -409,6 +410,7 @@ impl Core {
         self.close(listen);
         let heard = finals.join(" ");
         let heard = heard.trim();
+        let exact = exact.filter(|exact| !cut_short(exact, heard));
         let text = if woken {
             exact
                 .as_deref()
