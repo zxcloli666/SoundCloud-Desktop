@@ -41,7 +41,11 @@ runs:
         pack=$RUNNER_TEMP/target-cache
         mkdir -p "$pack"
         for tag in "$exact" "$NAME-latest"; do
-          oras pull "$repo:$tag" --output "$pack" > /dev/null 2>&1 || continue
+          if ! out=$(oras pull "$repo:$tag" --output "$pack" 2>&1); then
+            echo "no $repo:$tag: $(printf '%s' "$out" | tail -1), $(df -h "$pack" | tail -1 | awk '{print $4}') free"
+            rm -rf "$pack" && mkdir -p "$pack"
+            continue
+          fi
           if zstd -dc "$pack/target.tar.zst" | tar -xf -; then
             echo "restored $repo:$tag ($(du -sh "$pack/target.tar.zst" | cut -f1))"
             bash scripts/ci-mtime.sh restore
@@ -52,6 +56,7 @@ runs:
           rm -rf "$pack"
           exit 0
         done
+        rm -rf "$pack"
         echo "no snapshot for $NAME in $repo, building cold"
 
     - name: Save
@@ -74,7 +79,7 @@ runs:
         exact=$NAME-$toolchain-$(git rev-parse "HEAD:$LOCK" | cut -c1-12)
         find "$TARGET" -type f -size +20M ! -path '*/build/*' \( -name '*.exe' -o -name '*.pdb' -o \( -perm -u+x ! -name '*.*' \) \) -delete
         pack=$RUNNER_TEMP/target-cache
-        mkdir -p "$pack"
+        rm -rf "$pack" && mkdir -p "$pack"
         tar -cf - .ci "$TARGET" | zstd -q -T0 -3 -o "$pack/target.tar.zst"
         echo "target.tar.zst is $(du -sh "$pack/target.tar.zst" | cut -f1)"
         printf '%s' "$TOKEN" | oras login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
