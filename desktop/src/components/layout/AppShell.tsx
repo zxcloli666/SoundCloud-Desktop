@@ -11,6 +11,7 @@ import { art } from '../../lib/formatters';
 import { usePerfMode } from '../../lib/perf';
 import { isMac } from '../../lib/platform';
 import { useVisibleBlocks } from '../../lib/use-layout';
+import { useWallTone } from '../../lib/wall-tone';
 import { useWallpaperRotation } from '../../lib/wallpaper-rotation';
 import { toggleWindowFullscreen } from '../../lib/window';
 import { useAuthStore } from '../../stores/auth';
@@ -206,6 +207,7 @@ const CustomBackground = React.memo(() => {
   );
 
   const bgUrl = bgName ? getWallpaperUrl(bgName) : null;
+  useWallTone(bgUrl, bgDim, bgOpacity);
   if (!bgUrl) return null;
 
   const effBlur = perf.blur(bgBlur);
