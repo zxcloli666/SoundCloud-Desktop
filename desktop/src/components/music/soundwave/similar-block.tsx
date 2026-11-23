@@ -1,6 +1,13 @@
 import React, { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { AudioLines, Compass, Disc3, Headphones, playBlack14, Sparkles } from '../../../lib/icons';
+import {
+  AudioLines,
+  Compass,
+  Disc3,
+  Headphones,
+  pauseWhite14,
+  playWhite14,
+} from '../../../lib/icons';
 import { usePlayerStore } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
 import {
@@ -12,7 +19,6 @@ import {
   useClusterWave,
   waveQueue,
 } from '../cluster';
-import { AmbientLayer } from './ambient';
 import { useInfiniteWave } from './use-infinite-wave';
 
 interface Props {
@@ -48,6 +54,10 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
       : null,
   });
 
+  const currentUrn = usePlayerStore((s) => s.currentTrack?.urn);
+  const isPlaying = usePlayerStore((s) => s.isPlaying);
+  const queueHead = usePlayerStore((s) => s.queue[0]?.urn);
+
   const clusters = useMemo(() => data?.clusters ?? [], [data]);
 
   const orderedClusters = useMemo(() => {
@@ -59,8 +69,9 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
     () => orderedClusters.find((c) => c.id === 'wave') ?? null,
     [orderedClusters],
   );
-
   const playQueue = useMemo(() => waveQueue(orderedClusters), [orderedClusters]);
+  const onWave = !!currentUrn && queueHead === playQueue[0]?.urn;
+  const isPlayingFromWave = isPlaying && onWave;
 
   useInfiniteWave({
     enabled: !!trackUrn,
@@ -73,89 +84,56 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
 
   const handlePlay = useCallback(() => {
     if (playQueue.length === 0) return;
-    usePlayerStore.getState().play(playQueue[0], playQueue);
-  }, [playQueue]);
+    const { play, pause, resume } = usePlayerStore.getState();
+    if (isPlayingFromWave) {
+      pause();
+      return;
+    }
+    if (onWave) {
+      resume();
+      return;
+    }
+    play(playQueue[0], playQueue);
+  }, [playQueue, isPlayingFromWave, onWave]);
 
   const showEmpty = !isLoading && orderedClusters.length === 0;
   const canPlay = playQueue.length > 0;
 
   return (
-    <section
-      className="relative rounded-3xl overflow-hidden glass-featured select-none"
-      style={{
-        boxShadow:
-          '0 0 0 1px rgba(255,255,255,0.04) inset, 0 10px 40px rgb(var(--shade) / calc(0.35 * var(--shade-alpha))), 0 0 40px var(--color-accent-glow)',
-        borderColor: 'rgb(var(--ink) / 0.08)',
-      }}
-    >
-      <AmbientLayer particleCount={8} blur={35} intensity={0.4} />
+    <section className="panel select-none overflow-hidden">
+      <div className="flex items-center gap-3 p-3 md:gap-4 md:p-3.5">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ink/[0.06] text-accent">
+          <AudioLines size={18} />
+        </div>
 
-      <div
-        className="absolute inset-0 pointer-events-none"
-        aria-hidden
-        style={{
-          background:
-            'linear-gradient(180deg, rgb(var(--paper) / 0.45) 0%, rgb(var(--paper) / 0.35) 45%, rgb(var(--paper) / 0.85) 100%)',
-          contain: 'strict',
-        }}
-      />
-
-      <div className="relative p-5 md:p-6 flex flex-col gap-6" style={{ isolation: 'isolate' }}>
-        <header className="flex items-center gap-3 flex-wrap">
-          <div
-            className="relative w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
-            style={{
-              background: 'linear-gradient(135deg, var(--color-accent), rgb(var(--ink) / 0.12))',
-              boxShadow: '0 0 24px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.2)',
-            }}
-          >
-            <AudioLines size={17} style={{ color: 'var(--color-accent-contrast)' }} />
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <div className="flex min-w-0 items-center gap-2">
+            <h2 className="truncate text-[14px] font-semibold leading-none tracking-tight text-ink">
+              {t('soundwave.similar.title')}
+            </h2>
+            <span className="shrink-0 rounded-full bg-ink/[0.07] px-1.5 py-[2px] text-[9px] font-semibold uppercase tracking-[0.16em] text-ink-70">
+              AI
+            </span>
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="soundwave-title text-[18px] font-black tracking-tight leading-none">
-                {t('soundwave.similar.title')}
-              </h2>
-              <span
-                className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-[0.16em] px-2 py-[3px] rounded-full text-ink-90"
-                style={{
-                  background:
-                    'linear-gradient(135deg, var(--color-accent-glow), rgb(var(--ink) / 0.06))',
-                  border: '0.5px solid var(--color-accent-glow)',
-                }}
-              >
-                <Sparkles size={9} style={{ color: 'var(--color-accent)' }} />
-                AI
-              </span>
-            </div>
-            <p className="text-[11.5px] text-ink-45 mt-1 truncate">
-              {t('soundwave.similar.desc')}
-            </p>
-          </div>
+          <p className="truncate text-[11px] text-ink-45">{t('soundwave.similar.desc')}</p>
+        </div>
 
-          {canPlay && (
-            <button
-              type="button"
-              onClick={handlePlay}
-              className="flex items-center gap-2 pl-2.5 pr-4 h-9 rounded-full font-semibold text-[12.5px] transition-all duration-200 ease-[var(--ease-apple)] cursor-pointer active:scale-[0.97] hover:scale-[1.03]"
-              style={{
-                background: 'var(--color-accent)',
-                color: 'var(--color-accent-contrast)',
-                boxShadow:
-                  '0 5px 18px var(--color-accent-glow), inset 0 1px 0 rgba(255,255,255,0.25)',
-              }}
-            >
-              <span
-                className="w-5 h-5 rounded-full flex items-center justify-center"
-                style={{ background: 'rgb(var(--ink) / 0.9)' }}
-              >
-                {playBlack14}
-              </span>
-              {t('soundwave.similar.playAll')}
-            </button>
-          )}
-        </header>
+        <button
+          type="button"
+          onClick={handlePlay}
+          disabled={!canPlay || isLoading}
+          className="inline-flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full bg-accent pl-1.5 pr-4 text-[12.5px] font-semibold text-accent-contrast transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-shade-15">
+            {isPlayingFromWave ? pauseWhite14 : playWhite14}
+          </span>
+          <span className="whitespace-nowrap">
+            {isPlayingFromWave ? t('track.pause') : t('soundwave.similar.playAll')}
+          </span>
+        </button>
+      </div>
 
+      <div className="border-t border-ink/[0.08] p-5 md:p-6">
         {isLoading ? (
           <ClusterSkeletonState rows={2} itemsPerRow={6} />
         ) : showEmpty ? (
@@ -164,7 +142,7 @@ export const SoundWaveSimilarBlock = React.memo(function SoundWaveSimilarBlock({
             description={t('soundwave.similar.emptyDesc')}
           />
         ) : (
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-7">
             {orderedClusters.map((c, idx) =>
               c.id === 'featured_with' && c.neighbors ? (
                 <NeighborsRow

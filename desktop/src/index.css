@@ -745,19 +745,6 @@ select,
   }
 }
 
-/* Aurora orbs carry a heavy `filter: blur()`; rotate/scale would force the
-   blur kernel to recompute every frame (huge GPU cost). Stick to translate —
-   that's a cheap composite transform, blur result stays cached. */
-@keyframes sw-aurora {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(3%, -1.5%, 0);
-  }
-}
-
 @keyframes sw-shine {
   0% {
     transform: translateX(-120%);
@@ -914,19 +901,6 @@ select,
 .sw-layer-accent .sw-bar {
   background: var(--color-accent);
   box-shadow: 0 0 6px var(--color-accent-glow);
-}
-
-.soundwave-title {
-  background-image: linear-gradient(
-    100deg,
-    rgb(var(--ink) / 0.98) 0%,
-    rgb(var(--ink) / 0.72) 40%,
-    var(--color-accent) 100%
-  );
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
 }
 
 /* ── Now Playing Bar — Liquid Pill Dock ──────────────────────────

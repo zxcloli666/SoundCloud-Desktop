@@ -1,18 +1,17 @@
-import {useQuery} from '@tanstack/react-query';
-import React, {useCallback, useEffect, useMemo} from 'react';
-import {useTranslation} from 'react-i18next';
-import {useNavigate, useParams} from 'react-router-dom';
-import {SoundWaveSimilarBlock} from '../components/music/soundwave';
-import {ROOM_KEYFRAMES} from '../components/track/keyframes';
-import {LinerNotes} from '../components/track/LinerNotes';
-import {RoomHero} from '../components/track/RoomHero';
-import {RoomSleeve} from '../components/track/RoomSleeve';
-import {RoomVoices} from '../components/track/RoomVoices';
-import {useTrackAura} from '../components/track/useTrackAura';
-import {LoadErrorState, RefreshPendingHint} from '../components/ui/LoadErrorState';
-import {usePlayingCopy} from '../lib/alt-upload';
-import {api} from '../lib/api';
-import {playAt} from '../lib/audio';
+import { useQuery } from '@tanstack/react-query';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router-dom';
+import { SoundWaveSimilarBlock } from '../components/music/soundwave';
+import { ROOM_KEYFRAMES } from '../components/track/keyframes';
+import { LinerNotes } from '../components/track/LinerNotes';
+import { RoomHero } from '../components/track/RoomHero';
+import { RoomSleeve } from '../components/track/RoomSleeve';
+import { RoomVoices } from '../components/track/RoomVoices';
+import { LoadErrorState, RefreshPendingHint } from '../components/ui/LoadErrorState';
+import { usePlayingCopy } from '../lib/alt-upload';
+import { api } from '../lib/api';
+import { playAt } from '../lib/audio';
 import {
   retryWhileRefreshing,
   useInfiniteScroll,
@@ -20,26 +19,25 @@ import {
   useTrackComments,
   useTrackFavoriters,
 } from '../lib/hooks';
-import {ChevronLeft} from '../lib/icons';
-import {setLikedUrn} from '../lib/likes';
-import {seedSuperliked} from '../lib/superlikes';
-import {useAuthStore} from '../stores/auth';
-import {type Track, usePlayerStore} from '../stores/player';
+import { ChevronLeft } from '../lib/icons';
+import { setLikedUrn } from '../lib/likes';
+import { seedSuperliked } from '../lib/superlikes';
+import { useAuthStore } from '../stores/auth';
+import { type Track, usePlayerStore } from '../stores/player';
 
 function HeroSkeleton() {
   return (
-      <div className="relative rounded-[2rem] overflow-hidden glass-featured p-6 @min-[512px]:p-8">
-          <div className="flex flex-col @min-[740px]:flex-row gap-8">
-              <div
-                  className="w-[180px] h-[180px] @min-[512px]:w-[220px] @min-[512px]:h-[220px] rounded-[2.2rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start"/>
-              <div className="flex-1 space-y-4 w-full">
-                  <div className="h-4 w-40 rounded-full skeleton-shimmer"/>
-                  <div className="h-12 w-3/4 rounded-2xl skeleton-shimmer"/>
-                  <div className="h-5 w-48 rounded-full skeleton-shimmer"/>
-                  <div className="h-11 w-64 rounded-full skeleton-shimmer mt-6"/>
+    <div className="relative overflow-hidden rounded-3xl border border-ink/[0.08] bg-ink/[0.025] p-6 @min-[512px]:p-8">
+      <div className="flex flex-col @min-[740px]:flex-row gap-8">
+        <div className="w-[180px] h-[180px] @min-[512px]:w-[220px] @min-[512px]:h-[220px] rounded-[1.7rem] skeleton-shimmer shrink-0 self-center @min-[740px]:self-start" />
+        <div className="flex-1 space-y-4 w-full">
+          <div className="h-4 w-40 rounded-full skeleton-shimmer" />
+          <div className="h-12 w-3/4 rounded-2xl skeleton-shimmer" />
+          <div className="h-5 w-48 rounded-full skeleton-shimmer" />
+          <div className="h-11 w-64 rounded-full skeleton-shimmer mt-6" />
         </div>
       </div>
-          <div className="h-[96px] mt-8 rounded-xl skeleton-shimmer"/>
+      <div className="h-[96px] mt-8 rounded-xl skeleton-shimmer" />
     </div>
   );
 }
@@ -49,15 +47,15 @@ export const TrackPage = React.memo(function TrackPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-    const {
-        data: track,
-        isLoading,
-        isError,
-        isFetching,
-        error,
-        failureReason,
-        refetch,
-    } = useQuery({
+  const {
+    data: track,
+    isLoading,
+    isError,
+    isFetching,
+    error,
+    failureReason,
+    refetch,
+  } = useQuery({
     queryKey: ['track', urn],
     queryFn: () => api<Track>(`/tracks/${encodeURIComponent(urn!)}`),
     enabled: !!urn,
@@ -67,27 +65,26 @@ export const TrackPage = React.memo(function TrackPage() {
 
   const {
     comments,
-      fetchNextPage,
-      hasNextPage,
-      isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     isLoading: commentsLoading,
   } = useTrackComments(urn);
-    const commentsSentinel = useInfiniteScroll(hasNextPage, isFetchingNextPage, fetchNextPage);
+  const commentsSentinel = useInfiniteScroll(hasNextPage, isFetchingNextPage, fetchNextPage);
 
   const { data: relatedData, isLoading: relatedLoading } = useRelatedTracks(urn, 10);
   const { data: favoritersData } = useTrackFavoriters(urn, 12);
 
-    const related = useMemo(() => relatedData?.collection ?? [], [relatedData]);
-    const favoriters = useMemo(() => favoritersData?.collection ?? [], [favoritersData]);
+  const related = useMemo(() => relatedData?.collection ?? [], [relatedData]);
+  const favoriters = useMemo(() => favoritersData?.collection ?? [], [favoritersData]);
 
   const trackUrn = track?.urn;
-    const currentUrn = usePlayerStore((s) => s.currentTrack?.urn);
-    const playingCopy = usePlayingCopy(currentUrn ?? '');
-    const isThis = !!trackUrn && (currentUrn === trackUrn || playingCopy?.urn === trackUrn);
-    const isThisPlaying = usePlayerStore((s) => isThis && s.isPlaying);
+  const currentUrn = usePlayerStore((s) => s.currentTrack?.urn);
+  const playingCopy = usePlayingCopy(currentUrn ?? '');
+  const isThis = !!trackUrn && (currentUrn === trackUrn || playingCopy?.urn === trackUrn);
+  const isThisPlaying = usePlayerStore((s) => isThis && s.isPlaying);
 
-    const aura = useTrackAura(track?.genre);
-    const myUrn = useAuthStore((s) => s.user?.urn);
+  const myUrn = useAuthStore((s) => s.user?.urn);
 
   useEffect(() => {
     if (track?.user_favorite && track.urn) setLikedUrn(track.urn, true);
@@ -97,109 +94,99 @@ export const TrackPage = React.memo(function TrackPage() {
     if (track?.urn) seedSuperliked(track.urn, track.user_superlike);
   }, [track?.urn, track?.user_superlike]);
 
-    const handlePlay = useCallback(() => {
-        if (!track) return;
-        const st = usePlayerStore.getState();
-        if (isThis) {
-            if (st.isPlaying) st.pause();
-            else st.resume();
-        } else {
-            st.play(track, [track]);
-        }
-    }, [track, isThis]);
+  const handlePlay = useCallback(() => {
+    if (!track) return;
+    const st = usePlayerStore.getState();
+    if (isThis) {
+      if (st.isPlaying) st.pause();
+      else st.resume();
+    } else {
+      st.play(track, [track]);
+    }
+  }, [track, isThis]);
 
-    const jumpTo = useCallback(
-        (seconds: number) => {
-            const current = usePlayerStore.getState().currentTrack;
-            if (track) playAt(isThis && current ? current : track, seconds);
-        },
-        [track, isThis],
-    );
+  const jumpTo = useCallback(
+    (seconds: number) => {
+      const current = usePlayerStore.getState().currentTrack;
+      if (track) playAt(isThis && current ? current : track, seconds);
+    },
+    [track, isThis],
+  );
 
-    if (isLoading || (!track && !isError)) {
+  if (isLoading || (!track && !isError)) {
     return (
-        <div className="relative min-h-full w-full">
-            <style>{ROOM_KEYFRAMES}</style>
-            <div
-                className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
-                style={{isolation: 'isolate'}}
-            >
-                <HeroSkeleton/>
-                <RefreshPendingHint reason={failureReason}/>
-            </div>
+      <div className="relative min-h-full w-full">
+        <style>{ROOM_KEYFRAMES}</style>
+        <div
+          className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10"
+          style={{ isolation: 'isolate' }}
+        >
+          <HeroSkeleton />
+          <RefreshPendingHint reason={failureReason} />
         </div>
+      </div>
     );
-    }
+  }
 
-    if (!track) {
-        return (
-            <div className="relative min-h-full w-full flex items-center justify-center">
-                    <LoadErrorState error={error} retrying={isFetching} onRetry={() => void refetch()}/>
-            </div>
-        );
-    }
-
-    const isOwner = !!myUrn && track.user?.urn === myUrn;
-
+  if (!track) {
     return (
-        <div data-ui="page" data-page="track" className="relative min-h-full w-full">
-            <style>{ROOM_KEYFRAMES}</style>
-            <div
-                className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"
-                style={{isolation: 'isolate'}}
-            >
-                <div className="flex items-center justify-between">
-                    <button
-                        type="button"
-                        onClick={() => navigate(-1)}
-                        className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink-55 hover:text-ink hover:bg-ink/[0.06] transition-all duration-200 cursor-pointer"
-                        aria-label={t('search.back')}
-                    >
-                        <ChevronLeft size={18}/>
-                    </button>
-                    {aura.hasGenre && (
-                        <span className="text-[10px] uppercase tracking-[0.24em] text-ink-20">
-              {t('track.roomFor')}
-            </span>
-                    )}
-                </div>
+      <div className="relative min-h-full w-full flex items-center justify-center">
+        <LoadErrorState error={error} retrying={isFetching} onRetry={() => void refetch()} />
+      </div>
+    );
+  }
 
-                <RoomHero
-                    track={track}
-                    aura={aura}
-                    isThis={isThis}
-                    isThisPlaying={isThisPlaying}
-                    isOwner={isOwner}
-                    comments={comments}
-                    onPlay={handlePlay}
-                    onSeek={jumpTo}
-                />
+  const isOwner = !!myUrn && track.user?.urn === myUrn;
 
-                <LinerNotes track={track} aura={aura} onSeek={jumpTo}/>
+  return (
+    <div data-ui="page" data-page="track" className="relative min-h-full w-full">
+      <style>{ROOM_KEYFRAMES}</style>
+      <div
+        className="@container relative z-10 max-w-[1320px] mx-auto px-4 md:px-8 pt-5 pb-10 space-y-7"
+        style={{ isolation: 'isolate' }}
+      >
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center justify-center w-9 h-9 rounded-full text-ink-55 hover:text-ink hover:bg-ink/[0.06] transition-colors duration-200 cursor-pointer"
+          aria-label={t('search.back')}
+        >
+          <ChevronLeft size={18} />
+        </button>
 
-                <SoundWaveSimilarBlock trackUrn={track.urn}/>
+        <RoomHero
+          track={track}
+          isThis={isThis}
+          isThisPlaying={isThisPlaying}
+          isOwner={isOwner}
+          comments={comments}
+          onPlay={handlePlay}
+          onSeek={jumpTo}
+        />
 
-                <div className="grid grid-cols-1 @min-[740px]:grid-cols-[1fr_340px] gap-6 @min-[740px]:gap-8 items-start">
-                    <RoomVoices
-                        trackUrn={track.urn}
-                        trackOwned={isOwner}
-                        durationMs={track.duration}
-                        commentCount={track.comment_count}
-                        comments={comments}
-                        loading={commentsLoading}
-                        fetchingMore={isFetchingNextPage}
-                        sentinelRef={commentsSentinel}
-                        isCurrent={isThis}
-                        aura={aura}
-                        onSeek={jumpTo}
-                    />
-                    <RoomSleeve
-                        track={track}
-                        favoriters={favoriters}
-                        related={related}
-                        relatedLoading={relatedLoading}
-                        aura={aura}
-                    />
+        <LinerNotes track={track} onSeek={jumpTo} />
+
+        <SoundWaveSimilarBlock trackUrn={track.urn} />
+
+        <div className="grid grid-cols-1 @min-[740px]:grid-cols-[1fr_340px] gap-6 @min-[740px]:gap-8 items-start">
+          <RoomVoices
+            trackUrn={track.urn}
+            trackOwned={isOwner}
+            durationMs={track.duration}
+            commentCount={track.comment_count}
+            comments={comments}
+            loading={commentsLoading}
+            fetchingMore={isFetchingNextPage}
+            sentinelRef={commentsSentinel}
+            isCurrent={isThis}
+            onSeek={jumpTo}
+          />
+          <RoomSleeve
+            track={track}
+            favoriters={favoriters}
+            related={related}
+            relatedLoading={relatedLoading}
+          />
         </div>
       </div>
     </div>

@@ -1,30 +1,29 @@
-import {memo, type ReactNode} from 'react';
-import type {Aura} from '../../lib/aura';
-import {Disc3} from '../../lib/icons';
-import {usePerfMode} from '../../lib/perf';
+import { memo, type ReactNode } from 'react';
+import type { Aura } from '../../lib/aura';
+import { Disc3 } from '../../lib/icons';
+import { usePerfMode } from '../../lib/perf';
 
 interface AlbumCoverArtifactProps {
   title: string;
   coverUrl?: string;
   hasStar: boolean;
-  aura: Aura;
-    /** Rotate the ring. Defaults to true (idle spin); pass `isPlaying` to spin only on playback. */
-    spinning?: boolean;
-    children?: ReactNode;
+  aura?: Aura;
+  spinning?: boolean;
+  children?: ReactNode;
 }
 
 function AlbumCoverArtifactImpl({
-                                    title,
-                                    coverUrl,
-                                    hasStar,
-                                    aura,
-                                    spinning = true,
-                                    children,
-                                }: AlbumCoverArtifactProps) {
-    const {idleAnim} = usePerfMode();
+  title,
+  coverUrl,
+  hasStar,
+  aura,
+  spinning = true,
+  children,
+}: AlbumCoverArtifactProps) {
+  const { idleAnim } = usePerfMode();
   return (
     <div className="relative shrink-0 self-center @min-[740px]:self-start group w-[180px] h-[180px] @min-[512px]:w-[220px] @min-[512px]:h-[220px]">
-      {hasStar && (
+      {hasStar && aura && (
         <div
           className="absolute -inset-[5px] rounded-[2.4rem] pointer-events-none overflow-hidden"
           style={{
@@ -38,7 +37,7 @@ function AlbumCoverArtifactImpl({
             className="absolute -inset-[40%]"
             style={{
               background: `conic-gradient(from 0deg, ${aura.orbs[0]}, ${aura.orbs[1]}, ${aura.orbs[2]}, ${aura.orbs[0]})`,
-                animation: idleAnim && spinning ? 'ring-rotate 12s linear infinite' : undefined,
+              animation: idleAnim && spinning ? 'ring-rotate 12s linear infinite' : undefined,
             }}
           />
         </div>
@@ -62,7 +61,6 @@ function AlbumCoverArtifactImpl({
         )}
 
         {children}
-
       </div>
     </div>
   );

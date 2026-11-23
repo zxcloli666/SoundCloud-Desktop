@@ -1,15 +1,15 @@
 import React from 'react';
-import {cancelPreload, preloadTrack} from '../../lib/audio';
-import {art, dur, fc} from '../../lib/formatters';
-import {Headphones, musicIcon14, pauseBlack11, playBlack11} from '../../lib/icons';
-import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
-import {useRowPick} from '../../lib/useRowPick';
-import {useTrackPlay} from '../../lib/useTrackPlay';
-import type {Track} from '../../stores/player';
-import {LikeButton} from '../music/LikeButton';
-import {PlayNextButton} from '../music/PlayNextButton';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
-import {TrackTitleArtist} from '../music/TrackTitleArtist';
+import { cancelPreload, preloadTrack } from '../../lib/audio';
+import { art, dur, fc } from '../../lib/formatters';
+import { Headphones, musicIcon14, pauseBlack11, playBlack11 } from '../../lib/icons';
+import { useRowPick } from '../../lib/useRowPick';
+import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
+import { useTrackPlay } from '../../lib/useTrackPlay';
+import type { Track } from '../../stores/player';
+import { LikeButton } from '../music/LikeButton';
+import { PlayNextButton } from '../music/PlayNextButton';
+import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 export const RelatedRow = React.memo(
   function RelatedRow({ track, queue }: { track: Track; queue: Track[] | (() => Track[]) }) {
@@ -34,7 +34,13 @@ export const RelatedRow = React.memo(
           onClick={togglePlay}
         >
           {cover ? (
-            <img data-ui="artwork" src={cover} alt="" loading="lazy" className="w-full h-full object-cover" />
+            <img
+              data-ui="artwork"
+              src={cover}
+              alt=""
+              loading="lazy"
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-ink/[0.03]">
               {musicIcon14}
@@ -47,7 +53,7 @@ export const RelatedRow = React.memo(
                 : 'opacity-0 group-hover:bg-black/35 group-hover:opacity-100'
             }`}
           >
-            <span className="w-7 h-7 rounded-full bg-white flex items-center justify-center shadow-lg">
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white">
               {isThisPlaying ? pauseBlack11 : playBlack11}
             </span>
           </span>
@@ -70,7 +76,7 @@ export const RelatedRow = React.memo(
         <div className="text-right shrink-0">
           <p className="text-[10px] text-ink-30 tabular-nums">{dur(track.duration)}</p>
           {track.playback_count != null && (
-            <p className="text-[9px] text-ink-15 mt-0.5 tabular-nums flex items-center gap-0.5 justify-end">
+            <p className="mt-0.5 flex items-center justify-end gap-0.5 text-[9px] tabular-nums text-ink-30">
               <Headphones size={8} />
               {fc(track.playback_count)}
             </p>

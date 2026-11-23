@@ -38,7 +38,7 @@ export const OwnerTrackActions = React.memo(function OwnerTrackActions({
         onClick={() => setDeleting(true)}
         title={t('track.delete')}
         aria-label={t('track.delete')}
-        className={`${ICON_BUTTON} text-ink-45 hover:text-red-400 hover:bg-red-500/10`}
+        className={`${ICON_BUTTON} text-ink-45 hover:text-bad hover:bg-bad/10`}
       >
         <Trash2 size={15} />
       </button>

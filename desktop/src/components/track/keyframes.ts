@@ -1,24 +1,4 @@
-/* Injected once on the track page. The reused Atmosphere (search) and
- * AlbumCoverArtifact (album) reference keyframes their own pages normally
- * inject — we provide them here, plus the room's own bloom/pulse. All
- * transform/opacity only. */
 export const ROOM_KEYFRAMES = `
-@keyframes tg-orb-drift {
-  0%   { transform: translate3d(0,0,0) scale(1); }
-  33%  { transform: translate3d(3%,4%,0) scale(1.08); }
-  66%  { transform: translate3d(-3%,2%,0) scale(1.04); }
-  100% { transform: translate3d(0,0,0) scale(1); }
-}
-@keyframes tg-orb-drift-lite {
-  0%   { transform: translate3d(0,0,0); }
-  33%  { transform: translate3d(3%,4%,0); }
-  66%  { transform: translate3d(-3%,2%,0); }
-  100% { transform: translate3d(0,0,0); }
-}
-@keyframes ring-rotate {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
 @keyframes shimmer {
   0%   { background-position: 200% 0; }
   100% { background-position: -200% 0; }
@@ -35,5 +15,5 @@ export const ROOM_KEYFRAMES = `
 }
 .wv-dot:hover .wv-pill { opacity: 1; transform: translate(-50%, 0) scale(1); }
 .wv-dot[data-bloom='1'] .wv-pill { animation: room-bloom 360ms var(--ease-apple) both; opacity: 1; }
-.wv-dot[data-bloom='1'] .wv-pip { transform: scale(1.9); }
+.wv-dot[data-bloom='1'] .wv-pip { transform: scale(1.9); background: var(--color-accent); }
 `;
