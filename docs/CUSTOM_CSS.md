@@ -208,6 +208,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="avatar"]` | Avatar |
 | `[data-ui="skeleton"]` | Loading placeholder |
 | `[data-ui="error-state"]` | Error message with a retry button |
+| `[data-ui="sync-notice"]` | Notice while a section is syncing or failed to sync |
 | `[data-ui="kbd"]` | Key hint |
 | `[data-ui="card"]` | Settings cards |
 | `[data-ui="settings-nav"]` | Section list in Settings |
