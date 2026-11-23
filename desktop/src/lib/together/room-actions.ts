@@ -112,7 +112,7 @@ export async function suggestTrack(track: Track): Promise<boolean> {
 export async function queueSuggestion(urn: string): Promise<boolean> {
   try {
     const track = await api<Track>(`/tracks/${encodeURIComponent(urn)}`);
-    usePlayerStore.getState().addToQueue([track]);
+    usePlayerStore.getState().addToQueue([track], 'added');
     return true;
   } catch {
     toast.error(i18n.t('chat.room.errors.generic'));

@@ -5,6 +5,7 @@ import { useSettingsStore } from '../../stores/settings';
 import { api } from '../api';
 import { type PagedResponse, pagedUrl } from '../hooks';
 import { toUrn, trackUrn } from '../ids';
+import { setWaveContext } from '../queue-context';
 import {
   armPlaylistContinuation,
   armTrackWaveContinuation,
@@ -67,7 +68,7 @@ export async function waveQueue(): Promise<EntityQueue> {
     seedKind: 'user',
     hideListened: useSettingsStore.getState().soundwaveHideListened,
   });
-  return { tracks: batch.tracks };
+  return { tracks: batch.tracks, arm: () => setWaveContext('user') };
 }
 
 export async function similarQueue(): Promise<EntityQueue> {

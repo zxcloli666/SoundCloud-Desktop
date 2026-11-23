@@ -83,7 +83,7 @@ export async function autopilotContinueFromTrack(lastTrack: Track): Promise<void
       return;
     }
     console.debug('[autopilot] adding', fresh.length, 'wave tracks to queue');
-    usePlayerStore.getState().addToQueue(fresh);
+    usePlayerStore.getState().addToQueue(fresh, 'auto');
     usePlayerStore.getState().next();
   } catch (e) {
     console.error('[autopilot] continuation failed:', e);
@@ -219,7 +219,7 @@ async function topUpQueue(): Promise<void> {
     if (current.currentTrack?.urn !== seed.urn) return;
     const known = new Set(current.queue.map((track) => track.urn));
     const fresh = candidates.filter((track) => !known.has(track.urn));
-    if (fresh.length > 0) current.addToQueue(fresh);
+    if (fresh.length > 0) current.addToQueue(fresh, source ? undefined : 'auto');
   } catch (error) {
     console.debug('[autopilot] queue top-up failed:', error);
   } finally {

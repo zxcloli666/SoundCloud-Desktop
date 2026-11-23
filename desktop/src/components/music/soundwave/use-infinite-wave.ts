@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { setWaveContext } from '../../../lib/queue-context';
 import { fetchSmartWave, type SmartWaveSeedKind } from '../../../lib/soundwave';
 import { followWave, sendWaveFeedback, type WaveTally } from '../../../lib/wave-feedback';
 import type { Track } from '../../../stores/player';
@@ -150,6 +151,7 @@ export function useInfiniteWave(opts: {
       const { queue, queueIndex, currentTrack, isPlaying } = state;
       if (state.playSeq !== prev.playSeq) {
         waveSessionRef.current = queue.every((t) => tallyRef.current.owned.has(t.urn));
+        if (waveSessionRef.current) setWaveContext(seedKind);
       }
       const trackChanged = currentTrack?.urn !== prev.currentTrack?.urn;
       if (

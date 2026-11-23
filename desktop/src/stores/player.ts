@@ -1,5 +1,6 @@
 import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
+import type {QueueContext} from '../lib/queue-context';
 import {createThrottledJsonStorage} from '../lib/tauri-storage';
 
 const PERSISTED_QUEUE_BEHIND = 30;
@@ -214,6 +215,31 @@ export function shuffleArray<T>(arr: T[]): void {
   }
 }
 
+export type QueueOrigin = 'added' | 'auto';
+
+function withOrigin(
+  origins: Record<string, QueueOrigin>,
+  tracks: Track[],
+  origin: QueueOrigin | undefined,
+): Record<string, QueueOrigin> {
+  if (!origin || tracks.length === 0) return origins;
+  const next = { ...origins };
+  for (const track of tracks) next[track.urn] = origin;
+  return next;
+}
+
+function withOrigins(
+  origins: Record<string, QueueOrigin>,
+  tracks: Track[],
+): Record<string, QueueOrigin> {
+  const kept: Record<string, QueueOrigin> = {};
+  for (const track of tracks) {
+    const origin = origins[track.urn];
+    if (origin) kept[track.urn] = origin;
+  }
+  return kept;
+}
+
 interface PlayNextCursor {
   queue: Track[];
   index: number;
@@ -255,10 +281,13 @@ interface PlayerState {
   resetPitchSemitones: () => void;
   setPitchControlMode: (mode: PitchControlMode) => void;
   setQueue: (queue: Track[]) => void;
-  addToQueue: (tracks: Track[]) => void;
+  addToQueue: (tracks: Track[], origin?: QueueOrigin) => void;
   addToQueueNext: (tracks: Track[]) => void;
   addToQueueEnd: (tracks: Track[]) => void;
   playNextCursor: PlayNextCursor | null;
+  queueOrigins: Record<string, QueueOrigin>;
+  queueContext: QueueContext | null;
+  setQueueOrigin: (urn: string, origin: QueueOrigin | null) => void;
   removeFromQueue: (index: number) => void;
   moveInQueue: (from: number, to: number) => void;
   clearQueue: () => void;
@@ -295,6 +324,8 @@ export const usePlayerStore = create<PlayerState>()(
       pitchSemitones: 0,
       pitchControlMode: 'auto',
       playNextCursor: null,
+      queueOrigins: {},
+      queueContext: null,
 
       play: (track, queue) => {
         if (!playbackAllowed('play')) return;
@@ -316,6 +347,8 @@ export const usePlayerStore = create<PlayerState>()(
               queueIndex: 0,
               isPlaying: true,
               originalQueue: original,
+              queueOrigins: {},
+              queueContext: null,
             });
           } else {
             set({
@@ -326,6 +359,8 @@ export const usePlayerStore = create<PlayerState>()(
               queueIndex: realIdx,
               isPlaying: true,
               originalQueue: null,
+              queueOrigins: {},
+              queueContext: null,
             });
           }
         } else {
@@ -439,8 +474,9 @@ export const usePlayerStore = create<PlayerState>()(
           };
         }),
 
-      addToQueue: (tracks) =>
+      addToQueue: (tracks, origin) =>
         set((s) => {
+          const queueOrigins = withOrigin(s.queueOrigins, tracks, origin);
           if (s.shuffle && s.queueIndex >= 0) {
             // Insert new tracks at random positions after current index
             const queue = [...s.queue];
@@ -452,11 +488,13 @@ export const usePlayerStore = create<PlayerState>()(
             return {
               queue,
               originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+              queueOrigins,
             };
           }
           return {
             queue: [...s.queue, ...tracks],
             originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+            queueOrigins,
           };
         }),
 
@@ -475,6 +513,7 @@ export const usePlayerStore = create<PlayerState>()(
             queue,
             originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
             playNextCursor: { queue, index: s.queueIndex, count: queued + tracks.length },
+            queueOrigins: withOrigin(s.queueOrigins, tracks, 'added'),
           };
         }),
 
@@ -482,7 +521,17 @@ export const usePlayerStore = create<PlayerState>()(
         set((s) => ({
           queue: [...s.queue, ...tracks],
           originalQueue: s.originalQueue ? [...s.originalQueue, ...tracks] : null,
+          queueOrigins: withOrigin(s.queueOrigins, tracks, 'added'),
         })),
+
+      setQueueOrigin: (urn, origin) =>
+        set((s) => {
+          if ((s.queueOrigins[urn] ?? null) === origin) return {};
+          const queueOrigins = { ...s.queueOrigins };
+          if (origin) queueOrigins[urn] = origin;
+          else delete queueOrigins[urn];
+          return { queueOrigins };
+        }),
 
       removeFromQueue: (index) =>
         set((s) => {
@@ -516,7 +565,7 @@ export const usePlayerStore = create<PlayerState>()(
           return { queue, queueIndex };
         }),
 
-      clearQueue: () => set({ queue: [], queueIndex: -1, originalQueue: null }),
+      clearQueue: () => set({ queue: [], queueIndex: -1, originalQueue: null, queueOrigins: {} }),
 
       toggleShuffle: () => {
         const { shuffle, queue, queueIndex, currentTrack } = get();
@@ -613,11 +662,14 @@ export const usePlayerStore = create<PlayerState>()(
       version: 3,
       partialize: (state) => {
         const start = Math.max(0, state.queueIndex - PERSISTED_QUEUE_BEHIND);
+        const queue = state.queue.slice(start, start + PERSISTED_QUEUE_WINDOW);
         return {
           volume: state.volume,
           volumeBeforeMute: state.volumeBeforeMute,
           currentTrack: state.currentTrack,
-          queue: state.queue.slice(start, start + PERSISTED_QUEUE_WINDOW),
+          queue,
+          queueOrigins: withOrigins(state.queueOrigins, queue),
+          queueContext: state.queueContext,
           queueIndex: state.queueIndex < 0 ? state.queueIndex : state.queueIndex - start,
           shuffle: state.shuffle,
           repeat: state.repeat,
