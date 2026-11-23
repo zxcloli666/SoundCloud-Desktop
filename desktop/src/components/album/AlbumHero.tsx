@@ -107,7 +107,7 @@ function AlbumHeroImpl({ album, hasStar, aura }: AlbumHeroProps) {
             style={
               hasStar
                 ? {
-                    background: aura.nameGradient,
+                    backgroundImage: aura.nameGradient,
                     backgroundSize: '200% auto',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',

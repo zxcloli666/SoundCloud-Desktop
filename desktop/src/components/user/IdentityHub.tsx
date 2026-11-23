@@ -108,7 +108,7 @@ export function IdentityHub({
               style={
                 hasStar
                   ? {
-                      background: aura.nameGradient,
+                      backgroundImage: aura.nameGradient,
                       backgroundSize: '200% auto',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',

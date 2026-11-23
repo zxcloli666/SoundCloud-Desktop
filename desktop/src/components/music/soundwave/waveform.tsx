@@ -98,7 +98,7 @@ export const LiveWaveform = React.memo(
             className="absolute inset-0 pointer-events-none"
             aria-hidden
             style={{
-              background:
+              backgroundImage:
                 'linear-gradient(90deg, transparent 0%, rgb(var(--ink) / 0.05) 50%, transparent 100%)',
               backgroundSize: '200% 100%',
               animation: 'shimmer 1.8s ease-in-out infinite',

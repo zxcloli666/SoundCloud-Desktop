@@ -150,7 +150,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
           style={{
             fontSize: 'clamp(36px, 5.5vw, 64px)',
             letterSpacing: '0.08em',
-            background:
+            backgroundImage:
               'linear-gradient(180deg, rgb(var(--ink) / 0.98) 0%, rgba(232,213,255,0.95) 35%, rgba(192,132,252,0.9) 70%, rgba(139,92,246,0.55) 100%)',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',
@@ -183,7 +183,7 @@ export const SoundWaveLockOverlay = React.memo(function SoundWaveLockOverlay() {
         <h2
           className="flex items-center justify-center gap-2.5 text-[26px] sm:text-[30px] font-bold tracking-tight text-ink leading-tight"
           style={{
-            background:
+            backgroundImage:
               'linear-gradient(180deg, #ffffff 0%, rgba(232,213,255,0.95) 50%, rgba(192,132,252,0.85) 100%)',
             WebkitBackgroundClip: 'text',
             backgroundClip: 'text',

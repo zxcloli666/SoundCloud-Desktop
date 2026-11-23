@@ -57,7 +57,7 @@ export function ListeningView({
             <span
               className="block h-[3px] mt-[9px] w-full rounded-full motion-reduce:animate-none"
               style={{
-                background:
+                backgroundImage:
                   'linear-gradient(90deg, rgb(var(--ink) / 0.06), var(--color-accent), rgb(var(--ink) / 0.06))',
                 backgroundSize: '200% 100%',
                 animation: 'vx-shimmer 1.4s linear infinite',
