@@ -1,7 +1,7 @@
 import React from 'react';
 import { cancelPreload, preloadTrack } from '../../lib/audio';
 import { art, dur, fc } from '../../lib/formatters';
-import { Headphones, musicIcon14, pauseBlack11, playBlack11 } from '../../lib/icons';
+import { Headphones, musicIcon14, Pause, Play } from '../../lib/icons';
 import { useRowPick } from '../../lib/useRowPick';
 import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
 import { useTrackPlay } from '../../lib/useTrackPlay';
@@ -47,14 +47,19 @@ export const RelatedRow = React.memo(
             </div>
           )}
           <span
-            className={`absolute inset-0 flex items-center justify-center transition-all duration-200 ${
+            data-scheme="dark"
+            className={`absolute inset-0 flex items-center justify-center transition-[opacity,background-color] duration-200 ${
               isThisPlaying
                 ? 'bg-black/35 opacity-100'
                 : 'opacity-0 group-hover:bg-black/35 group-hover:opacity-100'
             }`}
           >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white">
-              {isThisPlaying ? pauseBlack11 : playBlack11}
+            <span className="flex h-7 w-7 items-center justify-center rounded-full border border-(--disc-line) bg-(--disc) text-(--disc-ink)">
+              {isThisPlaying ? (
+                <Pause size={11} fill="currentColor" strokeWidth={0} />
+              ) : (
+                <Play size={11} fill="currentColor" strokeWidth={0} className="ml-px" />
+              )}
             </span>
           </span>
         </button>
