@@ -53,7 +53,7 @@ export const LEAD_MIN_SEC = 0.15;
 const LEAD_MAX_SEC = 4;
 const LEAD_PART = 0.8;
 const PARK_EARLY_SEC = 0.03;
-const PARK_PATIENCE_SEC = 4;
+const PARK_PATIENCE_SEC = 8;
 
 export function parkStep(target: number, aim: number, canPlay: boolean): ParkStep {
   const late = target - aim;

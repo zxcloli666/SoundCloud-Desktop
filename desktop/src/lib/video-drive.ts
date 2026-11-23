@@ -21,7 +21,8 @@ const HOLD_FRAME_MS = 700;
 const END_HOLD_MS = 1_500;
 const FAR_SEC = 10;
 const MOVED_SEC = 0.1;
-const LAG_LEARN_MS = 2_500;
+const START_PATIENCE_MS = 4_000;
+const HOP_SEC = 3;
 const LAG_MAX_SEC = 0.6;
 const EARLY_SEC = 1;
 const HAVE_METADATA = 1;
@@ -83,10 +84,16 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
   const play = () => {
     wantPlay = true;
     if (!video.paused) return;
-    playedAt = performance.now();
-    playedFrom = video.currentTime;
+    rollFrom(video.currentTime);
     void video.play().catch(() => {});
   };
+
+  const rollFrom = (time: number) => {
+    playedAt = performance.now();
+    playedFrom = time;
+  };
+
+  const rolls = () => video.currentTime - playedFrom >= MOVED_SEC;
 
   const pause = () => {
     wantPlay = false;
@@ -173,14 +180,19 @@ export function driveVideo({ host, urn, video, slot, picked, clock, still, onSee
 
   const rejoin = (target: number, rate: number) => {
     const behind = (target - video.currentTime) / rate;
-    if (!video.paused && behind > 0 && performance.now() - playedAt < LAG_LEARN_MS)
-      startLag = Math.min(startLag + behind, LAG_MAX_SEC);
-    park(target, rate, leadOf(target));
+    if (video.paused || behind < 0) return park(target, rate, leadOf(target));
+    const sincePlay = performance.now() - playedAt;
+    if (!rolls() && sincePlay < START_PATIENCE_MS) return;
+    if (rolls() && sincePlay < START_PATIENCE_MS) startLag = Math.min(behind, LAG_MAX_SEC);
+    const ahead = target + (LEAD_MIN_SEC + startLag) * rate;
+    if (behind > HOP_SEC || !buffered(video, ahead)) return park(target, rate, leadOf(target));
+    rollFrom(ahead);
+    video.currentTime = ahead;
   };
 
   const inStep = () => {
     play();
-    if (video.currentTime - playedFrom < MOVED_SEC || !canPlay()) return;
+    if (!rolls() || !canPlay()) return;
     ready = true;
     clearWait();
   };
