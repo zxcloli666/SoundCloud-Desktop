@@ -23,7 +23,7 @@ export const LibrarySubHeader = memo(function LibrarySubHeader({
   const { t } = useTranslation();
   return (
     <div className="mb-6">
-      <div className="mb-1 flex h-8 items-center justify-between gap-4">
+      <div className="mb-1 flex h-8 items-center gap-3">
         <Link
           to="/library"
           className="inline-flex shrink-0 items-center gap-1 text-[12px] font-semibold text-ink-40 hover:text-ink-85 transition-colors"
