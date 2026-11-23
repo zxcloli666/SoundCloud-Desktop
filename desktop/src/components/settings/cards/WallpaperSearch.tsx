@@ -234,7 +234,7 @@ export function WallpaperSearch({ onPick }: { onPick: (url: string) => Promise<v
                 decoding="async"
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <span className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+              <span data-scheme="dark" className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
                 {picking === hit.id ? (
                   <Loader2 size={20} className="text-ink animate-spin" />
                 ) : (

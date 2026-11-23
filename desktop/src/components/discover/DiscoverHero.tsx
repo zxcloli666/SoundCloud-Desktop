@@ -77,7 +77,7 @@ function DiscoverHeroImpl({
               type="button"
               onClick={onSurpriseMe}
               disabled={isSurprising}
-              className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-accent px-7 text-[13px] font-semibold text-white transition-colors hover:bg-accent-hover disabled:cursor-default disabled:opacity-60"
+              className="inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full bg-accent px-7 text-[13px] font-semibold text-accent-contrast transition-colors hover:bg-accent-hover disabled:cursor-default disabled:opacity-60"
             >
               <Sparkles size={14} />
               {t('discover.surpriseMe')}

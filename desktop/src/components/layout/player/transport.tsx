@@ -129,7 +129,7 @@ export const AbLoopBtn = React.memo(() => {
     >
       {repeatAbIcon16}
       {awaitingB && (
-        <span className="absolute right-1 top-1 h-1.5 w-1.5 animate-pulse rounded-full bg-accent motion-reduce:animate-none" />
+        <span className="absolute right-1 top-1 h-1.5 w-1.5 animate-pulse rounded-full bg-accent motion-reduce:animate-none [[data-perf=light]_&]:animate-none" />
       )}
     </button>
   );

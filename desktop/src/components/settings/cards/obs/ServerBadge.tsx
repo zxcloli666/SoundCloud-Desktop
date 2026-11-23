@@ -11,7 +11,7 @@ export function ServerBadge({ status, port }: { status: ObsStatus | null; port: 
     return (
       <div className="flex items-center gap-2 text-[12px] font-medium text-ok">
         <span className="relative flex size-2">
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-60" />
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-ok opacity-60 motion-reduce:animate-none [[data-perf=light]_&]:animate-none" />
           <span className="relative inline-flex size-2 rounded-full bg-ok" />
         </span>
         {t('settings.obsLive', { address: obsOrigin(port).replace('http://', '') })}
