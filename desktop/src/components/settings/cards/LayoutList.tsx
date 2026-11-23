@@ -25,6 +25,7 @@ export interface LayoutListItem {
   label: ReactNode;
   hint?: string;
   dimmed?: boolean;
+  fixed?: boolean;
   trailing?: ReactNode;
 }
 
@@ -72,6 +73,7 @@ function Grip(props: HTMLAttributes<HTMLButtonElement>) {
 export function LayoutRow({ item, ghost = false }: { item: LayoutListItem; ghost?: boolean }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: item.id,
+    disabled: item.fixed,
   });
   const lifted = isDragging && !ghost;
 
@@ -91,7 +93,7 @@ export function LayoutRow({ item, ghost = false }: { item: LayoutListItem; ghost
         boxShadow: lifted ? LIFTED_SHADOW : undefined,
       }}
     >
-      <Grip {...attributes} {...listeners} />
+      {item.fixed ? <span className="w-6 shrink-0" /> : <Grip {...attributes} {...listeners} />}
       <RowFace item={item} />
     </div>
   );

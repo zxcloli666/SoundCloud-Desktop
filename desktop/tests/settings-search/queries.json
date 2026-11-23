@@ -201,7 +201,7 @@
  {"q":"кнопки и ползунки цветом обложки","lang":"ru","want":["settings.coverAccent"]},
  {"q":"свои картинки для css","lang":"ru","want":["settings.customCssAssets"]},
  {"q":"закреплённые плейлисты в сайдбаре","lang":"ru","want":["settings.layoutPinned"]},
- {"q":"убрать микс из течения","lang":"ru","want":["settings.layoutRiverSections"]},
+ {"q":"убрать микс из течения","lang":"ru","want":["settings.layoutStations"]},
  {"q":"что писать в профиле дискорда","lang":"ru","want":["settings.discordRpcMode"]},
  {"q":"показывать в ластфм что играет сейчас","lang":"ru","want":["settings.scrobbleNowPlaying"]},
  {"q":"внешний вид виджета для стрима","lang":"ru","want":["settings.obsTheme"]},

@@ -905,23 +905,15 @@
       "waveDesc": "취향 그래프로 만드는 끝없는 믹스: 추천 곡, 이웃 아티스트, 신곡, 스킵 줄이기까지.",
       "cluster": {
         "wave": "웨이브",
-        "waveDesc": "끝없는 믹스: 최근 좋아요, 아티스트 그래프, 트랙 기반 AI 추천. 많이 들을수록 더 정확해져요.",
         "for_you": "나를 위한 추천",
         "for_youDesc": "취향에 가장 잘 맞는 곡이에요.",
         "top_artists": "최애 아티스트",
-        "top_artistsDesc": "가장 많이 듣는 아티스트의 새 트랙을 하나씩 골랐어요.",
         "adjacent": "이웃한 세계",
-        "adjacentDesc": "좋아하는 아티스트와 함께 자주 재생되는 아티스트예요.",
         "fresh_drops": "따끈한 신곡",
-        "fresh_dropsDesc": "팔로우한 아티스트가 최근 올린 곡이에요.",
         "same_vibe": "비슷한 바이브",
-        "same_vibeDesc": "나의 감정 스펙트럼에 맞는 사운드예요.",
         "deep_cuts": "더 깊이",
-        "deep_cutsDesc": "잘 알려지지 않았지만 내 취향에 맞는 곡이에요.",
         "discover": "발견",
-        "discoverDesc": "시작하기 좋은 새롭고 인기 있는 트랙이에요.",
-        "moments": "모먼트",
-        "momentsDesc": "내 웨이브 트랙의 가장 좋은 30초. 넘겨 보세요."
+        "moments": "모먼트"
       }
     },
     "similar": {
@@ -949,9 +941,6 @@
       "adapts": "흐름이 나에게 맞춰져요",
       "queueInf": "강이 대기열을 채워요. 흐름은 멈추지 않아요",
       "playWave": "흐름 타기",
-      "freshBadge": "신곡",
-      "relToday": "오늘",
-      "relYesterday": "어제",
       "deltaNote": "흐름은 계속돼요. 대기열이 알아서 채워져요",
       "archiveTitle": "잔잔한 물가",
       "archiveWhy": "좋아요한 곡과 나를 위한 추천: 흐름 밖의 잔잔한 물"
@@ -1459,8 +1448,7 @@
     "layoutPinnedEmpty": "재생 목록 페이지에서 고정하면 여기에 표시돼요",
     "layoutUnpin": "고정 해제",
     "layoutRiver": "웨이브 흐름",
-    "layoutRiverSections": "흐름 섹션",
-    "layoutRiverSectionsDesc": "흐름의 모양은 그대로 유지되고, 숨긴 섹션만 빠져요",
+    "layoutStations": "웨이브 스테이션",
     "layoutSidebarHint": "사이드바에서도 항목과 고정된 재생 목록을 바로 드래그할 수 있어요",
     "layoutPageHint": "빈 블록은 보여 줄 내용이 생길 때까지 자동으로 숨겨져요",
     "obs": "OBS 및 방송",

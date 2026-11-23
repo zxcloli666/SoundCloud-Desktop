@@ -926,23 +926,15 @@
       "waveDesc": "Mezcla infinita de tu grafo de gustos: favoritos, afines, novedades, sin saltos.",
       "cluster": {
         "wave": "Wave",
-        "waveDesc": "Mezcla infinita: me gusta recientes, grafo de artistas y recomendaciones de IA a partir de pistas. Mejora cuanto más escuchas.",
         "for_you": "Para ti",
         "for_youDesc": "Las mejores coincidencias con tu gusto.",
         "top_artists": "Tus favoritos",
-        "top_artistsDesc": "Los artistas que más escuchas: una pista nueva de cada uno.",
         "adjacent": "Mundos cercanos",
-        "adjacentDesc": "Artistas que suenan junto a los que amas.",
         "fresh_drops": "Novedades",
-        "fresh_dropsDesc": "Lo último de los artistas que sigues.",
         "same_vibe": "El mismo vibe",
-        "same_vibeDesc": "Sonido dentro de tu espectro emocional.",
         "deep_cuts": "Más a fondo",
-        "deep_cutsDesc": "Fuera de lo habitual, pero en tu tono.",
         "discover": "Para empezar",
-        "discoverDesc": "Pistas nuevas y populares para empezar.",
-        "moments": "Momentos",
-        "momentsDesc": "Los mejores 30 segundos de las pistas de tu wave. Desliza."
+        "moments": "Momentos"
       }
     },
     "similar": {
@@ -970,9 +962,6 @@
       "adapts": "la corriente se adapta a ti",
       "queueInf": "el río rellena tu cola: la corriente nunca se detiene",
       "playWave": "Seguir la corriente",
-      "freshBadge": "NEW",
-      "relToday": "hoy",
-      "relYesterday": "ayer",
       "deltaNote": "la corriente continúa: la cola se rellena sola",
       "archiveTitle": "Remansos",
       "archiveWhy": "tus me gusta y selecciones para ti: aguas tranquilas fuera de la corriente"
@@ -1499,8 +1488,7 @@
     "layoutPinnedEmpty": "Fija una playlist desde su página y aparecerá aquí",
     "layoutUnpin": "Desfijar",
     "layoutRiver": "Río de wave",
-    "layoutRiverSections": "Secciones del río",
-    "layoutRiverSectionsDesc": "el río mantiene su forma, los estantes ocultos simplemente desaparecen",
+    "layoutStations": "Emisoras de Wave",
     "layoutSidebarHint": "También puedes arrastrar elementos y playlists fijadas directamente en la barra lateral",
     "layoutPageHint": "Los bloques vacíos se ocultan solos hasta que haya algo que mostrar",
     "obs": "OBS y streaming",

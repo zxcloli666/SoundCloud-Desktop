@@ -12,6 +12,7 @@ import { useVoiceStore } from '../store';
 import { buttons, placeButton } from './app-buttons';
 import { applySetting, readSettings } from './app-settings';
 import { setEffect, setSleep } from './app-sound';
+import { playStation } from './app-stations';
 import { dislike, superlike } from './app-taste';
 import { openRooms, together } from './app-together';
 import type { Brief } from './context';
@@ -128,4 +129,5 @@ export const appPort: AppPort = {
   openRooms,
   buttons,
   placeButton,
+  playStation,
 };

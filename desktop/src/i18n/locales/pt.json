@@ -935,23 +935,15 @@
       "waveDesc": "Mix infinito do seu grafo de gosto: seleções, vizinhos, lançamentos novos e faixas que você não pula.",
       "cluster": {
         "wave": "Onda",
-        "waveDesc": "Mix infinito: curtidas recentes, grafo de artistas e recomendações de IA a partir das faixas. Fica mais certeiro quanto mais você ouve.",
         "for_you": "Para você",
         "for_youDesc": "As melhores combinações com o seu gosto.",
         "top_artists": "Seus favoritos",
-        "top_artistsDesc": "Artistas que você mais toca, com uma faixa nova de cada.",
         "adjacent": "Mundos vizinhos",
-        "adjacentDesc": "Artistas tocados junto com os que você ama.",
         "fresh_drops": "Lançamentos novos",
-        "fresh_dropsDesc": "Novidades de artistas que você segue.",
         "same_vibe": "Mesma vibe",
-        "same_vibeDesc": "Som dentro do seu espectro emocional.",
         "deep_cuts": "Mais fundo",
-        "deep_cutsDesc": "Fora do caminho óbvio, mas no seu tom.",
         "discover": "Descobrir",
-        "discoverDesc": "Faixas novas e populares para começar.",
-        "moments": "Momentos",
-        "momentsDesc": "Os melhores 30 segundos das faixas da sua onda. Deslize."
+        "moments": "Momentos"
       }
     },
     "similar": {
@@ -979,9 +971,6 @@
       "adapts": "a corrente se adapta a você",
       "queueInf": "o rio reabastece sua fila, a corrente nunca para",
       "playWave": "Seguir a corrente",
-      "freshBadge": "NOVO",
-      "relToday": "hoje",
-      "relYesterday": "ontem",
       "deltaNote": "a corrente segue, a fila se reabastece sozinha",
       "archiveTitle": "Remansos",
       "archiveWhy": "suas curtidas e seleções para você, águas paradas fora da corrente"
@@ -1520,8 +1509,7 @@
     "layoutPinnedEmpty": "Fixe uma playlist na página dela e ela aparece aqui",
     "layoutUnpin": "Desafixar",
     "layoutRiver": "Rio de ondas",
-    "layoutRiverSections": "Seções do rio",
-    "layoutRiverSectionsDesc": "o rio mantém a forma, as prateleiras ocultas simplesmente saem",
+    "layoutStations": "Estações da Onda",
     "layoutSidebarHint": "Você também pode arrastar itens e playlists fixadas direto na barra lateral",
     "layoutPageHint": "Blocos vazios se ocultam sozinhos até haver algo para mostrar",
     "obs": "OBS e streaming",

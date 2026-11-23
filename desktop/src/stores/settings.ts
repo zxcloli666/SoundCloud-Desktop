@@ -14,8 +14,9 @@ import {
   type LayoutEntry,
   type LayoutScope,
   type LayoutState,
-  type RiverHiddenEntry,
+  type StationId,
 } from '../lib/layout';
+import { layoutsFromRiver } from '../lib/legacy/river';
 import type { PerfMode } from '../lib/perf';
 import type { SchemeChoice } from '../lib/scheme';
 import { tauriStorage } from '../lib/tauri-storage';
@@ -26,6 +27,7 @@ import type { VideoKind } from './player';
 export type ThemePreset = 'soundcloud' | 'dark' | 'neon' | 'forest' | 'crimson' | 'custom';
 export type StartupPage = 'home' | 'search' | 'library' | 'settings';
 export type HomeShelfTab = 'liked' | 'releases' | 'artists' | 'playlists' | 'history';
+export type HomeAside = 'next' | 'wave';
 export type CloseAction = 'tray' | 'quit';
 export type DiscordRpcMode = 'track' | 'artist' | 'activity';
 export type StreamQuality = 'auto' | 'sq' | 'hq' | 'uq';
@@ -195,11 +197,12 @@ export interface SettingsState {
   customCss: string;
   customCssEnabled: boolean;
   layouts: LayoutState;
-  riverHidden: RiverHiddenEntry[];
   liveBackground: boolean;
   deckCoverOpacity: number;
   homeShelfTab: HomeShelfTab;
   homeShelfOpen: boolean;
+  homeAside: HomeAside;
+  homeStation: StationId;
   setAccentColor: (color: string) => void;
   setBgPrimary: (bg: string) => void;
   setThemePreset: (id: ThemePreset) => void;
@@ -301,11 +304,12 @@ export interface SettingsState {
   setCustomCssEnabled: (v: boolean) => void;
   setLayout: (scope: LayoutScope, entries: LayoutEntry[]) => void;
   resetLayout: (scope: LayoutScope) => void;
-  setRiverHidden: (ids: RiverHiddenEntry[]) => void;
   setLiveBackground: (v: boolean) => void;
   setDeckCoverOpacity: (opacity: number) => void;
   setHomeShelfTab: (tab: HomeShelfTab) => void;
   setHomeShelfOpen: (open: boolean) => void;
+  setHomeAside: (aside: HomeAside) => void;
+  setHomeStation: (station: StationId) => void;
   resetTheme: () => void;
 }
 
@@ -407,11 +411,12 @@ const DEFAULTS = {
   customCss: '',
   customCssEnabled: true,
   layouts: EMPTY_LAYOUT,
-  riverHidden: [] as RiverHiddenEntry[],
   liveBackground: true,
   deckCoverOpacity: 1,
   homeShelfTab: 'liked' as HomeShelfTab,
   homeShelfOpen: true,
+  homeAside: 'next' as HomeAside,
+  homeStation: 'wave' as StationId,
 };
 
 export const useSettingsStore = create<SettingsState>()(
@@ -609,16 +614,14 @@ export const useSettingsStore = create<SettingsState>()(
       setLayout: (scope, entries) =>
         set((s) => ({ layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: entries } })),
       resetLayout: (scope) =>
-        set((s) => ({
-          layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: [] },
-          riverHidden: scope === 'home' ? [] : s.riverHidden,
-        })),
-      setRiverHidden: (riverHidden) => set({ riverHidden }),
+        set((s) => ({ layouts: { ...EMPTY_LAYOUT, ...s.layouts, [scope]: [] } })),
       setLiveBackground: (liveBackground) => set({ liveBackground }),
       setDeckCoverOpacity: (opacity) =>
         set({ deckCoverOpacity: Math.min(1, Math.max(0, opacity)) }),
       setHomeShelfTab: (homeShelfTab) => set({ homeShelfTab }),
       setHomeShelfOpen: (homeShelfOpen) => set({ homeShelfOpen }),
+      setHomeAside: (homeAside) => set({ homeAside }),
+      setHomeStation: (homeStation) => set({ homeStation }),
       resetTheme: () =>
         set({
           scheme: DEFAULTS.scheme,
@@ -643,13 +646,14 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 25,
+      version: 26,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
           highQualityStreaming?: boolean;
+          riverHidden?: string[];
         };
-        const { highQualityStreaming, ...kept } = prev;
+        const { highQualityStreaming, riverHidden, ...kept } = prev;
         // v13 → v14: diversity-slider (0..1) → toggle ('similar' | 'diverse').
         // > 0.5 трактуем как 'diverse', иначе 'similar'.
         const inferredMode: 'similar' | 'diverse' =
@@ -676,6 +680,9 @@ export const useSettingsStore = create<SettingsState>()(
         }
         if (version < 25) {
           next.layouts = deckFromPlayer(next.layouts);
+        }
+        if (version < 26) {
+          next.layouts = layoutsFromRiver(riverHidden ?? [], next.layouts);
         }
         return next;
       },
@@ -775,11 +782,12 @@ export const useSettingsStore = create<SettingsState>()(
         customCss: s.customCss,
         customCssEnabled: s.customCssEnabled,
         layouts: s.layouts,
-        riverHidden: s.riverHidden,
         liveBackground: s.liveBackground,
         deckCoverOpacity: s.deckCoverOpacity,
         homeShelfTab: s.homeShelfTab,
         homeShelfOpen: s.homeShelfOpen,
+        homeAside: s.homeAside,
+        homeStation: s.homeStation,
       }),
     },
   ),

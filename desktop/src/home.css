@@ -49,6 +49,33 @@
   -webkit-backdrop-filter: blur(var(--glass-blur-soft));
 }
 
+.station-strip {
+  --fade-before: 0px;
+  --fade-after: 0px;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 var(--fade-before),
+    #000 calc(100% - var(--fade-after)),
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 var(--fade-before),
+    #000 calc(100% - var(--fade-after)),
+    transparent
+  );
+}
+
+.station-strip[data-before] {
+  --fade-before: 32px;
+}
+
+.station-strip[data-after] {
+  --fade-after: 32px;
+}
+
 .deck-lyric-in {
   animation: deck-lyric-in 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }

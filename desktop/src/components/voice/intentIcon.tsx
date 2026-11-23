@@ -101,6 +101,7 @@ const TOOL_ICONS: Record<string, (size: number) => ReactNode> = {
   forget: (s) => <Eraser size={s} />,
   sleep_timer: (s) => <Moon size={s} />,
   effect: (s) => <Waves size={s} />,
+  play_station: (s) => <Radio size={s} />,
   player_buttons: (s) => <LayoutDashboard size={s} />,
   player_button: (s) => <LayoutDashboard size={s} />,
   dislike: (s) => <ThumbsDown size={s} />,

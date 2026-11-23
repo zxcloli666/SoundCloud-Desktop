@@ -47,6 +47,10 @@ export function setLikedUrn(urn: string, liked: boolean) {
 }
 
 /** Check if a track URN is liked */
+export function isTrackLiked(track: Track): boolean {
+  return !!track.user_favorite || isUrnLiked(track.urn);
+}
+
 export function isUrnLiked(urn: string): boolean {
   return _likedUrns.has(urn);
 }

@@ -166,6 +166,10 @@ export function fakeApp(): FakeApp {
     setEffect: (effect) => {
       calls.push(`effect:${effect}`);
     },
+    playStation: async (station) => {
+      calls.push(`station:${station}`);
+      return station !== 'fresh_drops';
+    },
     dislike: async (on) => {
       calls.push(`dislike:${on}`);
       return 'ok';

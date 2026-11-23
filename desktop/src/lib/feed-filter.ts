@@ -13,7 +13,7 @@ function feedFilter(entries: BlockedArtist[], keywords: string[]): FeedFilter {
   return (track) => !blocked(track) && !matchesKeyword(track);
 }
 
-function currentFeedFilter(): FeedFilter {
+export function currentFeedFilter(): FeedFilter {
   return feedFilter(
     useBlockedArtistsStore.getState().entries,
     useSettingsStore.getState().blockedKeywords,

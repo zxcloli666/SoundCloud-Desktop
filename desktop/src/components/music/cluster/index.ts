@@ -2,6 +2,7 @@ export { fetchArtistQueue } from './artistQueue';
 export { ClusterHeader } from './ClusterHeader';
 export { ClusterRow } from './ClusterRow';
 export { EmptyState as ClusterEmptyState } from './EmptyState';
+export { homeWaveQuery } from './homeWave';
 export { NeighborCard } from './NeighborCard';
 export { NeighborsRow } from './NeighborsRow';
 export { SkeletonState as ClusterSkeletonState } from './SkeletonState';
@@ -16,6 +17,8 @@ export type {
 } from './types';
 export {
   fetchAndHydrate as fetchAndHydrateClusters,
+  keepVisible,
+  loadClusters,
   useClusterWave,
   waveQueue,
 } from './useClusterWave';

@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { api } from '../../../lib/api';
 import { type FeedFilter, useFeedFilter } from '../../../lib/feed-filter';
 import { trackUrn } from '../../../lib/ids';
+import { queryClient } from '../../../lib/query-client';
 import { fetchTracksByUrns } from '../../../lib/soundwave';
 import type { Track } from '../../../stores/player';
 import type {
@@ -35,6 +36,11 @@ const KNOWN_IDS: ReadonlyArray<ClusterId> = [
   'discover',
 ];
 
+export interface ClusterQuery {
+  queryKey: ReadonlyArray<unknown>;
+  url: string;
+}
+
 export interface UseClusterWaveOptions {
   queryKey: ReadonlyArray<unknown>;
   url: string | null;
@@ -57,7 +63,17 @@ export function useClusterWave(opts: UseClusterWaveOptions): UseQueryResult<Clus
   });
 }
 
-function keepVisible(data: ClusterData, keep: FeedFilter): ClusterData {
+export function loadClusters({ queryKey, url }: ClusterQuery): Promise<ClusterData> {
+  return queryClient.fetchQuery({
+    queryKey,
+    queryFn: () => fetchAndHydrate(url),
+    staleTime: STALE_MS,
+    gcTime: GC_MS,
+    retry: false,
+  });
+}
+
+export function keepVisible(data: ClusterData, keep: FeedFilter): ClusterData {
   const hidden = new Set(
     data.clusters.flatMap((c) => c.tracks.filter((t) => !keep(t)).map((t) => t.urn)),
   );

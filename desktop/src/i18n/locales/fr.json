@@ -926,23 +926,15 @@
       "waveDesc": "Mix infini selon votre graphe de goûts : favoris, voisins, nouveautés, sans skips.",
       "cluster": {
         "wave": "Wave",
-        "waveDesc": "Mix infini : j'aime récents, graphe d'artistes et recommandations IA à partir des titres. Plus vous écoutez, plus il est précis.",
         "for_you": "Pour vous",
         "for_youDesc": "Les meilleures correspondances à vos goûts.",
         "top_artists": "Vos favoris",
-        "top_artistsDesc": "Les artistes que vous écoutez le plus, un titre récent de chacun.",
         "adjacent": "Mondes voisins",
-        "adjacentDesc": "Les artistes écoutés avec ceux que vous aimez.",
         "fresh_drops": "Nouveautés",
-        "fresh_dropsDesc": "Ajouts récents des artistes que vous suivez.",
         "same_vibe": "Même vibe",
-        "same_vibeDesc": "Des sons dans votre spectre émotionnel.",
         "deep_cuts": "Plus en profondeur",
-        "deep_cutsDesc": "Hors des sentiers battus, mais dans votre tonalité.",
         "discover": "Découvrir",
-        "discoverDesc": "Des titres récents et populaires pour commencer.",
-        "moments": "Moments",
-        "momentsDesc": "Les 30 meilleures secondes des titres de votre wave. Faites défiler."
+        "moments": "Moments"
       }
     },
     "similar": {
@@ -970,9 +962,6 @@
       "adapts": "le courant s'adapte à vous",
       "queueInf": "la rivière remplit votre file d'attente, le courant ne s'arrête jamais",
       "playWave": "Suivre le courant",
-      "freshBadge": "NEW",
-      "relToday": "aujourd'hui",
-      "relYesterday": "hier",
       "deltaNote": "le courant continue, la file d'attente se remplit toute seule",
       "archiveTitle": "Bras morts",
       "archiveWhy": "vos j'aime et les sélections pour vous, de l'eau calme hors du courant"
@@ -1499,8 +1488,7 @@
     "layoutPinnedEmpty": "Épinglez une playlist depuis sa page et elle apparaîtra ici",
     "layoutUnpin": "Désépingler",
     "layoutRiver": "Rivière wave",
-    "layoutRiverSections": "Sections de la rivière",
-    "layoutRiverSectionsDesc": "la rivière garde sa forme, les étagères masquées disparaissent simplement",
+    "layoutStations": "Stations Wave",
     "layoutSidebarHint": "Vous pouvez aussi faire glisser les éléments et les playlists épinglées directement dans la barre latérale",
     "layoutPageHint": "Les blocs vides se masquent d'eux-mêmes tant qu'il n'y a rien à afficher",
     "obs": "OBS et streaming",
