@@ -24,9 +24,12 @@ function Mark({ heard }: { heard: boolean }) {
     );
   }
   return (
-    <span className="absolute left-1.5 top-1.5 rounded-full bg-accent px-1.5 text-[8.5px] font-bold uppercase leading-[15px] tracking-[0.12em] text-accent-contrast">
-      {t('releases.new')}
-    </span>
+    <span
+      role="img"
+      aria-label={t('releases.new')}
+      title={t('releases.new')}
+      className="absolute left-2 top-2 size-2 rounded-full bg-accent ring-2 ring-black/40"
+    />
   );
 }
 
