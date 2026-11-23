@@ -78,8 +78,15 @@
 | `[data-ui="progress"]` | Полоса прогресса в полноэкранном плеере |
 | `[data-ui="volume"]` | Громкость |
 | `[data-ui="namecard"]` | Карточка, которая открывается по названию трека |
-| `[data-ui="queue"]` | Панель очереди |
-| `[data-ui="queue-item"]` | Трек в очереди |
+| `[data-ui="queue"]` | Панель очереди, `[data-state]`: `open` или `closed` |
+| `[data-ui="queue-hero"]` | Текущий трек вверху очереди: обложка, название, прогресс |
+| `[data-ui="queue-clear"]` | Кнопка очистки в шапке очереди |
+| `[data-ui="queue-close"]` | Кнопка закрытия в шапке очереди |
+| `[data-ui="queue-played"]` | Переключатель группы прослушанных в очереди |
+| `[data-ui="queue-section"]` | Подпись раздела в очереди, `[data-group]`: `added`, `context` или `auto` |
+| `[data-ui="queue-item"]` | Трек в очереди, `[data-tone]`: `played`, `now` или `next` |
+| `[data-ui="queue-remove"]` | Кнопка удаления у трека в очереди |
+| `[data-ui="queue-empty"]` | Пустая очередь с кнопкой «Запустить волну» |
 | `[data-ui="lyrics"]` | Полноэкранный текст песни |
 | `[data-ui="lyrics-backdrop"]` | Размытый фон полноэкранного плеера |
 | `[data-ui="lyrics-line"]` | Строка текста, состояние в `data-state` |

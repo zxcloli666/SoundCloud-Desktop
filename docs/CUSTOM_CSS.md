@@ -78,8 +78,15 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="progress"]` | Progress bar in the full screen player |
 | `[data-ui="volume"]` | Volume |
 | `[data-ui="namecard"]` | Card that opens from the track title |
-| `[data-ui="queue"]` | Queue panel |
-| `[data-ui="queue-item"]` | A track in the queue |
+| `[data-ui="queue"]` | Queue panel, `[data-state]` is `open` or `closed` |
+| `[data-ui="queue-hero"]` | Now playing at the top of the queue: cover, title, progress |
+| `[data-ui="queue-clear"]` | Clear button in the queue header |
+| `[data-ui="queue-close"]` | Close button in the queue header |
+| `[data-ui="queue-played"]` | Played group toggle in the queue |
+| `[data-ui="queue-section"]` | Section label in the queue, `[data-group]` is `added`, `context` or `auto` |
+| `[data-ui="queue-item"]` | A track in the queue, `[data-tone]` is `played`, `now` or `next` |
+| `[data-ui="queue-remove"]` | Remove button on a queue track |
+| `[data-ui="queue-empty"]` | Empty queue with the Play the wave button |
 | `[data-ui="lyrics"]` | Full-screen lyrics |
 | `[data-ui="lyrics-backdrop"]` | Blurred background of the full screen player |
 | `[data-ui="lyrics-line"]` | A line of lyrics, with `data-state` |
