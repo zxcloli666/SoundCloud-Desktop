@@ -6,8 +6,7 @@ const transparentFragmentSource = fragmentSource
   .replace(
     'gl_FragColor=vec4(color,1.0);',
     `vec3 lightOnly = clamp(color, 0.0, 1.0);
-    float lightAlpha = max(lightOnly.r, max(lightOnly.g, lightOnly.b));
-    gl_FragColor = vec4(lightOnly / max(lightAlpha, 0.0001), lightAlpha);`,
+    gl_FragColor = vec4(lightOnly, max(lightOnly.r, max(lightOnly.g, lightOnly.b)));`,
   );
 
 const vertexSource = `
@@ -69,7 +68,6 @@ function compile(gl: WebGLRenderingContext, type: number, source: string) {
 export function createAmbientMatter(canvas: HTMLCanvasElement): AmbientMatter | null {
   const gl = canvas.getContext('webgl', {
     alpha: true,
-    premultipliedAlpha: false,
     antialias: false,
     depth: false,
     stencil: false,
