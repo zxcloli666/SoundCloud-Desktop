@@ -434,7 +434,10 @@ jobs:
 
       - name: Install flatpak-builder-tools
         run: |
-          git clone --depth=1 https://github.com/flatpak/flatpak-builder-tools.git /tmp/fbt
+          git init -q /tmp/fbt
+          git -C /tmp/fbt fetch -q --depth=1 https://github.com/flatpak/flatpak-builder-tools.git 9d86d336a39b9af38b86f114b6ce5820fe260f91
+          git -C /tmp/fbt checkout -q FETCH_HEAD
+          python3 .github/flatpak/patch-cargo-generator.py /tmp/fbt/cargo/flatpak-cargo-generator.py
           pip3 install --root-user-action=ignore --break-system-packages --prefix=/app tomlkit
           pip3 install --root-user-action=ignore --break-system-packages --prefix=/app /tmp/fbt/node
 
