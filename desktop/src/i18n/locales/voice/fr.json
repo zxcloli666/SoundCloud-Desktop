@@ -49,7 +49,8 @@
       "hush": "Chut",
       "downloading": "Voix : téléchargement des modèles",
       "openModels": "Ouvrir les modèles",
-      "askOne": "C'est bien celui-ci ?"
+      "askOne": "C'est bien celui-ci ?",
+      "talk": "Conversation"
     },
     "error": {
       "mic_denied": "Pas d'accès au microphone",
@@ -90,6 +91,12 @@
       "stopTest": "Stop",
       "again": "Encore",
       "wake": "Par le nom",
+      "follow": "Écouter après la réponse",
+      "followOff": "Non",
+      "talk": "Conversation jusqu'au silence",
+      "talkHow": "Dites « on discute » et continuez sans le mot d'éveil",
+      "seconds_one": "{{count}} s",
+      "seconds_other": "{{count}} s",
       "names": "Répond à",
       "needsEcho": "Sans annulation d'écho, la musique le déclenche",
       "echoOn": "Activer",
@@ -194,7 +201,9 @@
         "effect": "Effet",
         "dislike": "Je n'aime pas",
         "superlike": "Superlike",
-        "together": "Ensemble"
+        "together": "Ensemble",
+        "ask_user": "À l’écoute",
+        "talk_mode": "Conversation"
       }
     },
     "you": {

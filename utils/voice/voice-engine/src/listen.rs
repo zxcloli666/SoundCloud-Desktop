@@ -9,7 +9,7 @@ use voice_speech::{Event as Heard, Listener, Options};
 
 use crate::Timing;
 use crate::config::{Echo, Language, ListenMode as Mode};
-use crate::event::{Event, PartialEvent, State};
+use crate::event::{Event, PartialEvent, Source, State};
 use crate::fell_quiet::Loudness;
 use crate::hotwords;
 use crate::machine::{Core, Msg, Phase};
@@ -24,6 +24,7 @@ pub struct Listen {
     pub r#gen: u64,
     pub session: Session,
     pub for_ask: bool,
+    pub window: Option<Duration>,
     pub woken: bool,
     pub started: Instant,
     pub speech_seen: bool,
@@ -39,6 +40,8 @@ impl Listen {
     pub fn deadline(&self, timing: &Timing) -> Instant {
         let limit = if self.for_ask {
             self.started + timing.ask
+        } else if let Some(window) = self.window.filter(|_| !self.speech_seen) {
+            self.started + window
         } else if self.speech_seen {
             self.started + timing.max_utterance
         } else {
@@ -94,20 +97,31 @@ pub fn take_events(session: &mut Session) -> Receiver<CaptureEvent> {
 
 impl Core {
     pub fn listen(&mut self, for_ask: bool) {
+        self.listen_with(for_ask, None);
+    }
+
+    fn listen_with(&mut self, for_ask: bool, window: Option<Duration>) {
+        let refuse = |core: &mut Self, code, detail| match window {
+            Some(_) => {
+                core.talking = false;
+                core.go_idle();
+            }
+            None => core.refuse(code, detail, for_ask),
+        };
         if !self.star {
-            return self.refuse("not_star", None, for_ask);
+            return refuse(self, "not_star", None);
         }
         if self.listener_models().is_none() {
-            return self.refuse("no_models", None, for_ask);
+            return refuse(self, "no_models", None);
         }
         self.unwatch();
         let request = self.request(Purpose::Utterance);
         let mut session = match self.deps.capture.start(&request, &self.deps.devices) {
             Ok(session) => session,
-            Err(error) => return self.refuse(capture_code(&error), Some(error.detail), for_ask),
+            Err(error) => return refuse(self, capture_code(&error), Some(error.detail)),
         };
         if let Err(code) = self.ensure_listener() {
-            return self.refuse(code, None, for_ask);
+            return refuse(self, code, None);
         }
         let r#gen = self.next_gen();
         forward(take_events(&mut session), self.inbox.clone(), r#gen, false);
@@ -126,6 +140,7 @@ impl Core {
             r#gen,
             session,
             for_ask,
+            window,
             woken: false,
             started: Instant::now(),
             speech_seen: false,
@@ -294,7 +309,7 @@ impl Core {
             listen.quiet_since = None;
         }
         let hold = self.config.activation.hold && self.source == crate::Source::Hotkey;
-        let ends_itself = listen.for_ask || !hold;
+        let ends_itself = listen.for_ask || listen.window.is_some() || !hold;
         let mut done = false;
         let mut partials = Vec::new();
         for event in heard {
@@ -417,15 +432,42 @@ impl Core {
     }
 
     pub fn listen_timeout(&mut self) {
-        let heard = match &self.phase {
-            Phase::Listening(listen) => listen.speech_seen,
-            _ => false,
+        let (heard, followed) = match &self.phase {
+            Phase::Listening(listen) => (listen.speech_seen, listen.window.is_some()),
+            _ => (false, false),
         };
         if heard {
-            self.finish_listen();
-        } else {
-            self.go_idle();
+            return self.finish_listen();
         }
+        if followed {
+            self.talking = false;
+        }
+        self.go_idle();
+    }
+
+    pub fn wind_down(&mut self) {
+        match self.follow.take() {
+            Some(window) => self.follow_up(window),
+            None => self.go_idle(),
+        }
+    }
+
+    fn follow_up(&mut self, window: Duration) {
+        self.listen_with(false, Some(window));
+    }
+
+    pub fn reopen(&mut self, source: Source) -> bool {
+        let Phase::Listening(listen) = &mut self.phase else {
+            return false;
+        };
+        if listen.window.is_none() || listen.speech_seen {
+            return false;
+        }
+        listen.window = None;
+        listen.started = Instant::now();
+        self.source = source;
+        self.emit_state(State::Listening, self.last_input.clone());
+        true
     }
 
     pub fn closed(&mut self, r#gen: u64) {

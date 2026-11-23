@@ -64,6 +64,8 @@ pub struct Core {
     pub last_input: Option<String>,
     pub last_release: Option<Instant>,
     pub release_at: Option<Instant>,
+    pub talking: bool,
+    pub follow: Option<Duration>,
     counter: u64,
     prefix: u64,
 }
@@ -105,6 +107,8 @@ impl Core {
             last_input: None,
             last_release: None,
             release_at: None,
+            talking: false,
+            follow: None,
             counter: 0,
             prefix,
         }
@@ -131,10 +135,13 @@ impl Core {
     }
 
     pub fn emit_state(&self, state: State, input: Option<String>) {
+        let follow = matches!(&self.phase, Phase::Listening(listen) if listen.window.is_some());
         self.emit(Event::State(StateEvent {
             state,
             source: self.source,
             input,
+            follow,
+            talking: self.talking,
         }));
     }
 
@@ -161,6 +168,7 @@ impl Core {
         self.drop_reading();
         self.drop_reply();
         self.release_at = None;
+        self.follow = None;
         self.deps.output.duck(1.0);
         self.emit_state(State::Idle, None);
         self.keep_watch();
@@ -302,6 +310,7 @@ impl Core {
     }
 
     pub fn cancel(&mut self) {
+        self.talking = false;
         self.drop_turn();
         self.hush();
         self.plan = None;
@@ -312,6 +321,9 @@ impl Core {
     }
 
     fn start(&mut self, source: Source) {
+        if self.reopen(source) {
+            return;
+        }
         match &self.phase {
             Phase::Listening(_) => self.finish_listen(),
             Phase::Asking(_) => {
@@ -333,6 +345,9 @@ impl Core {
             .is_some_and(|at| now.saturating_duration_since(at) <= self.deps.timing.release);
         if repeat {
             self.release_at = None;
+            return;
+        }
+        if self.reopen(source) {
             return;
         }
         let hold = self.config.activation.hold;
@@ -360,6 +375,7 @@ impl Core {
     }
 
     fn interrupt(&mut self) {
+        self.follow = None;
         self.drop_turn();
         self.drop_reading();
         if self.audible() || self.preview.is_some() {

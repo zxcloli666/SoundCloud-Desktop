@@ -90,6 +90,13 @@ pub struct Boosts {
     pub spoken: Vec<String>,
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Deserialize)]
+#[serde(default)]
+pub struct Follow {
+    pub after: f32,
+    pub talk: f32,
+}
+
 #[derive(Clone, Debug, PartialEq, Deserialize)]
 #[serde(default)]
 pub struct Config {
@@ -103,6 +110,7 @@ pub struct Config {
     pub llm: bool,
     pub names: Vec<String>,
     pub boosts: Boosts,
+    pub follow: Follow,
 }
 
 impl Default for Activation {
@@ -143,6 +151,7 @@ impl Default for Config {
             llm: true,
             names: Vec::new(),
             boosts: Boosts::default(),
+            follow: Follow::default(),
         }
     }
 }

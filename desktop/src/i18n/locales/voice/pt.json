@@ -51,7 +51,8 @@
       "hush": "Silenciar",
       "downloading": "Voz: baixando modelos",
       "openModels": "Abrir modelos",
-      "askOne": "É este?"
+      "askOne": "É este?",
+      "talk": "Conversa"
     },
     "error": {
       "mic_denied": "Sem acesso ao microfone",
@@ -92,6 +93,12 @@
       "stopTest": "Parar",
       "again": "De novo",
       "wake": "Pelo nome",
+      "follow": "Ouvir após responder",
+      "followOff": "Não",
+      "talk": "Conversa até o silêncio",
+      "talkHow": "Diga \"vamos conversar\" e siga sem a palavra de ativação",
+      "seconds_one": "{{count}} s",
+      "seconds_other": "{{count}} s",
       "names": "Responde a",
       "needsEcho": "Sem cancelamento de eco a música aciona",
       "echoOn": "Ligar",
@@ -196,7 +203,9 @@
         "effect": "Efeito",
         "dislike": "Não curti",
         "superlike": "Superlike",
-        "together": "Juntos"
+        "together": "Juntos",
+        "ask_user": "Ouvindo",
+        "talk_mode": "Conversa"
       }
     },
     "you": {

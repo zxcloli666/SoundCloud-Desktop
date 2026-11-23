@@ -6,8 +6,8 @@ use std::time::Duration;
 use common::{Offline, Rig, models_ready, models_root, refusing, rig, rig_with, silent, timing};
 use voice_audio::{CaptureError, ErrorCode};
 use voice_engine::{
-    Command, Config, DecisionEvent, Event, Headset, Learned, Learner, Press, Presses, Signal,
-    Source, State,
+    Chat, Command, Config, DecisionEvent, Event, Follow, Headset, Learned, Learner, Outcome, Press,
+    Presses, Signal, Source, State,
 };
 use voice_resolve::FixtureCatalog;
 
@@ -280,6 +280,164 @@ fn only_a_skip_bound_to_the_assistant_calls_it() {
     assert!(!Headset::Off.calls_on(Signal::Toggle));
     assert_eq!(Headset::Next.presses(), 0);
     assert_eq!(Headset::Triple.presses(), 3);
+}
+
+fn following(follow: Follow) -> Rig {
+    let rig = rig_with(
+        silent(),
+        Arc::new(FixtureCatalog::from_tsv(common::CATALOG, true)),
+        models_root(),
+        timing(),
+    );
+    let mut config = Config {
+        enabled: true,
+        follow,
+        ..Config::default()
+    };
+    config.speak.replies = false;
+    rig.engine.send(Command::Apply(Box::new(config)));
+    rig
+}
+
+fn chatted(rig: &Rig, source: Source, outcome: Outcome) {
+    rig.engine.send(Command::Text {
+        text: "как твои дела".into(),
+        source,
+    });
+    rig.expect_state(State::Thinking);
+    let id = rig.command().id;
+    rig.chat(&id, Chat::Open { speak: true });
+    rig.chat(&id, Chat::Text("Хорошо, а у тебя?".into()));
+    rig.chat(&id, Chat::Close);
+    rig.finish(&id, outcome);
+}
+
+fn said() -> Outcome {
+    Outcome {
+        ok: true,
+        display: "Хорошо, а у тебя?".into(),
+        ..Outcome::default()
+    }
+}
+
+#[test]
+fn a_chat_reply_keeps_listening_and_silence_puts_it_to_rest() {
+    if !models_ready() {
+        return;
+    }
+    let rig = following(Follow {
+        after: 0.3,
+        talk: 0.0,
+    });
+    chatted(&rig, Source::Button, said());
+    let open = rig.state_event();
+    assert_eq!(
+        (open.state, open.follow, open.talking),
+        (State::Listening, true, false)
+    );
+    let rest = rig.state_event();
+    assert_eq!((rest.state, rest.follow), (State::Idle, false));
+}
+
+#[test]
+fn a_typed_chat_or_a_plain_command_never_opens_the_microphone() {
+    if !models_ready() {
+        return;
+    }
+    let rig = following(Follow {
+        after: 0.3,
+        talk: 0.6,
+    });
+    chatted(&rig, Source::Typed, said());
+    rig.expect_state(State::Idle);
+    rig.engine.send(Command::Text {
+        text: "пауза".into(),
+        source: Source::Button,
+    });
+    rig.expect_state(State::Thinking);
+    let id = rig.command().id;
+    rig.done(&id, "Пауза");
+    rig.expect_state(State::Idle);
+    assert!(rig.quiet_for(Duration::from_millis(400)).is_none());
+}
+
+#[test]
+fn talk_mode_listens_after_every_turn_until_silence_ends_it() {
+    if !models_ready() {
+        return;
+    }
+    let rig = following(Follow {
+        after: 0.0,
+        talk: 0.4,
+    });
+    let talk = Outcome {
+        talk: Some(true),
+        ..said()
+    };
+    chatted(&rig, Source::Wake, talk);
+    let open = rig.state_event();
+    assert_eq!(
+        (open.state, open.follow, open.talking),
+        (State::Listening, true, true)
+    );
+    let rest = rig.state_event();
+    assert_eq!((rest.state, rest.talking), (State::Idle, false));
+    chatted(&rig, Source::Wake, said());
+    rig.expect_state(State::Idle);
+}
+
+#[test]
+fn a_question_to_the_user_waits_for_the_answer_even_with_the_window_off() {
+    if !models_ready() {
+        return;
+    }
+    let rig = following(Follow::default());
+    let ask = Outcome {
+        ask: true,
+        ..said()
+    };
+    chatted(&rig, Source::Hotkey, ask);
+    let open = rig.state_event();
+    assert_eq!((open.state, open.follow), (State::Listening, true));
+    rig.expect_state(State::Idle);
+}
+
+#[test]
+fn a_press_during_the_window_starts_a_fresh_listen_instead_of_ending_it() {
+    if !models_ready() {
+        return;
+    }
+    let rig = following(Follow {
+        after: 0.3,
+        talk: 0.0,
+    });
+    chatted(&rig, Source::Button, said());
+    assert!(rig.state_event().follow);
+    rig.engine.send(Command::Start(Source::Hotkey));
+    let fresh = rig.state_event();
+    assert_eq!(
+        (fresh.state, fresh.source, fresh.follow),
+        (State::Listening, Source::Hotkey, false)
+    );
+    rig.expect_state(State::Idle);
+}
+
+#[test]
+fn without_listening_models_the_window_closes_quietly() {
+    let rig = rig();
+    let mut config = Config {
+        enabled: true,
+        follow: Follow {
+            after: 0.3,
+            talk: 0.0,
+        },
+        ..Config::default()
+    };
+    config.speak.replies = false;
+    rig.engine.send(Command::Apply(Box::new(config)));
+    chatted(&rig, Source::Button, said());
+    rig.expect_state(State::Idle);
+    assert!(rig.quiet_for(Duration::from_millis(300)).is_none());
 }
 
 #[test]

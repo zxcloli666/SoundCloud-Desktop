@@ -1,13 +1,14 @@
 import { useTranslation } from 'react-i18next';
-import { VolumeX } from '../../../lib/icons';
+import { MessageCircle, VolumeX } from '../../../lib/icons';
 import { useChatLive } from '../../../lib/voice/chat/live';
 import { voiceComing } from '../../../lib/voice/hud';
 import { useVoiceRuntime } from '../../../lib/voice/runtime';
 import { useVoiceStore } from '../../../lib/voice/store';
 import { failureLine } from '../chatFailure';
-import { CircleAlert } from '../icons';
+import { CircleAlert, Ear } from '../icons';
 import { VoiceAvatar } from '../VoiceAvatar';
 import { type VoiceInfo, voiceById } from '../voices';
+import { Waveform } from '../Waveform';
 import { ChatMarks } from './ChatMarks';
 import { CloseX } from './parts';
 import { ReplyText } from './ReplyText';
@@ -68,6 +69,34 @@ function Failure({ code }: { code: string }) {
   );
 }
 
+function Following() {
+  const { t } = useTranslation();
+  return (
+    <span data-ui="voice-follow" className="mt-2 flex items-center gap-2">
+      <Ear size={12} className="shrink-0 text-accent" />
+      <span className="shrink-0 text-[11.5px] font-semibold text-ink-55">
+        {t('voice.hud.listening')}
+      </span>
+      <span className="block h-[14px] min-w-0 flex-1 overflow-hidden">
+        <Waveform width={150} height={14} />
+      </span>
+    </span>
+  );
+}
+
+function TalkChip() {
+  const { t } = useTranslation();
+  return (
+    <span
+      data-ui="voice-talk"
+      className="flex shrink-0 items-center gap-1 rounded-full bg-accent/15 px-1.5 py-px text-[10.5px] font-semibold text-accent"
+    >
+      <MessageCircle size={10} />
+      {t('voice.hud.talk')}
+    </span>
+  );
+}
+
 export function ChatView({
   heard,
   phase,
@@ -89,7 +118,9 @@ export function ChatView({
   const voice = voiceById(useVoiceStore((s) => s.config.speak.voice));
   const speaking = useVoiceRuntime((s) => s.engine === 'speaking' && !s.previewing);
   const coming = useVoiceRuntime((s) => voiceComing(s.hud, s.engine, s.previewing));
-  const busy = phase === 'live' || speaking || coming;
+  const following = useVoiceRuntime((s) => s.following && s.engine === 'listening');
+  const talking = useVoiceRuntime((s) => s.talking);
+  const busy = phase === 'live' || speaking || coming || following;
   return (
     <span className="flex min-w-0 flex-1 items-start gap-3 py-0.5">
       <Face voice={voice} phase={phase} speaking={speaking} coming={coming} />
@@ -101,9 +132,11 @@ export function ChatView({
           <span className="min-w-0 truncate text-[11.5px] text-ink-35">
             {t('voice.quote', { text: heard })}
           </span>
+          {talking && <TalkChip />}
         </span>
         <ReplyText live={phase === 'live'} />
         <ChatMarks undo={phase === 'done' ? undo : null} onUndo={onUndo} />
+        {following && <Following />}
         {phase === 'failed' && <Failure code={code} />}
         {voiceLost && (
           <span className="mt-1 flex items-center gap-1 text-[11px] text-ink-45">

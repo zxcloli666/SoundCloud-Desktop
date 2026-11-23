@@ -50,7 +50,8 @@ interface VoiceRuntime {
   status: Status | null;
   models: Model[];
   devices: Devices;
-  headsetAt: number;
+  following: boolean;
+  talking: boolean;
   previewing: string | null;
   settingsOpen: boolean;
   dialog: Exchange[];
@@ -71,7 +72,8 @@ export const useVoiceRuntime = create<VoiceRuntime>((set) => ({
   status: null,
   models: [],
   devices: NO_DEVICES,
-  headsetAt: 0,
+  following: false,
+  talking: false,
   previewing: null,
   settingsOpen: false,
   dialog: [],

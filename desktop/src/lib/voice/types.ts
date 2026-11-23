@@ -47,6 +47,11 @@ export interface RelationConfig {
   own: string;
 }
 
+export interface FollowConfig {
+  after: number;
+  talk: number;
+}
+
 export interface VoiceConfig {
   enabled: boolean;
   language: VoiceLanguage;
@@ -59,6 +64,7 @@ export interface VoiceConfig {
   boosts: { artists: string[]; spoken: string[] };
   listener: ListenerConfig;
   relation: RelationConfig;
+  follow: FollowConfig;
 }
 
 export interface EngineConfig extends VoiceConfig {
@@ -73,6 +79,8 @@ export interface StateEvent {
   state: EngineState;
   source: VoiceSource;
   input?: string;
+  follow?: boolean;
+  talking?: boolean;
 }
 
 export interface HeardEvent {
@@ -226,6 +234,8 @@ export interface Outcome {
   speech: string;
   display: string;
   undo: boolean;
+  ask?: boolean;
+  talk?: boolean;
 }
 
 export interface Status {

@@ -25,6 +25,7 @@ export interface Extras {
   sleep: SleepShown | null;
   effect: string | null;
   room: RoomShown | null;
+  talking?: boolean;
 }
 
 export interface ContextInput {
@@ -81,6 +82,7 @@ function extrasShown(extras: Extras | undefined) {
     ...(extras.sleep ? { sleep_timer: extras.sleep } : {}),
     ...(extras.effect ? { effect: extras.effect } : {}),
     ...(extras.room ? { together: extras.room } : {}),
+    ...(extras.talking ? { talk_mode: true } : {}),
   };
 }
 

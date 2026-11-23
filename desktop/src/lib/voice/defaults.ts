@@ -36,5 +36,6 @@ export function defaultConfig(): VoiceConfig {
     boosts: { artists: [], spoken: [] },
     listener: { gender: null, name: '', address: null },
     relation: { role: null, own: '' },
+    follow: { after: 5, talk: 20 },
   };
 }

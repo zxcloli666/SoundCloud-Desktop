@@ -11,6 +11,7 @@ import { memoryTools } from './memory.ts';
 import { playerTools } from './player.ts';
 import { screenTools } from './screen.ts';
 import { soundTools } from './sound.ts';
+import { talkTools } from './talk.ts';
 import { tasteTools } from './taste.ts';
 import { togetherTools } from './together.ts';
 
@@ -24,6 +25,7 @@ export function chatTools(player: PlayerPort, app: AppPort, offered: Entity[]): 
     ...soundTools(player, app),
     ...tasteTools(app),
     ...togetherTools(app),
+    ...talkTools(),
     ...memoryTools(app),
   ];
 }

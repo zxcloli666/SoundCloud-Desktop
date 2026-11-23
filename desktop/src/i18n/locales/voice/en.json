@@ -49,7 +49,8 @@
       "hush": "Hush",
       "downloading": "Voice: downloading models",
       "openModels": "Open models",
-      "askOne": "Is this it?"
+      "askOne": "Is this it?",
+      "talk": "Conversation"
     },
     "error": {
       "mic_denied": "No microphone access",
@@ -90,6 +91,12 @@
       "stopTest": "Stop",
       "again": "Again",
       "wake": "By name",
+      "follow": "Listen after a reply",
+      "followOff": "Off",
+      "talk": "Conversation until silence",
+      "talkHow": "Say \"let's chat\" and keep talking without the wake word",
+      "seconds_one": "{{count}} s",
+      "seconds_other": "{{count}} s",
       "names": "Responds to",
       "needsEcho": "Without echo cancellation music sets it off",
       "echoOn": "Turn on",
@@ -193,7 +200,9 @@
         "effect": "Effect",
         "dislike": "Dislike",
         "superlike": "Superlike",
-        "together": "Together"
+        "together": "Together",
+        "ask_user": "Listening",
+        "talk_mode": "Conversation"
       }
     },
     "you": {

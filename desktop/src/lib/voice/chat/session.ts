@@ -81,6 +81,7 @@ function contextNow(port: PlayerPort, candidates: Entity[]): Record<string, unkn
       sleep: sleepNow(Date.now()),
       effect: effectNow(),
       room: roomNow(),
+      talking: useVoiceRuntime.getState().talking,
     },
   });
 }
@@ -156,7 +157,15 @@ export async function chatStep(
   port: PlayerPort,
   ctx: ExecuteContext,
 ): Promise<ChatStep> {
-  const env: ToolEnv = { cmd, lang: ctx.lang, now: ctx.now, stack: ctx.stack, undo: false };
+  const env: ToolEnv = {
+    cmd,
+    lang: ctx.lang,
+    now: ctx.now,
+    stack: ctx.stack,
+    undo: false,
+    ask: false,
+    talk: null,
+  };
   const offered = toolsOf(cmd, port, appPort);
   const quiet = voiced(cmd.source);
   const text = unanswered.text(cmd.id, cmd.heard, ctx.now, active);
@@ -190,7 +199,7 @@ export async function chatStep(
     const said = { at: Date.now(), user: text, assistant: end.kept ?? end.say };
     useVoiceRuntime.setState((s) => ({ dialog: withExchange(s.dialog, said) }));
   }
-  return { end, stack: env.stack, undo: env.undo };
+  return { end, stack: env.stack, undo: env.undo, ask: env.ask, talk: env.talk };
 }
 
 export function closeChatHud(id: string, res: StepResult, undo: string | null) {

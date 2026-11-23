@@ -365,6 +365,18 @@ test('speed, lyrics, queue and the playlist picker call the app', async () => {
   assert.deepEqual(app.calls, ['speed:2', 'lyrics:true', 'queue_clear', 'pick_playlist']);
 });
 
+test('ask_user and talk_mode only mark the turn for the engine', async () => {
+  const { app, env, run } = setup();
+  assert.equal((await run('ask_user')).returns, false);
+  assert.equal(env.ask, true);
+  assert.equal(env.talk, null);
+  await run('talk_mode', { on: true });
+  assert.equal(env.talk, true);
+  await run('talk_mode', { on: false });
+  assert.equal(env.talk, false);
+  assert.deepEqual(app.calls, []);
+});
+
 test('the sleep timer pauses later, at the track end or turns off', async () => {
   const { app, run } = setup();
   assert.deepEqual((await run('sleep_timer', { when: 'minutes', minutes: 30 })).result, {

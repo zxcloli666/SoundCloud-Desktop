@@ -189,6 +189,7 @@ impl Core {
             r#gen: watch.r#gen,
             session: watch.session,
             for_ask: false,
+            window: None,
             woken: true,
             started: Instant::now(),
             speech_seen: true,

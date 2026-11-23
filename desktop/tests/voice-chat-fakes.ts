@@ -187,6 +187,8 @@ export function toolEnv(extra: Partial<ToolEnv> = {}): ToolEnv {
     now: 1000,
     stack: [],
     undo: false,
+    ask: false,
+    talk: null,
     ...extra,
   };
 }

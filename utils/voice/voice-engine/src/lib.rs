@@ -49,7 +49,8 @@ use voice_resolve::Entity;
 pub use catalog::{Candidates, Catalog};
 pub use clip::Clip;
 pub use config::{
-    Activation, Boosts, Config, Echo, Headset, Language, Listen, ListenMode, Speak, SpeakMode, Wake,
+    Activation, Boosts, Config, Echo, Follow, Headset, Language, Listen, ListenMode, Speak,
+    SpeakMode, Wake,
 };
 pub use event::{
     Ahead, CommandEvent, DecisionEvent, EntityEvent, ErrorEvent, Event, HeardEvent, LevelEvent,

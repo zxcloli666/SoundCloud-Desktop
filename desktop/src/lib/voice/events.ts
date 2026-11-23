@@ -21,12 +21,18 @@ const KEEP_ON_IDLE = new Set(['done', 'not_found', 'failed', 'error', 'asking', 
 
 function onState(e: StateEvent) {
   const runtime = useVoiceRuntime.getState();
-  const patch: Partial<typeof runtime> = { engine: e.state, source: e.source };
-  if (e.source === 'headset') patch.headsetAt = Date.now();
+  const following = e.state === 'listening' && !!e.follow;
+  const patch: Partial<typeof runtime> = {
+    engine: e.state,
+    source: e.source,
+    following,
+    talking: !!e.talking,
+  };
   if (e.state === 'listening') {
     patch.partial = '';
     resetLevels();
-    patch.hud = { kind: 'listening', source: e.source };
+    if (!following || runtime.hud.kind !== 'chat')
+      patch.hud = { kind: 'listening', source: e.source };
   }
   if (e.state === 'thinking' && runtime.hud.kind === 'listening') patch.hud = { kind: 'thinking' };
   if (e.state === 'speaking' && runtime.hud.kind === 'hidden' && !runtime.previewing) {
@@ -37,6 +43,16 @@ function onState(e: StateEvent) {
     if (!KEEP_ON_IDLE.has(runtime.hud.kind)) patch.hud = { kind: 'hidden' };
   }
   useVoiceRuntime.setState(patch);
+}
+
+function onPartial(text: string) {
+  const runtime = useVoiceRuntime.getState();
+  if (!runtime.following || runtime.hud.kind === 'listening' || !text.trim()) {
+    useVoiceRuntime.setState({ partial: text });
+    return;
+  }
+  const source = runtime.source ?? 'button';
+  useVoiceRuntime.setState({ partial: text, hud: { kind: 'listening', source } });
 }
 
 function onError(e: ErrorEvent) {
@@ -54,9 +70,7 @@ function onCommand(cmd: VoiceCommand) {
 export function listenVoiceEvents() {
   void listen<StateEvent>('voice:state', (e) => onState(e.payload));
   void listen<LevelEvent>('voice:level', (e) => pushLevel(e.payload.input, e.payload.rms));
-  void listen<PartialEvent>('voice:partial', (e) =>
-    useVoiceRuntime.setState({ partial: e.payload.text }),
-  );
+  void listen<PartialEvent>('voice:partial', (e) => onPartial(e.payload.text));
   void listen<HeardEvent>('voice:heard', (e) => startChatAhead(e.payload));
   void listen<VoiceCommand>('voice:command', (e) => onCommand(e.payload));
   void listen<ErrorEvent>('voice:error', (e) => onError(e.payload));

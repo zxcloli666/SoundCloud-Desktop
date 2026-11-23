@@ -35,7 +35,7 @@ import {
 import type { ToolMark } from '../../lib/voice/chat/types';
 import type { DoneItem } from '../../lib/voice/runtime';
 import type { EntityKind, Intent } from '../../lib/voice/types';
-import { AudioWaveform, Brain, Eraser, Gauge, Undo2 } from './icons';
+import { AudioWaveform, Brain, Ear, Eraser, Gauge, Undo2 } from './icons';
 
 export function kindIcon(kind: EntityKind, size: number): ReactNode {
   if (kind === 'artist') return <User size={size} />;
@@ -103,6 +103,8 @@ const TOOL_ICONS: Record<string, (size: number) => ReactNode> = {
   dislike: (s) => <ThumbsDown size={s} />,
   superlike: (s) => <Star size={s} />,
   together: (s) => <Users size={s} />,
+  ask_user: (s) => <Ear size={s} />,
+  talk_mode: (s) => <MessageCircle size={s} />,
 };
 
 export function markIcon(mark: ToolMark, size: number): ReactNode {

@@ -30,5 +30,6 @@ export function mergeConfig(base: VoiceConfig, config: Partial<VoiceConfig>): Vo
     boosts: { ...base.boosts, ...config.boosts },
     listener: { ...base.listener, ...config.listener },
     relation: { ...base.relation, ...config.relation },
+    follow: { ...base.follow, ...config.follow },
   };
 }

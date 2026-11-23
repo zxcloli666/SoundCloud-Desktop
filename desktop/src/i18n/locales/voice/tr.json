@@ -49,7 +49,8 @@
       "hush": "Sus",
       "downloading": "Ses: modeller iniyor",
       "openModels": "Modelleri aç",
-      "askOne": "Bu mu?"
+      "askOne": "Bu mu?",
+      "talk": "Sohbet"
     },
     "error": {
       "mic_denied": "Mikrofon izni yok",
@@ -90,6 +91,12 @@
       "stopTest": "Dur",
       "again": "Tekrar",
       "wake": "İsimle",
+      "follow": "Yanıttan sonra dinle",
+      "followOff": "Kapalı",
+      "talk": "Sessizliğe kadar sohbet",
+      "talkHow": "\"Hadi sohbet edelim\" de, sonra uyandırma sözü olmadan konuş",
+      "seconds_one": "{{count}} sn",
+      "seconds_other": "{{count}} sn",
       "names": "Şu isimlere yanıt verir",
       "needsEcho": "Yankı giderme olmadan müzik tetikler",
       "echoOn": "Aç",
@@ -193,7 +200,9 @@
         "effect": "Efekt",
         "dislike": "Beğenmedim",
         "superlike": "Süper beğeni",
-        "together": "Birlikte"
+        "together": "Birlikte",
+        "ask_user": "Dinliyorum",
+        "talk_mode": "Sohbet"
       }
     },
     "you": {

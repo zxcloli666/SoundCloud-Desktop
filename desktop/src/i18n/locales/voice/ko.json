@@ -49,7 +49,8 @@
       "hush": "조용히",
       "downloading": "음성: 모델 받는 중",
       "openModels": "모델 열기",
-      "askOne": "이거 맞나요?"
+      "askOne": "이거 맞나요?",
+      "talk": "대화"
     },
     "error": {
       "mic_denied": "마이크 권한 없음",
@@ -90,6 +91,11 @@
       "stopTest": "중지",
       "again": "다시",
       "wake": "이름으로 부르기",
+      "follow": "답한 뒤 계속 듣기",
+      "followOff": "끄기",
+      "talk": "조용해질 때까지 대화",
+      "talkHow": "\"얘기하자\"라고 하면 호출어 없이 이어서 말할 수 있어요",
+      "seconds_other": "{{count}}초",
       "names": "반응하는 이름",
       "needsEcho": "에코 제거 없이는 음악에 반응합니다",
       "echoOn": "켜기",
@@ -192,7 +198,9 @@
         "effect": "효과",
         "dislike": "싫어요",
         "superlike": "슈퍼라이크",
-        "together": "함께 듣기"
+        "together": "함께 듣기",
+        "ask_user": "듣는 중",
+        "talk_mode": "대화"
       }
     },
     "you": {

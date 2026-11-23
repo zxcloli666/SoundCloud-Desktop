@@ -51,7 +51,8 @@
       "hush": "Замолчать",
       "downloading": "Голос: качаю модели",
       "openModels": "Открыть модели",
-      "askOne": "Это оно?"
+      "askOne": "Это оно?",
+      "talk": "Беседа"
     },
     "error": {
       "mic_denied": "Нет доступа к микрофону",
@@ -93,6 +94,14 @@
       "stopTest": "Стоп",
       "again": "Ещё раз",
       "wake": "По имени",
+      "follow": "Слушать после ответа",
+      "followOff": "Выкл",
+      "talk": "Беседа до тишины",
+      "talkHow": "Скажите «давай поболтаем», и дальше можно без зова",
+      "seconds_one": "{{count}} с",
+      "seconds_few": "{{count}} с",
+      "seconds_many": "{{count}} с",
+      "seconds_other": "{{count}} с",
       "names": "Отзывается на",
       "needsEcho": "Без эхоподавления срабатывает от музыки",
       "echoOn": "Включить",
@@ -198,7 +207,9 @@
         "effect": "Эффект",
         "dislike": "Дизлайк",
         "superlike": "Суперлайк",
-        "together": "Вместе"
+        "together": "Вместе",
+        "ask_user": "Слушаю",
+        "talk_mode": "Беседа"
       }
     },
     "you": {
