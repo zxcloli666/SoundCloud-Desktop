@@ -10,7 +10,7 @@ const KOKORO = 'kokoro-multi-lang-v1_0';
 export interface VoiceInfo {
   id: VoiceId;
   model: string;
-  lang: VoiceLanguage;
+  langs: VoiceLanguage[];
   tags: string[];
   glow: string;
   image?: string;
@@ -20,7 +20,7 @@ export const VOICES: VoiceInfo[] = [
   {
     id: 'loli',
     model: QWEN_LOLI,
-    lang: 'ru',
+    langs: ['ru', 'en'],
     tags: ['cute', 'bright'],
     glow: 'var(--color-rose-200)',
     image: loliImage,
@@ -28,16 +28,16 @@ export const VOICES: VoiceInfo[] = [
   {
     id: 'moriarty',
     model: QWEN_MORIARTY,
-    lang: 'ru',
+    langs: ['ru', 'en'],
     tags: ['deep'],
     glow: 'var(--color-amber-500)',
     image: moriartyImage,
   },
-  { id: 'af_heart', model: KOKORO, lang: 'en', tags: ['warm'], glow: 'var(--color-rose-400)' },
+  { id: 'af_heart', model: KOKORO, langs: ['en'], tags: ['warm'], glow: 'var(--color-rose-400)' },
   {
     id: 'am_michael',
     model: KOKORO,
-    lang: 'en',
+    langs: ['en'],
     tags: ['clear'],
     glow: 'var(--color-amber-300)',
   },
