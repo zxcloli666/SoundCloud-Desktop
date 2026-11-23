@@ -9,6 +9,7 @@ on:
       - 'rust-toolchain.toml'
       - '.cargo/**'
       - 'scripts/ci-mtime.sh'
+      - 'scripts/ci-prune.sh'
       - 'scripts/ci-toolchain.sh'
       - '.github/scripts/changes.sh'
       - '.github/actions/target-cache/**'
@@ -22,6 +23,7 @@ on:
       - 'rust-toolchain.toml'
       - '.cargo/**'
       - 'scripts/ci-mtime.sh'
+      - 'scripts/ci-prune.sh'
       - 'scripts/ci-toolchain.sh'
       - '.github/scripts/changes.sh'
       - '.github/actions/target-cache/**'
@@ -197,13 +199,17 @@ jobs:
         working-directory: utils/pay-card
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/desktop/src-tauri/target
-        run: cargo test
+        run: |
+          cargo test --no-run --message-format=json-render-diagnostics >> "$RUNNER_TEMP/build.json"
+          cargo test
 
       - name: Deep link
         working-directory: utils/sc-deep-link
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/desktop/src-tauri/target
-        run: cargo test
+        run: |
+          cargo test --no-run --message-format=json-render-diagnostics >> "$RUNNER_TEMP/build.json"
+          cargo test
 
       - name: Other volume
         if: runner.os == 'Windows'
@@ -224,7 +230,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           grep -q '^chat-lab = ' Cargo.toml || { echo "no chat-lab feature yet"; exit 0; }
-          cargo test --no-run --features chat-lab
+          cargo test --no-run --features chat-lab --message-format=json-render-diagnostics >> "$RUNNER_TEMP/build.json"
 
       - name: Save targets
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -267,7 +273,7 @@ jobs:
 
       - name: Build tests
         id: build
-        run: cargo test --workspace --release --no-run
+        run: cargo test --workspace --release --no-run --message-format=json-render-diagnostics > "$RUNNER_TEMP/build.json"
 
       - name: Stamp
         if: always()
@@ -338,7 +344,7 @@ jobs:
 
       - name: Check
         id: build
-        run: cargo check --all-targets
+        run: cargo check --all-targets --message-format=json-render-diagnostics > "$RUNNER_TEMP/build.json"
 
       - name: Stamp
         if: always()
