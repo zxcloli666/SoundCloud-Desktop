@@ -1422,6 +1422,7 @@
     "appIconDock": "Com o aplicativo fechado, o Dock mostra o ícone padrão.",
     "appIcons": {
       "ember": "Brasa",
+      "mono": "Mono",
       "glass": "Vidro",
       "dusk": "Crepúsculo",
       "wave": "Onda",
@@ -1431,7 +1432,6 @@
       "aurora": "Aurora",
       "neon": "Neon",
       "moon": "Lua",
-      "mono": "Mono",
       "holo": "Holo",
       "paper": "Papel",
       "pixel": "Pixel",

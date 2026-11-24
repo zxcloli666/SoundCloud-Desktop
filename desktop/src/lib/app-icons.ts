@@ -1,5 +1,6 @@
 export const APP_ICONS = [
   'ember',
+  'mono',
   'glass',
   'dusk',
   'wave',
@@ -9,7 +10,6 @@ export const APP_ICONS = [
   'aurora',
   'neon',
   'moon',
-  'mono',
   'holo',
   'paper',
   'pixel',

@@ -1367,6 +1367,7 @@
     "appIconDock": "앱이 꺼져 있으면 Dock에는 기본 아이콘이 보여요.",
     "appIcons": {
       "ember": "불씨",
+      "mono": "모노",
       "glass": "유리",
       "dusk": "노을",
       "wave": "웨이브",
@@ -1376,7 +1377,6 @@
       "aurora": "오로라",
       "neon": "네온",
       "moon": "달",
-      "mono": "모노",
       "holo": "홀로그램",
       "paper": "종이",
       "pixel": "픽셀",

@@ -1436,6 +1436,7 @@
     "appIconDock": "Uygulama kapalıyken Dock standart simgeyi gösterir.",
     "appIcons": {
       "ember": "Kor",
+      "mono": "Mono",
       "glass": "Cam",
       "dusk": "Alacakaranlık",
       "wave": "Dalga",
@@ -1445,7 +1446,6 @@
       "aurora": "Aurora",
       "neon": "Neon",
       "moon": "Ay",
-      "mono": "Mono",
       "holo": "Holo",
       "paper": "Kâğıt",
       "pixel": "Piksel",
