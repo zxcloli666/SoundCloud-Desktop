@@ -17,7 +17,7 @@ impl Rig {
         let (host, hits) = (self.host.clone(), Arc::new(AtomicUsize::new(0)));
         let jump = Arc::new(AtomicI64::new(jump));
         let counted = hits.clone();
-        let route = warp::any().and_then(move || {
+        let route = warp::body::bytes().and_then(move |_| {
             let (host, jump, counted) = (host.clone(), jump.clone(), counted.clone());
             async move {
                 counted.fetch_add(1, Ordering::SeqCst);
