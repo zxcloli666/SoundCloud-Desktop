@@ -597,6 +597,14 @@
     "gapless",
     "transition entre titres"
   ],
+  "settings.crossfadeCurve": [
+    "forme du fondu",
+    "graphique du fondu",
+    "baisse de volume entre les titres",
+    "fondu linéaire",
+    "courbe en s",
+    "puissance constante"
+  ],
   "settings.skipStuck": [
     "titre bloqué",
     "le titre ne charge pas",

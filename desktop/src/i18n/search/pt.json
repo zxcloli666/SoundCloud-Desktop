@@ -535,6 +535,14 @@
     "crossfade",
     "sem pausa entre faixas"
   ],
+  "settings.crossfadeCurve": [
+    "forma da transição",
+    "gráfico do fade",
+    "volume cai na troca",
+    "fade linear",
+    "curva em s",
+    "potência constante"
+  ],
   "settings.skipStuck": [
     "música não carrega",
     "carregando pra sempre",

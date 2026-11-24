@@ -4,6 +4,7 @@ import { useSubscription } from '../../../lib/subscription';
 import { useAuthStore } from '../../../stores/auth';
 import { useSettingsStore } from '../../../stores/settings';
 import { Card, Row, Toggle } from '../primitives';
+import { CrossfadeCurvePicker } from './CrossfadeCurvePicker';
 import { CrossfadePicker } from './CrossfadePicker';
 import { StreamQualityPicker } from './StreamQualityPicker';
 
@@ -26,6 +27,7 @@ export function SoundCard() {
         <Toggle checked={skipSilence} onChange={() => setSkipSilence(!skipSilence)} />
       </Row>
       <CrossfadePicker />
+      <CrossfadeCurvePicker />
     </Card>
   );
 }

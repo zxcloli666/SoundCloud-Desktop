@@ -1,8 +1,7 @@
-use std::time::Duration;
-
 use crate::rt::AppHandle;
 use tauri::{Manager, State};
 
+use crate::audio::crossfade::Crossfade;
 use crate::audio::device;
 use crate::audio::engine;
 use crate::audio::eq_curve;
@@ -20,7 +19,7 @@ pub async fn audio_load_file(
     path: String,
     cache_key: Option<String>,
     start_paused: bool,
-    crossfade_ms: Option<u64>,
+    crossfade: Option<Crossfade>,
     app: AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
@@ -34,7 +33,7 @@ pub async fn audio_load_file(
         normalization_cache_dir,
         cache_key,
         start_paused,
-        crossfade_ms.filter(|&ms| ms > 0).map(Duration::from_millis),
+        crossfade,
         &app,
         state,
     )

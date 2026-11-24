@@ -3,6 +3,7 @@ import {
   type StreamQuality,
   useSettingsStore,
 } from '../../../stores/settings';
+import type { CrossfadeCurve } from '../../crossfade-curve';
 import { EQ_PRESETS } from '../../equalizer';
 import type { PerfMode } from '../../perf';
 import type { SchemeChoice } from '../../scheme';
@@ -29,6 +30,7 @@ const APPLY: Record<SettingKey, Apply> = {
   normalize_volume: (v) => app().setNormalizeVolume(v === true),
   skip_silence: (v) => app().setSkipSilence(v === true),
   crossfade: (v) => app().setCrossfadeSec(Number(v)),
+  crossfade_curve: (v) => app().setCrossfadeCurve(v as CrossfadeCurve),
   stream_quality: (v) => app().setStreamQuality(v as StreamQuality),
   autoplay: (v) => app().setAutoplay(v === true),
   wave_mode: (v) => app().setSoundwaveMode(v === 'diverse' ? 'diverse' : 'similar'),
@@ -57,6 +59,7 @@ export function readSettings(): Record<SettingKey, SettingValue> {
     normalize_volume: s.normalizeVolume,
     skip_silence: s.skipSilence,
     crossfade: s.crossfadeSec,
+    crossfade_curve: s.crossfadeCurve,
     stream_quality: s.streamQuality,
     autoplay: s.autoplay,
     wave_mode: s.soundwaveMode,

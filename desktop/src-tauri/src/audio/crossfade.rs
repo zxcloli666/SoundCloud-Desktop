@@ -2,6 +2,7 @@ use std::f32::consts::FRAC_PI_2;
 use std::time::Duration;
 
 use rodio::Player;
+use serde::Deserialize;
 use tauri::Manager;
 
 use crate::audio::state::AudioState;
@@ -10,8 +11,23 @@ use crate::rt::AppHandle;
 const STEP: Duration = Duration::from_millis(20);
 pub const MAX_LENGTH: Duration = Duration::from_secs(12);
 
+#[derive(Clone, Copy, Deserialize)]
+#[serde(rename_all = "snake_case")]
+enum Curve {
+    EqualPower,
+    Linear,
+    Smooth,
+}
+
+#[derive(Clone, Copy, Deserialize)]
+pub struct Crossfade {
+    ms: u64,
+    curve: Curve,
+}
+
 struct Fade {
     outgoing: Player,
+    curve: Curve,
     length: f32,
     elapsed: f32,
     r#gen: u64,
@@ -23,9 +39,25 @@ pub struct CrossfadeState {
     r#gen: u64,
 }
 
-pub fn gains(progress: f32) -> (f32, f32) {
-    let angle = progress.clamp(0.0, 1.0) * FRAC_PI_2;
-    (angle.cos(), angle.sin())
+impl Curve {
+    fn gains(self, progress: f32) -> (f32, f32) {
+        let progress = progress.clamp(0.0, 1.0);
+        (self.rise(1.0 - progress), self.rise(progress))
+    }
+
+    fn rise(self, progress: f32) -> f32 {
+        match self {
+            Self::EqualPower => (progress * FRAC_PI_2).sin(),
+            Self::Linear => progress,
+            Self::Smooth => progress * progress * (3.0 - 2.0 * progress),
+        }
+    }
+}
+
+impl Fade {
+    fn gains(&self) -> (f32, f32) {
+        self.curve.gains(self.elapsed / self.length)
+    }
 }
 
 pub fn incoming_gain(state: &AudioState) -> f32 {
@@ -35,11 +67,13 @@ pub fn incoming_gain(state: &AudioState) -> f32 {
         .unwrap()
         .fade
         .as_ref()
-        .map_or(1.0, |fade| gains(fade.elapsed / fade.length).1)
+        .map_or(1.0, |fade| fade.gains().1)
 }
 
-pub fn begin(app: &AppHandle, state: &AudioState, outgoing: Player, length: Duration) {
-    let length = length.min(MAX_LENGTH).as_secs_f32().max(STEP.as_secs_f32());
+pub fn begin(app: &AppHandle, state: &AudioState, outgoing: Player, crossfade: Crossfade) {
+    let length = Duration::from_millis(crossfade.ms)
+        .clamp(STEP, MAX_LENGTH)
+        .as_secs_f32();
     let r#gen = {
         let mut slot = state.crossfade.lock().unwrap();
         if let Some(previous) = slot.fade.take() {
@@ -48,6 +82,7 @@ pub fn begin(app: &AppHandle, state: &AudioState, outgoing: Player, length: Dura
         slot.r#gen += 1;
         slot.fade = Some(Fade {
             outgoing,
+            curve: crossfade.curve,
             length,
             elapsed: 0.0,
             r#gen: slot.r#gen,
@@ -102,7 +137,7 @@ fn advance(state: &AudioState, r#gen: u64) -> bool {
     if !paused {
         fade.elapsed = (fade.elapsed + STEP.as_secs_f32()).min(fade.length);
     }
-    let (out_gain, in_gain) = gains(fade.elapsed / fade.length);
+    let (out_gain, in_gain) = fade.gains();
     fade.outgoing.set_volume(volume * out_gain);
     let done = fade.elapsed >= fade.length;
     if done && let Some(fade) = slot.fade.take() {
@@ -118,29 +153,67 @@ fn advance(state: &AudioState, r#gen: u64) -> bool {
 mod tests {
     use super::*;
 
-    #[test]
-    fn gains_start_on_the_outgoing_track() {
-        assert_eq!(gains(0.0), (1.0, 0.0));
+    const CURVES: [Curve; 3] = [Curve::EqualPower, Curve::Linear, Curve::Smooth];
+
+    fn steps() -> impl Iterator<Item = f32> {
+        (0..=20).map(|step| step as f32 / 20.0)
     }
 
     #[test]
-    fn gains_end_on_the_incoming_track() {
-        let (out_gain, in_gain) = gains(1.0);
-        assert!(out_gain.abs() < 1e-6);
-        assert!((in_gain - 1.0).abs() < 1e-6);
+    fn every_curve_goes_from_the_outgoing_track_to_the_incoming_one() {
+        for curve in CURVES {
+            assert_eq!(curve.gains(0.0), (1.0, 0.0));
+            assert_eq!(curve.gains(1.0), (0.0, 1.0));
+        }
     }
 
     #[test]
-    fn gains_keep_constant_power() {
-        for step in 0..=20 {
-            let (out_gain, in_gain) = gains(step as f32 / 20.0);
+    fn every_curve_is_monotonic() {
+        for curve in CURVES {
+            for (from, to) in steps().zip(steps().skip(1)) {
+                let (before, after) = (curve.gains(from), curve.gains(to));
+                assert!(after.0 < before.0);
+                assert!(after.1 > before.1);
+            }
+        }
+    }
+
+    #[test]
+    fn every_curve_clamps_out_of_range_progress() {
+        for curve in CURVES {
+            assert_eq!(curve.gains(-1.0), curve.gains(0.0));
+            assert_eq!(curve.gains(2.0), curve.gains(1.0));
+        }
+    }
+
+    #[test]
+    fn equal_power_keeps_constant_power() {
+        for progress in steps() {
+            let (out_gain, in_gain) = Curve::EqualPower.gains(progress);
             assert!((out_gain * out_gain + in_gain * in_gain - 1.0).abs() < 1e-5);
         }
     }
 
     #[test]
-    fn gains_clamp_out_of_range_progress() {
-        assert_eq!(gains(-1.0), gains(0.0));
-        assert_eq!(gains(2.0), gains(1.0));
+    fn linear_and_smooth_keep_constant_amplitude() {
+        for curve in [Curve::Linear, Curve::Smooth] {
+            for progress in steps() {
+                let (out_gain, in_gain) = curve.gains(progress);
+                assert!((out_gain + in_gain - 1.0).abs() < 1e-5);
+            }
+        }
+    }
+
+    #[test]
+    fn smooth_starts_and_ends_flat() {
+        assert!(Curve::Smooth.gains(0.05).1 < Curve::Linear.gains(0.05).1);
+        assert!(Curve::Smooth.gains(0.95).1 > Curve::Linear.gains(0.95).1);
+    }
+
+    #[test]
+    fn crossfade_comes_from_the_frontend_json() {
+        let crossfade: Crossfade = serde_json::from_str(r#"{"ms":4000,"curve":"smooth"}"#).unwrap();
+        assert_eq!(crossfade.ms, 4000);
+        assert!(matches!(crossfade.curve, Curve::Smooth));
     }
 }

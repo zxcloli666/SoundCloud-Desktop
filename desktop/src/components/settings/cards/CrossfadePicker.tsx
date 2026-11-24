@@ -1,32 +1,22 @@
 import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
+import { type CrossfadeCurve, incomingGain, outgoingGain } from '../../../lib/crossfade-curve';
 import { CROSSFADE_MAX_SEC, useSettingsStore } from '../../../stores/settings';
 import { RangeSlider, Row } from '../primitives';
+import { curvePath } from './crossfade-path';
 
 const WIDTH = 240;
 const HEIGHT = 44;
 const TOP = 6;
 const BOTTOM = HEIGHT - 4;
-const SAMPLES = 24;
 
-function curve(from: number, to: number, gain: (t: number) => number): string {
-  const points: string[] = [];
-  for (let i = 0; i <= SAMPLES; i++) {
-    const t = i / SAMPLES;
-    const x = from + (to - from) * t;
-    const y = BOTTOM - (BOTTOM - TOP) * gain(t);
-    points.push(`${x.toFixed(1)},${y.toFixed(1)}`);
-  }
-  return points.join(' L');
-}
-
-function CrossfadeCurves({ seconds }: { seconds: number }) {
+function CrossfadeCurves({ seconds, curve }: { seconds: number; curve: CrossfadeCurve }) {
   const gradientId = useId();
   const half = (seconds / CROSSFADE_MAX_SEC) * (WIDTH * 0.42);
   const start = WIDTH / 2 - half;
   const end = WIDTH / 2 + half;
-  const fadeOut = curve(start, end, (t) => Math.cos((t * Math.PI) / 2));
-  const fadeIn = curve(start, end, (t) => Math.sin((t * Math.PI) / 2));
+  const fadeOut = curvePath(start, end, TOP, BOTTOM, (t) => outgoingGain(curve, t));
+  const fadeIn = curvePath(start, end, TOP, BOTTOM, (t) => incomingGain(curve, t));
   const outgoing = `M0,${TOP} L${start.toFixed(1)},${TOP} L${fadeOut}`;
   const incoming = `M${start.toFixed(1)},${BOTTOM} L${fadeIn} L${WIDTH},${TOP}`;
 
@@ -79,6 +69,7 @@ function CrossfadeCurves({ seconds }: { seconds: number }) {
 export function CrossfadePicker() {
   const { t } = useTranslation();
   const crossfadeSec = useSettingsStore((s) => s.crossfadeSec);
+  const crossfadeCurve = useSettingsStore((s) => s.crossfadeCurve);
   const setCrossfadeSec = useSettingsStore((s) => s.setCrossfadeSec);
   const enabled = crossfadeSec > 0;
 
@@ -103,7 +94,7 @@ export function CrossfadePicker() {
       }
     >
       <div className="space-y-3">
-        <CrossfadeCurves seconds={crossfadeSec} />
+        <CrossfadeCurves seconds={crossfadeSec} curve={crossfadeCurve} />
         <RangeSlider
           value={crossfadeSec}
           min={0}

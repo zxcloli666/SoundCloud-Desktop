@@ -1,3 +1,4 @@
+import { CROSSFADE_CURVES } from '../../crossfade-curve.ts';
 import { EQ_PRESETS } from '../../equalizer.ts';
 
 export type SettingValue = string | number | boolean;
@@ -25,6 +26,7 @@ export const SETTING_RULES = {
   normalize_volume: SWITCH,
   skip_silence: SWITCH,
   crossfade: range(0, 12, 1),
+  crossfade_curve: choice(CROSSFADE_CURVES),
   stream_quality: choice(['auto', 'sq', 'hq', 'uq']),
   autoplay: SWITCH,
   wave_mode: choice(['similar', 'diverse']),

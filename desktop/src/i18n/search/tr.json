@@ -543,6 +543,14 @@
     "crossfade",
     "boşluksuz"
   ],
+  "settings.crossfadeCurve": [
+    "geçişin şekli",
+    "geçiş grafiği",
+    "geçişte ses düşüyor",
+    "doğrusal geçiş",
+    "s eğrisi",
+    "eşit güç"
+  ],
   "settings.skipStuck": [
     "şarkı yüklenmiyor",
     "sonsuz yükleniyor",
