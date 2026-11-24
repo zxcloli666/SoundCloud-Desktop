@@ -7,7 +7,8 @@ import { useChatDockWidth } from '../chat/shell/useChatDockWidth';
 import { useLayoutMenu } from './LayoutMenu';
 import { DockLoadingRing, useLoadProgress } from './player/load-progress';
 import { PillTrack } from './player/PillTrack';
-import { HiddenPopovers, type PlayerContext, TransportButtons, Zone } from './player/PlayerButtons';
+import { HiddenPopovers, type PlayerContext, Zone } from './player/PlayerButtons';
+import { NextBtn, PlayPauseBtn, PrevBtn } from './player/transport';
 import { useDockHeight, useStackedRow } from './player/use-dock';
 import { WaveSeek } from './player/WaveSeek';
 import { ZoneBoard } from './player/zone-board';
@@ -103,9 +104,17 @@ export const NowPlayingBar = React.memo(
                 <div className="npb-left">
                   <PillTrack loadProgress={loadProgress} />
                   <Zone zone="left" ctx={ctx} className="npb-track-btns" />
+                  <Zone zone="before" ctx={ctx} className="npb-near zone-near" />
                 </div>
-                <TransportButtons ctx={ctx} />
-                <Zone zone="right" ctx={ctx} className="npb-tool-btns" />
+                <div className="npb-transport" data-ui="player-transport">
+                  <PrevBtn />
+                  <PlayPauseBtn />
+                  <NextBtn />
+                </div>
+                <div className="npb-right">
+                  <Zone zone="after" ctx={ctx} className="npb-near zone-near" />
+                  <Zone zone="right" ctx={ctx} className="npb-tool-btns" />
+                </div>
               </div>
             </ZoneBoard>
 

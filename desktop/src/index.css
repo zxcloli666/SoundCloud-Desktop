@@ -982,24 +982,57 @@ select,
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
-.npb-row[data-stacked="true"] {
-    grid-template-columns: auto minmax(0, 1fr);
-    row-gap: 6px;
-}
-
-.npb-row[data-stacked="true"] .npb-left {
-    grid-column: 1 / -1;
-}
-
-.npb-left {
+.npb-left,
+.npb-right {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 4px 10px;
     min-width: 0;
+}
+
+.npb-transport {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 2px;
+}
+
+.npb-near {
+    flex: 0 0 auto;
+    max-width: 100%;
+    gap: 2px;
+}
+
+.npb-left .npb-near {
+    margin-right: -10px;
+}
+
+.npb-right .npb-near {
+    margin-left: -10px;
+}
+
+.npb-row[data-stacked="true"] {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px 12px;
+}
+
+.npb-row[data-stacked="true"] :is(.npb-left, .npb-right) {
+    display: contents;
+}
+
+.npb-row[data-stacked="true"]::after {
+    content: "";
+    order: 1;
+    width: 100%;
+}
+
+.npb-row[data-stacked="true"] :is(.npb-transport, .npb-near, .npb-tool-btns) {
+    order: 2;
 }
 
 .npb-track-btns,
@@ -1015,7 +1048,7 @@ select,
 }
 
 .npb-tool-btns {
-    justify-self: end;
+    margin-left: auto;
 }
 
 .zone-near {
@@ -1573,17 +1606,12 @@ html[data-zone-drag] * {
     }
 
     .npb-row[data-stacked="true"] {
-        grid-template-columns: minmax(0, 1fr);
-        justify-items: center;
-    }
-
-    .npb-row[data-stacked="true"] .npb-left {
-        width: 100%;
+        justify-content: center;
     }
 
     .npb-row[data-stacked="true"] .npb-tool-btns {
-        justify-self: center;
         justify-content: center;
+        margin-inline: auto;
     }
 }
 
