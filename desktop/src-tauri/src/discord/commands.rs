@@ -14,6 +14,8 @@ use crate::shared::blocking::run_blocking;
 use crate::shared::constants::DISCORD_CLIENT_ID;
 
 const CONNECT_TIMEOUT: Duration = Duration::from_secs(5);
+const MIN_NAME_CHARS: usize = 2;
+const MAX_NAME_CHARS: usize = 128;
 
 #[derive(Default)]
 pub struct DiscordState {
@@ -88,6 +90,21 @@ fn status_display(
         (DiscordRpcMode::Track, DiscordRpcStatus::Artist) if is_playing => StatusDisplayType::State,
         _ => StatusDisplayType::Details,
     }
+}
+
+fn header_name(
+    mode: DiscordRpcMode,
+    status: DiscordRpcStatus,
+    title: &str,
+    artist: &str,
+) -> Option<String> {
+    let name = match (mode, status) {
+        (DiscordRpcMode::Activity, _) | (_, DiscordRpcStatus::App) => return None,
+        (DiscordRpcMode::Track, DiscordRpcStatus::Track) => title,
+        _ => artist,
+    };
+    let name: String = name.trim().chars().take(MAX_NAME_CHARS).collect();
+    (name.chars().count() >= MIN_NAME_CHARS).then_some(name)
 }
 
 fn lyric_to_show(mode: DiscordRpcMode, is_playing: bool, line: Option<&str>) -> Option<&str> {
@@ -185,6 +202,10 @@ fn set_activity(state: &DiscordState, track: DiscordTrackInfo) -> Result<(), Str
         .status_display_type(status_display(mode, status, is_playing))
         .assets(assets);
 
+    if let Some(name) = header_name(mode, status, &track.title, &track.artist) {
+        activity = activity.name(name);
+    }
+
     activity = match mode {
         DiscordRpcMode::Track => activity.details(&track.title).state(match lyric {
             Some(line) => line,
@@ -276,6 +297,43 @@ mod tests {
         assert_eq!(
             shown(DiscordRpcMode::Track, DiscordRpcStatus::App, true),
             StatusDisplayType::Name as u8
+        );
+    }
+
+    #[test]
+    fn card_header_follows_status_choice() {
+        let header = |mode, status| header_name(mode, status, "AMG CRUSH", "CODE80");
+        assert_eq!(
+            header(DiscordRpcMode::Track, DiscordRpcStatus::Track).as_deref(),
+            Some("AMG CRUSH")
+        );
+        assert_eq!(
+            header(DiscordRpcMode::Track, DiscordRpcStatus::Artist).as_deref(),
+            Some("CODE80")
+        );
+        assert_eq!(
+            header(DiscordRpcMode::Artist, DiscordRpcStatus::Track).as_deref(),
+            Some("CODE80")
+        );
+        assert!(header(DiscordRpcMode::Track, DiscordRpcStatus::App).is_none());
+        assert!(header(DiscordRpcMode::Activity, DiscordRpcStatus::Artist).is_none());
+    }
+
+    #[test]
+    fn card_header_fits_the_discord_limits() {
+        let header = |artist: &str| {
+            header_name(
+                DiscordRpcMode::Track,
+                DiscordRpcStatus::Artist,
+                "title",
+                artist,
+            )
+        };
+        assert!(header(" ").is_none());
+        assert!(header("x").is_none());
+        assert_eq!(
+            header(&"ж".repeat(200)).map(|name| name.chars().count()),
+            Some(MAX_NAME_CHARS)
         );
     }
 

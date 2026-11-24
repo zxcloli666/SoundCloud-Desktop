@@ -1235,7 +1235,7 @@
     "discordRpcModeArtist": "아티스트",
     "discordRpcModeActivity": "활동만",
     "discordRpcStatus": "상태 줄",
-    "discordRpcStatusDesc": "Discord가 내 이름 아래와 멤버 목록의 “듣는 중” 상태에 표시할 내용",
+    "discordRpcStatusDesc": "Discord가 내 이름 아래, 프로필, 멤버 목록의 “듣는 중” 상태에 표시할 내용",
     "discordRpcStatusActivityHint": "이 모드에서는 Discord에 “SoundCloud 듣는 중”만 표시돼요. 재생 중인 곡을 보여 주려면 위에서 트랙이나 아티스트를 선택하세요.",
     "discordRpcStatusApp": "SoundCloud",
     "discordRpcStatusTrack": "트랙 제목",

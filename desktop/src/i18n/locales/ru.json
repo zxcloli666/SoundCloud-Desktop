@@ -1282,7 +1282,7 @@
     "discordRpcModeArtist": "Только автора",
     "discordRpcModeActivity": "Только активность",
     "discordRpcStatus": "Строка статуса",
-    "discordRpcStatusDesc": "Что Discord пишет после «Слушает» под ником и в списке участников",
+    "discordRpcStatusDesc": "Что Discord пишет после «Слушает» под ником, в профиле и в списке участников",
     "discordRpcStatusActivityHint": "В этом режиме Discord показывает только «Слушает SoundCloud». Выберите «Трек» или «Только автора» выше, чтобы показывать, что играет.",
     "discordRpcStatusApp": "SoundCloud",
     "discordRpcStatusTrack": "Название трека",
