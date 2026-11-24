@@ -1,6 +1,7 @@
 use crate::rt::AppHandle;
 use tauri::{Manager, State};
 
+use crate::app::taskbar;
 use crate::audio::crossfade::Crossfade;
 use crate::audio::device;
 use crate::audio::engine;
@@ -197,8 +198,13 @@ pub fn audio_set_metadata(
 }
 
 #[tauri::command]
-pub fn audio_set_playback_state(playing: bool, state: State<'_, AudioState>) {
+pub fn audio_set_playback_state(
+    playing: bool,
+    app: AppHandle,
+    state: State<'_, AudioState>,
+) {
     engine::set_playback_state(playing, state);
+    taskbar::set_playing(&app, playing);
 }
 
 #[tauri::command]

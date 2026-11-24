@@ -84,6 +84,7 @@ pub fn run() {
         .setup(move |app| {
             #[cfg(windows)]
             app::webview2::exit_if_main_window_missing(app);
+            app::taskbar::attach(app);
             app::autostart::reveal_main_window(app);
             app::autostart::refresh_entry(app);
             app::updater::register(app);
