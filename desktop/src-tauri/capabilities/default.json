@@ -81,6 +81,9 @@
           "path": "$APPDATA/sc-chat-backdrop.json"
         },
         {
+          "path": "$APPDATA/sc-chat-devices.json"
+        },
+        {
           "path": "$APPDATA/sc-chat-prefs.json"
         },
         {

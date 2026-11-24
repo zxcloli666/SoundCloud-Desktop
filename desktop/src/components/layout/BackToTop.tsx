@@ -43,7 +43,7 @@ export function BackToTop({ target }: { target: RefObject<HTMLElement | null> })
       tabIndex={shown ? 0 : -1}
       onClick={scrollUp}
       style={{ right }}
-      className={`fixed bottom-[148px] z-20 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-ink/[0.10] bg-surface/96 text-ink-70 shadow-[0_8px_24px_rgb(var(--shade)/calc(0.5*var(--shade-alpha)))] transition-[transform,opacity,color] duration-200 ease-[var(--ease-apple)] hover:text-accent active:scale-95 motion-reduce:transition-none ${
+      className={`fixed bottom-[calc(var(--dock-height)+17px)] z-20 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-ink/[0.10] bg-surface/96 text-ink-70 shadow-[0_8px_24px_rgb(var(--shade)/calc(0.5*var(--shade-alpha)))] transition-[transform,opacity,color] duration-200 ease-[var(--ease-apple)] hover:text-accent active:scale-95 motion-reduce:transition-none ${
         shown ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-3 opacity-0'
       }`}
     >

@@ -19,7 +19,7 @@ export const MomentCard = memo(function MomentCard({
 
   return (
     <div
-      className="fixed bottom-[132px] right-4 z-[90] w-[min(340px,calc(100vw-32px))] animate-in fade-in slide-in-from-bottom-3 duration-500"
+      className="fixed bottom-[calc(var(--dock-height)+1px)] right-4 z-[90] w-[min(340px,calc(100vw-32px))] animate-in fade-in slide-in-from-bottom-3 duration-500"
       onMouseEnter={() => onHover?.(true)}
       onMouseLeave={() => onHover?.(false)}
     >
@@ -31,7 +31,8 @@ export const MomentCard = memo(function MomentCard({
             : 'rgb(var(--surface) / 0.96)',
           backdropFilter: blur ? `blur(${blur}px) saturate(1.5)` : undefined,
           WebkitBackdropFilter: blur ? `blur(${blur}px) saturate(1.5)` : undefined,
-          boxShadow: '0 24px 70px -24px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.08)',
+          boxShadow:
+            '0 24px 70px -24px rgb(var(--shade) / calc(0.9 * var(--shade-alpha))), inset 0 1px 0 rgba(255,255,255,0.08)',
         }}
       >
         <span

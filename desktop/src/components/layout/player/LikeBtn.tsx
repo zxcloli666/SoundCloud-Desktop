@@ -6,7 +6,7 @@ import { forgetOfflineLike } from '../../../lib/cache';
 import { clearDislike } from '../../../lib/dislike-actions';
 import { trackTasteWrite } from '../../../lib/events';
 import { invalidateAllLikesCache } from '../../../lib/hooks';
-import { optimisticToggleLike, useLiked } from '../../../lib/likes';
+import { optimisticToggleLike, setLikedUrn, useLiked } from '../../../lib/likes';
 import { rememberLikedUrn } from '../../../lib/offline-index';
 import { useSuperliked } from '../../../lib/superlikes';
 import { HeartGlyph, HoldHeart } from '../../music/superlike/HoldHeart';
@@ -27,6 +27,10 @@ function LiveLike({ trackUrn }: { trackUrn: string }) {
     prevUrn.current = trackUrn;
     setLiked(null);
   }, [trackUrn]);
+
+  useEffect(() => {
+    if (trackData?.user_favorite) setLikedUrn(trackUrn, true);
+  }, [trackUrn, trackData?.user_favorite]);
 
   const storeLiked = useLiked(trackUrn);
   const superlikedStore = useSuperliked(trackUrn, trackData?.user_superlike);

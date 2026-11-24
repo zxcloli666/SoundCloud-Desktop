@@ -17,7 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { GripVertical } from '../../../lib/icons';
-import { lockX } from '../../layout/SortableStack';
+import { keepInView } from '../../layout/SortableStack';
 
 export interface LayoutListItem {
   id: string;
@@ -131,7 +131,7 @@ export function LayoutList({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
-      modifiers={[lockX]}
+      modifiers={[keepInView]}
       onDragEnd={handleEnd}
     >
       <SortableContext items={items.map((i) => i.id)} strategy={verticalListSortingStrategy}>

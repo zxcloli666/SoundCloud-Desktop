@@ -1,10 +1,11 @@
 import { useTranslation } from 'react-i18next';
+import { isWaiting } from '../../../../lib/chat/device-alerts';
 import { MonitorSmartphone } from '../../../../lib/chat/icons';
 import type { Device, Millis } from '../../../../lib/chat/types';
 import { RefreshCw } from '../../../../lib/icons';
 import { notifyError } from '../../../../lib/notify';
 import { useChatStore } from '../../../../stores/chat';
-import { isWaiting, useChatDevicesStore } from '../../../../stores/chat/devices';
+import { useChatDevicesStore } from '../../../../stores/chat/devices';
 import { Card } from '../../../settings/primitives';
 import { DecisionButton } from '../../devices/DecisionButton';
 import { deviceErrorKey } from '../../devices/errors';

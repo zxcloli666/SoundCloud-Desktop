@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { isWaiting } from '../../../../lib/chat/device-alerts';
 import type { Device, Millis } from '../../../../lib/chat/types';
-import { isWaiting } from '../../../../stores/chat/devices';
 import { DeviceFacts } from '../../devices/DeviceFacts';
 import { DeviceGlyph } from '../../devices/DeviceGlyph';
 import { exactText, seenText } from '../../devices/time';

@@ -11,7 +11,16 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import type { ReactNode } from 'react';
 
-export const lockX: Modifier = ({ transform }) => ({ ...transform, x: 0 });
+export const keepInView: Modifier = ({
+  transform,
+  draggingNodeRect,
+  scrollableAncestorRects: [view],
+}) => {
+  if (!draggingNodeRect || !view) return { ...transform, x: 0 };
+  const up = view.top - draggingNodeRect.top;
+  const down = view.bottom - draggingNodeRect.bottom;
+  return { ...transform, x: 0, y: Math.max(up, Math.min(down, transform.y)) };
+};
 
 export function swallowNextClick() {
   const swallow = (event: MouseEvent) => {
@@ -42,7 +51,7 @@ export function SortableStack({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
-      modifiers={[lockX]}
+      modifiers={[keepInView]}
       onDragEnd={handleEnd}
       onDragCancel={swallowNextClick}
     >

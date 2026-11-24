@@ -1,4 +1,4 @@
-import { type PointerEvent, useMemo, useRef, useState, type WheelEvent } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { EQ_LABELS, EQ_MAX_GAIN, EQ_MIN_GAIN } from '../../lib/equalizer';
 import {
   bandAt,
@@ -9,11 +9,13 @@ import {
   gainAt,
   gainY,
 } from '../../lib/sound/eq-curve';
+import { useWheelStep } from '../../lib/useWheelStep';
 import { useSettingsStore } from '../../stores/settings';
 import { EqSpectrum } from './EqSpectrum';
 
 const W = 400;
 const H = 100;
+const WHEEL_STEP = 0.5;
 const KEYS: Record<string, number> = { ArrowUp: 0.5, ArrowDown: -0.5, PageUp: 3, PageDown: -3 };
 
 const gainText = (gain: number) => `${gain > 0 ? '+' : ''}${gain}`;
@@ -33,7 +35,7 @@ export function EqCurve() {
     if (!on) setEqEnabled(true);
     setEqBand(band, clampGain(gain));
   };
-  const at = (e: PointerEvent | WheelEvent) => {
+  const at = (e: { clientX: number; clientY: number }) => {
     const box = plot.current?.getBoundingClientRect();
     if (!box) return { band: 0, gain: 0 };
     return {
@@ -41,6 +43,10 @@ export function EqCurve() {
       gain: gainAt((e.clientY - box.top) / box.height),
     };
   };
+  useWheelStep(plot, (direction, event) => {
+    const { band } = at(event);
+    set(band, gains[band] + direction * WHEEL_STEP);
+  });
 
   return (
     <div className="flex flex-col gap-1.5" data-ui="sound-eq-curve">
@@ -62,10 +68,6 @@ export function EqCurve() {
         onPointerCancel={() => setHeld(null)}
         onPointerLeave={() => setHover(null)}
         onDoubleClick={() => lit !== null && set(lit, 0)}
-        onWheel={(e) => {
-          const { band } = at(e);
-          set(band, gains[band] + (e.deltaY < 0 ? 0.5 : -0.5));
-        }}
         className="relative h-[136px] cursor-ns-resize touch-none select-none overflow-hidden rounded-[14px] border border-ink/[0.08] bg-ink/[0.025]"
       >
         <EqSpectrum className="absolute inset-0 size-full" />

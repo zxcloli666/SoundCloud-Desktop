@@ -1,6 +1,6 @@
 import { memo } from 'react';
+import { AGE_RULE_MS, isWaiting } from '../../../lib/chat/device-alerts';
 import type { Device, Millis } from '../../../lib/chat/types';
-import { AGE_RULE_MS, isWaiting } from '../../../stores/chat/devices';
 import { HistoryRing, type RingTone } from './HistoryRing';
 import { platformIcon } from './platform';
 

@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { AGE_RULE_MS } from '../../../../lib/chat/device-alerts';
 import type { Device, Millis } from '../../../../lib/chat/types';
 import { Lock } from '../../../../lib/icons';
-import { AGE_RULE_MS } from '../../../../stores/chat/devices';
 import { HistoryRing } from '../../devices/HistoryRing';
 import { spanText } from '../../devices/time';
 import { grownIn } from './hints';

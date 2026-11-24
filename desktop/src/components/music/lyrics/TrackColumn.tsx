@@ -8,7 +8,12 @@ import type { Track } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
 import { ProgressSlider, ProgressTime } from '../../layout/player/ProgressSlider';
 import { PlaybackRateSlider } from '../../layout/player/tuning';
-import { ControlVolumeBtn, VolumeLabel, VolumeSlider } from '../../layout/VolumeControls';
+import {
+  ControlVolumeBtn,
+  VolumeArea,
+  VolumeLabel,
+  VolumeSlider,
+} from '../../layout/VolumeControls';
 import { CoverFade } from '../../ui/CoverFade';
 import { AltUploadMark } from '../AltUploadMark';
 import { ArtistNameLinks } from '../ArtistNameLinks';
@@ -170,11 +175,11 @@ export const TrackColumn = React.memo(({ track, maxArt }: { track: Track; maxArt
       <div
         className={`${widthClass} flex flex-col gap-2 rounded-[22px] border border-ink/[0.07] bg-black/30 p-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.30*var(--shade-alpha)))] backdrop-blur-xl`}
       >
-        <div className="flex items-center gap-2">
+        <VolumeArea className="flex items-center gap-2">
           <ControlVolumeBtn size="sm" />
           <VolumeSlider className="flex-1" />
           <VolumeLabel />
-        </div>
+        </VolumeArea>
         <PlaybackRateSlider />
       </div>
     </div>

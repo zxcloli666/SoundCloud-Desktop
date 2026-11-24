@@ -5,7 +5,7 @@ import { SoundBtn } from '../../sound/SoundBtn';
 import { TogetherButton } from '../../together/TogetherButton';
 import { VoiceMicButton } from '../../voice/VoiceMicButton';
 import { SleepTimerButton } from '../SleepTimerButton';
-import { VolumeFlyout, VolumeLabel, VolumeSlider } from '../VolumeControls';
+import { VolumeArea, VolumeFlyout, VolumeLabel, VolumeSlider } from '../VolumeControls';
 import { playerBtn } from './button-class';
 import { LikeBtn } from './LikeBtn';
 import { MoreBtn } from './more';
@@ -22,10 +22,10 @@ export interface PlayerContext {
 const VolumeGroup = React.memo(() => (
   <>
     <VolumeFlyout />
-    <div className="npb-vol-slider flex items-center gap-2 pl-1">
+    <VolumeArea className="npb-vol-slider flex items-center gap-2 pl-1">
       <VolumeSlider className="w-[72px]" />
       <VolumeLabel />
-    </div>
+    </VolumeArea>
   </>
 ));
 

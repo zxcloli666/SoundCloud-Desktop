@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { getCurrentTime, getDuration, subscribe } from '../../lib/audio';
 import { art, formatTime } from '../../lib/formatters';
 import { usePerfMode } from '../../lib/perf';
@@ -8,6 +8,7 @@ import { useLayoutMenu } from './LayoutMenu';
 import { DockLoadingRing, useLoadProgress } from './player/load-progress';
 import { PillTrack } from './player/PillTrack';
 import { HiddenPopovers, type PlayerContext, TransportButtons, Zone } from './player/PlayerButtons';
+import { useDockHeight, useStackedRow } from './player/use-dock';
 import { WaveSeek } from './player/WaveSeek';
 import { ZoneBoard } from './player/zone-board';
 import { sidebarWidth, useSidebarCollapsed } from './SidebarChrome';
@@ -67,6 +68,9 @@ export const NowPlayingBar = React.memo(
     const right = useChatDockWidth();
     const left = sidebarWidth(sidebarCollapsed);
     const layoutMenu = useLayoutMenu('player');
+    const dock = useRef<HTMLDivElement>(null);
+    const stacked = useStackedRow(dock);
+    useDockHeight(dock);
     const ctx: PlayerContext = { onQueueToggle, queueOpen };
 
     return (
@@ -82,6 +86,7 @@ export const NowPlayingBar = React.memo(
         <BackgroundGlow />
 
         <div
+          ref={dock}
           className={`npb-dock${loadProgress != null ? ' is-loading' : ''}`}
           data-playing={playingNow ? 'true' : 'false'}
           onContextMenu={(e) => {
@@ -94,7 +99,7 @@ export const NowPlayingBar = React.memo(
 
           <div className="npb-content">
             <ZoneBoard surface="player">
-              <div className="npb-row">
+              <div className="npb-row" data-stacked={stacked ? 'true' : undefined}>
                 <div className="npb-left">
                   <PillTrack loadProgress={loadProgress} />
                   <Zone zone="left" ctx={ctx} className="npb-track-btns" />
