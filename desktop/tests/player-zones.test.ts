@@ -23,12 +23,25 @@ test('default zones put track buttons left, shuffle before, repeat after, the re
     'more',
   ]);
   assert.deepEqual(bar.before, ['shuffle']);
-  assert.deepEqual(bar.after, ['repeat', 'abLoop']);
+  assert.deepEqual(bar.after, ['repeat']);
   assert.deepEqual(bar.title, []);
   assert.ok(bar.right.includes('queue'));
   assert.equal(defaultZone('deck', 'queue'), 'title');
   assert.equal(defaultZone('player', 'queue'), 'right');
   assert.equal(defaultPlacement('deck').length, PLAYER_IDS.length);
+});
+
+test('what the sound window holds has no button of its own', () => {
+  const merged = ['tuning', 'eq', 'effects', 'sleep', 'abLoop'];
+  assert.deepEqual(
+    PLAYER_IDS.filter((id) => merged.includes(id)),
+    [],
+  );
+  for (const surface of ['player', 'deck'] as const) {
+    assert.equal(defaultPlacement(surface).find((e) => e.id === 'sound')?.hidden, false);
+    const hidden = arrange(defaultPlacement(surface), surface, 'sound', 'hide', null, null);
+    assert.equal(hidden.state === 'ok' && hidden.hidden, true);
+  }
 });
 
 test('sound and track actions are shown from the start on both surfaces', () => {
@@ -72,10 +85,10 @@ test('arrange moves by 1-based position among shown peers and reports where it l
   if (first.state !== 'ok') return;
   assert.equal(first.position, 1);
   assert.equal(zoneIds(first.entries).right[0], 'lyrics');
-  const far = arrange(start, 'deck', 'eq', 'show', 'title', 99);
+  const far = arrange(start, 'deck', 'mic', 'show', 'title', 99);
   assert.equal(far.state, 'ok');
   if (far.state !== 'ok') return;
-  assert.deepEqual(zoneIds(far.entries).title, ['more', 'queue', 'eq']);
+  assert.deepEqual(zoneIds(far.entries).title, ['more', 'queue', 'mic']);
   assert.equal(far.position, 3);
   const hidden = arrange(start, 'deck', 'like', 'hide', null, null);
   assert.equal(hidden.state === 'ok' && hidden.hidden, true);

@@ -6,8 +6,8 @@ import { useArtistDisplay, useArtistLinkItems, useDisplayTitle } from '../../../
 import { useVideoOpaque } from '../../../lib/video-element';
 import type { Track } from '../../../stores/player';
 import { useSettingsStore } from '../../../stores/settings';
+import { PlaybackRateSlider } from '../../layout/player/PlaybackRateSlider';
 import { ProgressSlider, ProgressTime } from '../../layout/player/ProgressSlider';
-import { PlaybackRateSlider } from '../../layout/player/tuning';
 import {
   ControlVolumeBtn,
   VolumeArea,

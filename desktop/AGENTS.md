@@ -46,7 +46,7 @@ desktop/
       layout/        AppShell, Sidebar, Titlebar, NowPlayingBar, StarSubscription
       ui/            VirtualList, VirtualGrid, GlassButton, GlassCard, GlassHeroPanel,
                      HorizontalScroll, Skeleton, Avatar, CopyLinkButton
-      music/         TrackCard, PlaylistCard, LikeButton, EqualizerPanel, LyricsPanel,
+      music/         TrackCard, PlaylistCard, LikeButton, LyricsPanel,
                      QueuePanel, FloatingComments, AddToPlaylistDialog,
                      TrackStatusBadges, TrackTitleArtist, UploadKindDot,
                      YMImportDialog, YMImportFloatingStatus,
@@ -452,7 +452,7 @@ style = {
 - Удалил или переименовал ключ заголовка — убрать старый id из всех пяти файлов фраз, тест ловит лишние.
 - Переход ищет цель по тексту заголовка в DOM: не оборачивать заголовок строки в лишний текст.
 - Функции вне настроек (эквалайзер, эффекты, скорость, окно шорткатов) — указатели в `lib/settings-search/pointers.ts`; ищутся наравне с настройками, открывают саму функцию.
-- Новый указатель: запись в `pointers.ts` (`trigger` = `data-ui` кнопки в плеере, без него — открытие в `components/settings/search/pointers.tsx`), иконка там же, фразы в пяти `src/i18n/search/*.json`. Кнопки нет на экране (узкое окно) — указатель в выдаче не показывается.
+- Новый указатель: запись в `pointers.ts` (`sound` = раздел окна звука, `trigger` = `data-ui` кнопки в плеере, без них — открытие в `components/settings/search/pointers.tsx`), иконка там же, фразы в пяти `src/i18n/search/*.json`. Кнопки нет на экране (узкое окно) — указатель в выдаче не показывается.
 
 ## Проверки
 

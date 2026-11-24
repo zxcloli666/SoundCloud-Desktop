@@ -425,7 +425,7 @@ test('player buttons list each zone of the bar and the Home deck', async () => {
   assert.deepEqual(home.left, ['like', 'sound']);
   assert.deepEqual(home.title, ['more', 'queue']);
   assert.deepEqual(home.right, ['together', 'lyrics', 'volume']);
-  assert.ok(bar.hidden.includes('eq'));
+  assert.ok(bar.hidden.includes('mic'));
 });
 
 test('a player button moves, hides and shows on the bar or the Home deck', async () => {
@@ -463,8 +463,8 @@ test('a player button moves, hides and shows on the bar or the Home deck', async
   const hidden = await run('player_button', { button: 'volume', act: 'hide' });
   assert.deepEqual(hidden.result, { ok: true, place: 'bar', zone: 'right', hidden: true });
   assert.ok(app.buttons().bar.hidden.includes('volume'));
-  await run('player_button', { button: 'eq', act: 'show', zone: 'before', position: 1 });
-  assert.deepEqual(app.buttons().bar.before, ['eq', 'shuffle']);
+  await run('player_button', { button: 'mic', act: 'show', zone: 'before', position: 1 });
+  assert.deepEqual(app.buttons().bar.before, ['mic', 'shuffle']);
   app.looking = 'home';
   await run('player_button', { button: 'queue', act: 'move', zone: 'right' });
   assert.deepEqual(app.buttons().home.right, ['together', 'volume', 'queue']);
@@ -500,6 +500,32 @@ test('effects switch by name and an unknown effect is refused before the app', a
   await run('effect', { name: 'off' });
   assert.equal((await run('effect', { name: 'vaporwave' })).result.reason, 'bad_args:name');
   assert.deepEqual(app.calls, ['effect:slowed_reverb', 'effect:off']);
+});
+
+test('the sound window opens on a part, closes, and says when there is no player', async () => {
+  const { app, run } = setup();
+  assert.equal((await run('sound_window', { open: true })).returns, false);
+  await run('sound_window', { open: true, view: 'equalizer' });
+  await run('sound_window', { open: false });
+  assert.deepEqual(app.calls, ['sound:all', 'sound:equalizer', 'sound:closed']);
+  app.playerShown = false;
+  const none = await run('sound_window', { open: true, view: 'effects' });
+  assert.deepEqual(none.result, { ok: false, reason: 'no_player' });
+  assert.equal(none.returns, true);
+});
+
+test('a part of the sound window is not a player button', async () => {
+  const { app, tools, run } = setup();
+  for (const button of ['eq', 'effects', 'tuning', 'sleep', 'abLoop']) {
+    const ran = await run('player_button', { button, act: 'show' });
+    assert.equal(ran.result.reason, 'bad_args:button');
+  }
+  assert.match(
+    tools.find((tool) => tool.name === 'player_button')?.description ?? '',
+    /Equalizer.*sound button opens them all/,
+  );
+  assert.equal((await run('player_button', { button: 'sound', act: 'hide' })).result.ok, true);
+  assert.ok(app.buttons().bar.hidden.includes('sound'));
 });
 
 test('a station of the wave plays and an empty one goes back to the model', async () => {

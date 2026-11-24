@@ -11,7 +11,7 @@ import { useBoard } from './zone-board';
 
 export type { PlayerContext } from './buttons';
 
-const POPOVER_IDS: readonly PlayerButtonId[] = ['mic', 'sleep', 'tuning', 'eq', 'effects'];
+const POPOVER_IDS: readonly PlayerButtonId[] = ['mic', 'sound'];
 
 function ZoneItem({ id, motion, children }: { id: string; motion: boolean; children: ReactNode }) {
   const { setNodeRef, listeners, transform, transition, isDragging } = useSortable({

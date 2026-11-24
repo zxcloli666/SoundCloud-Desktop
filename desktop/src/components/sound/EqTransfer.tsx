@@ -5,14 +5,13 @@ import { trackedInvoke as invoke } from '../../lib/diagnostics';
 import type { EqFormat, EqImport } from '../../lib/equalizer';
 import { Check, Copy, FileDown, FolderOpen, TriangleAlert, X } from '../../lib/icons';
 import { useSettingsStore } from '../../stores/settings';
+import { chip, FIELD, ICON_BTN, SUBMIT_BTN } from './styles';
 
-const fieldClass =
-  'w-full resize-none rounded-lg border border-ink/[0.08] bg-ink/[0.03] px-3 py-2 font-mono text-[11px] leading-relaxed text-ink-80 placeholder:text-ink-25 outline-none transition-colors focus:border-ink/[0.18] focus:bg-ink/[0.05]';
-
-const iconButtonClass =
-  'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-ink/[0.06] bg-ink/[0.04] text-ink-40 transition-all cursor-pointer hover:text-ink-75 disabled:cursor-not-allowed disabled:opacity-40';
-
-const chipClass = 'inline-flex h-6 items-center gap-1 rounded-md px-2 text-[10px] font-semibold';
+const NOTE =
+  'inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 text-[10.5px] font-semibold';
+const BOX = `${FIELD} rounded-[12px] px-3 py-2`;
+const TEXT =
+  'block h-[36px] w-full resize-none bg-transparent font-mono text-[11px] leading-[18px] outline-none placeholder:text-ink-30';
 
 function CloseButton({ onClick }: { onClick: () => void }) {
   const { t } = useTranslation();
@@ -22,7 +21,7 @@ function CloseButton({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       title={t('common.cancel')}
       aria-label={t('common.cancel')}
-      className={iconButtonClass}
+      className={ICON_BTN}
     >
       <X size={14} />
     </button>
@@ -33,17 +32,15 @@ function ImportReport({ result }: { result: EqImport }) {
   const { t } = useTranslation();
   return (
     <>
-      <span className={`${chipClass} bg-emerald-500/10 text-emerald-400`}>
+      <span className={`${NOTE} bg-ok/10 text-ok`}>
         <Check size={11} />
         {t('eq.importUsed', { count: result.used })}
       </span>
       {result.deviation >= 0.5 && (
         <span
           title={t('eq.importDeviationHint')}
-          className={`${chipClass} ${
-            result.deviation >= 2
-              ? 'bg-amber-500/10 text-amber-400'
-              : 'bg-ink/[0.05] text-ink-50'
+          className={`${NOTE} ${
+            result.deviation >= 2 ? 'bg-amber-500/10 text-amber-400' : 'bg-ink/[0.05] text-ink-50'
           }`}
         >
           {t('eq.importDeviation', { value: result.deviation.toFixed(1) })}
@@ -52,7 +49,7 @@ function ImportReport({ result }: { result: EqImport }) {
       {result.skipped.length > 0 && (
         <span
           title={result.skipped.join('\n')}
-          className={`${chipClass} bg-amber-500/10 text-amber-400`}
+          className={`${NOTE} bg-amber-500/10 text-amber-400`}
         >
           <TriangleAlert size={11} />
           {t('eq.importSkipped', { count: result.skipped.length })}
@@ -72,6 +69,7 @@ export const EqImportForm = React.memo(function EqImportForm({ onDone }: { onDon
     request
       .then((imported) => {
         const settings = useSettingsStore.getState();
+        settings.setEqEnabled(true);
         settings.setEqGains(imported.gains);
         settings.setEqPreamp(imported.preamp);
         setResult(imported);
@@ -102,29 +100,26 @@ export const EqImportForm = React.memo(function EqImportForm({ onDone }: { onDon
   }, [run, t]);
 
   return (
-    <form onSubmit={submit} className="mt-2.5 space-y-2 animate-fade-in-up">
-      <textarea
-        autoFocus
-        rows={4}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder={t('eq.importPlaceholder')}
-        aria-label={t('eq.import')}
-        spellCheck={false}
-        className={fieldClass}
-      />
+    <form onSubmit={submit} data-ui="sound-eq-transfer" className="flex shrink-0 flex-col gap-1.5">
+      <div className={BOX}>
+        <textarea
+          autoFocus
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={t('eq.importPlaceholder')}
+          aria-label={t('eq.import')}
+          spellCheck={false}
+          className={TEXT}
+        />
+      </div>
       <div className="flex flex-wrap items-center gap-1.5">
-        <button
-          type="button"
-          onClick={() => void pickFile()}
-          className="flex h-8 items-center gap-1.5 rounded-lg border border-ink/[0.06] bg-ink/[0.04] px-2.5 text-[11px] font-semibold text-ink-55 transition-all cursor-pointer hover:text-ink-80"
-        >
+        <button type="button" onClick={() => void pickFile()} className={chip(false)}>
           <FolderOpen size={13} />
           {t('eq.fromFile')}
         </button>
         {result && <ImportReport result={result} />}
         {failure && (
-          <span className={`${chipClass} bg-red-500/10 text-red-400`}>
+          <span className={`${NOTE} bg-bad/10 text-bad`}>
             <TriangleAlert size={11} />
             {t(failure === 'empty' ? 'eq.importFailed' : 'eq.readFailed')}
           </span>
@@ -135,7 +130,7 @@ export const EqImportForm = React.memo(function EqImportForm({ onDone }: { onDon
           disabled={!text.trim()}
           title={t('eq.apply')}
           aria-label={t('eq.apply')}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-500/20 bg-emerald-500/15 text-emerald-400 transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-40"
+          className={SUBMIT_BTN}
         >
           <Check size={14} />
         </button>
@@ -191,14 +186,15 @@ export const EqExportForm = React.memo(function EqExportForm({ onDone }: { onDon
   }, [format, text, t]);
 
   return (
-    <div className="mt-2.5 space-y-2 animate-fade-in-up">
-      <textarea
-        readOnly
-        rows={4}
-        value={text}
-        aria-label={t('eq.export')}
-        className={`${fieldClass} break-all`}
-      />
+    <div data-ui="sound-eq-transfer" className="flex shrink-0 flex-col gap-1.5">
+      <div className={BOX}>
+        <textarea
+          readOnly
+          value={text}
+          aria-label={t('eq.export')}
+          className={`${TEXT} break-all`}
+        />
+      </div>
       <div className="flex flex-wrap items-center gap-1.5">
         {(['apo', 'graphic'] as const).map((value) => (
           <button
@@ -206,11 +202,7 @@ export const EqExportForm = React.memo(function EqExportForm({ onDone }: { onDon
             type="button"
             onClick={() => setFormat(value)}
             aria-pressed={format === value}
-            className={`h-8 rounded-lg border px-2.5 text-[11px] font-semibold transition-all cursor-pointer ${
-              format === value
-                ? 'bg-ink/[0.1] text-ink-90 border-ink/[0.12]'
-                : 'bg-ink/[0.02] text-ink-35 border-ink/[0.04] hover:bg-ink/[0.06] hover:text-ink-60'
-            }`}
+            className={chip(format === value)}
           >
             {t(value === 'apo' ? 'eq.formatApo' : 'eq.formatGraphic')}
           </button>
@@ -222,9 +214,9 @@ export const EqExportForm = React.memo(function EqExportForm({ onDone }: { onDon
           disabled={!text}
           title={t('eq.copy')}
           aria-label={t('eq.copy')}
-          className={iconButtonClass}
+          className={ICON_BTN}
         >
-          {done === 'copy' ? <Check size={14} className="text-emerald-400" /> : <Copy size={14} />}
+          {done === 'copy' ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
         </button>
         <button
           type="button"
@@ -232,13 +224,9 @@ export const EqExportForm = React.memo(function EqExportForm({ onDone }: { onDon
           disabled={!text}
           title={t('eq.saveFile')}
           aria-label={t('eq.saveFile')}
-          className={iconButtonClass}
+          className={ICON_BTN}
         >
-          {done === 'save' ? (
-            <Check size={14} className="text-emerald-400" />
-          ) : (
-            <FileDown size={14} />
-          )}
+          {done === 'save' ? <Check size={14} className="text-ok" /> : <FileDown size={14} />}
         </button>
         <CloseButton onClick={onDone} />
       </div>

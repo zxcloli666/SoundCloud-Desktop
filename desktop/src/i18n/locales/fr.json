@@ -71,7 +71,6 @@
     "pitchModeAuto": "La hauteur suit la vitesse",
     "pitchModeAutoShort": "Auto",
     "pitchModeManual": "Hauteur manuelle",
-    "pitchModeManualShort": "Manuel",
     "abLoopSetA": "Boucler le meilleur passage : début (A)",
     "abLoopSetB": "Boucler le meilleur passage : fin (B)",
     "volumeFine": "précis",
@@ -1671,22 +1670,13 @@
       "eightD": "8D",
       "bass": "Renfort des basses",
       "custom": "Personnalisé"
-    },
-    "short": {
-      "slowedReverb": "Lent",
-      "spedUp": "Rapide",
-      "eightD": "8D",
-      "bass": "Basses",
-      "custom": "FX"
     }
   },
   "eq": {
     "title": "Égaliseur",
-    "enabled": "Activé",
     "preset": "Préréglage",
     "reset": "Réinitialiser",
     "custom": "Personnalisé",
-    "streamingNote": "L'égaliseur fonctionne avec les titres en cache (Web Audio)",
     "saveAsPreset": "Enregistrer le préréglage",
     "savePreset": "Enregistrer",
     "deletePreset": "Supprimer le préréglage",
@@ -2912,8 +2902,7 @@
   "trackSound": {
     "remember": "Mémoriser pour ce titre",
     "hintOff": "Conserver cet égaliseur, cette vitesse et cette tonalité pour ce titre uniquement",
-    "hintOn": "Appliqué à chaque lecture de ce titre",
-    "noTrack": "Lisez un titre pour mémoriser son son"
+    "hintOn": "Appliqué à chaque lecture de ce titre"
   },
   "sleep": {
     "title": "Minuteur de sommeil",
@@ -3248,6 +3237,10 @@
   "sound": {
     "title": "Son",
     "reset": "Réinitialiser le son",
+    "expand": "Développer",
+    "collapse": "Réduire",
+    "db": "{{value}} dB",
+    "hz": "{{value}} Hz",
     "fx": {
       "off": "Off",
       "slowedReverb": "Ralenti",

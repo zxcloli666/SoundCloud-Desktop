@@ -18,6 +18,7 @@ import {
   type StationId,
 } from '../lib/layout';
 import { layoutsFromRiver } from '../lib/legacy/river';
+import { soundFromButtons } from '../lib/legacy/sound-buttons';
 import type { PerfMode } from '../lib/perf';
 import type { SchemeChoice } from '../lib/scheme';
 import { tauriStorage } from '../lib/tauri-storage';
@@ -648,7 +649,7 @@ export const useSettingsStore = create<SettingsState>()(
     {
       name: 'sc-settings',
       storage: createJSONStorage(() => tauriStorage),
-      version: 26,
+      version: 27,
       migrate: (persistedState, version) => {
         const prev = (persistedState ?? {}) as Partial<SettingsState> & {
           soundwaveDiversity?: number;
@@ -685,6 +686,9 @@ export const useSettingsStore = create<SettingsState>()(
         }
         if (version < 26) {
           next.layouts = layoutsFromRiver(riverHidden ?? [], next.layouts);
+        }
+        if (version < 27) {
+          next.layouts = soundFromButtons(next.layouts);
         }
         return next;
       },

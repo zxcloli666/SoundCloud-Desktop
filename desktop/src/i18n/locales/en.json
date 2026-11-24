@@ -71,7 +71,6 @@
     "pitchModeAuto": "Pitch follows speed",
     "pitchModeAutoShort": "Auto",
     "pitchModeManual": "Manual pitch",
-    "pitchModeManualShort": "Manual",
     "abLoopSetA": "Loop best part: set start (A)",
     "abLoopSetB": "Loop best part: set end (B)",
     "volumeFine": "fine",
@@ -1650,22 +1649,13 @@
       "eightD": "8D",
       "bass": "Bass boost",
       "custom": "Custom"
-    },
-    "short": {
-      "slowedReverb": "Slow",
-      "spedUp": "Fast",
-      "eightD": "8D",
-      "bass": "Bass",
-      "custom": "FX"
     }
   },
   "eq": {
     "title": "Equalizer",
-    "enabled": "Enabled",
     "preset": "Preset",
     "reset": "Reset",
     "custom": "Custom",
-    "streamingNote": "EQ works with cached tracks (Web Audio)",
     "saveAsPreset": "Save preset",
     "savePreset": "Save",
     "deletePreset": "Delete preset",
@@ -2857,8 +2847,7 @@
   "trackSound": {
     "remember": "Remember for this track",
     "hintOff": "Keep this EQ, speed and pitch for this track only",
-    "hintOn": "Applied every time this track plays",
-    "noTrack": "Play a track to remember its sound"
+    "hintOn": "Applied every time this track plays"
   },
   "sleep": {
     "title": "Sleep timer",
@@ -3181,6 +3170,10 @@
   "sound": {
     "title": "Sound",
     "reset": "Reset sound",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "db": "{{value}} dB",
+    "hz": "{{value}} Hz",
     "fx": {
       "off": "Off",
       "slowedReverb": "Slowed",

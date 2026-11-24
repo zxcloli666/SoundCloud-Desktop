@@ -20,7 +20,7 @@ function playerButton(app: AppPort): ChatTool {
   return {
     name: 'player_button',
     description:
-      'Show, hide or move one player button. place is bar (bottom player) or home (Home deck), leave it out for the one on screen. move needs a zone; position counts from 1 inside the zone, left to right, leave it out for the end. show with a zone also moves it there. Previous, play and next never move.',
+      'Show, hide or move one player button. place is bar (bottom player) or home (Home deck), leave it out for the one on screen. move needs a zone; position counts from 1 inside the zone, left to right, leave it out for the end. show with a zone also moves it there. Previous, play and next never move. Equalizer, effects, speed, sleep timer and A-B loop have no buttons of their own: the sound button opens them all.',
     args: {
       type: 'object',
       properties: {

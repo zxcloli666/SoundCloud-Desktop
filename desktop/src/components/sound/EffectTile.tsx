@@ -39,10 +39,12 @@ export const EffectTile = memo(function EffectTile({
           : 'border-ink/[0.08] bg-ink/[0.025] hover:border-ink/[0.18] hover:bg-ink/[0.06]'
       }`}
     >
-      <EffectCanvas
-        scene={scene}
-        className={`block h-[48px] w-full ${locked ? 'opacity-50' : active ? '' : 'opacity-80'}`}
-      />
+      <span className="relative min-h-0 flex-1">
+        <EffectCanvas
+          scene={scene}
+          className={`absolute inset-0 size-full ${locked ? 'opacity-50' : active ? '' : 'opacity-80'}`}
+        />
+      </span>
       {locked && <Lock size={10} className="absolute right-2 top-2 text-ink-40" />}
       <span
         className={`flex h-[26px] w-full items-center justify-center px-1 text-[11px] font-semibold ${

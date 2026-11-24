@@ -91,6 +91,7 @@ import {
   Maximize2 as _Maximize2,
   MessageCircle as _MessageCircle,
   MicVocal as _MicVocal,
+  Minimize2 as _Minimize2,
   Minus as _Minus,
   Monitor as _Monitor,
   MonitorOff as _MonitorOff,
@@ -273,6 +274,7 @@ export const MonitorOff = memo(_MonitorOff);
 export const MonitorPlay = memo(_MonitorPlay);
 export const MessageCircle = memo(_MessageCircle);
 export const Maximize2 = memo(_Maximize2);
+export const Minimize2 = memo(_Minimize2);
 export const Minus = memo(_Minus);
 export const Music = memo(_Music);
 export const Palette = memo(_Palette);
@@ -416,5 +418,3 @@ export const musicIcon12 = <_Music size={12} className="text-ink-15" />;
 export const musicIcon14 = <_Music size={14} className="text-ink-15" />;
 export const musicIcon22 = <_Music size={22} className="text-ink-15" />;
 export const musicIcon20 = <_Music size={16} className="text-ink-20" />;
-export const audioLines16 = <_AudioLines size={16} />;
-export const slidersHorizontal16 = <_SlidersHorizontal size={16} />;

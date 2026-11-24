@@ -71,7 +71,6 @@
     "pitchModeAuto": "속도에 맞춰 피치 변경",
     "pitchModeAutoShort": "자동",
     "pitchModeManual": "피치 직접 조절",
-    "pitchModeManualShort": "수동",
     "abLoopSetA": "구간 반복: 시작점 설정 (A)",
     "abLoopSetB": "구간 반복: 끝점 설정 (B)",
     "volumeFine": "미세",
@@ -1631,22 +1630,13 @@
       "eightD": "8D",
       "bass": "베이스 부스트",
       "custom": "사용자 지정"
-    },
-    "short": {
-      "slowedReverb": "슬로우",
-      "spedUp": "빠름",
-      "eightD": "8D",
-      "bass": "베이스",
-      "custom": "FX"
     }
   },
   "eq": {
     "title": "이퀄라이저",
-    "enabled": "사용",
     "preset": "프리셋",
     "reset": "초기화",
     "custom": "사용자 지정",
-    "streamingNote": "EQ는 캐시된 트랙에서 작동해요 (Web Audio)",
     "saveAsPreset": "프리셋 저장",
     "savePreset": "저장",
     "deletePreset": "프리셋 삭제",
@@ -2672,8 +2662,7 @@
   "trackSound": {
     "remember": "이 트랙에 기억하기",
     "hintOff": "현재 EQ, 속도, 피치를 이 트랙에만 적용해요",
-    "hintOn": "이 트랙을 재생할 때마다 적용돼요",
-    "noTrack": "트랙을 재생하면 사운드 설정을 기억할 수 있어요"
+    "hintOn": "이 트랙을 재생할 때마다 적용돼요"
   },
   "sleep": {
     "title": "수면 타이머",
@@ -3116,6 +3105,10 @@
   "sound": {
     "title": "사운드",
     "reset": "사운드 초기화",
+    "expand": "펼치기",
+    "collapse": "접기",
+    "db": "{{value}} dB",
+    "hz": "{{value}} Hz",
     "fx": {
       "off": "끄기",
       "slowedReverb": "느리게",

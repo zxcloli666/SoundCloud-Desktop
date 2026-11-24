@@ -1,19 +1,19 @@
-import { EffectTiles } from './EffectTiles';
-import { EqStrip } from './EqStrip';
+import { useSoundWindow } from '../../stores/sound-window';
+import { EffectsSection } from './EffectsSection';
+import { EqSection } from './EqSection';
 import { LoopControl } from './LoopControl';
 import { PitchControl, RateControl } from './Pace';
 import { SleepControl } from './SleepControl';
 import { SoundHead } from './SoundHead';
 
-export type FullPanel = 'player-eq' | 'player-effects';
-
-export function SoundConsole({ onFull }: { onFull: (panel: FullPanel) => void }) {
+export function SoundConsole() {
+  const section = useSoundWindow((s) => s.section);
   return (
     <div className="sound-console flex flex-col gap-3.5 p-4">
       <SoundHead />
-      <div className="sound-main grid gap-4">
-        <EffectTiles onFull={() => onFull('player-effects')} />
-        <EqStrip onFull={() => onFull('player-eq')} />
+      <div data-ui="sound-view" data-view={section} className="sound-main grid gap-4">
+        {section !== 'eq' && <EffectsSection full={section === 'effects'} />}
+        {section !== 'effects' && <EqSection full={section === 'eq'} />}
       </div>
       <div className="h-px bg-ink/[0.08]" />
       <div className="sound-foot grid gap-x-6 gap-y-3">

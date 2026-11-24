@@ -28,8 +28,8 @@ test('a button moved over play frees the room of the title', () => {
 });
 
 test('the whole set of buttons never squeezes the title out', () => {
-  assert.equal(zoneIds(everything).left.length + zoneIds(everything).right.length > 14, true);
-  assert.equal(fitsOneRow(zoneIds(everything), 1128), false);
+  assert.equal(fitsOneRow(zoneIds(everything), 1128), true);
+  assert.equal(fitsOneRow(zoneIds(everything), 1020), false);
 });
 
 test('buttons around play count for both sides of it', () => {

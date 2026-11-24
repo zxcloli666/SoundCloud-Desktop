@@ -1,18 +1,15 @@
 import React, { type ReactNode } from 'react';
 import type { PlayerButtonId } from '../../../lib/player-zones';
-import { EffectsBtn } from '../../music/effects/EffectsBtn';
 import { SoundBtn } from '../../sound/SoundBtn';
 import { TogetherButton } from '../../together/TogetherButton';
 import { VoiceMicButton } from '../../voice/VoiceMicButton';
-import { SleepTimerButton } from '../SleepTimerButton';
 import { VolumeArea, VolumeFlyout, VolumeLabel, VolumeSlider } from '../VolumeControls';
 import { playerBtn } from './button-class';
 import { LikeBtn } from './LikeBtn';
 import { MoreBtn } from './more';
 import { AddToPlaylistBtn, AlbumBtn, BlockBtn, DislikeBtn, QualityBadge } from './reactions';
-import { EqBtn, LyricsBtn, QueueBtn } from './tools';
-import { AbLoopBtn, RepeatBtn, ShuffleBtn } from './transport';
-import { TuningBtn } from './tuning';
+import { LyricsBtn, QueueBtn } from './tools';
+import { RepeatBtn, ShuffleBtn } from './transport';
 
 export interface PlayerContext {
   onQueueToggle: () => void;
@@ -39,13 +36,8 @@ export const BUTTONS: Record<PlayerButtonId, (ctx: PlayerContext) => ReactNode> 
   more: () => <MoreBtn />,
   shuffle: () => <ShuffleBtn />,
   repeat: () => <RepeatBtn />,
-  abLoop: () => <AbLoopBtn />,
   together: () => <TogetherButton />,
   mic: () => <VoiceMicButton className={playerBtn} />,
-  sleep: () => <SleepTimerButton className={playerBtn} />,
-  tuning: () => <TuningBtn />,
-  eq: () => <EqBtn />,
-  effects: () => <EffectsBtn className={playerBtn} />,
   sound: () => <SoundBtn />,
   lyrics: () => <LyricsBtn />,
   queue: (ctx) => <QueueBtn onClick={ctx.onQueueToggle} active={ctx.queueOpen} />,

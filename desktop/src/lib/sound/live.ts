@@ -42,6 +42,10 @@ export function formatRate(rate: number) {
   return `${Number(rate.toFixed(2))}x`;
 }
 
+export function formatGain(gain: number) {
+  return `${gain > 0 ? '+' : ''}${Number(gain.toFixed(1))}`;
+}
+
 export function formatPitch(semitones: number) {
   if (Math.abs(semitones) < NEAR) return '0';
   return `${semitones > 0 ? '+' : ''}${Number(semitones.toFixed(1))}`;
