@@ -144,9 +144,10 @@ export function fakeApp(): FakeApp {
       calls.push('queue_clear');
       app.queue = [];
     },
-    pickPlaylist: () => {
-      calls.push('pick_playlist');
-      return true;
+    toPlaylist: async (name, place) => {
+      calls.push(`playlist:${name}:${place}`);
+      if (!name) return 'opened';
+      return name === 'nope' ? 'not_found' : { added: name };
     },
     settings: () => app.values,
     applySetting: (key, value) => {

@@ -9,12 +9,21 @@ const ERROR_TEXT: Record<string, string> = {
   playlist_track_not_in_catalog: 'playlist.trackNotSynced',
 };
 
+export type PlaylistPlace = 'start' | 'end';
+
 export function editPlaylistTracks(playlistUrn: string, edit: object): Promise<unknown> {
   return api(`/playlists/${encodeURIComponent(playlistUrn)}/tracks`, {
     method: 'POST',
     body: JSON.stringify(edit),
     silentStatuses: ANSWERED_STATUSES,
   });
+}
+
+export function addToPlaylist(playlistUrn: string, trackUrn: string, place: PlaylistPlace) {
+  return editPlaylistTracks(
+    playlistUrn,
+    place === 'start' ? { order: [trackUrn] } : { add: trackUrn },
+  );
 }
 
 export interface PlaylistDetails {

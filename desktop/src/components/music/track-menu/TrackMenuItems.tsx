@@ -39,6 +39,7 @@ import {
   saveTrackFile,
 } from '../../../lib/track-actions';
 import { getAlbumTarget, getArtistDisplay, getArtistTarget } from '../../../lib/track-display';
+import { useAddToPlaylistRequest } from '../../../stores/add-to-playlist';
 import { useAppMode } from '../../../stores/app-status';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { usePlayerStore } from '../../../stores/player';
@@ -172,7 +173,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             key="playlist"
             icon={<ListPlus size={15} />}
             label={t('trackMenu.addToPlaylist')}
-            onSelect={() => useTrackMenuStore.getState().openPlaylistDialog(track.urn)}
+            onSelect={run(() => useAddToPlaylistRequest.getState().request(track))}
           />
         ),
         remote && playable && (

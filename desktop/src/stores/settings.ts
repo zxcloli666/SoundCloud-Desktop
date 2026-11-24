@@ -20,6 +20,7 @@ import {
 import { layoutsFromRiver } from '../lib/legacy/river';
 import { soundFromButtons } from '../lib/legacy/sound-buttons';
 import type { PerfMode } from '../lib/perf';
+import type { PlaylistPlace } from '../lib/playlist-edits';
 import type { SchemeChoice } from '../lib/scheme';
 import { tauriStorage } from '../lib/tauri-storage';
 import type { TrackSort } from '../lib/track-sort';
@@ -190,6 +191,7 @@ export interface SettingsState {
   ymImportOrder: YmImportOrder;
   likesSort: TrackSort;
   playlistSorts: Record<string, TrackSort>;
+  playlistPlace: PlaylistPlace;
   showErrorToasts: boolean;
   releaseNotifications: boolean;
   interfaceFont: InterfaceFont;
@@ -297,6 +299,7 @@ export interface SettingsState {
   setYmImportOrder: (order: YmImportOrder) => void;
   setLikesSort: (sort: TrackSort) => void;
   setPlaylistSort: (urn: string, sort: TrackSort) => void;
+  setPlaylistPlace: (place: PlaylistPlace) => void;
   setShowErrorToasts: (v: boolean) => void;
   setReleaseNotifications: (v: boolean) => void;
   setInterfaceFont: (font: InterfaceFont) => void;
@@ -406,6 +409,7 @@ const DEFAULTS = {
   ymImportOrder: 'newest' as YmImportOrder,
   likesSort: 'default' as TrackSort,
   playlistSorts: {} as Record<string, TrackSort>,
+  playlistPlace: 'end' as PlaylistPlace,
   showErrorToasts: true,
   releaseNotifications: true,
   interfaceFont: 'inter' as InterfaceFont,
@@ -605,6 +609,7 @@ export const useSettingsStore = create<SettingsState>()(
           const { [urn]: _, ...rest } = s.playlistSorts;
           return { playlistSorts: sort === 'default' ? rest : { ...rest, [urn]: sort } };
         }),
+      setPlaylistPlace: (playlistPlace) => set({ playlistPlace }),
       setShowErrorToasts: (showErrorToasts) => set({ showErrorToasts }),
       setReleaseNotifications: (releaseNotifications) => set({ releaseNotifications }),
       setInterfaceFont: (interfaceFont) => set({ interfaceFont }),
@@ -779,6 +784,7 @@ export const useSettingsStore = create<SettingsState>()(
         ymImportOrder: s.ymImportOrder,
         likesSort: s.likesSort,
         playlistSorts: s.playlistSorts,
+        playlistPlace: s.playlistPlace,
         showErrorToasts: s.showErrorToasts,
         releaseNotifications: s.releaseNotifications,
         interfaceFont: s.interfaceFont,

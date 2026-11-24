@@ -1,15 +1,16 @@
 import { create } from 'zustand';
+import type { Track } from './player';
 
-interface AddToPlaylistRequestState {
+interface AddToPlaylistState {
   open: boolean;
-  trackUrns: string[];
-  request: (trackUrns: string[]) => void;
-  setOpen: (open: boolean) => void;
+  track: Track | null;
+  request: (track: Track) => void;
+  close: () => void;
 }
 
-export const useAddToPlaylistRequest = create<AddToPlaylistRequestState>()((set) => ({
+export const useAddToPlaylistRequest = create<AddToPlaylistState>()((set) => ({
   open: false,
-  trackUrns: [],
-  request: (trackUrns) => set({ open: true, trackUrns }),
-  setOpen: (open) => set({ open }),
+  track: null,
+  request: (track) => set({ open: true, track }),
+  close: () => set({ open: false }),
 }));

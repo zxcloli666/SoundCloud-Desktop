@@ -1,4 +1,5 @@
 import type { ButtonAct, PlacementMap, Zone } from '../../player-zones';
+import type { PlaylistPlace } from '../../playlist-edits';
 import type { ItemKind, Screen, ScrollTo } from '../screen/shape';
 import type { Listed, TrackList } from '../track-lists';
 import type { Entity, EntityKind } from '../types';
@@ -18,6 +19,14 @@ export const SOUND_VIEWS = ['all', 'equalizer', 'effects'] as const;
 export type SoundView = (typeof SOUND_VIEWS)[number];
 
 export type Taste = 'ok' | 'nothing_playing' | 'local_track' | 'quota_full' | 'failed';
+
+export type PlaylistAdd =
+  | { added: string }
+  | 'opened'
+  | 'not_found'
+  | 'nothing_playing'
+  | 'local_track'
+  | 'failed';
 
 export const TOGETHER_ACTS = ['start', 'join', 'invite', 'visibility', 'leave'] as const;
 export type TogetherAct = (typeof TOGETHER_ACTS)[number];
@@ -88,7 +97,7 @@ export interface AppPort {
   scroll(to: ScrollTo): Promise<Screen | null>;
   playRow(n: number): boolean;
   openItem(kind: ItemKind, id: string): boolean;
-  pickPlaylist(): boolean;
+  toPlaylist(name: string, place: PlaylistPlace | null): Promise<PlaylistAdd>;
   settings(): Record<SettingKey, SettingValue>;
   applySetting(key: SettingKey, value: SettingValue): void;
   remember(note: string): Kept;

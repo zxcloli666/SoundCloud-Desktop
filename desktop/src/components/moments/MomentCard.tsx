@@ -58,7 +58,7 @@ export const MomentCard = React.memo(function MomentCard({
             </span>
             <button
               type="button"
-              onClick={() => requestPlaylist([track.urn])}
+              onClick={() => requestPlaylist(track)}
               title={t('moments.addToPlaylist')}
               aria-label={t('moments.addToPlaylist')}
               className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-ink/[0.06] text-ink-70 ring-1 ring-ink/[0.08] transition-colors hover:bg-ink/[0.1] hover:text-ink"

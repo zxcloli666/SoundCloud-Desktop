@@ -151,7 +151,7 @@ function addCurrentToPlaylist() {
     const tr = usePlayerStore.getState().currentTrack;
     if (!tr || isLocalUrn(tr.urn)) return;
     void invoke('show_main_window');
-    useAddToPlaylistRequest.getState().request([tr.urn]);
+    useAddToPlaylistRequest.getState().request(tr);
 }
 
 /* ── Native tray menu (Rust-emitted) ─────────────────────────── */

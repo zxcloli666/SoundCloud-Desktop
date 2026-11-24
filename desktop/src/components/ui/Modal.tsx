@@ -193,7 +193,8 @@ export function ModalContent({
 
   // focus the card once it opens
   useEffect(() => {
-    if (state === 'open') cardRef.current?.focus();
+    const card = cardRef.current;
+    if (state === 'open' && !card?.contains(document.activeElement)) card?.focus();
   }, [state]);
 
   if (!mounted) return null;

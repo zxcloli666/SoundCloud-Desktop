@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ListPlus, MicVocal } from '../../lib/icons';
+import { MicVocal } from '../../lib/icons';
 import { useLyricsStore } from '../../stores/lyrics';
 import type { Track } from '../../stores/player';
-import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { AddToPlaylistButton } from '../music/AddToPlaylistButton';
 import { PlayNextButton } from '../music/PlayNextButton';
 import { SaveOfflineAction } from '../music/SaveOfflineButton';
 import { CopyIconAction, DownloadButton, IconAction, LikeBtn, PlayPill } from './actions';
@@ -40,16 +40,11 @@ export const TrackActionRail = React.memo(function TrackActionRail({
         />
         <MomentReactionPicker trackUrn={track.urn} isCurrent={isCurrent} />
         <span className="w-px h-5 bg-ink/[0.08] mx-0.5" aria-hidden />
-        <AddToPlaylistDialog trackUrns={[track.urn]}>
-          <button
-            type="button"
-            title={t('playlist.addToPlaylist')}
-            aria-label={t('playlist.addToPlaylist')}
-            className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-ink-60 transition-colors duration-200 hover:bg-ink/[0.07] hover:text-ink-95"
-          >
-            <ListPlus size={16} />
-          </button>
-        </AddToPlaylistDialog>
+        <AddToPlaylistButton
+          track={track}
+          size={16}
+          className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl text-ink-60 transition-colors duration-200 hover:bg-ink/[0.07] hover:text-ink-95"
+        />
         <PlayNextButton
           track={track}
           size={16}

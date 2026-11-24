@@ -23,7 +23,7 @@ import { useShortcutsStore } from '../../stores/shortcuts';
 import { ChatDock } from '../chat/shell/ChatDock';
 import { ImportHost } from '../import/ImportHost';
 import { MobileLinkHost } from '../mobile-link/MobileLinkHost';
-import { AddToPlaylistHost } from '../music/AddToPlaylistHost';
+import { AddToPlaylistHost } from '../music/add-to-playlist/AddToPlaylistHost';
 import { useQueueDock } from '../music/queue/use-queue-dock';
 import { SelectionBar } from '../music/selection/SelectionBar';
 import { SuperlikeLimitHost } from '../music/superlike/SuperlikeLimitHost';

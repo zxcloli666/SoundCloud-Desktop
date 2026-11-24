@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useInfiniteScroll, useMyFollowings} from '../../lib/hooks';
 import {Loader2} from '../../lib/icons';
 import {isWaitKind} from '../../lib/sync-wait';
-import {matchesTerms, queryTerms} from '../../lib/text-match';
+import {matchesTerms, queryTerms} from '../../lib/search-key';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';
 import {VirtualGrid} from '../ui/VirtualGrid';
 import {UserCard} from './UserCard';

@@ -4,7 +4,7 @@ import {type Playlist, useInfiniteScroll, useMyLikedPlaylists, useMyPlaylists} f
 import {Bookmark, ListMusic, Loader2} from '../../lib/icons';
 import {splitReleases} from '../../lib/playlist-kind';
 import {isWaitKind, waitKindOf} from '../../lib/sync-wait';
-import {matchesTerms, queryTerms} from '../../lib/text-match';
+import {matchesTerms, queryTerms} from '../../lib/search-key';
 import {PlaylistCard} from '../music/PlaylistCard';
 import {WaitStrip} from '../sync-wait/WaitStrip';
 import {SyncNotice, syncNoticeOf} from '../ui/SyncNotice';

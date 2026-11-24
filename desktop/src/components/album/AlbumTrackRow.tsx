@@ -1,12 +1,12 @@
 import { memo } from 'react';
 import { cancelPreload, preloadTrack } from '../../lib/audio';
 import { art, dur, fc } from '../../lib/formatters';
-import { headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
+import { headphones11, heart11, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
 import { useRowPick } from '../../lib/useRowPick';
 import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
 import { useTrackPlay } from '../../lib/useTrackPlay';
 import type { Track } from '../../stores/player';
-import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { AddToPlaylistButton } from '../music/AddToPlaylistButton';
 import { useTrackColumns } from '../music/columns/TrackColumns';
 import { LikeButton } from '../music/LikeButton';
 import { PlayNextButton } from '../music/PlayNextButton';
@@ -111,14 +111,10 @@ function AlbumTrackRowImpl({ track, position, queue }: AlbumTrackRowProps) {
       >
         <LikeButton track={track} />
         <SaveOfflineRowButton track={track} />
-        <AddToPlaylistDialog trackUrns={[track.urn]}>
-          <button
-            type="button"
-            className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"
-          >
-            <ListPlus size={14} />
-          </button>
-        </AddToPlaylistDialog>
+        <AddToPlaylistButton
+          track={track}
+          className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"
+        />
         <PlayNextButton
           track={track}
           className="cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.06] opacity-0 group-hover:opacity-100 transition-all"

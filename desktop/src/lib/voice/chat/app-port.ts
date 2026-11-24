@@ -1,4 +1,3 @@
-import { useAddToPlaylistRequest } from '../../../stores/add-to-playlist';
 import { useLyricsStore } from '../../../stores/lyrics';
 import { type Track, usePlayerStore } from '../../../stores/player';
 import { useSearchQueryStore } from '../../../stores/searchQuery';
@@ -11,6 +10,7 @@ import type { Screen, ScrollTo } from '../screen/shape';
 import { readScreen } from '../screen/snapshot';
 import { useVoiceStore } from '../store';
 import { buttons, placeButton } from './app-buttons';
+import { toPlaylist } from './app-playlist';
 import { applySetting, readSettings } from './app-settings';
 import { setEffect, setSleep, showSoundView } from './app-sound';
 import { playStation } from './app-stations';
@@ -52,13 +52,6 @@ function open(page: Page, query: string, section: SettingsSection | null): OpenR
 function upNext(limit: number): Brief[] {
   const { queue, queueIndex } = usePlayerStore.getState();
   return queue.slice(queueIndex + 1, queueIndex + 1 + limit).map(briefOf);
-}
-
-function pickPlaylist(): boolean {
-  const track = usePlayerStore.getState().currentTrack;
-  if (!track || isLocalUrn(track.urn)) return false;
-  useAddToPlaylistRequest.getState().request([track.urn]);
-  return true;
 }
 
 function setSpeed(rate: number): number {
@@ -117,7 +110,7 @@ export const appPort: AppPort = {
   scroll,
   playRow,
   openItem,
-  pickPlaylist,
+  toPlaylist,
   settings: readSettings,
   applySetting,
   remember,
