@@ -22,7 +22,7 @@ export function RateControl() {
   const reset = usePlayerStore((s) => s.resetPlaybackRate);
   return (
     <PaceSlider
-      marker="sound-rate"
+      data-ui="sound-rate"
       icon={<Gauge size={13} />}
       label={t('player.playbackSpeed')}
       readout={formatRate(rate)}
@@ -54,7 +54,7 @@ export function PitchControl() {
   };
   return (
     <PaceSlider
-      marker="sound-pitch"
+      data-ui="sound-pitch"
       icon={<Music size={13} />}
       label={t('player.pitch')}
       readout={formatPitch(pitch)}

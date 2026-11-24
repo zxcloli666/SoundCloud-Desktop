@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { LABEL } from './styles';
 
 interface Props {
-  marker: string;
+  'data-ui': string;
   icon: ReactNode;
   label: string;
   readout: string;
@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function PaceSlider({
-  marker,
+  'data-ui': marker,
   icon,
   label,
   readout,
