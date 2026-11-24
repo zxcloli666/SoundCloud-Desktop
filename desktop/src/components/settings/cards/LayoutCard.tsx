@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, LayoutDashboard, Lock, RotateCcw } from '../../../lib/icons';
 import { isDefaultLayout, isLocked, type LayoutScope, moveEntry } from '../../../lib/layout';
+import { staysLast } from '../../../lib/layout-rest';
 import type { Surface } from '../../../lib/player-zones';
 import { useLayout, useToggleLayoutEntry } from '../../../lib/use-layout';
 import { useSettingsStore } from '../../../stores/settings';
@@ -50,7 +51,7 @@ function BlocksEditor({ scope }: { scope: LayoutScope }) {
       label: t(meta.label),
       hint: offlineHint ? t('settings.layoutOfflineAuto') : undefined,
       dimmed: entry.hidden,
-      fixed: locked,
+      fixed: locked || staysLast(entry.id),
       trailing: locked ? (
         <span
           title={t('settings.layoutAlwaysVisible')}
