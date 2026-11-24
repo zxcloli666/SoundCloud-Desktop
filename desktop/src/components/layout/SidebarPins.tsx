@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/shallow';
 import { art } from '../../lib/formatters';
 import { ListMusic } from '../../lib/icons';
 import { moveEntry } from '../../lib/layout';
+import { staysLast } from '../../lib/layout-rest';
 import { useSuperlikeCount } from '../../lib/superlikes';
 import { useLayout, useToggleLayoutEntry } from '../../lib/use-layout';
 import { useSettingsStore } from '../../stores/settings';
@@ -19,7 +20,8 @@ function QuickRows({ collapsed }: { collapsed: boolean }) {
   const toggle = useToggleLayoutEntry('quick');
   const hasSuperlikes = useSuperlikeCount() > 0;
   const ids = layout
-    .filter((entry) => !entry.hidden && (entry.id !== 'superlikes' || hasSuperlikes))
+    .filter((entry) => !entry.hidden && !staysLast(entry.id))
+    .filter((entry) => entry.id !== 'superlikes' || hasSuperlikes)
     .map((entry) => entry.id);
 
   return (

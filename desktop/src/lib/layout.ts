@@ -1,4 +1,5 @@
 import { selectChatInNav, useChatStore } from '../stores/chat';
+import { restLast } from './layout-rest';
 import {
   isDefaultPlacement,
   isSurface,
@@ -23,7 +24,7 @@ export type LayoutState = Record<LayoutScope, LayoutEntry[]>;
 
 export const LAYOUT_IDS = {
   sidebar: ['home', 'moments', 'search', 'discover', 'library', 'chats', 'offline'],
-  quick: ['history', 'likes', 'superlikes', 'playlists', 'following', 'stats', 'dislikes'],
+  quick: ['history', 'likes', 'superlikes', 'playlists', 'following', 'stats', 'dislikes', 'rest'],
   library: [
     'fresh',
     'continue',
@@ -137,7 +138,7 @@ export function resolveLayout<T extends string>(
     out.splice(at, 0, { id, hidden: hiddenByDefault.has(id) });
     seen.add(id);
   });
-  return out;
+  return restLast(out);
 }
 
 export function moveEntry<T extends { id: string }>(list: readonly T[], from: string, to: string) {

@@ -54,6 +54,7 @@ const QUICK_ITEMS: Record<LayoutId<'quick'>, ItemMeta> = {
   following: { icon: <Users size={16} />, label: 'nav.following' },
   stats: { icon: <ChartNoAxesColumn size={16} />, label: 'stats.title' },
   dislikes: { icon: <ThumbsDown size={16} />, label: 'dislikes.title' },
+  rest: { icon: <Ellipsis size={16} />, label: 'sidebar.more' },
 };
 
 const HOME_ITEMS: Record<LayoutId<'home'>, ItemMeta> = {

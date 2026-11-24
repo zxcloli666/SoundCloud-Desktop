@@ -1,8 +1,9 @@
 import { type ReactNode, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ChevronDown, Ellipsis, Pin } from '../../lib/icons';
+import { staysLast } from '../../lib/layout-rest';
 import { useSuperlikeCount } from '../../lib/superlikes';
-import { useLayout, useToggleLayoutEntry } from '../../lib/use-layout';
+import { useLayout, useToggleLayoutEntry, useVisibleBlocks } from '../../lib/use-layout';
 import { itemMeta } from '../settings/cards/layout-items';
 import { NAV_ITEMS } from './nav-items';
 import { IconBox, Label, ROW } from './SidebarChrome';
@@ -32,7 +33,8 @@ function useSpareRows(shown: readonly string[]): Spare[] {
         pin: () => pinNav(id),
       })),
     ...quick
-      .filter((entry) => entry.hidden && (entry.id !== 'superlikes' || hasSuperlikes))
+      .filter((entry) => entry.hidden && !staysLast(entry.id))
+      .filter((entry) => entry.id !== 'superlikes' || hasSuperlikes)
       .map(({ id }) => ({
         key: `quick:${id}`,
         to: `/library/${id}`,
@@ -52,7 +54,8 @@ export function SidebarMore({
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const rows = useSpareRows(shown);
-  if (rows.length === 0) return null;
+  const visible = useVisibleBlocks('quick').includes('rest');
+  if (!visible || rows.length === 0) return null;
 
   return (
     <div
