@@ -1,5 +1,6 @@
 import * as Slider from '@radix-ui/react-slider';
-import type { ReactNode } from 'react';
+import { type ReactNode, useRef } from 'react';
+import { useWheelStep } from '../../lib/useWheelStep';
 import { LABEL } from './styles';
 
 interface Props {
@@ -38,6 +39,8 @@ export function PaceSlider({
   const place = (at: number) => ((at - min) / (max - min)) * 100;
   const from = Math.min(place(value), place(rest));
   const to = Math.max(place(value), place(rest));
+  const sliderRef = useRef<HTMLSpanElement>(null);
+  useWheelStep(sliderRef, (direction) => onChange(value + direction * step));
   return (
     <div data-ui={marker} className="flex min-w-0 flex-col gap-1.5">
       <div className="flex h-7 items-center gap-2">
@@ -59,13 +62,13 @@ export function PaceSlider({
         </button>
       </div>
       <Slider.Root
+        ref={sliderRef}
         aria-label={label}
         value={[value]}
         min={min}
         max={max}
         step={step}
         onValueChange={([next]) => onChange(next)}
-        onWheel={(e) => onChange(value + (e.deltaY < 0 ? step : -step))}
         className="relative flex h-7 w-full cursor-pointer touch-none select-none items-center"
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.1]">

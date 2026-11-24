@@ -3,6 +3,7 @@ import * as Slider from '@radix-ui/react-slider';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { slidersHorizontal16 } from '../../../lib/icons';
+import { useWheelStep } from '../../../lib/useWheelStep';
 import {
   getEffectivePitchSemitones,
   PITCH_SEMITONES_MAX,
@@ -28,6 +29,10 @@ export const PlaybackRateSlider = React.memo(() => {
   const setPlaybackRate = usePlayerStore((s) => s.setPlaybackRate);
   const resetPlaybackRate = usePlayerStore((s) => s.resetPlaybackRate);
   const isDefault = Math.abs(playbackRate - 1) < 0.001;
+  const sliderRef = React.useRef<HTMLSpanElement>(null);
+  useWheelStep(sliderRef, (direction) =>
+    setPlaybackRate(playbackRate + direction * PLAYBACK_RATE_STEP),
+  );
 
   return (
     <div className="rounded-[14px] border border-ink/[0.06] bg-ink/[0.02] px-3 py-2.5">
@@ -49,6 +54,7 @@ export const PlaybackRateSlider = React.memo(() => {
         </button>
       </div>
       <Slider.Root
+        ref={sliderRef}
         className="group/rate relative flex h-5 w-full cursor-pointer select-none touch-none items-center"
         aria-label={t('player.playbackSpeed')}
         value={[playbackRate]}
@@ -56,10 +62,6 @@ export const PlaybackRateSlider = React.memo(() => {
         max={PLAYBACK_RATE_MAX}
         step={PLAYBACK_RATE_STEP}
         onValueChange={([v]) => setPlaybackRate(v)}
-        onWheel={(e) => {
-          if (e.cancelable) e.preventDefault();
-          setPlaybackRate(playbackRate + (e.deltaY < 0 ? PLAYBACK_RATE_STEP : -PLAYBACK_RATE_STEP));
-        }}
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.08] transition-all duration-150 group-hover/rate:h-[4px]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />
@@ -123,6 +125,10 @@ export const PitchSlider = React.memo(() => {
   const effective = getEffectivePitchSemitones(playbackRate, mode, pitchSemitones);
   const isManual = mode === 'manual';
   const canReset = isManual && Math.abs(pitchSemitones) >= 0.001;
+  const sliderRef = React.useRef<HTMLSpanElement>(null);
+  useWheelStep(sliderRef, (direction) => {
+    if (isManual) setPitch(pitchSemitones + direction * PITCH_SEMITONES_STEP);
+  });
 
   return (
     <div
@@ -159,6 +165,7 @@ export const PitchSlider = React.memo(() => {
         </button>
       </div>
       <Slider.Root
+        ref={sliderRef}
         className="group/pitch relative flex h-5 w-full cursor-pointer select-none touch-none items-center"
         aria-label={t('player.pitch')}
         value={[effective]}
@@ -167,11 +174,6 @@ export const PitchSlider = React.memo(() => {
         step={PITCH_SEMITONES_STEP}
         disabled={!isManual}
         onValueChange={([v]) => isManual && setPitch(v)}
-        onWheel={(e) => {
-          if (!isManual) return;
-          if (e.cancelable) e.preventDefault();
-          setPitch(pitchSemitones + (e.deltaY < 0 ? PITCH_SEMITONES_STEP : -PITCH_SEMITONES_STEP));
-        }}
       >
         <Slider.Track className="relative h-[3px] grow rounded-full bg-ink/[0.08] transition-all duration-150 group-hover/pitch:h-[4px]">
           <Slider.Range className="absolute h-full rounded-full bg-accent" />

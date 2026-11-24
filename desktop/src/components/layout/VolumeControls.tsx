@@ -3,6 +3,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShallow } from 'zustand/shallow';
 import { volume1Icon16, volume2Icon16, volumeXIcon16 } from '../../lib/icons';
+import { useWheelStep } from '../../lib/useWheelStep';
 import { clampVolume, VOLUME_MAX, VOLUME_SNAP_POINTS } from '../../lib/volume';
 import { usePlayerStore } from '../../stores/player';
 import { playerBtn } from './player/button-class';
@@ -10,11 +11,25 @@ import { useVolumeDrag } from './useVolumeDrag';
 
 const VOLUME_TICKS = VOLUME_SNAP_POINTS.filter((point) => point < VOLUME_MAX);
 
-function stepVolumeOnWheel(e: React.WheelEvent) {
-  e.preventDefault();
-  e.stopPropagation();
+function stepVolume(direction: 1 | -1) {
   const { volume, setVolume } = usePlayerStore.getState();
-  setVolume(clampVolume(volume + ((e.deltaY || e.deltaX) < 0 ? 1 : -1)));
+  setVolume(clampVolume(volume + direction));
+}
+
+export function VolumeArea({
+  className,
+  children,
+}: {
+  className: string;
+  children: React.ReactNode;
+}) {
+  const ref = React.useRef<HTMLDivElement>(null);
+  useWheelStep(ref, stepVolume);
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
 }
 
 const VolumeTip = React.memo(
@@ -84,7 +99,6 @@ export const VolumeSlider = React.memo(
               e.preventDefault();
             }
           }}
-          onWheel={stepVolumeOnWheel}
         >
           <Slider.Track
             className={`relative grow rounded-full bg-ink/[0.08] transition-all duration-150 ${
@@ -141,7 +155,6 @@ export const ControlVolumeBtn = React.memo(
       <button
         type="button"
         onClick={() => setVolume(volume > 0 ? 0 : volumeBeforeMute)}
-        onWheel={stepVolumeOnWheel}
         title={t('player.volume')}
         aria-label={t('player.volume')}
         className={
@@ -168,8 +181,8 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
   const tone = volume > 100 ? 'text-bad/70 hover:text-bad' : 'text-ink-30 hover:text-ink-70';
 
   React.useEffect(() => {
-    if (!editing) setDraft(String(volume));
-  }, [editing, volume]);
+    setDraft(String(volume));
+  }, [volume]);
 
   const commit = () => {
     const parsed = Number.parseInt(draft, 10);
@@ -208,7 +221,10 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
       type="button"
       title={t('player.volumeType')}
       aria-label={t('player.volumeType')}
-      onClick={() => setEditing(true)}
+      onClick={() => {
+        setDraft(String(volume));
+        setEditing(true);
+      }}
       className={`text-[10px] tabular-nums w-[34px] shrink-0 cursor-text transition-colors ${className} ${tone}`}
     >
       {volume}%
@@ -217,7 +233,7 @@ export const VolumeLabel = React.memo(({ className = 'text-right' }: { className
 });
 
 export const VolumeFlyout = React.memo(() => (
-  <div className="npb-vol" onWheel={stepVolumeOnWheel}>
+  <VolumeArea className="npb-vol">
     <ControlVolumeBtn size="player" />
     <div className="npb-vol-pop">
       <div className="flex flex-col items-center gap-2 rounded-2xl border border-ink/[0.10] bg-surface/96 px-2 py-3 shadow-[0_18px_60px_rgb(var(--shade)/calc(0.55*var(--shade-alpha)))]">
@@ -225,5 +241,5 @@ export const VolumeFlyout = React.memo(() => (
         <VolumeSlider orientation="vertical" className="h-[110px]" />
       </div>
     </div>
-  </div>
+  </VolumeArea>
 ));
