@@ -50,7 +50,6 @@ export const EffectSlider = memo(function EffectSlider({
       <Slider.Root
         ref={slider}
         className="relative flex h-7 w-full cursor-pointer touch-none select-none items-center"
-        aria-label={label}
         value={[value]}
         min={min}
         max={max}
@@ -64,6 +63,7 @@ export const EffectSlider = memo(function EffectSlider({
           />
         </Slider.Track>
         <Slider.Thumb
+          aria-label={label}
           className={`block size-3 rounded-full outline-none transition-[background-color,scale] duration-150 hover:scale-125 focus-visible:scale-125 focus-visible:ring-2 focus-visible:ring-accent/50 ${
             lit ? 'bg-accent' : 'bg-ink/70'
           }`}
