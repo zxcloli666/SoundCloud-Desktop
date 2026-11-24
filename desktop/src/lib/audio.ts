@@ -64,6 +64,7 @@ import {rememberTracks} from './offline-index';
 import {getUrnCluster, recordClusterFeedback} from './recsFeedback';
 import {getArtistDisplay, getDisplayTitle} from './track-display';
 import type {PlaybackClock} from './video-sync';
+import {volumeGain} from './volume';
 import {LATE_SKIP_SHARE} from './wave-feedback';
 
 const SKIP_THRESHOLD_SEC = 30;
@@ -551,7 +552,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   invoke('audio_set_normalization', { enabled: normalizeVolume }).catch(console.error);
   invoke('audio_set_skip_silence', { enabled: skipSilence }).catch(console.error);
 
-  invoke('audio_set_volume', { volume: usePlayerStore.getState().volume }).catch(console.error);
+  applyVolume();
   syncPlaybackRateAndPitch();
 
   try {
@@ -1114,7 +1115,7 @@ usePlayerStore.subscribe((state, prev) => {
   }
 
   if (state.volume !== prev.volume) {
-    invoke('audio_set_volume', { volume: state.volume }).catch(console.error);
+    applyVolume();
   }
 
   if (
@@ -1135,6 +1136,11 @@ usePlayerStore.subscribe((state, prev) => {
     }).catch(console.error);
   }
 });
+
+export function applyVolume(factor = 1) {
+  const gain = volumeGain(usePlayerStore.getState().volume) * factor;
+  invoke('audio_set_volume', { gain }).catch(console.error);
+}
 
 function syncPlaybackRateAndPitch() {
   const { playbackRate, pitchControlMode, pitchSemitones } = usePlayerStore.getState();

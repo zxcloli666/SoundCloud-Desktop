@@ -8,6 +8,11 @@ export function clampVolume(value: number, max = VOLUME_MAX): number {
   return Math.max(0, Math.min(max, value));
 }
 
+export function volumeGain(volume: number): number {
+  const level = clampVolume(volume) / 100;
+  return level < 1 ? level ** 2 : level;
+}
+
 export function snapVolume(
   value: number,
   unitsPerPx: number,
