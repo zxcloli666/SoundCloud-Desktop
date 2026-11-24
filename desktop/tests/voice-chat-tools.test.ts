@@ -317,6 +317,14 @@ test('navigation passes the page, query and settings section to the app', async 
   ]);
 });
 
+test('app icon: only one of the drawn icons', async () => {
+  const { app, run } = setup();
+  assert.deepEqual((await run('app_icon', { icon: 'cat' })).result, { ok: true, icon: 'cat' });
+  const wrong = await run('app_icon', { icon: 'dog' });
+  assert.deepEqual(wrong.result, { ok: false, reason: 'bad_args:icon' });
+  assert.deepEqual(app.calls, ['icon:cat']);
+});
+
 test('settings: only whitelisted keys, values parsed and validated per key', async () => {
   const { app, run } = setup();
   const read = await run('get_settings');

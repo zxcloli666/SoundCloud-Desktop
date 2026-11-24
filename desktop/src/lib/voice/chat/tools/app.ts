@@ -1,3 +1,4 @@
+import { APP_ICONS, type AppIconId } from '../../../app-icons.ts';
 import type { PlayerPort } from '../../execute.ts';
 import { PAGES, type Page, SETTINGS_SECTIONS, type SettingsSection } from '../pages.ts';
 import type { AppPort } from '../ports';
@@ -74,6 +75,23 @@ function setSetting(app: AppPort): ChatTool {
   };
 }
 
+function setAppIcon(app: AppPort): ChatTool {
+  return {
+    name: 'app_icon',
+    description: 'Change the icon of the app itself, the one in the window, the tray and the Dock.',
+    args: {
+      type: 'object',
+      properties: { icon: { type: 'string', enum: APP_ICONS } },
+      required: ['icon'],
+    },
+    returns: false,
+    run: async (args) => {
+      app.setAppIcon(args.icon as AppIconId);
+      return { result: ok({ icon: args.icon }) };
+    },
+  };
+}
+
 function lyrics(app: AppPort): ChatTool {
   return {
     name: 'lyrics',
@@ -128,6 +146,7 @@ export function appTools(player: PlayerPort, app: AppPort): ChatTool[] {
     openPage(app),
     getSettings(app),
     setSetting(app),
+    setAppIcon(app),
     lyrics(app),
     queueList(app),
     queueClear(app),

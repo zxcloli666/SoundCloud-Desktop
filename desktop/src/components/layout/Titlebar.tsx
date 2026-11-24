@@ -2,7 +2,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import appIcon from '../../assets/app-icon.png';
+import { appIconUrl } from '../../lib/app-icon';
 import {
   ChevronLeft,
   ChevronRight,
@@ -136,6 +136,7 @@ export const WindowControls = React.memo(() => {
 
 export const Titlebar = React.memo(() => {
   const collapsed = useSidebarCollapsed();
+  const appIcon = useSettingsStore((s) => s.appIcon);
 
   return (
     <div
@@ -146,7 +147,7 @@ export const Titlebar = React.memo(() => {
       <div className="flex items-center gap-3 shrink-0" data-tauri-drag-region>
         <div className="flex items-center" data-tauri-drag-region>
           <img
-            src={appIcon}
+            src={appIconUrl(appIcon)}
             alt="SoundCloud"
             draggable={false}
             data-tauri-drag-region

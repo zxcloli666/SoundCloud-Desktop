@@ -238,6 +238,8 @@
 | `[data-ui="settings-row"]` | Строка настройки |
 | `[data-ui="player-zones"]` | Карта расстановки кнопок в настройках, `data-surface`: `player` (нижний плеер) или `deck` (Главная); у каждой зоны `data-zone`, у её списка `data-drop` при перетаскивании |
 | `[data-ui="settings-info"]` | Значок подсказки у настройки, текст при наведении |
+| `[data-ui="app-icons"]` | Выбор иконки приложения в настройках |
+| `[data-ui="app-icon"]` | Одна из этих иконок, у выбранной `[aria-checked="true"]` |
 | `[data-ui="mobile-access-badge"]` | Статус расширенного доступа в настройках; `data-state`: `off`, `active` или `relink` |
 | `[data-ui="mobile-link"]` | Окно подключения расширенного доступа; `data-phase`: `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` или `expired` |
 | `[data-ui="mobile-link-account"]` | Подключаемый аккаунт в этом окне |

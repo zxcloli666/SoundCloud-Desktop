@@ -2,6 +2,7 @@ import { useAddToPlaylistRequest } from '../../../stores/add-to-playlist';
 import { useLyricsStore } from '../../../stores/lyrics';
 import { type Track, usePlayerStore } from '../../../stores/player';
 import { useSearchQueryStore } from '../../../stores/searchQuery';
+import { useSettingsStore } from '../../../stores/settings';
 import { closeSound } from '../../../stores/sound-window';
 import { isLocalUrn } from '../../local-library';
 import { getAlbumTarget, getArtistTarget, getTrackDisplay } from '../../track-display';
@@ -120,6 +121,7 @@ export const appPort: AppPort = {
   pickPlaylist,
   settings: readSettings,
   applySetting,
+  setAppIcon: (icon) => useSettingsStore.getState().setAppIcon(icon),
   remember,
   forget,
   setSleep,

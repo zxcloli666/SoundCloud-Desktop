@@ -238,6 +238,8 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="settings-row"]` | A setting row |
 | `[data-ui="player-zones"]` | Button placement map in Settings, `data-surface` is `player` (bottom player) or `deck` (Home); each zone has `data-zone`, its list `data-drop` while dragging |
 | `[data-ui="settings-info"]` | Info mark next to a setting, shows a hint on hover |
+| `[data-ui="app-icons"]` | App icon choices in Settings |
+| `[data-ui="app-icon"]` | One of those icons, `[aria-checked="true"]` on the chosen one |
 | `[data-ui="mobile-access-badge"]` | Extended access status in Settings; `data-state` is `off`, `active` or `relink` |
 | `[data-ui="mobile-link"]` | Extended access link dialog; `data-phase` is `starting`, `waiting`, `received`, `completed`, `mismatch`, `failed` or `expired` |
 | `[data-ui="mobile-link-account"]` | Account being linked, in that dialog |

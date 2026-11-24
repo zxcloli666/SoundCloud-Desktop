@@ -1,3 +1,4 @@
+pub mod app_icon;
 pub mod autostart;
 pub mod close_action;
 pub mod deep_link;

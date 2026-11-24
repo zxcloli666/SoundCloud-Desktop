@@ -274,6 +274,14 @@
     "barra muda de cor",
     "pegar cor da capa"
   ],
+  "settings.appIcon": [
+    "trocar o ícone",
+    "logo do app",
+    "ícone da barra de tarefas",
+    "ícone da bandeja",
+    "ícone do atalho",
+    "outro ícone"
+  ],
   "settings.fontTitle": [
     "mudar a fonte",
     "tipo de letra",

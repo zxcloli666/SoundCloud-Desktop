@@ -13,6 +13,8 @@ use tauri::{Emitter, Manager};
 use crate::app::{popover, visibility};
 use crate::rt::AppHandle;
 
+const ICON_SIZE: u32 = 64;
+
 pub fn setup_tray(app: &crate::rt::App) -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(target_os = "linux")]
     {
@@ -66,6 +68,17 @@ pub fn set_unread(app: &AppHandle, unread: bool) {
     #[cfg(not(target_os = "linux"))]
     {
         native::set_unread(app, unread);
+    }
+}
+
+pub fn refresh_icon(app: &AppHandle) {
+    #[cfg(target_os = "linux")]
+    {
+        linux::refresh_icon(app);
+    }
+    #[cfg(not(target_os = "linux"))]
+    {
+        native::refresh_icon(app);
     }
 }
 
@@ -162,6 +175,21 @@ mod linux {
         });
     }
 
+    pub fn refresh_icon(app: &AppHandle) {
+        let Some(spawned) = app.try_state::<Spawned>() else {
+            return;
+        };
+        let tray = spawned.0.clone();
+        let (icon, dotted) = icon_pixmaps(app);
+        tauri::async_runtime::spawn(async move {
+            tray.update(|tray| {
+                tray.icon = icon;
+                tray.dotted = dotted;
+            })
+            .await;
+        });
+    }
+
     fn go_offline(app: &AppHandle) {
         ONLINE.store(false, Ordering::Relaxed);
         autostart::reveal_if_hidden(app);
@@ -235,7 +263,7 @@ mod linux {
 
     pub fn setup(app: &crate::rt::App) {
         let handle = app.handle().clone();
-        let (icon, dotted) = icon_pixmaps(app);
+        let (icon, dotted) = icon_pixmaps(&handle);
         // ksni поднимает D-Bus-сервис на нашем tokio-рантайме; держим задачу живой.
         tauri::async_runtime::spawn(async move {
             let tray = ScTray {
@@ -264,8 +292,8 @@ mod linux {
         });
     }
 
-    fn icon_pixmaps(app: &crate::rt::App) -> (Vec<ksni::Icon>, Vec<ksni::Icon>) {
-        let Some(img) = app.default_window_icon() else {
+    fn icon_pixmaps(app: &AppHandle) -> (Vec<ksni::Icon>, Vec<ksni::Icon>) {
+        let Some(img) = crate::app::app_icon::shown(app, super::ICON_SIZE) else {
             return (Vec::new(), Vec::new());
         };
         let dotted = crate::app::tray_dot::with_dot(img.rgba(), img.width(), img.height());
@@ -293,27 +321,59 @@ mod linux {
 // ---------------------------------------------------------------------------
 #[cfg(not(target_os = "linux"))]
 mod native {
+    use std::sync::Mutex;
+
     use tauri::Manager;
     use tauri::image::Image;
     use tauri::menu::{MenuBuilder, MenuItem, MenuItemBuilder};
     use tauri::tray::{TrayIcon, TrayIconBuilder};
 
+    use crate::app::app_icon;
     use crate::app::tray_dot::with_dot;
     use crate::app::tray_labels::{self, TrayLabels};
     use crate::rt::{AppHandle, Rt};
 
     struct Icons {
         tray: TrayIcon<Rt>,
+        faces: Mutex<Faces>,
+    }
+
+    struct Faces {
         plain: Image<'static>,
         dotted: Image<'static>,
+    }
+
+    impl Faces {
+        fn of(icon: Image<'static>) -> Self {
+            let (width, height) = (icon.width(), icon.height());
+            let dotted = Image::new_owned(with_dot(icon.rgba(), width, height), width, height);
+            Self {
+                plain: icon,
+                dotted,
+            }
+        }
     }
 
     pub fn set_unread(app: &AppHandle, unread: bool) {
         let Some(icons) = app.try_state::<Icons>() else {
             return;
         };
-        let image = if unread { &icons.dotted } else { &icons.plain };
-        let _ = icons.tray.set_icon(Some(image.clone()));
+        let image = {
+            let faces = icons.faces.lock().unwrap();
+            if unread { &faces.dotted } else { &faces.plain }.clone()
+        };
+        let _ = icons.tray.set_icon(Some(image));
+    }
+
+    pub fn refresh_icon(app: &AppHandle) {
+        let (Some(icons), Some(icon)) = (
+            app.try_state::<Icons>(),
+            app_icon::shown(app, super::ICON_SIZE),
+        ) else {
+            return;
+        };
+        *icons.faces.lock().unwrap() = Faces::of(icon);
+        set_unread(app, crate::chat::badge::has_unread());
     }
 
     struct Items {
@@ -369,13 +429,11 @@ mod native {
             .build()?;
         app.manage(items);
 
-        let icon = app.default_window_icon().expect("no app icon");
-        let (width, height) = (icon.width(), icon.height());
-        let plain = Image::new_owned(icon.rgba().to_vec(), width, height);
-        let dotted = Image::new_owned(with_dot(icon.rgba(), width, height), width, height);
+        let icon = app_icon::shown(app.handle(), super::ICON_SIZE).expect("no app icon");
+        let faces = Faces::of(icon);
 
         let tray = TrayIconBuilder::new()
-            .icon(plain.clone())
+            .icon(faces.plain.clone())
             .tooltip("SoundCloud Desktop")
             .menu(&menu)
             // Левый клик открывает мини-плеер (ниже); меню — на правый клик.
@@ -397,8 +455,7 @@ mod native {
             .build(app)?;
         app.manage(Icons {
             tray,
-            plain,
-            dotted,
+            faces: Mutex::new(faces),
         });
 
         Ok(())

@@ -1,0 +1,25 @@
+export const APP_ICONS = [
+  'classic',
+  'glass',
+  'dusk',
+  'wave',
+  'porcelain',
+  'sakura',
+  'vinyl',
+  'aurora',
+  'neon',
+  'moon',
+  'ember',
+  'mono',
+  'holo',
+  'paper',
+  'pixel',
+  'jelly',
+  'gold',
+  'phones',
+  'cat',
+  'synthwave',
+  'cassette',
+] as const;
+
+export type AppIconId = (typeof APP_ICONS)[number];
