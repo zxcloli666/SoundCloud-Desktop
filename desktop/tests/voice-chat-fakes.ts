@@ -153,6 +153,9 @@ export function fakeApp(): FakeApp {
       calls.push(`set:${key}:${value}`);
       app.values[key] = value;
     },
+    setAppIcon: (icon) => {
+      calls.push(`icon:${icon}`);
+    },
     remember: (note) => {
       const res = addNote(app.notes, note);
       app.notes = res.notes;

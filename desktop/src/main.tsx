@@ -8,6 +8,7 @@ import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { ErrorScreen } from './components/ui/ErrorScreen';
 import { changeAppLanguage } from './i18n';
+import { initAppIcon } from './lib/app-icon';
 import { initAuthBridge } from './lib/auth-session';
 import { setupCacheMaintenance } from './lib/cache';
 import { initCloseAction } from './lib/close-action';
@@ -100,6 +101,7 @@ async function bootstrap() {
   startDiag(settings.sendErrorReports);
   await changeAppLanguage(settings.language);
   initCloseAction();
+  initAppIcon();
 
   const [staticPort, proxyPort] = await invoke<[number, number]>('get_server_ports');
   setServerPorts(staticPort, proxyPort);

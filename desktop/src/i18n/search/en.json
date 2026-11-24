@@ -325,6 +325,16 @@
     "accent follows track",
     "highlight from artwork"
   ],
+  "settings.appIcon": [
+    "change the app icon",
+    "app logo",
+    "dock icon",
+    "taskbar icon",
+    "tray icon",
+    "another icon",
+    "desktop shortcut icon",
+    "cute icon"
+  ],
   "settings.fontTitle": [
     "font",
     "change font",

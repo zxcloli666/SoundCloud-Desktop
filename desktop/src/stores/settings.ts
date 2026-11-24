@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { type AppIconId, DEFAULT_APP_ICON } from '../lib/app-icons';
 import { normalizeAudioCacheLimit, normalizeImageCacheLimit } from '../lib/cache-limit';
 import type { CrossfadeCurve } from '../lib/crossfade-curve';
 import { EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset } from '../lib/equalizer';
@@ -145,6 +146,7 @@ export interface SettingsState {
   startupPage: StartupPage;
   closeAction: CloseAction;
   uiScale: number;
+  appIcon: AppIconId;
   miniPlayerOpacity: number | null;
   miniPlayerSolid: boolean;
   trackColumns: Partial<Record<TrackColumnId, number>>;
@@ -247,6 +249,7 @@ export interface SettingsState {
   setStartupPage: (page: StartupPage) => void;
   setCloseAction: (action: CloseAction) => void;
   setUiScale: (scale: number) => void;
+  setAppIcon: (icon: AppIconId) => void;
   setMiniPlayerOpacity: (opacity: number) => void;
   setMiniPlayerSolid: (solid: boolean) => void;
   setTrackColumn: (id: TrackColumnId, width: number | null) => void;
@@ -361,6 +364,7 @@ const DEFAULTS = {
   startupPage: 'home' as StartupPage,
   closeAction: 'tray' as CloseAction,
   uiScale: 100,
+  appIcon: DEFAULT_APP_ICON,
   miniPlayerOpacity: null as number | null,
   miniPlayerSolid: false,
   trackColumns: {} as Partial<Record<TrackColumnId, number>>,
@@ -510,6 +514,7 @@ export const useSettingsStore = create<SettingsState>()(
       setStartupPage: (startupPage) => set({ startupPage }),
       setCloseAction: (closeAction) => set({ closeAction }),
       setUiScale: (uiScale) => set({ uiScale }),
+      setAppIcon: (appIcon) => set({ appIcon }),
       setMiniPlayerOpacity: (opacity) =>
         set({ miniPlayerOpacity: Math.min(1, Math.max(MINI_PLAYER_OPACITY_MIN, opacity)) }),
       setMiniPlayerSolid: (miniPlayerSolid) => set({ miniPlayerSolid }),
@@ -734,6 +739,7 @@ export const useSettingsStore = create<SettingsState>()(
         startupPage: s.startupPage,
         closeAction: s.closeAction,
         uiScale: s.uiScale,
+        appIcon: s.appIcon,
         miniPlayerOpacity: s.miniPlayerOpacity,
         miniPlayerSolid: s.miniPlayerSolid,
         trackColumns: s.trackColumns,

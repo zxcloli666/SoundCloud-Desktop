@@ -19,6 +19,7 @@ import { VoiceSettings } from '../voice/VoiceSettings';
 import { CallProxySection } from './CallProxySection';
 import { AccountCard } from './cards/AccountCard';
 import { AndroidCard } from './cards/AndroidCard';
+import { AppIconCard } from './cards/AppIconCard';
 import { AudioDeviceCard } from './cards/AudioDeviceCard';
 import { BlockedArtistsCard } from './cards/BlockedArtistsCard';
 import { CacheCard } from './cards/CacheCard';
@@ -113,6 +114,7 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
         <ThemeCard />
         <ThemesCard />
         <WallpaperCard />
+        <AppIconCard />
         <FontCard />
         <UiScaleCard />
         <CoverColorsCard />

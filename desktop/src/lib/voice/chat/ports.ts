@@ -1,3 +1,4 @@
+import type { AppIconId } from '../../app-icons';
 import type { ButtonAct, PlacementMap, Zone } from '../../player-zones';
 import type { ItemKind, Screen, ScrollTo } from '../screen/shape';
 import type { Listed, TrackList } from '../track-lists';
@@ -91,6 +92,7 @@ export interface AppPort {
   pickPlaylist(): boolean;
   settings(): Record<SettingKey, SettingValue>;
   applySetting(key: SettingKey, value: SettingValue): void;
+  setAppIcon(icon: AppIconId): void;
   remember(note: string): Kept;
   forget(note: string): Forgot;
   setSleep(plan: SleepPlan): void;

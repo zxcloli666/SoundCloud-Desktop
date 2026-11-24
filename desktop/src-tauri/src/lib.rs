@@ -213,6 +213,8 @@ pub fn run() {
             audio::start_fft_thread(app.handle().clone(), analyser_buffer);
 
             app.manage(app::popover::TrayState::load(&data_dir));
+            app.manage(app::app_icon::AppIcon::load(&data_dir));
+            app::app_icon::restore(app.handle());
             app::tray::setup_tray(app).expect("failed to setup tray");
 
             app.manage(ScrobbleState::init(
@@ -305,6 +307,8 @@ pub fn run() {
             app::diagnostics::diagnostics_log,
             app::diagnostics::diagnostics_log_dir,
             app::diagnostics::diagnostics_open_log_dir,
+            app::app_icon::app_icon_set,
+            app::app_icon::app_icon_reset,
             app::close_action::close_action_get,
             app::close_action::close_action_set,
             app::autostart::autostart_get,
