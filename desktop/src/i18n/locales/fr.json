@@ -2243,6 +2243,7 @@
       "linkOther": "Associer une autre carte",
       "fail": {
         "busy": "Une autre carte est en cours d'association. Réessayez dans une minute.",
+        "limit": "Trop de tentatives. Réessayez dans une heure.",
         "unavailable": "Le paiement par carte n'est pas disponible pour le moment.",
         "bundle": "Le paiement par carte nécessite une version plus récente de l'application.",
         "declined": "La banque n'a pas accepté la carte.",

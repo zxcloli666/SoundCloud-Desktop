@@ -5,6 +5,8 @@ import type { FailReason, Retry } from '../../../../lib/card-link/use-card-link'
 import { X } from '../../../../lib/icons';
 import { Btn } from '../ui/Btn';
 
+const FINAL = new Set<FailReason>(['unavailable', 'bundle', 'limit']);
+
 function retryOf(reason: FailReason, held: string | null): Retry {
   if (reason === 'inUse' || held === null) return 'fresh';
   return resendable(reason) ? 'same' : 'edit';
@@ -24,7 +26,7 @@ export const CardFailed = memo(function CardFailed({
   onBack: () => void;
 }) {
   const { t } = useTranslation();
-  const retryable = reason !== 'unavailable' && reason !== 'bundle';
+  const retryable = !FINAL.has(reason);
   const how = retryOf(reason, held);
   return (
     <div data-ui="star-card-failed" data-retry={how} className="flex flex-col items-start gap-4">

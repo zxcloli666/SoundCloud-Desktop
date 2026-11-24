@@ -2130,6 +2130,7 @@
       "linkOther": "Vincular outro cartão",
       "fail": {
         "busy": "Outro cartão está sendo vinculado. Tente em um minuto.",
+        "limit": "Tentativas demais. Tente em uma hora.",
         "unavailable": "O pagamento com cartão não está disponível agora.",
         "bundle": "O pagamento com cartão exige uma versão mais nova do app.",
         "declined": "O banco não aceitou o cartão.",

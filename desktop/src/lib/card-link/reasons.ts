@@ -2,6 +2,7 @@ import type { BindStep } from '../pay-client';
 
 export type FailReason =
   | 'busy'
+  | 'limit'
   | 'unavailable'
   | 'bundle'
   | 'declined'
@@ -19,6 +20,11 @@ const FAILURE_OF_REASON: Record<string, FailReason> = {
   aborted: 'closed',
   bad_page: 'page',
 };
+
+export function startRefusal(status: number, code: string | null): FailReason {
+  if (status === 429) return code === 'too_many_attempts' ? 'limit' : 'busy';
+  return status === 503 || status === 501 ? 'unavailable' : 'network';
+}
 
 export function verdictFailure(reason: string): FailReason {
   return FAILURE_OF_REASON[reason] ?? 'declined';
