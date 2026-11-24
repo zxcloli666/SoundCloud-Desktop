@@ -160,11 +160,60 @@
 }
 
 .sound-main {
+  height: clamp(220px, calc(var(--radix-popover-content-available-height) - 168px), 284px);
   grid-template-columns: 246px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
 }
 
-.sound-main [data-ui="sound-effects"] {
-  grid-auto-rows: 1fr;
+.sound-main:not([data-view="main"]) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.sound-main > * {
+  animation: sound-settle 240ms var(--ease-apple) backwards;
+}
+
+.sound-main[data-view="effects"] > * {
+  animation-name: sound-from-left;
+}
+
+.sound-main[data-view="eq"] > * {
+  animation-name: sound-from-right;
+}
+
+@keyframes sound-settle {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+@keyframes sound-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+}
+
+@keyframes sound-from-right {
+  from {
+    opacity: 0;
+    transform: translateX(14px);
+  }
+}
+
+[data-perf="light"] .sound-main > * {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sound-main > * {
+    animation: none;
+  }
+}
+
+.sound-manual {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.45fr) minmax(0, 0.9fr);
 }
 
 .sound-foot {
@@ -173,13 +222,19 @@
 
 @container sound (width < 660px) {
   .sound-main {
-    grid-template-columns: minmax(0, 1fr);
+    height: 372px;
   }
 
-  .sound-main [data-ui="sound-effects"] {
+  .sound-main[data-view="main"] {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .sound-main[data-view="main"] [data-ui="sound-effects"] {
     grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
+  .sound-manual,
   .sound-foot {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }

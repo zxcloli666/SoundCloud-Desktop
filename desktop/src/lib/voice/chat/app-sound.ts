@@ -1,9 +1,10 @@
 import { type EffectsPresetId, useEffectsStore } from '../../../stores/effects';
 import { useSleepTimerStore } from '../../../stores/sleep-timer';
+import { openSound, type SoundSection } from '../../../stores/sound-window';
 import { selectPreset } from '../../effects';
 import { cancelSleepTimer, startSleepAtTrackEnd, startSleepTimer } from '../../sleep-timer';
 import type { SleepShown } from './context';
-import type { EffectName, SleepPlan } from './ports';
+import type { EffectName, SleepPlan, SoundView } from './ports';
 
 const PRESETS: Record<EffectName, EffectsPresetId> = {
   off: 'off',
@@ -11,6 +12,12 @@ const PRESETS: Record<EffectName, EffectsPresetId> = {
   sped_up: 'spedUp',
   eight_d: 'eightD',
   bass: 'bass',
+};
+
+const SECTIONS: Record<SoundView, SoundSection> = {
+  all: 'main',
+  equalizer: 'eq',
+  effects: 'effects',
 };
 
 export function setSleep(plan: SleepPlan) {
@@ -21,6 +28,12 @@ export function setSleep(plan: SleepPlan) {
 
 export function setEffect(effect: EffectName) {
   selectPreset(PRESETS[effect]);
+}
+
+export function showSound(view: SoundView): boolean {
+  if (!document.querySelector('[data-ui="player-sound"]')) return false;
+  openSound(SECTIONS[view]);
+  return true;
 }
 
 export function sleepNow(now: number): SleepShown | null {

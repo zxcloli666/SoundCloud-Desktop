@@ -2,6 +2,7 @@ import { useAddToPlaylistRequest } from '../../../stores/add-to-playlist';
 import { useLyricsStore } from '../../../stores/lyrics';
 import { type Track, usePlayerStore } from '../../../stores/player';
 import { useSearchQueryStore } from '../../../stores/searchQuery';
+import { closeSound } from '../../../stores/sound-window';
 import { isLocalUrn } from '../../local-library';
 import { getAlbumTarget, getArtistTarget, getTrackDisplay } from '../../track-display';
 import { listTracks } from '../lists';
@@ -11,7 +12,7 @@ import { readScreen } from '../screen/snapshot';
 import { useVoiceStore } from '../store';
 import { buttons, placeButton } from './app-buttons';
 import { applySetting, readSettings } from './app-settings';
-import { setEffect, setSleep } from './app-sound';
+import { setEffect, setSleep, showSound } from './app-sound';
 import { playStation } from './app-stations';
 import { dislike, superlike } from './app-taste';
 import { openRooms, together } from './app-together';
@@ -123,6 +124,8 @@ export const appPort: AppPort = {
   forget,
   setSleep,
   setEffect,
+  showSound,
+  hideSound: closeSound,
   dislike,
   superlike,
   together,

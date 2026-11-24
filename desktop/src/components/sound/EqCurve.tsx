@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EQ_LABELS, EQ_MAX_GAIN, EQ_MIN_GAIN } from '../../lib/equalizer';
 import {
   bandAt,
@@ -9,18 +10,29 @@ import {
   gainAt,
   gainY,
 } from '../../lib/sound/eq-curve';
+import { formatGain } from '../../lib/sound/live';
 import { useWheelStep } from '../../lib/useWheelStep';
 import { useSettingsStore } from '../../stores/settings';
 import { EqSpectrum } from './EqSpectrum';
+import { BAND, GAIN } from './styles';
 
 const W = 400;
 const H = 100;
 const WHEEL_STEP = 0.5;
-const KEYS: Record<string, number> = { ArrowUp: 0.5, ArrowDown: -0.5, PageUp: 3, PageDown: -3 };
+const KEYS: Record<string, number> = {
+  ArrowUp: 0.5,
+  ArrowRight: 0.5,
+  ArrowDown: -0.5,
+  ArrowLeft: -0.5,
+  PageUp: 3,
+  PageDown: -3,
+};
 
-const gainText = (gain: number) => `${gain > 0 ? '+' : ''}${gain}`;
+const SCALE =
+  'pointer-events-none absolute inset-y-1.5 left-2 flex flex-col justify-between text-[9.5px] font-medium leading-none tabular-nums text-ink-25';
 
-export function EqCurve() {
+export function EqCurve({ full }: { full: boolean }) {
+  const { t } = useTranslation();
   const plot = useRef<HTMLDivElement>(null);
   const on = useSettingsStore((s) => s.eqEnabled);
   const gains = useSettingsStore((s) => s.eqGains);
@@ -49,7 +61,7 @@ export function EqCurve() {
   });
 
   return (
-    <div className="flex flex-col gap-1.5" data-ui="sound-eq-curve">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5" data-ui="sound-eq-curve">
       <div
         ref={plot}
         onPointerDown={(e) => {
@@ -68,7 +80,7 @@ export function EqCurve() {
         onPointerCancel={() => setHeld(null)}
         onPointerLeave={() => setHover(null)}
         onDoubleClick={() => lit !== null && set(lit, 0)}
-        className="relative h-[136px] cursor-ns-resize touch-none select-none overflow-hidden rounded-[14px] border border-ink/[0.08] bg-ink/[0.025]"
+        className="relative min-h-0 flex-1 cursor-ns-resize touch-none select-none overflow-hidden rounded-[14px] border border-ink/[0.08] bg-ink/[0.025]"
       >
         <EqSpectrum className="absolute inset-0 size-full" />
         <svg
@@ -110,6 +122,7 @@ export function EqCurve() {
             aria-valuemin={EQ_MIN_GAIN}
             aria-valuemax={EQ_MAX_GAIN}
             aria-valuenow={gain}
+            aria-valuetext={t('sound.db', { value: formatGain(gain) })}
             onKeyDown={(e) => {
               const step = KEYS[e.key];
               if (!step) return;
@@ -124,24 +137,38 @@ export function EqCurve() {
             } ${on ? '' : 'opacity-50'}`}
           />
         ))}
-        {lit !== null && (
+        {full && (
+          <span aria-hidden className={SCALE}>
+            <span>{t('sound.db', { value: formatGain(EQ_MAX_GAIN) })}</span>
+            <span>{t('sound.db', { value: formatGain(EQ_MIN_GAIN) })}</span>
+          </span>
+        )}
+        {!full && lit !== null && (
           <span
             className="pointer-events-none absolute top-1.5 -translate-x-1/2 rounded-full bg-[rgb(var(--surface-hi))] px-1.5 text-[10.5px] font-semibold leading-[16px] tabular-nums text-ink"
             style={{ left: `clamp(18px, ${bandX(lit) * 100}%, calc(100% - 18px))` }}
           >
-            {gainText(gains[lit])}
+            {formatGain(gains[lit])}
           </span>
         )}
       </div>
       <div aria-hidden className="grid grid-cols-10">
         {EQ_LABELS.map((label, band) => (
-          <span
-            key={label}
-            className={`text-center text-[10px] font-medium tabular-nums transition-colors ${
-              lit === band ? 'text-ink' : 'text-ink-35'
-            }`}
-          >
-            {label}
+          <span key={label} className="flex flex-col">
+            {full && (
+              <span
+                className={`${GAIN} transition-colors ${
+                  lit === band ? 'text-ink' : gains[band] === 0 ? 'text-ink-35' : 'text-ink-70'
+                }`}
+              >
+                {formatGain(gains[band])}
+              </span>
+            )}
+            <span
+              className={`${BAND} transition-colors ${lit === band ? 'text-ink' : 'text-ink-35'}`}
+            >
+              {label}
+            </span>
           </span>
         ))}
       </div>

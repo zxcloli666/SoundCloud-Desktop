@@ -71,23 +71,23 @@
 | `[data-ui="player-quality"]` | Место качества и рейтинга в плеере |
 | `[data-ui="player-shuffle"]` | Кнопка перемешивания в плеере |
 | `[data-ui="player-repeat"]` | Кнопка повтора в плеере |
-| `[data-ui="player-abloop"]` | Кнопка цикла A-B в плеере |
 | `[data-ui="player-together"]` | Кнопка «Слушать вместе» в плеере |
 | `[data-ui="player-lyrics"]` | Кнопка текста в плеере |
 | `[data-ui="player-queue"]` | Кнопка очереди в плеере |
-| `[data-ui="player-ghosts"]` | Невидимое место, где живут скрытые кнопки плеера для поиска и горячих клавиш |
-| `[data-ui="player-tuning"]` | Кнопка скорости и питча в плеере |
-| `[data-ui="player-sleep"]` | Кнопка таймера сна в плеере |
-| `[data-ui="player-eq"]` | Кнопка эквалайзера в плеере |
-| `[data-ui="player-effects"]` | Кнопка эффектов в плеере (реверб, 8D, бас) |
+| `[data-ui="player-ghosts"]` | Невидимое место, где живут скрытые кнопки плеера для поиска, горячих клавиш и ассистента |
 | `[data-ui="player-more"]` | Кнопка действий с треком в плеере |
-| `[data-ui="player-sound"]` | Кнопка «Звук» в плеере; `data-live` стоит, пока включён эффект, эквалайзер, скорость, тон, таймер сна или петля |
-| `[data-ui="sound-console"]` | Панель звука, которую открывает эта кнопка |
-| `[data-ui="sound-effects"]`, `[data-ui="sound-effect"]` | Плитки эффектов и одна плитка в панели звука |
-| `[data-ui="sound-eq"]`, `[data-ui="sound-eq-presets"]`, `[data-ui="sound-eq-curve"]` | Эквалайзер, его пресеты и кривая в панели звука |
-| `[data-ui="sound-rate"]`, `[data-ui="sound-pitch"]` | Скорость и тон в панели звука |
-| `[data-ui="sound-sleep"]`, `[data-ui="sound-loop"]` | Таймер сна и A-B петля в панели звука |
-| `[data-ui="sound-remember"]`, `[data-ui="sound-reset"]` | Кнопки «Запомнить для этого трека» и сброса в панели звука |
+| `[data-ui="player-sound"]` | Кнопка «Звук» в плеере, одна на эффекты, эквалайзер, скорость, тон, таймер сна и петлю A-B; `data-live` стоит, пока что-то из этого включено |
+| `[data-ui="sound-console"]` | Окно звука, которое открывает эта кнопка |
+| `[data-ui="sound-view"]` | Его середина; `data-view`: `main`, `eq` (всё место у эквалайзера) или `effects` |
+| `[data-ui="sound-expand"]` | Стрелка: развернуть эквалайзер или эффекты и вернуть обратно |
+| `[data-ui="sound-effects"]`, `[data-ui="sound-effect"]` | Плитки эффектов и одна плитка в окне звука |
+| `[data-ui="sound-live"]`, `[data-ui="sound-locked"]`, `[data-ui="sound-effects-manual"]` | Картинка работающего эффекта, плашка STAR поверх неё и ползунки реверба, комнаты, 8D и баса в развёрнутом виде |
+| `[data-ui="sound-eq"]`, `[data-ui="sound-eq-presets"]`, `[data-ui="sound-eq-curve"]` | Эквалайзер, его пресеты и кривая в окне звука |
+| `[data-ui="sound-preamp"]` | Преамп рядом с кривой; `data-clipping` стоит, пока звук может перегружаться |
+| `[data-ui="sound-eq-actions"]`, `[data-ui="sound-eq-save"]`, `[data-ui="sound-eq-transfer"]` | Кнопки сброса, импорта, экспорта и сохранения, форма названия пресета, форма импорта и экспорта |
+| `[data-ui="sound-rate"]`, `[data-ui="sound-pitch"]` | Скорость и тон в окне звука |
+| `[data-ui="sound-sleep"]`, `[data-ui="sound-loop"]` | Таймер сна и A-B петля в окне звука |
+| `[data-ui="sound-remember"]`, `[data-ui="sound-reset"]` | Кнопки «Запомнить для этого трека» и сброса в окне звука |
 | `[data-ui="progress"]` | Полоса прогресса в полноэкранном плеере |
 | `[data-ui="volume"]` | Громкость |
 | `[data-ui="namecard"]` | Карточка, которая открывается по названию трека |

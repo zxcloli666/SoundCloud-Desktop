@@ -21,6 +21,7 @@ export interface SettingsResult {
   titles: string[];
   cardTitles: string[];
   trigger?: string;
+  sound?: SettingsEntry['sound'];
 }
 
 const LIMIT = 20;
@@ -155,5 +156,6 @@ function toResult(
     titles,
     cardTitles,
     trigger: entry.trigger,
+    sound: entry.sound,
   };
 }

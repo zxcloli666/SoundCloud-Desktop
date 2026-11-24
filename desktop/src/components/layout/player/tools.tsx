@@ -1,9 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { audioLines16, listMusic16, MicVocal } from '../../../lib/icons';
+import { listMusic16, MicVocal } from '../../../lib/icons';
 import { useLyricsStore } from '../../../stores/lyrics';
-import { useSettingsStore } from '../../../stores/settings';
-import { EqualizerPanel } from '../../music/EqualizerPanel';
 import { playerBtn } from './button-class';
 
 export const QueueBtn = React.memo(
@@ -45,23 +43,5 @@ export const LyricsBtn = React.memo(() => {
     >
       <MicVocal size={16} />
     </button>
-  );
-});
-
-export const EqBtn = React.memo(() => {
-  const { t } = useTranslation();
-  const eqEnabled = useSettingsStore((s) => s.eqEnabled);
-  return (
-    <EqualizerPanel>
-      <button
-        type="button"
-        data-ui="player-eq"
-        title={t('eq.title')}
-        aria-label={t('eq.title')}
-        className={playerBtn(eqEnabled)}
-      >
-        {audioLines16}
-      </button>
-    </EqualizerPanel>
   );
 });

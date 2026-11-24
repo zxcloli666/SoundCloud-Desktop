@@ -71,23 +71,23 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player-quality"]` | Quality and rating slot in the player |
 | `[data-ui="player-shuffle"]` | Shuffle button in the player |
 | `[data-ui="player-repeat"]` | Repeat button in the player |
-| `[data-ui="player-abloop"]` | A-B loop button in the player |
 | `[data-ui="player-together"]` | Listen together button in the player |
 | `[data-ui="player-lyrics"]` | Lyrics button in the player |
 | `[data-ui="player-queue"]` | Queue button in the player |
-| `[data-ui="player-ghosts"]` | Invisible slot that keeps hidden player buttons working for search and hotkeys |
-| `[data-ui="player-tuning"]` | Speed and pitch button in the player |
-| `[data-ui="player-sleep"]` | Sleep timer button in the player |
-| `[data-ui="player-eq"]` | Equalizer button in the player |
-| `[data-ui="player-effects"]` | Effects button in the player (reverb, 8D, bass boost) |
+| `[data-ui="player-ghosts"]` | Invisible slot that keeps hidden player buttons working for search, hotkeys and the assistant |
 | `[data-ui="player-more"]` | Track actions button in the player |
-| `[data-ui="player-sound"]` | Sound button in the player; `data-live` is set while an effect, the equalizer, speed, pitch, the sleep timer or a loop is on |
-| `[data-ui="sound-console"]` | Sound panel that opens from that button |
-| `[data-ui="sound-effects"]`, `[data-ui="sound-effect"]` | Effect tiles and one tile in the sound panel |
-| `[data-ui="sound-eq"]`, `[data-ui="sound-eq-presets"]`, `[data-ui="sound-eq-curve"]` | Equalizer, its presets and its curve in the sound panel |
-| `[data-ui="sound-rate"]`, `[data-ui="sound-pitch"]` | Speed and pitch in the sound panel |
-| `[data-ui="sound-sleep"]`, `[data-ui="sound-loop"]` | Sleep timer and A-B loop in the sound panel |
-| `[data-ui="sound-remember"]`, `[data-ui="sound-reset"]` | Remember for this track and reset buttons in the sound panel |
+| `[data-ui="player-sound"]` | Sound button in the player, the only one for effects, equalizer, speed, pitch, sleep timer and A-B loop; `data-live` is set while one of them is on |
+| `[data-ui="sound-console"]` | Sound window that opens from that button |
+| `[data-ui="sound-view"]` | Its middle; `data-view` is `main`, `eq` (the equalizer takes it all) or `effects` |
+| `[data-ui="sound-expand"]` | Arrow that opens the equalizer or the effects at full size and back |
+| `[data-ui="sound-effects"]`, `[data-ui="sound-effect"]` | Effect tiles and one tile in the sound window |
+| `[data-ui="sound-live"]`, `[data-ui="sound-locked"]`, `[data-ui="sound-effects-manual"]` | Picture of the effect at work, the STAR plate over it and the reverb, room, 8D and bass sliders, at full size |
+| `[data-ui="sound-eq"]`, `[data-ui="sound-eq-presets"]`, `[data-ui="sound-eq-curve"]` | Equalizer, its presets and its curve in the sound window |
+| `[data-ui="sound-preamp"]` | Preamp next to the curve; `data-clipping` is set while the sound can clip |
+| `[data-ui="sound-eq-actions"]`, `[data-ui="sound-eq-save"]`, `[data-ui="sound-eq-transfer"]` | Equalizer reset, import, export and save buttons, the preset name form, the import and export form |
+| `[data-ui="sound-rate"]`, `[data-ui="sound-pitch"]` | Speed and pitch in the sound window |
+| `[data-ui="sound-sleep"]`, `[data-ui="sound-loop"]` | Sleep timer and A-B loop in the sound window |
+| `[data-ui="sound-remember"]`, `[data-ui="sound-reset"]` | Remember for this track and reset buttons in the sound window |
 | `[data-ui="progress"]` | Progress bar in the full screen player |
 | `[data-ui="volume"]` | Volume |
 | `[data-ui="namecard"]` | Card that opens from the track title |

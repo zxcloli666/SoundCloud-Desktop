@@ -71,7 +71,6 @@
     "pitchModeAuto": "El tono sigue la velocidad",
     "pitchModeAutoShort": "Auto",
     "pitchModeManual": "Tono manual",
-    "pitchModeManualShort": "Manual",
     "abLoopSetA": "Bucle de la mejor parte: fijar inicio (A)",
     "abLoopSetB": "Bucle de la mejor parte: fijar fin (B)",
     "volumeFine": "fino",
@@ -1671,22 +1670,13 @@
       "eightD": "8D",
       "bass": "Refuerzo de graves",
       "custom": "Personalizado"
-    },
-    "short": {
-      "slowedReverb": "Lento",
-      "spedUp": "Rápido",
-      "eightD": "8D",
-      "bass": "Graves",
-      "custom": "FX"
     }
   },
   "eq": {
     "title": "Ecualizador",
-    "enabled": "Activado",
     "preset": "Preajuste",
     "reset": "Restablecer",
     "custom": "Personalizado",
-    "streamingNote": "El EQ funciona con pistas en caché (Web Audio)",
     "saveAsPreset": "Guardar preajuste",
     "savePreset": "Guardar",
     "deletePreset": "Eliminar preajuste",
@@ -2912,8 +2902,7 @@
   "trackSound": {
     "remember": "Recordar para esta pista",
     "hintOff": "Conserva este EQ, velocidad y tono solo para esta pista",
-    "hintOn": "Se aplica cada vez que suena esta pista",
-    "noTrack": "Reproduce una pista para recordar su sonido"
+    "hintOn": "Se aplica cada vez que suena esta pista"
   },
   "sleep": {
     "title": "Temporizador de sueño",
@@ -3248,6 +3237,10 @@
   "sound": {
     "title": "Sonido",
     "reset": "Restablecer el sonido",
+    "expand": "Expandir",
+    "collapse": "Contraer",
+    "db": "{{value}} dB",
+    "hz": "{{value}} Hz",
     "fx": {
       "off": "Off",
       "slowedReverb": "Lento",

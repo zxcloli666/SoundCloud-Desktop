@@ -20,6 +20,7 @@ function Remember() {
       type="button"
       data-ui="sound-remember"
       aria-pressed={on}
+      title={t(on ? 'trackSound.hintOn' : 'trackSound.hintOff')}
       onClick={() => (on ? forgetTrackSound(urn) : rememberTrackSound(urn))}
       className={chip(on)}
     >

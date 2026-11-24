@@ -1,5 +1,5 @@
 import type { PlayerPort } from '../../execute.ts';
-import { type AppPort, EFFECTS, type EffectName } from '../ports.ts';
+import { type AppPort, EFFECTS, type EffectName, SOUND_VIEWS, type SoundView } from '../ports.ts';
 import type { ChatTool } from '../types';
 import { fail, ok } from './intent.ts';
 
@@ -58,6 +58,31 @@ function effect(app: AppPort): ChatTool {
   };
 }
 
+function soundWindow(app: AppPort): ChatTool {
+  return {
+    name: 'sound_window',
+    description:
+      'Open or close the sound window of the player: effects, equalizer with presets, speed, pitch, sleep timer and A-B loop. view equalizer or effects opens it on that part at full size, all or no view shows everything.',
+    args: {
+      type: 'object',
+      properties: {
+        open: { type: 'boolean' },
+        view: { type: 'string', enum: [...SOUND_VIEWS] },
+      },
+      required: ['open'],
+    },
+    returns: false,
+    run: async (args) => {
+      if (!args.open) {
+        app.hideSound();
+        return { result: ok() };
+      }
+      const shown = app.showSound((args.view as SoundView | undefined) ?? 'all');
+      return shown ? { result: ok() } : fail('no_player');
+    },
+  };
+}
+
 export function soundTools(player: PlayerPort, app: AppPort): ChatTool[] {
-  return [sleepTimer(player, app), effect(app)];
+  return [sleepTimer(player, app), effect(app), soundWindow(app)];
 }

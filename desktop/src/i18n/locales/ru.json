@@ -71,7 +71,6 @@
     "pitchModeAuto": "Питч следует за скоростью",
     "pitchModeAutoShort": "Авто",
     "pitchModeManual": "Ручной питч",
-    "pitchModeManualShort": "Вручную",
     "abLoopSetA": "Луп лучшего куска: начало (A)",
     "abLoopSetB": "Луп лучшего куска: конец (B)",
     "volumeFine": "точно",
@@ -1691,22 +1690,13 @@
       "eightD": "8D",
       "bass": "Усиление баса",
       "custom": "Свои"
-    },
-    "short": {
-      "slowedReverb": "Медл",
-      "spedUp": "Быстр",
-      "eightD": "8D",
-      "bass": "Бас",
-      "custom": "FX"
     }
   },
   "eq": {
     "title": "Эквалайзер",
-    "enabled": "Включён",
     "preset": "Пресет",
     "reset": "Сброс",
     "custom": "Свой",
-    "streamingNote": "EQ работает с кэшированными треками (Web Audio)",
     "saveAsPreset": "Сохранить пресет",
     "savePreset": "Сохранить",
     "deletePreset": "Удалить пресет",
@@ -2945,8 +2935,7 @@
   "trackSound": {
     "remember": "Запомнить для этого трека",
     "hintOff": "Сохранить EQ, скорость и питч только для этого трека",
-    "hintOn": "Применяется каждый раз при запуске трека",
-    "noTrack": "Включите трек, чтобы запомнить его звук"
+    "hintOn": "Применяется каждый раз при запуске трека"
   },
   "sleep": {
     "title": "Таймер сна",
@@ -3290,6 +3279,10 @@
   "sound": {
     "title": "Звук",
     "reset": "Сбросить звук",
+    "expand": "Развернуть",
+    "collapse": "Свернуть",
+    "db": "{{value}} дБ",
+    "hz": "{{value}} Гц",
     "fx": {
       "off": "Выкл",
       "slowedReverb": "Медленно",

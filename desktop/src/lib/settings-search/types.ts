@@ -1,3 +1,5 @@
+import type { SoundSection } from '../../stores/sound-window';
+
 export type FieldKind = 'title' | 'phrase' | 'option' | 'desc' | 'context';
 
 export interface SearchField {
@@ -27,6 +29,7 @@ export interface SettingsEntry {
   keys: string[];
   place?: string;
   trigger?: string;
+  sound?: SoundSection;
 }
 
 export interface SettingsCategoryInfo {

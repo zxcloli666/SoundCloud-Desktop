@@ -1,11 +1,10 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getCurrentTime, handlePrev } from '../../../lib/audio';
+import { handlePrev } from '../../../lib/audio';
 import {
   Pause,
   Play,
   repeat1Icon16,
-  repeatAbIcon16,
   repeatIcon16,
   shuffleIcon16,
   skipBack20,
@@ -102,35 +101,6 @@ export const RepeatBtn = React.memo(() => {
       className={playerBtn(repeat !== 'off')}
     >
       {repeat === 'one' ? repeat1Icon16 : repeatIcon16}
-    </button>
-  );
-});
-
-export const AbLoopBtn = React.memo(() => {
-  const { t } = useTranslation();
-  const abLoop = usePlayerStore((s) => s.abLoop);
-  const cycleAbPoint = usePlayerStore((s) => s.cycleAbPoint);
-  const awaitingB = abLoop != null && abLoop.b == null;
-  const title = !abLoop
-    ? t('player.abLoopSetA')
-    : abLoop.b == null
-      ? t('player.abLoopSetB')
-      : t('player.abLoopClear');
-
-  return (
-    <button
-      type="button"
-      title={title}
-      aria-label={title}
-      aria-pressed={abLoop != null}
-      data-ui="player-abloop"
-      onClick={() => cycleAbPoint(getCurrentTime())}
-      className={`relative ${playerBtn(abLoop != null)}`}
-    >
-      {repeatAbIcon16}
-      {awaitingB && (
-        <span className="absolute right-1 top-1 h-1.5 w-1.5 animate-pulse rounded-full bg-accent motion-reduce:animate-none [[data-perf=light]_&]:animate-none" />
-      )}
     </button>
   );
 });

@@ -8,13 +8,8 @@ export const PLAYER_IDS = [
   'more',
   'shuffle',
   'repeat',
-  'abLoop',
   'together',
   'mic',
-  'sleep',
-  'tuning',
-  'eq',
-  'effects',
   'sound',
   'lyrics',
   'queue',
@@ -29,12 +24,7 @@ export const PLAYER_HIDDEN: ReadonlySet<string> = new Set([
   'album',
   'block',
   'quality',
-  'abLoop',
   'mic',
-  'sleep',
-  'tuning',
-  'eq',
-  'effects',
 ]);
 
 export type Surface = 'player' | 'deck';
@@ -68,7 +58,6 @@ const TRACK_IDS: ReadonlySet<string> = new Set([
   'quality',
   'more',
 ]);
-const AFTER_IDS: ReadonlySet<string> = new Set(['repeat', 'abLoop']);
 const DECK_TITLE_IDS: ReadonlySet<string> = new Set(['more', 'queue']);
 
 export function isSurface(scope: string): scope is Surface {
@@ -82,7 +71,7 @@ export function defaultZone(surface: Surface, id: string): Zone {
   }
   if (TRACK_IDS.has(id)) return 'left';
   if (id === 'shuffle') return 'before';
-  if (AFTER_IDS.has(id)) return 'after';
+  if (id === 'repeat') return 'after';
   return 'right';
 }
 

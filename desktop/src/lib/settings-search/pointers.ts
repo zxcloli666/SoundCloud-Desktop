@@ -12,7 +12,7 @@ export const pointers: SettingsEntry[] = [
     desc: [],
     keys: ['eq.preamp', 'eq.myPresets', 'eq.import'],
     place: PLAYER,
-    trigger: 'player-eq',
+    sound: 'eq',
   },
   {
     id: 'elsewhere.effects',
@@ -32,7 +32,7 @@ export const pointers: SettingsEntry[] = [
       'effects.preset.bass',
     ],
     place: PLAYER,
-    trigger: 'player-effects',
+    sound: 'effects',
   },
   {
     id: 'elsewhere.speed',
@@ -48,7 +48,7 @@ export const pointers: SettingsEntry[] = [
       'player.pitchModeManual',
     ],
     place: PLAYER,
-    trigger: 'player-sound',
+    sound: 'main',
   },
   {
     id: 'elsewhere.sleep',
@@ -59,7 +59,7 @@ export const pointers: SettingsEntry[] = [
     desc: [],
     keys: ['sleep.endOfTrack', 'sleep.cancel'],
     place: PLAYER,
-    trigger: 'player-sound',
+    sound: 'main',
   },
   {
     id: 'elsewhere.shortcuts',

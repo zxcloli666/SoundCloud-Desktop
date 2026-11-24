@@ -14,6 +14,9 @@ export type SleepPlan = { minutes: number } | 'track_end' | 'off';
 export const EFFECTS = ['off', 'slowed_reverb', 'sped_up', 'eight_d', 'bass'] as const;
 export type EffectName = (typeof EFFECTS)[number];
 
+export const SOUND_VIEWS = ['all', 'equalizer', 'effects'] as const;
+export type SoundView = (typeof SOUND_VIEWS)[number];
+
 export type Taste = 'ok' | 'nothing_playing' | 'local_track' | 'quota_full' | 'failed';
 
 export const TOGETHER_ACTS = ['start', 'join', 'invite', 'visibility', 'leave'] as const;
@@ -92,6 +95,8 @@ export interface AppPort {
   forget(note: string): Forgot;
   setSleep(plan: SleepPlan): void;
   setEffect(effect: EffectName): void;
+  showSound(view: SoundView): boolean;
+  hideSound(): void;
   dislike(on: boolean): Promise<Taste>;
   superlike(on: boolean): Taste;
   together(ask: TogetherAsk): Promise<TogetherDone>;

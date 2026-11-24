@@ -42,6 +42,7 @@ export interface FakeApp extends AppPort {
   view: Screen;
   rows: number;
   looking: ButtonPlace;
+  playerShown: boolean;
   placed: Record<ButtonPlace, Placed[]>;
 }
 
@@ -58,6 +59,7 @@ export function fakeApp(): FakeApp {
     lists: {},
     rows: 3,
     looking: 'bar',
+    playerShown: true,
     placed: { bar: defaultPlacement('player'), home: defaultPlacement('deck') },
     view: {
       page: 'search',
@@ -166,6 +168,14 @@ export function fakeApp(): FakeApp {
     },
     setEffect: (effect) => {
       calls.push(`effect:${effect}`);
+    },
+    showSound: (view) => {
+      if (!app.playerShown) return false;
+      calls.push(`sound:${view}`);
+      return true;
+    },
+    hideSound: () => {
+      calls.push('sound:closed');
     },
     playStation: async (station) => {
       calls.push(`station:${station}`);

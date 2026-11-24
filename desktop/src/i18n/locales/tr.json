@@ -107,7 +107,6 @@
     "pitchModeAuto": "Ton hıza uyar",
     "pitchModeAutoShort": "Otomatik",
     "pitchModeManual": "Elle ton",
-    "pitchModeManualShort": "Elle",
     "abLoopSetA": "En iyi bölümü döngüle: başlangıç (A)",
     "abLoopSetB": "En iyi bölümü döngüle: bitiş (B)",
     "volumeFine": "hassas",
@@ -1702,22 +1701,13 @@
       "eightD": "8D",
       "bass": "Bas güçlendirme",
       "custom": "Özel"
-    },
-    "short": {
-      "slowedReverb": "Yavaş",
-      "spedUp": "Hızlı",
-      "eightD": "8D",
-      "bass": "Bas",
-      "custom": "FX"
     }
   },
   "eq": {
     "title": "Ekolayzır",
-    "enabled": "Açık",
     "preset": "Hazır ayar",
     "reset": "Sıfırla",
     "custom": "Özel",
-    "streamingNote": "EQ önbelleğe alınmış parçalarda çalışır (Web Audio)",
     "saveAsPreset": "Ön ayarı kaydet",
     "savePreset": "Kaydet",
     "deletePreset": "Ön ayarı sil",
@@ -2739,8 +2729,7 @@
   "trackSound": {
     "remember": "Bu parça için hatırla",
     "hintOff": "Bu EQ, hız ve perde ayarlarını yalnızca bu parça için sakla",
-    "hintOn": "Bu parça her çaldığında uygulanır",
-    "noTrack": "Sesini hatırlamak için bir parça çal"
+    "hintOn": "Bu parça her çaldığında uygulanır"
   },
   "sleep": {
     "title": "Uyku zamanlayıcı",
@@ -3213,6 +3202,10 @@
   "sound": {
     "title": "Ses",
     "reset": "Sesi sıfırla",
+    "expand": "Genişlet",
+    "collapse": "Daralt",
+    "db": "{{value}} dB",
+    "hz": "{{value}} Hz",
     "fx": {
       "off": "Kapalı",
       "slowedReverb": "Yavaş",
