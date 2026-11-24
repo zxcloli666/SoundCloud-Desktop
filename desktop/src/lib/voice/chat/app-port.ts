@@ -12,7 +12,7 @@ import { readScreen } from '../screen/snapshot';
 import { useVoiceStore } from '../store';
 import { buttons, placeButton } from './app-buttons';
 import { applySetting, readSettings } from './app-settings';
-import { setEffect, setSleep, showSound } from './app-sound';
+import { setEffect, setSleep, showSoundView } from './app-sound';
 import { playStation } from './app-stations';
 import { dislike, superlike } from './app-taste';
 import { openRooms, together } from './app-together';
@@ -124,7 +124,7 @@ export const appPort: AppPort = {
   forget,
   setSleep,
   setEffect,
-  showSound,
+  showSound: showSoundView,
   hideSound: closeSound,
   dislike,
   superlike,

@@ -12,6 +12,12 @@ export function openSound(section: SoundSection = 'main') {
   useSoundWindow.setState({ open: true, section });
 }
 
+export function showSound(section: SoundSection): boolean {
+  if (!document.querySelector('[data-ui="player-sound"]')) return false;
+  openSound(section);
+  return true;
+}
+
 export function closeSound() {
   useSoundWindow.setState({ open: false });
 }
