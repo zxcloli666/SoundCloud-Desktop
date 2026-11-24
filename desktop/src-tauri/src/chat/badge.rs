@@ -39,7 +39,6 @@ pub fn apply(app: &AppHandle, status: &ChatStatus) {
     crate::app::tray::set_unread(app, badge.count > 0);
 }
 
-#[cfg(target_os = "linux")]
 pub fn has_unread() -> bool {
     APPLIED
         .lock()
