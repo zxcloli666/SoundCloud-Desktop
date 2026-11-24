@@ -24,6 +24,7 @@ import { ChatDock } from '../chat/shell/ChatDock';
 import { ImportHost } from '../import/ImportHost';
 import { MobileLinkHost } from '../mobile-link/MobileLinkHost';
 import { AddToPlaylistHost } from '../music/AddToPlaylistHost';
+import { useQueueDock } from '../music/queue/use-queue-dock';
 import { SelectionBar } from '../music/selection/SelectionBar';
 import { SuperlikeLimitHost } from '../music/superlike/SuperlikeLimitHost';
 import { TrackContextMenu } from '../music/track-menu/TrackContextMenu';
@@ -331,6 +332,7 @@ export const AppShell = React.memo(() => {
   const onQueueToggle = useCallback(() => setQueueOpen((v) => !v), []);
   const outletContext = useMemo(() => ({ onQueueToggle, queueOpen }), [onQueueToggle, queueOpen]);
   const onQueueClose = useCallback(() => setQueueOpen(false), []);
+  const queueDock = useQueueDock(queueOpen);
   const onShowShortcuts = useCallback(() => useShortcutsStore.getState().setOpen(true), []);
   useAppContextMenu({ queueOpen, toggleQueue: onQueueToggle, showShortcuts: onShowShortcuts });
   const mainRef = useRef<HTMLElement>(null);
@@ -524,6 +526,7 @@ export const AppShell = React.memo(() => {
             <ScrollReset target={mainRef} />
             <StableOutlet context={outletContext} />
           </main>
+          <div aria-hidden className="shrink-0" style={{ width: queueDock.width }} />
           <ChatDock />
           <BackToTop target={mainRef} />
         </div>
@@ -538,7 +541,13 @@ export const AppShell = React.memo(() => {
       <MobileLinkHost />
       {queueUsed.current && (
         <Suspense fallback={null}>
-          <QueuePanel open={queueOpen} docked={!hideNowPlaying} onClose={onQueueClose} />
+          <QueuePanel
+            open={queueOpen}
+            beside={queueDock.beside}
+            right={queueDock.right}
+            abovePlayer={!hideNowPlaying}
+            onClose={onQueueClose}
+          />
         </Suspense>
       )}
       {lyricsOpen && (

@@ -597,6 +597,14 @@
     "gapless",
     "transición de pistas"
   ],
+  "settings.crossfadeCurve": [
+    "forma del fundido",
+    "gráfica del fundido",
+    "bajón de volumen entre pistas",
+    "fundido lineal",
+    "curva en s",
+    "potencia constante"
+  ],
   "settings.skipStuck": [
     "pista atascada",
     "la pista no carga",

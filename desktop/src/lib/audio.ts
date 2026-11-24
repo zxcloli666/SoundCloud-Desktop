@@ -467,7 +467,10 @@ async function loadCachedFile(
       path,
       cacheKey: urn,
       startPaused,
-      crossfadeMs: crossfadeMs > 0 ? crossfadeMs : null,
+      crossfade:
+        crossfadeMs > 0
+          ? { ms: crossfadeMs, curve: useSettingsStore.getState().crossfadeCurve }
+          : null,
     });
   } catch (e) {
     if (!isFileMissing(e)) throw e;

@@ -40,4 +40,5 @@ pub fn tray_set_labels(app: AppHandle, labels: TrayLabels) {
         *stored = labels;
     }
     super::tray::refresh_labels(&app);
+    super::taskbar::refresh_labels(&app);
 }

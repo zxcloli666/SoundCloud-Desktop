@@ -477,9 +477,13 @@ export function isMp3ExportSupported(): Promise<boolean> {
   return invoke<boolean>('track_export_mp3_supported');
 }
 
+export function renumberExports(dir: string, names: string[]): Promise<void> {
+  return invoke('track_export_renumber', { dir, names });
+}
+
 export async function exportTrackToDir(
   track: Track,
-  tags: { title: string; artist: string },
+  tags: { title: string; artist: string; track: string },
   dir: string,
   fileName: string,
   format: ExportFormat,

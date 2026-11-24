@@ -19,7 +19,7 @@ export const MomentCard = memo(function MomentCard({
 
   return (
     <div
-      className="fixed bottom-[calc(var(--dock-height)+1px)] right-4 z-[90] w-[min(340px,calc(100vw-32px))] animate-in fade-in slide-in-from-bottom-3 duration-500"
+      className="fixed bottom-[calc(var(--dock-height)+1px)] right-[calc(var(--right-dock)+1rem)] z-[90] w-[min(340px,calc(100vw-32px))] animate-in fade-in slide-in-from-bottom-3 duration-500"
       onMouseEnter={() => onHover?.(true)}
       onMouseLeave={() => onHover?.(false)}
     >

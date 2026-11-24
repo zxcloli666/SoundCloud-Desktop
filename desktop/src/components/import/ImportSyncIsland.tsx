@@ -11,7 +11,7 @@ export function ImportSyncIsland() {
   if (!title || !idle) return null;
 
   return (
-    <div className="pointer-events-none fixed bottom-[calc(var(--dock-height)-3px)] left-1/2 z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none">
+    <div className="pointer-events-none fixed bottom-[calc(var(--dock-height)-3px)] left-[calc(50%-var(--right-dock)/2)] z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none">
       <div className="flex max-w-[92vw] items-center gap-2.5 rounded-full border border-ink/[0.14] bg-surface/90 py-2 pr-4 pl-3 text-[12px] shadow-[0_12px_36px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))]">
         <Loader2 size={14} className="animate-spin text-accent motion-reduce:animate-none" />
         <span className="font-semibold text-ink-85">{t('importer.step.syncing')}</span>

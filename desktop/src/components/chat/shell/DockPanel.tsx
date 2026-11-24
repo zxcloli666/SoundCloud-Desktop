@@ -33,7 +33,9 @@ export const DockPanel = memo(function DockPanel({ mode }: { mode: 'docked' | 'o
       <aside
         data-ui="chat-dock"
         onKeyDown={onKeyDown}
-        className={overlay ? 'absolute inset-y-0 right-0 z-50' : 'relative h-full shrink-0'}
+        className={
+          overlay ? 'absolute inset-y-0 right-[var(--right-dock)] z-50' : 'relative h-full shrink-0'
+        }
         style={{
           width: overlay ? `min(${width}px, calc(100% - ${OVERLAY_GAP}px))` : width,
           animation:

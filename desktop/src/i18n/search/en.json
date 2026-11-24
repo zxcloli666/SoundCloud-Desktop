@@ -631,6 +631,15 @@
     "gapless",
     "track transition"
   ],
+  "settings.crossfadeCurve": [
+    "fade shape",
+    "fade graph",
+    "volume dip between tracks",
+    "linear fade",
+    "s curve",
+    "equal power fade",
+    "how tracks blend"
+  ],
   "settings.skipStuck": [
     "track stuck",
     "track not loading",

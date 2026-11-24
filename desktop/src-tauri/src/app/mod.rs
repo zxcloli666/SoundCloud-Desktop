@@ -13,6 +13,7 @@ pub mod render_mode;
 pub mod restart;
 pub mod storage;
 pub mod store_files;
+pub mod taskbar;
 pub mod themes;
 pub mod tray;
 mod tray_dot;

@@ -6408,6 +6408,7 @@ dependencies = [
  "voice-resolve",
  "warp",
  "webpki-roots 1.0.6",
+ "windows 0.62.2",
  "windows-registry",
  "windows-sys 0.61.2",
  "wreq",

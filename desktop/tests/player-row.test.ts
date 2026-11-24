@@ -21,6 +21,12 @@ test('extra track buttons get a second row only when they do not fit', () => {
   assert.equal(fitsOneRow(zoneIds(withReactions), 800), false);
 });
 
+test('a button moved over play frees the room of the title', () => {
+  const moved = placeButton(withReactions, 'player', 'quality', 'after', null);
+  assert.equal(fitsOneRow(zoneIds(withReactions), 800), false);
+  assert.equal(fitsOneRow(zoneIds(moved), 800), true);
+});
+
 test('the whole set of buttons never squeezes the title out', () => {
   assert.equal(zoneIds(everything).left.length + zoneIds(everything).right.length > 14, true);
   assert.equal(fitsOneRow(zoneIds(everything), 1128), false);

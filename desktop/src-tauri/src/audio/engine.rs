@@ -5,7 +5,7 @@ use std::time::Duration;
 use tauri::State;
 use tokio::task;
 
-use crate::audio::crossfade;
+use crate::audio::crossfade::{self, Crossfade};
 use crate::audio::decode::{create_player_from_bytes, resolve_normalization_gain};
 use crate::audio::eq_curve;
 use crate::audio::silence;
@@ -236,7 +236,7 @@ pub async fn load_file(
     normalization_cache_dir: Option<PathBuf>,
     normalization_cache_key: Option<String>,
     start_paused: bool,
-    crossfade_length: Option<Duration>,
+    crossfade: Option<Crossfade>,
     app: &AppHandle,
     state: State<'_, AudioState>,
 ) -> Result<AudioLoadResult, String> {
@@ -247,8 +247,8 @@ pub async fn load_file(
     .await
     .map_err(|e| format!("audio file read task failed: {e}"))??;
 
-    let crossfade_length = crossfade_length.filter(|_| is_audible(&state));
-    if crossfade_length.is_none() {
+    let crossfade = crossfade.filter(|_| is_audible(&state));
+    if crossfade.is_none() {
         stop_current_player(&state);
     }
 
@@ -257,11 +257,11 @@ pub async fn load_file(
         normalization_cache_key.as_deref(),
     );
     let mixer = state.mixer.lock().unwrap().clone();
-    let sound = match crossfade_length {
+    let sound = match crossfade {
         Some(_) => Sound::new(),
         None => state.sound.lock().unwrap().clone(),
     };
-    let vol = match crossfade_length {
+    let vol = match crossfade {
         Some(_) => 0.0,
         None => *state.volume.lock().unwrap(),
     };
@@ -281,15 +281,15 @@ pub async fn load_file(
     )
     .await?;
 
-    if crossfade_length.is_some() {
+    if crossfade.is_some() {
         let mut current = state.sound.lock().unwrap();
         sound.copy_from(&current);
         *current = sound;
     }
     let previous =
         commit_loaded_track(&state, bytes, new_player, normalization_gain, silence_cache, vol);
-    match (previous, crossfade_length) {
-        (Some(previous), Some(length)) => crossfade::begin(app, &state, previous, length),
+    match (previous, crossfade) {
+        (Some(previous), Some(crossfade)) => crossfade::begin(app, &state, previous, crossfade),
         (Some(previous), None) => previous.stop(),
         _ => {}
     }

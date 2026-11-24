@@ -30,7 +30,7 @@ export function SelectionBar() {
   const { shuffle, clear } = useTrackSelection.getState();
 
   return createPortal(
-    <div className="fixed left-1/2 bottom-[calc(var(--dock-height)-11px)] z-[90] -translate-x-1/2">
+    <div className="fixed left-[calc(50%-var(--right-dock)/2)] bottom-[calc(var(--dock-height)-11px)] z-[90] -translate-x-1/2">
       <div
         className="flex items-center gap-2 rounded-2xl py-2 pl-4 pr-2 animate-fade-in-up"
         style={{

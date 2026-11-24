@@ -84,6 +84,7 @@ pub fn run() {
         .setup(move |app| {
             #[cfg(windows)]
             app::webview2::exit_if_main_window_missing(app);
+            app::taskbar::attach(app);
             app::autostart::reveal_main_window(app);
             app::autostart::refresh_entry(app);
             app::updater::register(app);
@@ -428,6 +429,7 @@ pub fn run() {
             track_cache::track_upgrade_cached,
             track_cache::track_export,
             track_cache::track_export_to_dir,
+            track_cache::track_export_renumber,
             track_cache::track_cover_save,
             track_cache::track_export_mp3_supported,
             track_cache::track_save_offline,

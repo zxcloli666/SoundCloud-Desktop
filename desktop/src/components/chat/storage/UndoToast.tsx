@@ -86,7 +86,7 @@ function Shell({ children }: { children: ReactNode }) {
   return createPortal(
     <div
       data-ui="chat-storage-undo"
-      className="fixed bottom-[calc(var(--dock-height)+1px)] left-1/2 z-[80] w-[min(460px,calc(100vw-32px))] -translate-x-1/2"
+      className="fixed bottom-[calc(var(--dock-height)+1px)] left-[calc(50%-var(--right-dock)/2)] z-[80] w-[min(460px,calc(100vw-32px))] -translate-x-1/2"
     >
       <div
         className="relative overflow-hidden rounded-[1.25rem] border border-ink/[0.1] storage-motion"

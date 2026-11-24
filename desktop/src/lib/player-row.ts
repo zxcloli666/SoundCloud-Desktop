@@ -4,23 +4,18 @@ const GAP = 2;
 const BUTTON = 34;
 const QUALITY = 72;
 const VOLUME_WITH_SLIDER = 154;
-const PLAY = 50;
-const COLUMN_GAP = 14;
+const TRANSPORT = 122;
+const COLUMN_GAP = 12;
 const PADDING = 36;
 const ART_AND_TITLE = 120;
 const SLIDER_FROM = 1120;
 
 export function fitsOneRow(ids: ZoneIds, dockWidth: number): boolean {
   const side = Math.max(
-    ART_AND_TITLE + zoneWidth(ids.left, dockWidth),
-    zoneWidth(ids.right, dockWidth),
+    ART_AND_TITLE + zoneWidth(ids.left, dockWidth) + zoneWidth(ids.before, dockWidth),
+    zoneWidth(ids.after, dockWidth) + zoneWidth(ids.right, dockWidth),
   );
-  const transport = Math.max(
-    zoneWidth([...ids.before, 'prev'], dockWidth),
-    zoneWidth(['next', ...ids.after], dockWidth),
-  );
-  const needed = 2 * (side + transport + GAP + COLUMN_GAP) + PLAY;
-  return needed <= dockWidth - PADDING;
+  return 2 * (side + COLUMN_GAP) + TRANSPORT <= dockWidth - PADDING;
 }
 
 function zoneWidth(ids: readonly string[], dockWidth: number): number {

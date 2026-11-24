@@ -1,6 +1,7 @@
 import React, { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type CoverPalette, tintFromRgb, useCoverPalette } from '../../lib/cover-palette';
+import { QUEUE_DOCK_WIDTH } from '../../lib/queue-dock';
 import { usePlayerStore } from '../../stores/player';
 import { QueueEmpty } from './queue/QueueEmpty';
 import { QueueHeader } from './queue/QueueHeader';
@@ -21,13 +22,22 @@ function paletteStyle(palette: CoverPalette | null): CSSProperties {
   return { '--q-c1': `rgb(${one})`, '--q-c2': `rgb(${two})` } as CSSProperties;
 }
 
-interface FrameProps {
-  phase: Phase;
-  docked: boolean;
+interface Place {
+  beside: boolean;
+  right: number;
+  abovePlayer: boolean;
   onClose: () => void;
 }
 
-function QueueFrame({ phase, docked, onClose }: FrameProps) {
+function QueueFrame({
+  phase,
+  beside,
+  right,
+  abovePlayer,
+  onClose,
+}: Place & {
+  phase: Phase;
+}) {
   const { t } = useTranslation();
   const panelRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -35,25 +45,35 @@ function QueueFrame({ phase, docked, onClose }: FrameProps) {
   const empty = usePlayerStore((s) => s.queue.length === 0 && !s.currentTrack);
   const palette = useCoverPalette(true);
   const { gone, sentinelRef } = useHeroGone(scrollRef);
-  const dock = useDockInset(docked);
+  const bottom = useDockInset(abovePlayer && !beside);
 
   useEffect(() => {
-    if (phase === 'open') panelRef.current?.focus({ preventScroll: true });
-  }, [phase]);
+    if (phase === 'open' && !beside) panelRef.current?.focus({ preventScroll: true });
+  }, [phase, beside]);
 
   const toTop = () => scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
     <>
-      <div className="queue-scrim fixed inset-0 z-40" data-state={phase} onClick={onClose} />
+      {!beside && (
+        <div className="queue-scrim fixed inset-0 z-40" data-state={phase} onClick={onClose} />
+      )}
       <div
         ref={panelRef}
-        role="dialog"
+        role={beside ? 'complementary' : 'dialog'}
         aria-label={t('player.queue')}
         tabIndex={-1}
         data-ui="queue"
         data-state={phase}
-        style={{ ...paletteStyle(palette), '--queue-dock': `${dock}px` } as CSSProperties}
+        data-beside={beside || undefined}
+        style={
+          {
+            ...paletteStyle(palette),
+            '--queue-bottom': `${bottom}px`,
+            '--queue-right': `${right}px`,
+            width: beside ? QUEUE_DOCK_WIDTH : undefined,
+          } as CSSProperties
+        }
         className="queue-panel fixed top-16 z-50 flex flex-col overflow-hidden outline-none"
       >
         <div className="queue-bg absolute inset-0" />
@@ -90,29 +110,27 @@ function QueueFrame({ phase, docked, onClose }: FrameProps) {
   );
 }
 
-export const QueuePanel = React.memo(
-  ({ open, docked = false, onClose }: { open: boolean; docked?: boolean; onClose: () => void }) => {
-    const [mounted, setMounted] = useState(open);
-    const [phase, setPhase] = useState<Phase>('closed');
+export const QueuePanel = React.memo(({ open, ...place }: Place & { open: boolean }) => {
+  const [mounted, setMounted] = useState(open);
+  const [phase, setPhase] = useState<Phase>('closed');
 
-    useEffect(() => {
-      if (open) {
-        setMounted(true);
-        let inner = 0;
-        const outer = requestAnimationFrame(() => {
-          inner = requestAnimationFrame(() => setPhase('open'));
-        });
-        return () => {
-          cancelAnimationFrame(outer);
-          cancelAnimationFrame(inner);
-        };
-      }
-      setPhase('closed');
-      const timer = setTimeout(() => setMounted(false), EXIT_MS);
-      return () => clearTimeout(timer);
-    }, [open]);
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      let inner = 0;
+      const outer = requestAnimationFrame(() => {
+        inner = requestAnimationFrame(() => setPhase('open'));
+      });
+      return () => {
+        cancelAnimationFrame(outer);
+        cancelAnimationFrame(inner);
+      };
+    }
+    setPhase('closed');
+    const timer = setTimeout(() => setMounted(false), EXIT_MS);
+    return () => clearTimeout(timer);
+  }, [open]);
 
-    if (!mounted) return null;
-    return <QueueFrame phase={phase} docked={docked} onClose={onClose} />;
-  },
-);
+  if (!mounted) return null;
+  return <QueueFrame phase={phase} {...place} />;
+});

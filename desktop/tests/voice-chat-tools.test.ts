@@ -334,12 +334,18 @@ test('settings: only whitelisted keys, values parsed and validated per key', asy
     key: 'crossfade',
     value: 12,
   });
+  await run('set_setting', { key: 'crossfade_curve', value: 'linear' });
   await run('set_setting', { key: 'equalizer', value: 'on' });
   const wrong = await run('set_setting', { key: 'theme', value: 'blue' });
   assert.deepEqual(wrong.result, { ok: false, reason: 'bad_value', allowed: 'dark|white|system' });
   const closed = await run('set_setting', { key: 'customCss', value: 'x' });
   assert.deepEqual(closed.result, { ok: false, reason: 'bad_args:key' });
-  assert.deepEqual(app.calls, ['set:theme:white', 'set:crossfade:12', 'set:equalizer:true']);
+  assert.deepEqual(app.calls, [
+    'set:theme:white',
+    'set:crossfade:12',
+    'set:crossfade_curve:linear',
+    'set:equalizer:true',
+  ]);
   for (const key of SETTING_KEYS) {
     assert.doesNotMatch(key, /account|network|proxy|session|token|css|cache|discord|scrobble/i);
   }
@@ -355,6 +361,8 @@ test('setting values: switches, choices and ranges', () => {
   assert.equal(parseSetting('voice_speed', '9'), 1.3);
   assert.equal(parseSetting('home_cover_opacity', '42'), 40);
   assert.equal(parseSetting('crossfade', ''), null);
+  assert.equal(parseSetting('crossfade_curve', 'Smooth'), 'smooth');
+  assert.equal(parseSetting('crossfade_curve', 'round'), null);
 });
 
 test('speed, lyrics, queue and the playlist picker call the app', async () => {

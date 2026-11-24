@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { normalizeAudioCacheLimit, normalizeImageCacheLimit } from '../lib/cache-limit';
+import type { CrossfadeCurve } from '../lib/crossfade-curve';
 import { EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset } from '../lib/equalizer';
 import {
   DEFAULT_GLOBAL_HOTKEYS,
@@ -132,6 +133,7 @@ export interface SettingsState {
   streamQuality: StreamQuality;
   skipStuckAfterSec: SkipStuckAfterSec;
   crossfadeSec: number;
+  crossfadeCurve: CrossfadeCurve;
   roomCrossfade: RoomCrossfade;
   roomAccess: RoomAccess;
   autoplay: boolean;
@@ -233,6 +235,7 @@ export interface SettingsState {
   setStreamQuality: (quality: StreamQuality) => void;
   setSkipStuckAfterSec: (seconds: SkipStuckAfterSec) => void;
   setCrossfadeSec: (seconds: number) => void;
+  setCrossfadeCurve: (curve: CrossfadeCurve) => void;
   setRoomCrossfade: (mode: RoomCrossfade) => void;
   setRoomAccess: (access: RoomAccess) => void;
   setAutoplay: (enabled: boolean) => void;
@@ -346,6 +349,7 @@ const DEFAULTS = {
   streamQuality: 'auto' as StreamQuality,
   skipStuckAfterSec: 0 as SkipStuckAfterSec,
   crossfadeSec: 0,
+  crossfadeCurve: 'equal_power' as CrossfadeCurve,
   roomCrossfade: 'room' as RoomCrossfade,
   roomAccess: 'private' as RoomAccess,
   autoplay: true,
@@ -494,6 +498,7 @@ export const useSettingsStore = create<SettingsState>()(
       setSkipStuckAfterSec: (skipStuckAfterSec) => set({ skipStuckAfterSec }),
       setCrossfadeSec: (seconds) =>
         set({ crossfadeSec: Math.min(CROSSFADE_MAX_SEC, Math.max(0, Math.round(seconds))) }),
+      setCrossfadeCurve: (crossfadeCurve) => set({ crossfadeCurve }),
       setRoomCrossfade: (roomCrossfade) => set({ roomCrossfade }),
       setRoomAccess: (roomAccess) => set({ roomAccess }),
       setAutoplay: (autoplay) => set({ autoplay }),
@@ -519,7 +524,7 @@ export const useSettingsStore = create<SettingsState>()(
           pinnedPlaylists: [
             playlist,
             ...s.pinnedPlaylists.filter((item) => item.urn !== playlist.urn),
-          ].slice(0, 8),
+          ],
         })),
       unpinPlaylist: (urn) =>
         set((s) => ({
@@ -533,10 +538,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       pinArtist: (artist) =>
         set((s) => ({
-          pinnedArtists: [artist, ...s.pinnedArtists.filter((item) => item.id !== artist.id)].slice(
-            0,
-            8,
-          ),
+          pinnedArtists: [artist, ...s.pinnedArtists.filter((item) => item.id !== artist.id)],
         })),
       unpinArtist: (id) =>
         set((s) => ({
@@ -717,6 +719,7 @@ export const useSettingsStore = create<SettingsState>()(
         streamQuality: s.streamQuality,
         skipStuckAfterSec: s.skipStuckAfterSec,
         crossfadeSec: s.crossfadeSec,
+        crossfadeCurve: s.crossfadeCurve,
         roomCrossfade: s.roomCrossfade,
         roomAccess: s.roomAccess,
         autoplay: s.autoplay,

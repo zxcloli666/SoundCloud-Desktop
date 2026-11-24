@@ -13,7 +13,14 @@ export function sanitizeFilename(name: string): string {
   return RESERVED.test(tidy) ? `_${tidy}` : tidy;
 }
 
-export function uniqueFileNames(stems: string[], extension: string): string[] {
+export function numberedFileNames(stems: string[], extension: string): string[] {
+  const width = Math.max(2, String(stems.length).length);
+  return uniqueFileNames(stems, extension).map(
+    (name, index) => `${String(index + 1).padStart(width, '0')} - ${name}`,
+  );
+}
+
+function uniqueFileNames(stems: string[], extension: string): string[] {
   const taken = new Map<string, number>();
   return stems.map((raw) => {
     const stem = sanitizeFilename(raw);

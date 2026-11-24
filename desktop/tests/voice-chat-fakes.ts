@@ -78,6 +78,7 @@ export function fakeApp(): FakeApp {
       normalize_volume: true,
       skip_silence: false,
       crossfade: 0,
+      crossfade_curve: 'equal_power',
       stream_quality: 'auto',
       autoplay: true,
       wave_mode: 'similar',
