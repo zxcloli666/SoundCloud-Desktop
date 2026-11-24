@@ -10,7 +10,7 @@ import { TRACK_COLUMN_DEFAULTS, useSettingsStore } from '../../../stores/setting
 import { TrackColumnsHeader } from './TrackColumnsHeader';
 
 const MIN_TITLE = 220;
-const BADGES_WIDTH = 100;
+const RATING_WIDTH = 18;
 
 export interface RowShape {
   fixed: number;
@@ -38,11 +38,10 @@ export const SEQUENCE_SORTABLE_SHAPE: RowShape = { ...SEQUENCE_SHAPE, fixed: 180
 export interface TrackColumnsLayout {
   plays: number;
   likes: number;
-  badges: boolean;
   actions: number;
 }
 
-const HIDDEN: TrackColumnsLayout = { plays: 0, likes: 0, badges: false, actions: 0 };
+const HIDDEN: TrackColumnsLayout = { plays: 0, likes: 0, actions: 0 };
 
 const TrackColumnsContext = createContext<TrackColumnsLayout>(HIDDEN);
 
@@ -58,7 +57,8 @@ function fit(
   wanted: { plays: number; likes: number },
 ): TrackColumnsLayout {
   const { gap } = shape;
-  let free = width - shape.fixed - shape.actions - shape.duration - shape.tail - MIN_TITLE;
+  const taken = shape.fixed + shape.actions + shape.duration + shape.tail + RATING_WIDTH + gap;
+  let free = width - taken - MIN_TITLE;
   const layout = { ...HIDDEN, actions: shape.actions };
   if (free >= wanted.plays + gap) {
     layout.plays = wanted.plays;
@@ -66,9 +66,7 @@ function fit(
   }
   if (layout.plays > 0 && free >= wanted.likes + gap) {
     layout.likes = wanted.likes;
-    free -= wanted.likes + gap;
   }
-  layout.badges = layout.likes > 0 && free >= BADGES_WIDTH + gap;
   return layout;
 }
 

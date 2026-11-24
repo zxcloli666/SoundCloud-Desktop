@@ -48,7 +48,7 @@ desktop/
                      HorizontalScroll, Skeleton, Avatar, CopyLinkButton
       music/         TrackCard, PlaylistCard, LikeButton, LyricsPanel,
                      QueuePanel, FloatingComments, AddToPlaylistDialog,
-                     TrackStatusBadges, TrackTitleArtist, UploadKindDot,
+                     TrackRating, TrackTitleArtist, UploadKindDot,
                      YMImportDialog, YMImportFloatingStatus,
                      cluster/   (рекомендательные «соседи»: ClusterHeader/Row, NeighborCard…)
                      soundwave/ (бесконечная лента «волны»: home-block, similar-block,

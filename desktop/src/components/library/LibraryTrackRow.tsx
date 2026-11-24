@@ -19,7 +19,8 @@ import { useTrackColumns } from '../music/columns/TrackColumns';
 import { LikeButton } from '../music/LikeButton';
 import { PlayNextButton } from '../music/PlayNextButton';
 import { SaveOfflineRowButton } from '../music/SaveOfflineButton';
-import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { sameScdMeta, sameVideos } from '../../lib/track-rating';
+import { TrackRating } from '../music/TrackRating';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 import { PreviewRing } from '../search/PreviewRing';
 
@@ -132,11 +133,7 @@ export const LibraryTrackRow = React.memo(
           className="flex flex-col justify-center"
         />
 
-        {columns.badges && (
-          <div className="flex shrink-0">
-            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-          </div>
-        )}
+        <TrackRating meta={track._scd_meta} videos={track.videos} />
 
         {columns.plays > 0 && (
           <span

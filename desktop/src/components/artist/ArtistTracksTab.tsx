@@ -5,7 +5,7 @@ import {Calendar, ListMusic, Loader2, Music} from '../../lib/icons';
 import {useArtistDisplay, useDisplayTitle} from '../../lib/track-display';
 import type {Track} from '../../stores/player';
 import {TrackColumns} from '../music/columns/TrackColumns';
-import {TrackStatusBadges} from '../music/TrackStatusBadges';
+import {TrackRating} from '../music/TrackRating';
 import {VirtualList} from '../ui/VirtualList';
 import {ThemedTrackRow} from '../user/ThemedTrackRow';
 import {useThemedShape} from '../user/useThemedShape';
@@ -309,9 +309,7 @@ const WantedRow = memo(({ track, index }: { track: Track; index: number }) => {
         <p className="text-[13px] font-medium text-ink-55 truncate">{displayTitle}</p>
         <p className="text-[11px] text-ink-25 truncate">{artistDisplay.primary}</p>
       </div>
-      <div className="hidden @lg:flex shrink-0">
-        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-      </div>
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
       {track.enrichment?.release_year && (
         <span className="text-[11px] text-ink-25 tabular-nums shrink-0">
           {track.enrichment.release_year}

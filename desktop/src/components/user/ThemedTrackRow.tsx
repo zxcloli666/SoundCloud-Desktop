@@ -21,7 +21,8 @@ import { useTrackColumns } from '../music/columns/TrackColumns';
 import { LikeButton } from '../music/LikeButton';
 import { PlayNextButton } from '../music/PlayNextButton';
 import {SaveOfflineRowButton} from '../music/SaveOfflineButton';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../music/TrackStatusBadges';
+import {sameScdMeta, sameVideos} from '../../lib/track-rating';
+import {TrackRating} from '../music/TrackRating';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 import { OwnerTrackMenu } from '../track/OwnerTrackMenu';
 
@@ -93,11 +94,7 @@ function ThemedTrackRowImpl({ track, index, queue }: ThemedTrackRowProps) {
 
       <TrackTitleArtist track={track} highlight={isThis} size="md" className="flex-1 min-w-0" />
 
-      {columns.badges && (
-        <div className="flex shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-        </div>
-      )}
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
 
       {columns.plays > 0 && (
         <span
