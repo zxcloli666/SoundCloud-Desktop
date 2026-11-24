@@ -171,3 +171,21 @@ pub fn hotkey(app: &AppHandle, pressed: bool) {
     };
     voice.engine.send(command);
 }
+
+#[cfg(all(test, windows))]
+mod tests {
+    use std::ffi::CString;
+
+    #[test]
+    fn native_libraries_open_paths_with_russian_letters() {
+        let dir = std::env::temp_dir().join(format!("Пользователь-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let file = dir.join("bpe.vocab");
+        std::fs::write(&file, "a").unwrap();
+        let path = CString::new(file.to_str().unwrap()).unwrap();
+        let opened = unsafe { libc::fopen(path.as_ptr(), c"rb".as_ptr()) };
+        assert!(!opened.is_null());
+        unsafe { libc::fclose(opened) };
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+}

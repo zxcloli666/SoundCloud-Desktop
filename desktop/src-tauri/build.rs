@@ -7,7 +7,10 @@ fn main() {
     if std::env::var_os("CARGO_FEATURE_CHAT_LAB").is_some() {
         lab_identifier();
     }
-    tauri_build::build()
+    let windows = tauri_build::WindowsAttributes::new()
+        .app_manifest(include_str!("windows-app-manifest.xml"));
+    let attributes = tauri_build::Attributes::new().windows_attributes(windows);
+    tauri_build::try_build(attributes).expect("tauri build");
 }
 
 fn lab_identifier() {
