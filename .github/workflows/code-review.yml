@@ -22,13 +22,13 @@ jobs:
 
     steps:
       - name: Checkout PR code
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: AI Code Review
-        uses: zxcloli666/AI-Code-Review@main
+        uses: zxcloli666/AI-Code-Review@e4c07fe82e4c70a3cf152773423f608a88e9497d
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.AI_API_KEY }}
