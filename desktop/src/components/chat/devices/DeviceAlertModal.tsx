@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AGE_RULE_MS } from '../../../lib/chat/device-alerts';
 import type { Device } from '../../../lib/chat/types';
 import { CircleCheck, ShieldAlert } from '../../../lib/icons';
 import { usePerfMode } from '../../../lib/perf';
-import { AGE_RULE_MS } from '../../../stores/chat/devices';
 import { ModalContent, ModalDescription, ModalTitle } from '../../ui/Modal';
 import { AlertLegend, type AlertOutcome } from './AlertLegend';
 import { DecisionButton } from './DecisionButton';

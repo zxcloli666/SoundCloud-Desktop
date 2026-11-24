@@ -91,7 +91,7 @@ export async function initChatBridge(): Promise<() => void> {
       useChatMediaStore.getState().setShown(event.mediaId, event.state, event.retryInMs),
     ),
     onChatEvent('chat:device-added', ({ device }) =>
-      useChatDevicesStore.getState().pushAlert(device),
+      useChatDevicesStore.getState().pushAlert(device, Date.now()),
     ),
     onChatEvent('chat:device-limit', (deviceLimit) => useChatStore.setState({ deviceLimit })),
   ]);

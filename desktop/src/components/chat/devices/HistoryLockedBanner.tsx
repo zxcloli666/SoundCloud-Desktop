@@ -1,9 +1,9 @@
 import { memo } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AGE_RULE_MS } from '../../../lib/chat/device-alerts';
 import { surface } from '../../../lib/chat/tone';
 import type { Device, Millis } from '../../../lib/chat/types';
 import { useChatStore } from '../../../stores/chat';
-import { AGE_RULE_MS } from '../../../stores/chat/devices';
 import { HistoryRing } from './HistoryRing';
 import { platformIcon } from './platform';
 import { exactText, spanShort, spanText } from './time';

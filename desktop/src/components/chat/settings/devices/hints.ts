@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
+import { AGE_RULE_MS } from '../../../../lib/chat/device-alerts';
 import type { Device, Millis } from '../../../../lib/chat/types';
-import { AGE_RULE_MS } from '../../../../stores/chat/devices';
 import { spanText } from '../../devices/time';
 
 export function grownIn(me: Device | undefined, now: Millis): number {

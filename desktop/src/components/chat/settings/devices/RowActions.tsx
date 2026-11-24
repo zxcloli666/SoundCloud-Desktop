@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
+import { isWaiting } from '../../../../lib/chat/device-alerts';
 import type { Device, Millis } from '../../../../lib/chat/types';
 import { CircleCheck, Power, ShieldAlert, Trash2 } from '../../../../lib/icons';
-import { isWaiting } from '../../../../stores/chat/devices';
 import { DecisionButton } from '../../devices/DecisionButton';
 import type { DeviceActionKind } from '../../devices/useDevices';
 import { ArmedButton } from './ArmedButton';
