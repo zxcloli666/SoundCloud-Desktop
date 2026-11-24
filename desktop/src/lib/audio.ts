@@ -41,6 +41,7 @@ import {isTrackBlocked} from './blocked-artists';
 import {STATUS_PAGE_URL} from './constants';
 import {trackedInvoke as invoke, reportError} from './diagnostics';
 import {isBelow} from './playback-quality';
+import {restartsOnPrev} from './prev-track';
 import {offerUndislike} from './dislike-actions';
 import {isUrnDisliked} from './dislikes';
 import {recordEvent, recordSeek} from './events';
@@ -84,6 +85,7 @@ let raceUrn: string | null = null;
 let hasTrack = false;
 let fallbackDuration = 0;
 let cachedTime = 0;
+let audibleFrom = 0;
 let tickAt = 0;
 let cachedDuration = 0;
 let acceptedShortFile = false;
@@ -254,7 +256,7 @@ function takePendingStart(urn: string): number {
 }
 
 export function handlePrev() {
-  if (getCurrentTime() > 3) {
+  if (restartsOnPrev(getCurrentTime(), audibleFrom)) {
     seekQuiet(0);
   } else {
     usePlayerStore.getState().prev();
@@ -535,6 +537,7 @@ async function loadTrack(track: Track, resumeAt = 0) {
   fallbackDuration = track.duration / 1000;
   cachedDuration = fallbackDuration;
   cachedTime = 0;
+  audibleFrom = 0;
   setDownloadProgress(null);
   usePlayerStore.getState().setPlaybackTransport(null, null);
   notify();
@@ -1005,6 +1008,10 @@ function recordFullPlay(urn: string, complete: boolean) {
   if (cluster) recordClusterFeedback(cluster, 'complete');
 }
 
+listen<number>('audio:lead-skipped', (event) => {
+  audibleFrom = event.payload;
+});
+
 listen<boolean | null>('audio:ended', (event) => {
   if (isCrossfadeLoading()) return;
   const silentTail = event.payload === true;
@@ -1160,6 +1167,7 @@ useSettingsStore.subscribe((state, prev) => {
 
   if (state.skipSilence !== prev.skipSilence) {
     invoke('audio_set_skip_silence', { enabled: state.skipSilence }).catch(console.error);
+    if (!state.skipSilence) audibleFrom = 0;
   }
 });
 

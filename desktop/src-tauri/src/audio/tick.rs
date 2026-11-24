@@ -92,7 +92,10 @@ pub fn start_tick_emitter(app: &AppHandle) {
                             Some((a, b)) => (pos >= b).then_some(a),
                             None if player.is_paused() => None,
                             None => match state.silence.lock().unwrap().jump(pos) {
-                                Some(SilenceJump::To(target)) => Some(target),
+                                Some(SilenceJump::To(target)) => {
+                                    handle.emit("audio:lead-skipped", target).ok();
+                                    Some(target)
+                                }
                                 Some(SilenceJump::End) => {
                                     player.stop();
                                     state.ended_notified.store(true, Ordering::Relaxed);
