@@ -2131,6 +2131,7 @@
       "linkOther": "Başka kart bağla",
       "fail": {
         "busy": "Şu an başka bir kart bağlanıyor. Bir dakika sonra tekrar deneyin.",
+        "limit": "Çok fazla deneme. Bir saat sonra tekrar deneyin.",
         "unavailable": "Kartla ödeme şu an kullanılamıyor.",
         "bundle": "Kartla ödeme için uygulamanın yeni sürümü gerekli.",
         "declined": "Banka kartı kabul etmedi.",

@@ -3,6 +3,7 @@ import {
   type Binds,
   type Order,
   type OrderAction,
+  PayError,
   type PayOffer,
   type PaySubscription,
   type PlansResponse,
@@ -535,6 +536,24 @@ const STATES: { id: string; title: string; setup: Setup }[] = [
       cardEnd('declined');
       kit.after(async () => {
         await cardFailed();
+        await press('[data-star-act="card-retry"]');
+        await sleep(400);
+      });
+    },
+  },
+  {
+    id: 'card-limit',
+    title: 'card declined too many times, the hour limit is spent',
+    setup: (kit) => {
+      kit.star(false);
+      world({ sub: FREE });
+      cardForm();
+      cardEnd('declined');
+      kit.after(async () => {
+        await cardFailed();
+        payApi.bindStart = async () => {
+          throw new PayError(429, JSON.stringify({ message: 'too_many_attempts' }));
+        };
         await press('[data-star-act="card-retry"]');
         await sleep(400);
       });

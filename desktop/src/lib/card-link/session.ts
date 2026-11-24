@@ -4,7 +4,7 @@ import { trialStart } from '../star-offer';
 import { isGranted, type TrialOutcome, trialRefusal } from '../star-trial';
 import type { Phase } from './follow';
 import { cardNative, nativeCode } from './native';
-import type { FailReason } from './reasons';
+import { type FailReason, startRefusal } from './reasons';
 import type { CardFields, FieldName } from './validate';
 
 export type Stage =
@@ -22,10 +22,7 @@ export interface Link {
 }
 
 function startFailure(error: unknown): FailReason {
-  if (error instanceof PayError) {
-    if (error.status === 429) return 'busy';
-    return error.status === 503 || error.status === 501 ? 'unavailable' : 'network';
-  }
+  if (error instanceof PayError) return startRefusal(error.status, payErrorCode(error));
   const code = nativeCode(error);
   if (code === 'unsupported' || code === 'no_runner') return 'unavailable';
   return code === 'native' ? 'network' : 'bundle';

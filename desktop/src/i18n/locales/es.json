@@ -2243,6 +2243,7 @@
       "linkOther": "Vincular otra tarjeta",
       "fail": {
         "busy": "Se está vinculando otra tarjeta. Inténtalo de nuevo en un minuto.",
+        "limit": "Demasiados intentos. Inténtalo de nuevo en una hora.",
         "unavailable": "El pago con tarjeta no está disponible ahora.",
         "bundle": "El pago con tarjeta requiere una versión más reciente de la app.",
         "declined": "El banco no aceptó la tarjeta.",

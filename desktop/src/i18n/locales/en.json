@@ -2209,6 +2209,7 @@
       "linkOther": "Link another card",
       "fail": {
         "busy": "Another card is being linked. Try again in a minute.",
+        "limit": "Too many tries. Try again in an hour.",
         "unavailable": "Card payment isn't available right now.",
         "bundle": "Card payment needs a newer app version.",
         "declined": "The bank didn't accept the card.",

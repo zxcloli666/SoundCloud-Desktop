@@ -57,6 +57,8 @@ export function plainCommand(cmd: string, args: Record<string, unknown> | undefi
       return false;
     case 'theme_sentinel_read':
       return '';
+    case 'voice_models':
+      return [];
     default:
       return null;
   }
