@@ -3123,6 +3123,7 @@
     "collapse": "접기",
     "expand": "펼치기",
     "emptyLiked": "트랙에 좋아요를 누르면 여기에 나타나요",
+    "emptySuperliked": "트랙의 하트를 길게 누르면 여기에 나타나요",
     "emptyArtists": "아티스트를 팔로우하면 여기에 나타나요",
     "emptyPlaylists": "플레이리스트에 좋아요를 누르면 여기에 나타나요",
     "emptyHistory": "트랙을 재생하면 여기에 나타나요",

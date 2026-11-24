@@ -3,23 +3,25 @@ import { useTranslation } from 'react-i18next';
 import { art } from '../../../../lib/formatters';
 import { Heart, pauseWhite12, playWhite12 } from '../../../../lib/icons';
 import { setTrackLiked } from '../../../../lib/like-toggle';
+import { removeSuperlike } from '../../../../lib/superlike-actions';
 import { useTrackPlay } from '../../../../lib/useTrackPlay';
 import type { Track } from '../../../../stores/player';
 import { usePlayerStore } from '../../../../stores/player';
+import { SuperHeart } from '../../../music/superlike/SuperHeart';
 import { TrackRating } from '../../../music/TrackRating';
 import { ShelfAction, ShelfCard } from './ShelfCard';
 import { ShelfScroll } from './ShelfScroll';
+
+type Removes = 'like' | 'superlike';
 
 interface CardProps {
   track: Track;
   queue: Track[];
   onPlay?: () => void;
-  removable: boolean;
+  removes?: Removes;
 }
 
-function TrackShelfCard({ track, queue, onPlay, removable }: CardProps) {
-  const { t } = useTranslation();
-  const qc = useQueryClient();
+function TrackShelfCard({ track, queue, onPlay, removes }: CardProps) {
   const { isThisPlaying, isThis, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
   return (
     <ShelfCard
@@ -48,28 +50,39 @@ function TrackShelfCard({ track, queue, onPlay, removable }: CardProps) {
           </span>
         </>
       }
-      action={
-        removable && (
-          <ShelfAction
-            label={t('flowRedesign.removeLiked')}
-            onClick={() => void setTrackLiked(qc, track, false)}
-          >
-            <Heart size={13} fill="currentColor" aria-hidden />
-          </ShelfAction>
-        )
-      }
+      action={removes && <RemoveAction track={track} removes={removes} />}
     />
+  );
+}
+
+function RemoveAction({ track, removes }: { track: Track; removes: Removes }) {
+  const { t } = useTranslation();
+  const qc = useQueryClient();
+  if (removes === 'superlike') {
+    return (
+      <ShelfAction label={t('superlike.remove')} onClick={() => void removeSuperlike(track)}>
+        <SuperHeart size={13} />
+      </ShelfAction>
+    );
+  }
+  return (
+    <ShelfAction
+      label={t('flowRedesign.removeLiked')}
+      onClick={() => void setTrackLiked(qc, track, false)}
+    >
+      <Heart size={13} fill="currentColor" aria-hidden />
+    </ShelfAction>
   );
 }
 
 interface Props {
   tracks: Track[];
-  removable?: boolean;
+  removes?: Removes;
   onPlay?: () => void;
   onEnd?: () => void;
 }
 
-export function TrackPanel({ tracks, removable = false, onPlay, onEnd }: Props) {
+export function TrackPanel({ tracks, removes, onPlay, onEnd }: Props) {
   const currentUrn = usePlayerStore((s) => s.currentTrack?.urn);
   return (
     <ShelfScroll
@@ -78,7 +91,7 @@ export function TrackPanel({ tracks, removable = false, onPlay, onEnd }: Props) 
       activeKey={currentUrn}
       onEnd={onEnd}
       renderItem={(track) => (
-        <TrackShelfCard track={track} queue={tracks} onPlay={onPlay} removable={removable} />
+        <TrackShelfCard track={track} queue={tracks} onPlay={onPlay} removes={removes} />
       )}
     />
   );
