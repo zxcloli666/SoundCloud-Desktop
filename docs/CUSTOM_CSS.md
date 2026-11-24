@@ -167,7 +167,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="up-next-row"]` | A track in the Up next list |
 | `[data-ui="wave-settings"]` | Wave settings box under Up next |
 | `[data-ui="vibe-search"]` | Vibe search button in the Home deck |
-| `[data-ui="home-shelf"]` | Liked, new releases, artists, playlists and history shelf on Home |
+| `[data-ui="home-shelf"]` | Liked, superlikes, new releases, artists, playlists and history shelf on Home |
 | `[data-ui="shelf-tab"]` | A tab of that shelf; `aria-selected` marks the open one |
 | `[data-ui="shelf-tab-count"]` | Unheard count on the New releases tab |
 | `[data-ui="shelf-actions"]` | Play all and add to queue for new releases, next to the shelf toggle |

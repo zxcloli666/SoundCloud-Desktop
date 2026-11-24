@@ -6,6 +6,7 @@ import { ReleaseActions } from '../../../releases/ReleaseActions';
 
 const TABS: Array<{ id: HomeShelfTab; label: string }> = [
   { id: 'liked', label: 'library.likedTracks' },
+  { id: 'superliked', label: 'superlikes.title' },
   { id: 'releases', label: 'releases.title' },
   { id: 'artists', label: 'library.artists' },
   { id: 'playlists', label: 'library.likedPlaylists' },
