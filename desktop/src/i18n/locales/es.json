@@ -1268,7 +1268,7 @@
     "discordRpcModeArtist": "Artista",
     "discordRpcModeActivity": "Solo actividad",
     "discordRpcStatus": "Línea de estado",
-    "discordRpcStatusDesc": "Lo que Discord escribe tras «Escuchando» bajo tu nombre y en la lista de miembros",
+    "discordRpcStatusDesc": "Lo que Discord escribe tras «Escuchando» bajo tu nombre, en tu perfil y en la lista de miembros",
     "discordRpcStatusActivityHint": "En este modo Discord solo muestra «Escuchando SoundCloud». Elige Pista o Artista arriba para mostrar lo que suena.",
     "discordRpcStatusApp": "SoundCloud",
     "discordRpcStatusTrack": "Título de la pista",

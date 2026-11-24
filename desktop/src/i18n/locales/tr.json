@@ -1300,7 +1300,7 @@
     "discordRpcModeArtist": "Yalnızca sanatçı",
     "discordRpcModeActivity": "Yalnızca etkinlik",
     "discordRpcStatus": "Durum satırı",
-    "discordRpcStatusDesc": "Discord'un adınızın altında ve üye listesinde “Dinliyor” yanına yazdığı metin",
+    "discordRpcStatusDesc": "Discord'un adınızın altında, profilinizde ve üye listesinde “Dinliyor” yanına yazdığı metin",
     "discordRpcStatusActivityHint": "Bu modda Discord yalnızca “SoundCloud dinliyor” gösterir. Çalanı göstermek için yukarıdan Parça veya Yalnızca sanatçı seçin.",
     "discordRpcStatusApp": "SoundCloud",
     "discordRpcStatusTrack": "Parça adı",
