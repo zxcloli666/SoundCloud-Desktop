@@ -7,7 +7,7 @@ use crate::shared::blocking::run_blocking;
 use crate::shared::urn::canonical_track_urn;
 use crate::track_cache::state::{
     BulkCacheEntry, BulkCacheStatus, CacheInventoryEntry, CacheRequest, ExportOutcome,
-    PlaybackQuality, Priority, TrackCacheEntry, TrackCacheState, TranscodeStatus,
+    PlaybackQuality, Priority, TrackCacheEntry, TrackCacheState, TranscodeStatus, renumber,
 };
 use crate::track_cache::transcode::{ExportFormat, ExportTags};
 
@@ -214,6 +214,13 @@ pub async fn track_export_to_dir(
             &tags,
         )
         .await
+}
+
+#[tauri::command]
+pub async fn track_export_renumber(dir: String, names: Vec<String>) -> Result<(), String> {
+    tokio::task::spawn_blocking(move || renumber(Path::new(&dir), &names))
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]

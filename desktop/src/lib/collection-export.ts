@@ -1,8 +1,8 @@
 import { join } from '@tauri-apps/api/path';
 import { create } from 'zustand';
 import type { Track } from '../stores/player';
-import { type ExportFormat, exportTrackToDir } from './cache';
-import { sanitizeFilename, uniqueFileNames } from './filename';
+import { type ExportFormat, exportTrackToDir, renumberExports } from './cache';
+import { numberedFileNames, sanitizeFilename } from './filename';
 import { getTrackDisplay } from './track-display';
 
 const PARALLEL_EXPORTS = 2;
@@ -102,11 +102,15 @@ export async function exportCollection(options: {
   try {
     const tracks = uniqueTracks(await collect());
     const dir = await join(root, sanitizeFilename(title));
-    const tags = tracks.map(tagsOf);
-    const names = uniqueFileNames(
+    const tags = tracks.map((track, index) => ({
+      ...tagsOf(track),
+      track: `${index + 1}/${tracks.length}`,
+    }));
+    const names = numberedFileNames(
       tags.map((tag) => `${tag.artist} - ${tag.title}`),
       format,
     );
+    await renumberExports(dir, names);
     patchJob({ status: 'running', total: tracks.length });
 
     let next = 0;

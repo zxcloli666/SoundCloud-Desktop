@@ -266,6 +266,8 @@ pub struct ExportTags {
     pub title: Option<String>,
     #[serde(default)]
     pub artist: Option<String>,
+    #[serde(default)]
+    pub track: Option<String>,
 }
 
 const MP3_VBR_QUALITY: &str = "0";
@@ -318,14 +320,18 @@ fn export_args(format: ExportFormat, with_cover: bool) -> Vec<&'static str> {
 }
 
 fn tag_args(tags: &ExportTags) -> Vec<String> {
-    [("title", &tags.title), ("artist", &tags.artist)]
-        .into_iter()
-        .filter_map(|(key, value)| {
-            let value = value.as_deref()?.trim();
-            (!value.is_empty()).then(|| format!("{key}={value}"))
-        })
-        .flat_map(|pair| ["-metadata".to_string(), pair])
-        .collect()
+    [
+        ("title", &tags.title),
+        ("artist", &tags.artist),
+        ("track", &tags.track),
+    ]
+    .into_iter()
+    .filter_map(|(key, value)| {
+        let value = value.as_deref()?.trim();
+        (!value.is_empty()).then(|| format!("{key}={value}"))
+    })
+    .flat_map(|pair| ["-metadata".to_string(), pair])
+    .collect()
 }
 
 pub async fn export_with_cover(
@@ -448,8 +454,12 @@ mod tests {
         let tags = ExportTags {
             title: Some("  Night Drive ".into()),
             artist: Some("   ".into()),
+            track: Some("3/12".into()),
         };
-        assert_eq!(tag_args(&tags), vec!["-metadata", "title=Night Drive"]);
+        assert_eq!(
+            tag_args(&tags),
+            vec!["-metadata", "title=Night Drive", "-metadata", "track=3/12"]
+        );
         assert!(tag_args(&ExportTags::default()).is_empty());
     }
 
