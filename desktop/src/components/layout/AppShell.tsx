@@ -5,6 +5,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { useShallow } from 'zustand/shallow';
 import { getCurrentTime, getDuration, handlePrev, seek } from '../../lib/audio';
 import { getWallpaperUrl } from '../../lib/cache';
+import { ownsSpace, watchClickedButton } from '../../lib/clicked-button';
 import { customCssHotkeyLabel } from '../../lib/custom-css';
 import { useDesktopWallpaper } from '../../lib/desktop-wallpaper';
 import { art } from '../../lib/formatters';
@@ -406,12 +407,7 @@ export const AppShell = React.memo(() => {
       }
 
       if (inInput || e.defaultPrevented) return;
-      if (
-        code === 'Space' &&
-        e.target instanceof HTMLElement &&
-        e.target.closest('button, summary, [role="button"]')
-      )
-        return;
+      if (code === 'Space' && ownsSpace(e.target)) return;
 
       const player = usePlayerStore.getState();
 
@@ -493,9 +489,11 @@ export const AppShell = React.memo(() => {
       }
     };
 
+    const stopWatching = watchClickedButton();
     window.addEventListener('keydown', handler);
     window.addEventListener('keyup', resetVolumeHold);
     return () => {
+      stopWatching();
       window.removeEventListener('keydown', handler);
       window.removeEventListener('keyup', resetVolumeHold);
     };
