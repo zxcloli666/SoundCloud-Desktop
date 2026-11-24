@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::fmt;
 use std::io::{BufRead, BufReader};
-use std::path::PathBuf;
+use std::path::{Component, Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, Stdio};
 use std::sync::mpsc::{Receiver, RecvTimeoutError, channel};
 use std::sync::{Arc, Mutex};
@@ -77,11 +77,17 @@ pub struct Engine {
 impl Engine {
     pub fn start(launch: &Launch) -> Result<Engine, String> {
         let mut command = Command::new(&launch.program);
-        command.arg(&launch.talker).arg(&launch.codec);
+        let dir = launch.program.parent();
+        for file in [&launch.talker, &launch.codec] {
+            match dir {
+                Some(dir) if cfg!(windows) => command.arg(seen_from(dir, file)),
+                _ => command.arg(file),
+            };
+        }
         if let Some(device) = &launch.device {
             command.arg(device);
         }
-        if let Some(dir) = launch.program.parent() {
+        if let Some(dir) = dir {
             command.current_dir(dir);
         }
         command
@@ -263,6 +269,19 @@ fn read_log(child: &mut Child) -> (Log, Receiver<()>) {
     (log, log_ended)
 }
 
+fn seen_from(dir: &Path, file: &Path) -> PathBuf {
+    let shared = dir
+        .components()
+        .zip(file.components())
+        .take_while(|(a, b)| a == b)
+        .count();
+    if shared == 0 {
+        return file.to_path_buf();
+    }
+    let up = dir.components().skip(shared).map(|_| Component::ParentDir);
+    up.chain(file.components().skip(shared)).collect()
+}
+
 #[cfg(windows)]
 fn hide_window(command: &mut Command) {
     use std::os::windows::process::CommandExt;
@@ -272,3 +291,21 @@ fn hide_window(command: &mut Command) {
 
 #[cfg(not(windows))]
 fn hide_window(_: &mut Command) {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_model_is_reached_without_the_folders_above_the_shared_one() {
+        let models = Path::new("/users/Пользователь/voice-models");
+        let dir = models.join("engine/1");
+        let file = models.join("loli/2/loli.gguf");
+        let expected: PathBuf = ["..", "..", "loli", "2", "loli.gguf"].iter().collect();
+        assert_eq!(seen_from(&dir, &file), expected);
+        assert_eq!(
+            seen_from(&dir, Path::new("loli.gguf")),
+            Path::new("loli.gguf")
+        );
+    }
+}

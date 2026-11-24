@@ -170,20 +170,11 @@ jobs:
           BUILD: ${{ steps.build.outcome }}
         run: bash scripts/ci-mtime.sh stamp "$BUILD"
 
-      - name: Common controls manifest
+      - name: Windows manifest
         if: runner.os == 'Windows'
         run: |
           jq -r 'select(.reason == "compiler-artifact" and .profile.test == true and .executable != null) | .executable' "$RUNNER_TEMP/build.json" | while read -r exe; do
-            cat > "$(cygpath -u "$exe").manifest" <<'XML'
-          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-          <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-            <dependency>
-              <dependentAssembly>
-                <assemblyIdentity type="win32" name="Microsoft.Windows.Common-Controls" version="6.0.0.0" processorArchitecture="*" publicKeyToken="6595b64144ccf1df" language="*"/>
-              </dependentAssembly>
-            </dependency>
-          </assembly>
-          XML
+            cp windows-app-manifest.xml "$(cygpath -u "$exe").manifest"
             echo "manifest for $(basename "$exe")"
           done
 
