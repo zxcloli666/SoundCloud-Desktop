@@ -41,12 +41,13 @@ export const DislikeBtn = React.memo(() => {
 export const AddToPlaylistBtn = React.memo(() => {
   const { t } = useTranslation();
   const request = useAddToPlaylistRequest((s) => s.request);
-  const { urn, usable } = useCurrentTrackData();
+  const { usable } = useCurrentTrackData();
+  const track = usePlayerStore((s) => s.currentTrack);
   return (
     <button
       type="button"
       disabled={!usable}
-      onClick={() => request([urn])}
+      onClick={() => track && request(track)}
       title={t('playlist.addToPlaylist')}
       aria-label={t('playlist.addToPlaylist')}
       data-ui="player-playlist"

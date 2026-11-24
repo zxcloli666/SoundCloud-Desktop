@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { cancelPreload, preloadTrack } from '../../lib/audio';
 import {
   hardStopHoverPreview,
@@ -8,12 +7,12 @@ import {
   useIsPreviewActive,
 } from '../../lib/audioPreview';
 import { art, dur, fc } from '../../lib/formatters';
-import { headphones11, heart11, ListPlus, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
+import { headphones11, heart11, Music, pauseWhite14, playWhite14 } from '../../lib/icons';
 import { useRowPick } from '../../lib/useRowPick';
 import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
 import { useTrackPlay } from '../../lib/useTrackPlay';
 import type { Track } from '../../stores/player';
-import { AddToPlaylistDialog } from '../music/AddToPlaylistDialog';
+import { AddToPlaylistButton } from '../music/AddToPlaylistButton';
 import { AlbumLinkButton } from '../music/AlbumLinkButton';
 import { useTrackColumns } from '../music/columns/TrackColumns';
 import { LikeButton } from '../music/LikeButton';
@@ -42,7 +41,6 @@ export const LibraryTrackRow = React.memo(
     previewOnHover?: boolean;
     alwaysShowPlay?: boolean;
   }) {
-    const { t } = useTranslation();
     const { isThis, isThisPlaying, togglePlay, mark } = useTrackPlay(track, queue, onPlay);
     const onContextMenu = useTrackContextMenu(track);
     const columns = useTrackColumns();
@@ -166,15 +164,11 @@ export const LibraryTrackRow = React.memo(
           <LikeButton track={track} />
           <SaveOfflineRowButton track={track} />
 
-          <AddToPlaylistDialog trackUrns={[track.urn]}>
-            <button
-              type="button"
-              className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
-              title={t('playlist.addToPlaylist')}
-            >
-              <ListPlus size={16} />
-            </button>
-          </AddToPlaylistDialog>
+          <AddToPlaylistButton
+            track={track}
+            size={16}
+            className="opacity-0 group-hover:opacity-100 w-8 h-8 rounded-lg flex items-center justify-center text-ink-30 hover:text-ink-80 hover:bg-ink/[0.08] transition-all duration-200 shrink-0"
+          />
 
           <AlbumLinkButton
             track={track}

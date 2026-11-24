@@ -1,9 +1,8 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { usePerfMode } from '../../../lib/perf';
 import { type TrackMenuTarget, useTrackMenuStore } from '../../../stores/trackMenu';
-import { AddToPlaylistDialog } from '../AddToPlaylistDialog';
 import { TrackMenuHeader } from './TrackMenuHeader';
 import { TrackMenuItems } from './TrackMenuItems';
 
@@ -158,29 +157,8 @@ function MenuPanel({ target }: { target: TrackMenuTarget }) {
   );
 }
 
-function PlaylistDialogHost() {
-  const urn = useTrackMenuStore((s) => s.playlistTrackUrn);
-  const open = useTrackMenuStore((s) => s.playlistOpen);
-  const trackUrns = useMemo(() => (urn ? [urn] : []), [urn]);
-
-  if (!urn) return null;
-  return (
-    <AddToPlaylistDialog
-      trackUrns={trackUrns}
-      open={open}
-      onOpenChange={(next) => {
-        if (!next) useTrackMenuStore.getState().closePlaylistDialog();
-      }}
-    />
-  );
-}
-
 export function TrackContextMenu() {
   const target = useTrackMenuStore((s) => s.target);
-  return (
-    <>
-      {target && <MenuPanel key={`${target.track.urn}:${target.x}:${target.y}`} target={target} />}
-      <PlaylistDialogHost />
-    </>
-  );
+  if (!target) return null;
+  return <MenuPanel key={`${target.track.urn}:${target.x}:${target.y}`} target={target} />;
 }

@@ -3,7 +3,7 @@ import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {cancelPreload, preloadTrack} from '../../lib/audio';
 import {art, dur, fc} from '../../lib/formatters';
-import {ListPlus, pauseBlack20, playBlack20, playIcon32} from '../../lib/icons';
+import {pauseBlack20, playBlack20, playIcon32} from '../../lib/icons';
 import {recordClusterFeedback, setUrnCluster, useClusterFeedback} from '../../lib/recsFeedback';
 import {useArtistDisplay, useArtistLinkItems, useDisplayTitle} from '../../lib/track-display';
 import {useAutoHide} from '../../lib/useAutoHide';
@@ -11,7 +11,7 @@ import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {useRowPick} from '../../lib/useRowPick';
 import {useTrackPlay} from '../../lib/useTrackPlay';
 import type {Track} from '../../stores/player';
-import {AddToPlaylistDialog} from './AddToPlaylistDialog';
+import { AddToPlaylistButton } from './AddToPlaylistButton';
 import {AlbumLinkButton} from './AlbumLinkButton';
 import {ArtistNameLinks} from './ArtistNameLinks';
 import {LikeButton} from './LikeButton';
@@ -114,16 +114,10 @@ export const TrackCard = React.memo(
 
           {/* Top right: add to playlist + add to queue */}
           <div data-scheme="dark" className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <AddToPlaylistDialog trackUrns={[track.urn]}>
-              <button
-                type="button"
-                onClick={(e) => e.stopPropagation()}
-                className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-ink-80 hover:text-white hover:bg-black/70 transition-all duration-200"
-                title={t('playlist.addToPlaylist')}
-              >
-                <ListPlus size={14} />
-              </button>
-            </AddToPlaylistDialog>
+            <AddToPlaylistButton
+              track={track}
+              className="cursor-pointer w-8 h-8 rounded-full bg-black/50 group-hover:backdrop-blur-md flex items-center justify-center text-ink-80 hover:text-white hover:bg-black/70 transition-all duration-200"
+            />
             <AlbumLinkButton
               track={track}
               iconSize={14}

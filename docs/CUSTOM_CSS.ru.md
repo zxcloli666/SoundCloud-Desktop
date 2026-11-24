@@ -190,6 +190,12 @@
 | `[data-ui="playlist-cover-state"]` | Значок загрузки обложки. `[data-state]`: `sending`, `syncing` или `failed` |
 | `[data-ui="playlist-cover-editor"]` | Окно кадрирования обложки |
 | `[data-ui="playlist-cover-crop"]` | Квадратная рамка в этом окне, её двигают и масштабируют |
+| `[data-ui="playlist-picker"]` | Окно «Добавить в плейлист» |
+| `[data-ui="playlist-picker-row"]` | Плейлист в этом окне. `[data-state]`: `inside`, `outside` или `busy` |
+| `[data-ui="playlist-picker-create"]` | Строка «Новый плейлист» в этом окне |
+| `[data-ui="playlist-picker-new"]` | Карточка нового плейлиста в этом окне |
+| `[data-ui="playlist-picker-sharing"]` | Переключатель «Публичный / Приватный» на этой карточке |
+| `[data-ui="playlist-picker-place"]` | Переключатель «В начало / В конец». `[data-value]`: `start` или `end` |
 | `[data-ui="user-hero"]` | Верхний блок профиля |
 | `[data-ui="my-music"]` | Блок «Моя музыка» в своём профиле |
 | `[data-ui="user-banner"]` | Баннер профиля над этим блоком |

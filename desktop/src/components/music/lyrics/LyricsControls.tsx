@@ -12,7 +12,6 @@ import {trackTasteWrite} from '../../../lib/events';
 import {invalidateAllLikesCache} from '../../../lib/hooks';
 import {
     ExternalLink,
-    ListPlus,
     pauseBlack18,
     playBlack18,
     repeat1Icon16,
@@ -28,7 +27,7 @@ import {rememberLikedUrn} from '../../../lib/offline-index';
 import {useSuperliked} from '../../../lib/superlikes';
 import {useLyricsStore} from '../../../stores/lyrics';
 import {type Track, usePlayerStore} from '../../../stores/player';
-import {AddToPlaylistDialog} from '../AddToPlaylistDialog';
+import { AddToPlaylistButton } from '../AddToPlaylistButton';
 import {HoldHeart} from '../superlike/HoldHeart';
 import {heartTitle} from '../superlike/heart-title';
 import {useSuperlikeGesture} from '../superlike/useSuperlikeGesture';
@@ -138,11 +137,11 @@ export const Controls = React.memo(({track}: { track: Track }) => {
         <div className="flex items-center justify-center gap-2">
             {remote && (
                 <>
-                    <AddToPlaylistDialog trackUrns={[track.urn]}>
-                        <button type="button" className={`${small} text-ink-30 hover:text-ink-60`}>
-                            <ListPlus size={20}/>
-                        </button>
-                    </AddToPlaylistDialog>
+                    <AddToPlaylistButton
+                      track={track}
+                      size={20}
+                      className={`${small} text-ink-30 hover:text-ink-60`}
+                    />
                     <FullscreenLikeButton track={track}/>
                 </>
             )}

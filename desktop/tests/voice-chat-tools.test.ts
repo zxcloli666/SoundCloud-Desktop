@@ -381,7 +381,19 @@ test('speed, lyrics, queue and the playlist picker call the app', async () => {
   assert.deepEqual(next.result, { ok: true, next: [{ title: 'Track 2', artist: 'Скриптонит' }] });
   await run('queue_clear');
   await run('add_to_playlist');
-  assert.deepEqual(app.calls, ['speed:2', 'lyrics:true', 'queue_clear', 'pick_playlist']);
+  assert.deepEqual(app.calls, ['speed:2', 'lyrics:true', 'queue_clear', 'playlist::null']);
+});
+
+test('a named playlist gets the track at the place the user said', async () => {
+  const { app, run } = setup();
+  const added = await run('add_to_playlist', { playlist: ' Ночь ', place: 'start' });
+  assert.deepEqual(added.result, { ok: true, added: 'Ночь' });
+  assert.deepEqual((await run('add_to_playlist', { playlist: 'nope' })).result, {
+    ok: false,
+    reason: 'not_found',
+  });
+  await run('add_to_playlist', { place: 'end' });
+  assert.deepEqual(app.calls, ['playlist:Ночь:start', 'playlist:nope:null', 'playlist::end']);
 });
 
 test('ask_user and talk_mode only mark the turn for the engine', async () => {

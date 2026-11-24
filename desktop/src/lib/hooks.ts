@@ -27,8 +27,10 @@ import type {LikedSnapshot} from './liked-merge';
 import {initLikedUrns} from './likes';
 import {rememberLikedTracks, rememberTracks} from './offline-index';
 import {
+  addToPlaylist,
   editPlaylistTracks,
   type PlaylistDetails,
+  type PlaylistPlace,
   toastPlaylistEditError,
   updatePlaylistDetails,
 } from './playlist-edits';
@@ -791,13 +793,14 @@ export function useMyLikedPlaylists(limit = 30, enabled = true) {
   return { playlists: query.items, ...query };
 }
 
-export function useMyPlaylists(limit = 30, enabled = true) {
+export function useMyPlaylists(limit = 30, enabled = true, autoFetchAll = false) {
   const query = usePagedQuery<Playlist>({
     queryKey: ['me', 'playlists', limit],
     url: (page, l) => pagedUrl('/me/playlists', page, l),
     limit,
     staleTime: COLD_CACHE_MS,
     enabled,
+    autoFetchAll,
   });
 
   return { playlists: query.items, ...query };
@@ -832,32 +835,43 @@ export function useRemoveFromPlaylist(playlistUrn: string | undefined) {
   });
 }
 
-// Добавление — `{add}`-дельты (по одной на трек). Backend дедупит и считает
-// дельту против сохранённого desired-state, поэтому устаревшая клиентская вью
-// НЕ может уронить уже лежащие треки (прежний full-list PUT мог).
-export function useAddToPlaylist() {
+export function useAddToPlaylist(playlistUrn: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({
-      playlistUrn,
-      trackUrns,
-    }: {
-      playlistUrn: string;
-      trackUrns: string[];
-    }) => {
-      let last: unknown;
-      for (const urn of trackUrns) {
-        last = await editPlaylistTracks(playlistUrn, { add: urn });
-      }
-      return last;
-    },
+    mutationFn: ({ trackUrn, place }: { trackUrn: string; place: PlaylistPlace }) =>
+      addToPlaylist(playlistUrn, trackUrn, place),
     onError: toastPlaylistEditError,
-    onSuccess: (_data, vars) => {
-      qc.invalidateQueries({ queryKey: ['playlist', vars.playlistUrn] });
-      qc.invalidateQueries({ queryKey: ['playlist', vars.playlistUrn, 'tracks'] });
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['playlist', playlistUrn] });
       qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
     },
   });
+}
+
+const playlistsWithKey = (trackUrn: string) => ['playlists-with', trackUrn];
+
+export function usePlaylistsWith(trackUrn: string) {
+  const qc = useQueryClient();
+  const query = useQuery({
+    queryKey: playlistsWithKey(trackUrn),
+    queryFn: () =>
+      api<{ playlists: string[] }>(`/me/playlists/with/${encodeURIComponent(trackUrn)}`).then(
+        (found) => new Set(found.playlists),
+      ),
+    staleTime: 0,
+    gcTime: 0,
+  });
+  const mark = useCallback(
+    (playlistUrn: string, inside: boolean) =>
+      qc.setQueryData<Set<string>>(playlistsWithKey(trackUrn), (old) => {
+        const next = new Set(old);
+        if (inside) next.add(playlistUrn);
+        else next.delete(playlistUrn);
+        return next;
+      }),
+    [qc, trackUrn],
+  );
+  return { inside: query.data, ready: !query.isLoading, mark };
 }
 
 export function useCreatePlaylist() {
@@ -877,7 +891,10 @@ export function useCreatePlaylist() {
         }),
       }),
     onSuccess: (result) => {
-      const refresh = () => qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+      const refresh = () => {
+        qc.invalidateQueries({ queryKey: ['playlists-with'] });
+        return qc.invalidateQueries({ queryKey: ['me', 'playlists'] });
+      };
       void refresh();
       if (result?.status !== 'queued') return;
       for (const delay of QUEUED_CREATE_REFRESH_MS) setTimeout(refresh, delay);

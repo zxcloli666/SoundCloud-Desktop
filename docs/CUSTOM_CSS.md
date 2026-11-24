@@ -190,6 +190,12 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="playlist-cover-state"]` | Cover upload badge. `[data-state]` is `sending`, `syncing` or `failed` |
 | `[data-ui="playlist-cover-editor"]` | Cover crop window |
 | `[data-ui="playlist-cover-crop"]` | Square frame you drag and zoom in that window |
+| `[data-ui="playlist-picker"]` | Add to playlist window |
+| `[data-ui="playlist-picker-row"]` | Playlist in that window. `[data-state]` is `inside`, `outside` or `busy` |
+| `[data-ui="playlist-picker-create"]` | New playlist row in that window |
+| `[data-ui="playlist-picker-new"]` | New playlist card in that window |
+| `[data-ui="playlist-picker-sharing"]` | Public or private switch on that card |
+| `[data-ui="playlist-picker-place"]` | To the start or to the end switch. `[data-value]` is `start` or `end` |
 | `[data-ui="user-hero"]` | Top block of a profile page |
 | `[data-ui="my-music"]` | My music block on your own profile |
 | `[data-ui="user-banner"]` | Profile banner above that block |

@@ -13,6 +13,8 @@ import {
 import type { ChatTool } from '../types';
 import { fail, NO_ARGS, ok } from './intent.ts';
 
+const PLACES = ['start', 'end'] as const;
+
 const QUEUE_SHOWN = 10;
 
 function openPage(app: AppPort): ChatTool {
@@ -131,12 +133,25 @@ function queueClear(app: AppPort): ChatTool {
 function addToPlaylist(player: PlayerPort, app: AppPort): ChatTool {
   return {
     name: 'add_to_playlist',
-    description: 'Open the playlist picker for the current track so the user chooses a playlist.',
-    args: NO_ARGS,
+    description:
+      'Add the current track to a playlist of the user. playlist is the name the user said; without it the picker opens and the user chooses. place puts the track at the start or the end of the playlist, pass it only when the user said where.',
+    args: {
+      type: 'object',
+      properties: {
+        playlist: { type: 'string' },
+        place: { type: 'string', enum: PLACES },
+      },
+      required: [],
+    },
     returns: false,
-    run: async () => {
+    run: async (args) => {
       if (!player.shot().track) return fail('nothing_playing');
-      return app.pickPlaylist() ? { result: ok() } : fail('failed');
+      const name = typeof args.playlist === 'string' ? args.playlist.trim() : '';
+      const place = PLACES.find((known) => known === args.place) ?? null;
+      const done = await app.toPlaylist(name, place);
+      if (done === 'opened') return { result: ok() };
+      if (typeof done === 'string') return fail(done);
+      return { result: ok({ added: done.added }), text: done.added };
     },
   };
 }
