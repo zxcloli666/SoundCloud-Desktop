@@ -7,6 +7,7 @@ import { trackedInvoke as invoke } from '../diagnostics';
 import { recordSeek } from '../events';
 import { type MomentWindow, momentWindow, trackMoment } from '../moment';
 import type { PlaybackClock } from '../video-sync';
+import { volumeGain } from '../volume';
 
 export type MomentPhase = 'idle' | 'loading' | 'playing' | 'paused' | 'handed' | 'failed';
 
@@ -322,5 +323,5 @@ function disarmActiveWindow() {
 }
 
 function previewVolume(): number {
-  return Math.min(2, Math.max(0, usePlayerStore.getState().volume / 100));
+  return volumeGain(usePlayerStore.getState().volume);
 }

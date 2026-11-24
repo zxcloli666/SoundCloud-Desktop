@@ -93,8 +93,8 @@ pub fn audio_seek(position: f64, state: State<'_, AudioState>) -> Result<(), Str
 }
 
 #[tauri::command]
-pub fn audio_set_volume(volume: f64, state: State<'_, AudioState>) {
-    engine::set_volume(volume, state);
+pub fn audio_set_volume(gain: f64, state: State<'_, AudioState>) {
+    engine::set_volume(gain, state);
 }
 
 #[tauri::command]

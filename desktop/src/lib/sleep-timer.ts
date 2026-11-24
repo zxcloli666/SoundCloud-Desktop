@@ -1,7 +1,13 @@
 import { usePlayerStore } from '../stores/player';
 import { type SleepTimer, useSleepTimerStore } from '../stores/sleep-timer';
-import { getCurrentTime, getDuration, holdTrackEnd, subscribe, subscribeTrackEnd } from './audio';
-import { trackedInvoke as invoke } from './diagnostics';
+import {
+  applyVolume,
+  getCurrentTime,
+  getDuration,
+  holdTrackEnd,
+  subscribe,
+  subscribeTrackEnd,
+} from './audio';
 
 export const SLEEP_MINUTES = [15, 30, 45, 60];
 
@@ -12,20 +18,15 @@ const IDLE_TICK_MS = 1000;
 let stopWatching: (() => void) | null = null;
 let fading = false;
 
-function setOutputVolume(factor: number) {
-  const { volume } = usePlayerStore.getState();
-  void invoke('audio_set_volume', { volume: volume * factor }).catch(() => {});
-}
-
 function fadeTo(leftMs: number) {
   fading = true;
-  setOutputVolume((Math.max(0, leftMs) / FADE_MS) ** 2);
+  applyVolume((Math.max(0, leftMs) / FADE_MS) ** 2);
 }
 
 function restoreVolume() {
   if (!fading) return;
   fading = false;
-  setOutputVolume(1);
+  applyVolume();
 }
 
 function finish() {

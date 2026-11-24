@@ -46,10 +46,6 @@ pub fn suppress_stall_temporarily(state: &AudioState) {
         .store(now_ms() + STALL_SUPPRESS_MS, Ordering::Relaxed);
 }
 
-fn volume_to_rodio(v: f64) -> f32 {
-    (v / 100.0).clamp(0.0, 2.0) as f32
-}
-
 fn stop_current_player(state: &AudioState) {
     suppress_ended_temporarily(state);
     crossfade::finish(state);
@@ -573,8 +569,8 @@ pub fn seek_to(state: &AudioState, position: f64) -> Result<(), String> {
     Ok(())
 }
 
-pub fn set_volume(volume: f64, state: State<'_, AudioState>) {
-    *state.volume.lock().unwrap() = volume_to_rodio(volume);
+pub fn set_volume(gain: f64, state: State<'_, AudioState>) {
+    *state.volume.lock().unwrap() = gain.clamp(0.0, 2.0) as f32;
     let vol = main_volume(&state);
     if let Some(ref player) = *state.player.lock().unwrap() {
         player.set_volume(vol);

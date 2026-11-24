@@ -10,6 +10,7 @@ import {
 } from './cache';
 import { trackedInvoke as invoke } from './diagnostics';
 import { previewStartMs } from './moment';
+import { volumeGain } from './volume';
 
 /* ── Hover-preview controller ─────────────────────────────────────
  * A single-track sampling channel that rides the Rust preview player
@@ -126,7 +127,7 @@ export function startHoverPreview(track: Track, windowMs = PREVIEW_WINDOW_MS): v
         scheduleResume();
         return;
       }
-      const volume = (usePlayerStore.getState().volume / 100) * PREVIEW_VOLUME_FACTOR;
+      const volume = volumeGain(usePlayerStore.getState().volume) * PREVIEW_VOLUME_FACTOR;
       const wire = nextPreviewGen();
       awaitingWire = wire;
       awaitingUrn = urn;
