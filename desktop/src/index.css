@@ -53,6 +53,7 @@
     --glass-blur-strong: 60px; /* .glass-featured (SoundWave blocks) */
     --glass-blur-soft: 28px; /* .npb-glass (now-playing pill) */
     --dock-height: 131px;
+    --right-dock: 0px;
 }
 
 [data-perf="medium"] {

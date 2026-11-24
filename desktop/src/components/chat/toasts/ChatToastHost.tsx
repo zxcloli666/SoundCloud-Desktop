@@ -22,7 +22,10 @@ export const ChatToastHost = memo(function ChatToastHost() {
   return (
     <div
       className="pointer-events-none fixed z-[60] flex flex-col items-end gap-2"
-      style={{ right: EDGE + (mode === 'hidden' ? 0 : dockWidth), bottom: ABOVE_PLAYER }}
+      style={{
+        right: `calc(${EDGE + (mode === 'overlay' ? dockWidth : 0)}px + var(--right-dock))`,
+        bottom: ABOVE_PLAYER,
+      }}
     >
       {items.map((item) => (
         <ChatToast key={item.conversationId} item={item} prefs={prefs} onOpen={openChat} />

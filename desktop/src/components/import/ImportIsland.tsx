@@ -43,7 +43,7 @@ export function ImportIsland() {
   const eta = s.stage === 'matching' ? etaOf(s.startedAt, s.current, s.total) : null;
 
   return (
-    <div className="pointer-events-none fixed bottom-[calc(var(--dock-height)-3px)] left-1/2 z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none">
+    <div className="pointer-events-none fixed bottom-[calc(var(--dock-height)-3px)] left-[calc(50%-var(--right-dock)/2)] z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none">
       <div
         className="pointer-events-auto relative flex w-[380px] max-w-[92vw] items-center gap-3 overflow-hidden rounded-[22px] border border-ink/[0.14] bg-shade-25 py-2.5 pr-2.5 pl-3 shadow-[0_16px_48px_rgb(var(--shade)/calc(0.3*var(--shade-alpha)))]"
         style={

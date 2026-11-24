@@ -55,7 +55,7 @@
   container: queue / size;
   --queue-gap: 0.5rem;
   right: var(--queue-gap);
-  bottom: calc(var(--queue-dock, 0px) + var(--queue-gap));
+  bottom: calc(var(--queue-bottom) + var(--queue-gap));
   width: clamp(360px, 25vw, 420px);
   border: 1px solid var(--queue-line);
   border-radius: 24px;
@@ -69,9 +69,28 @@
     --q-c2 700ms ease;
 }
 
+.queue-panel[data-beside] {
+  top: 3.5rem;
+  right: var(--queue-right);
+  bottom: 0;
+  border-width: 0 0 0 1px;
+  border-radius: 0;
+  box-shadow: none;
+  transform: translateX(24px);
+  transition:
+    transform 320ms var(--ease-apple),
+    opacity 320ms var(--ease-apple),
+    --q-c1 700ms ease,
+    --q-c2 700ms ease;
+}
+
 .queue-panel[data-state="open"] {
   opacity: 1;
   transform: none;
+}
+
+[data-perf="light"] .queue-panel[data-beside] {
+  transition: none;
 }
 
 .queue-bg {
@@ -359,7 +378,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .queue-panel {
+  .queue-panel,
+  .queue-panel[data-beside] {
     transform: none;
     transition: opacity 160ms ease;
   }

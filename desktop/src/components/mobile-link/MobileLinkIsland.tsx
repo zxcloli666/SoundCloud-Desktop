@@ -10,7 +10,7 @@ export function MobileLinkIsland() {
   if (!active || isFinal(phase) || dialogOpen) return null;
 
   return (
-    <div className="fixed bottom-[calc(var(--dock-height)+45px)] left-1/2 z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none">
+    <div className="fixed bottom-[calc(var(--dock-height)+45px)] left-[calc(50%-var(--right-dock)/2)] z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none">
       <button
         type="button"
         data-ui="mobile-link-island"

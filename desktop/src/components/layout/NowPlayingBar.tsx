@@ -3,7 +3,6 @@ import { getCurrentTime, getDuration, subscribe } from '../../lib/audio';
 import { art, formatTime } from '../../lib/formatters';
 import { usePerfMode } from '../../lib/perf';
 import { usePlayerStore } from '../../stores/player';
-import { useChatDockWidth } from '../chat/shell/useChatDockWidth';
 import { useLayoutMenu } from './LayoutMenu';
 import { DockLoadingRing, useLoadProgress } from './player/load-progress';
 import { PillTrack } from './player/PillTrack';
@@ -66,7 +65,6 @@ export const NowPlayingBar = React.memo(
     const loadProgress = useLoadProgress();
     const sidebarCollapsed = useSidebarCollapsed();
     const perf = usePerfMode();
-    const right = useChatDockWidth();
     const left = sidebarWidth(sidebarCollapsed);
     const layoutMenu = useLayoutMenu('player');
     const dock = useRef<HTMLDivElement>(null);
@@ -80,7 +78,7 @@ export const NowPlayingBar = React.memo(
         data-ui="player"
         style={{
           left,
-          right,
+          right: 'var(--right-dock)',
           transitionDuration: perf.mode === 'light' ? '0ms' : undefined,
         }}
       >
