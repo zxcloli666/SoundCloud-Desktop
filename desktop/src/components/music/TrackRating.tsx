@@ -16,7 +16,6 @@ interface Props {
   meta?: TrackScdMeta;
   videos?: TrackVideo[];
   onArt?: boolean;
-  ui?: string;
 }
 
 const VIDEO_TITLE_KEYS = {
@@ -25,7 +24,7 @@ const VIDEO_TITLE_KEYS = {
   generated: 'track.status.videoGenerated',
 } as const;
 
-function TrackRatingInner({ meta, videos, onArt = false, ui = 'track-rating' }: Props) {
+function TrackRatingInner({ meta, videos, onArt = false }: Props) {
   const { t } = useTranslation();
   const videoEnabled = useSettingsStore((s) => s.videoEnabled);
   const order = useSettingsStore((s) => s.videoOrder);
@@ -39,7 +38,7 @@ function TrackRatingInner({ meta, videos, onArt = false, ui = 'track-rating' }: 
     : base;
   return (
     <span
-      data-ui={ui}
+      data-ui="track-rating"
       data-tier={tier}
       data-scheme={onArt ? 'dark' : undefined}
       data-art={onArt || undefined}
@@ -59,7 +58,6 @@ export const TrackRating = memo(
   TrackRatingInner,
   (prev, next) =>
     prev.onArt === next.onArt &&
-    prev.ui === next.ui &&
     sameScdMeta(prev.meta, next.meta) &&
     sameVideos(prev.videos, next.videos),
 );

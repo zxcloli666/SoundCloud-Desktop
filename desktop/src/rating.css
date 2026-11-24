@@ -29,7 +29,7 @@
   content: "";
 }
 
-.rating[data-ui="player-rating"] {
+[data-ui="player-rating"] {
   --rating-size: 22px;
 }
 

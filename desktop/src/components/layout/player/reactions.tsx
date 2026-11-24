@@ -88,7 +88,12 @@ export const BlockBtn = React.memo(() => {
 function PlayerRating() {
   const meta = usePlayerStore((s) => s.currentTrack?._scd_meta);
   const videos = usePlayerStore((s) => s.currentTrack?.videos);
-  return <TrackRating meta={meta} videos={videos} ui="player-rating" />;
+  if (!meta) return null;
+  return (
+    <span data-ui="player-rating" className="flex">
+      <TrackRating meta={meta} videos={videos} />
+    </span>
+  );
 }
 
 export function QualityChips() {

@@ -136,7 +136,7 @@ Tailwind class names change from release to release. These attributes do not.
 |---|---|
 | `[data-ui="track-card"]` | Track tile in grids and shelves |
 | `[data-ui="track-row"]` | Track row in Likes and other reorderable lists |
-| `[data-ui="track-rating"]` | Track rating (A, C, F) in lists and on covers; `data-tier`, `data-video`, `data-hq` tell the state |
+| `[data-ui="track-rating"]` | Track rating (A, C, F) in lists, on covers and in the player; the state is in `data-tier`, `data-video`, `data-hq` |
 | `[data-ui="playlist-card"]` | Playlist and album tile |
 | `[data-ui="artwork"]` | Cover image in tiles and rows |
 | `[data-ui="track-title"]` | Track title |
