@@ -519,7 +519,7 @@ export const AppShell = React.memo(() => {
           <main
             ref={mainRef}
             data-ui="main"
-            className={`flex-1 overflow-y-auto overflow-x-hidden ${hideNowPlaying ? 'pb-0' : 'pb-[136px]'}`}
+            className={`flex-1 overflow-y-auto overflow-x-hidden ${hideNowPlaying ? 'pb-0' : 'pb-[calc(var(--dock-height)+5px)]'}`}
           >
             <ScrollReset target={mainRef} />
             <StableOutlet context={outletContext} />

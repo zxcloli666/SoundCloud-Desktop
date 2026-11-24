@@ -52,6 +52,7 @@
     --glass-blur: 40px; /* .glass and frosted panels */
     --glass-blur-strong: 60px; /* .glass-featured (SoundWave blocks) */
     --glass-blur-soft: 28px; /* .npb-glass (now-playing pill) */
+    --dock-height: 131px;
 }
 
 [data-perf="medium"] {
@@ -983,10 +984,20 @@ select,
     gap: 14px;
 }
 
+.npb-row[data-stacked="true"] {
+    grid-template-columns: auto minmax(0, 1fr);
+    row-gap: 6px;
+}
+
+.npb-row[data-stacked="true"] .npb-left {
+    grid-column: 1 / -1;
+}
+
 .npb-left {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 10px;
+    gap: 4px 10px;
     min-width: 0;
 }
 
@@ -1102,7 +1113,7 @@ html[data-zone-drag] * {
 /* meta (art + title) */
 .npb-meta {
     display: flex;
-    flex: 1 1 auto;
+    flex: 1 1 110px;
     align-items: center;
     gap: 12px;
     min-width: 0;
@@ -1555,31 +1566,23 @@ html[data-zone-drag] * {
     }
 }
 
-@container npb (width < 800px) {
-    .npb-track-btns {
-        display: none;
-    }
-}
-
-@container npb (width < 620px) {
-    .npb-tool-btns {
-        display: none;
-    }
-
+@container npb (width < 480px) {
     .npb-content {
         padding-inline: 14px;
     }
-}
 
-@container npb (width < 480px) {
-    .npb-row {
+    .npb-row[data-stacked="true"] {
         grid-template-columns: minmax(0, 1fr);
         justify-items: center;
-        row-gap: 6px;
     }
 
-    .npb-left {
+    .npb-row[data-stacked="true"] .npb-left {
         width: 100%;
+    }
+
+    .npb-row[data-stacked="true"] .npb-tool-btns {
+        justify-self: center;
+        justify-content: center;
     }
 }
 

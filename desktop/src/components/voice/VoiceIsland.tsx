@@ -115,7 +115,7 @@ export function VoiceIsland() {
 
   return (
     <div
-      className="pointer-events-none fixed bottom-[128px] left-1/2 z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none"
+      className="pointer-events-none fixed bottom-[calc(var(--dock-height)-3px)] left-1/2 z-[70] -translate-x-1/2 animate-fade-in-up motion-reduce:animate-none"
       onMouseEnter={() => hover(true)}
       onMouseLeave={() => hover(false)}
     >
