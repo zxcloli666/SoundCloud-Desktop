@@ -5,7 +5,8 @@ import {pauseBlack14, playBlack14} from '../../../lib/icons';
 import {useAutoHide} from '../../../lib/useAutoHide';
 import {useTrackPlay} from '../../../lib/useTrackPlay';
 import type {Track} from '../../../stores/player';
-import {sameScdMeta, sameVideos, TrackStatusBadges} from '../TrackStatusBadges';
+import {sameScdMeta, sameVideos} from '../../../lib/track-rating';
+import {TrackRating} from '../TrackRating';
 import {TrackTitleArtist} from '../TrackTitleArtist';
 
 function formatMMSS(sec: number): string {
@@ -87,9 +88,7 @@ export const WaveTrackHeader = React.memo(
 
         <TrackTitleArtist track={track} highlight={isCurrent} size="md" />
 
-        <div className="shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-        </div>
+        <TrackRating meta={track._scd_meta} videos={track.videos} />
 
         {isCurrent ? (
           <CurrentTimeDisplay />

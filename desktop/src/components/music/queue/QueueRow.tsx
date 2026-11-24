@@ -7,7 +7,7 @@ import { GripVertical, X } from '../../../lib/icons';
 import { useTrackContextMenu } from '../../../lib/useTrackContextMenu';
 import { type Track, usePlayerStore } from '../../../stores/player';
 import { LikeButton } from '../LikeButton';
-import { TrackStatusBadges } from '../TrackStatusBadges';
+import { TrackRating } from '../TrackRating';
 import type { RowTone } from './queue-items';
 import { RowCover, RowText } from './RowBody';
 
@@ -77,7 +77,7 @@ export const QueueRow = React.memo(function QueueRow({
       </span>
       <RowCover track={track} now={tone === 'now'} playing={playing} />
       <RowText track={track} now={tone === 'now'} />
-      <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
       <span className="relative h-8 w-16 shrink-0">
         <span className="absolute inset-0 flex items-center justify-end pr-2 font-mono text-[11.5px] tabular-nums text-ink-35 transition-opacity group-focus-within:opacity-0 group-hover:opacity-0">
           {dur(track.duration)}
@@ -113,6 +113,7 @@ export function QueueRowLifted({ track }: { track: Track }) {
       </span>
       <RowCover track={track} now={false} playing={false} />
       <RowText track={track} now={false} />
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
     </div>
   );
 }

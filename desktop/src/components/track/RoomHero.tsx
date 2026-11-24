@@ -15,7 +15,7 @@ import {
 } from '../../lib/track-display';
 import type { Track } from '../../stores/player';
 import { ArtistNameLinks } from '../music/ArtistNameLinks';
-import { TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackRating } from '../music/TrackRating';
 import { UploadKindDot } from '../music/UploadKindDot';
 import { ArtistLinks } from './ArtistLinks';
 import { RoomFloor } from './RoomFloor';
@@ -83,7 +83,7 @@ export const RoomHero = React.memo(function RoomHero({
 
           <div className="flex-1 min-w-0 w-full text-center @min-[740px]:text-left">
             <div className="flex items-center gap-2 flex-wrap justify-center @min-[740px]:justify-start mb-3.5">
-              <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+              <TrackRating meta={track._scd_meta} videos={track.videos} />
               {track.genre && (
                 <span className={`${CHIP} uppercase tracking-[0.14em] text-ink-60`}>
                   {track.genre}

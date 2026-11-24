@@ -20,7 +20,7 @@ import {useArtistLinkItems, useTrackDisplay} from '../../lib/track-display';
 import {useTrackContextMenu} from '../../lib/useTrackContextMenu';
 import {usePlayerStore} from '../../stores/player';
 import {ArtistNameLinks} from '../music/ArtistNameLinks';
-import {TrackStatusBadges} from '../music/TrackStatusBadges';
+import {TrackRating} from '../music/TrackRating';
 import {effectiveDurationMs, isTruncated} from './lib';
 import type {OfflineEntry} from './types';
 
@@ -218,7 +218,7 @@ export const OfflineTrackRow = React.memo(function OfflineTrackRow({
       </div>
 
       <div className="hidden items-center justify-end gap-1.5 md:flex">
-        <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
+        <TrackRating meta={track._scd_meta} videos={track.videos} />
         {inv?.stage === 'raw' && !forging && <Stamp tone="raw">RAW</Stamp>}
         {forging && <Stamp tone="forge">{t('offline.stampForging')}</Stamp>}
         {truncated && <Stamp tone="cut">{t('offline.stampCut')}</Stamp>}

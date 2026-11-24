@@ -8,7 +8,8 @@ import { useTrackPlay } from '../../lib/useTrackPlay';
 import type { Track } from '../../stores/player';
 import { LikeButton } from '../music/LikeButton';
 import { PlayNextButton } from '../music/PlayNextButton';
-import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { sameScdMeta, sameVideos } from '../../lib/track-rating';
+import { TrackRating } from '../music/TrackRating';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 export const RelatedRow = React.memo(
@@ -66,9 +67,7 @@ export const RelatedRow = React.memo(
 
         <TrackTitleArtist track={track} size="sm" />
 
-        <div className="shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-        </div>
+        <TrackRating meta={track._scd_meta} videos={track.videos} />
 
         <LikeButton track={track} />
 

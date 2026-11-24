@@ -6,6 +6,7 @@ import { usePremium } from '../../../../lib/premium-cache';
 import { useTrackPlay } from '../../../../lib/useTrackPlay';
 import { type Track, usePlayerStore } from '../../../../stores/player';
 import { ReleaseTeaser } from './ReleaseTeaser';
+import { TrackRating } from '../../../music/TrackRating';
 import { ShelfCard } from './ShelfCard';
 import { feedOf, ShelfPlaceholder } from './ShelfPlaceholder';
 import { ShelfScroll } from './ShelfScroll';
@@ -76,6 +77,9 @@ function ReleaseShelfCard({
               {age}
             </span>
           )}
+          <span className="absolute right-1.5 bottom-1.5 flex">
+            <TrackRating meta={track._scd_meta} videos={track.videos} onArt />
+          </span>
         </>
       }
     />

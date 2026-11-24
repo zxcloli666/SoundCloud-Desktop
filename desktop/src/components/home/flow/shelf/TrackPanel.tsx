@@ -6,6 +6,7 @@ import { setTrackLiked } from '../../../../lib/like-toggle';
 import { useTrackPlay } from '../../../../lib/useTrackPlay';
 import type { Track } from '../../../../stores/player';
 import { usePlayerStore } from '../../../../stores/player';
+import { TrackRating } from '../../../music/TrackRating';
 import { ShelfAction, ShelfCard } from './ShelfCard';
 import { ShelfScroll } from './ShelfScroll';
 
@@ -31,16 +32,21 @@ function TrackShelfCard({ track, queue, onPlay, removable }: CardProps) {
       onOpen={togglePlay}
       mark={mark}
       overlay={
-        <span
-          data-scheme="dark"
-          className={`absolute inset-0 flex items-center justify-center bg-black/45 text-ink transition-opacity ${
-            isThisPlaying
-              ? 'opacity-100'
-              : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
-          }`}
-        >
-          {isThisPlaying ? pauseWhite12 : playWhite12}
-        </span>
+        <>
+          <span
+            data-scheme="dark"
+            className={`absolute inset-0 flex items-center justify-center bg-black/45 text-ink transition-opacity ${
+              isThisPlaying
+                ? 'opacity-100'
+                : 'opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
+            }`}
+          >
+            {isThisPlaying ? pauseWhite12 : playWhite12}
+          </span>
+          <span className="absolute bottom-1.5 left-1.5 flex">
+            <TrackRating meta={track._scd_meta} videos={track.videos} onArt />
+          </span>
+        </>
       }
       action={
         removable && (

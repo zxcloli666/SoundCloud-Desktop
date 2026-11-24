@@ -11,7 +11,7 @@ import {useTrackContextMenu} from '../../../lib/useTrackContextMenu';
 import {type Track, usePlayerStore} from '../../../stores/player';
 import {ArtistNameLinks} from '../ArtistNameLinks';
 import {LikeButton} from '../LikeButton';
-import {TrackStatusBadges} from '../TrackStatusBadges';
+import {TrackRating} from '../TrackRating';
 import {fetchArtistQueue} from './artistQueue';
 import type {ClusterNeighborDto} from './types';
 
@@ -165,7 +165,7 @@ export const NeighborCard = React.memo(function NeighborCard({
           </div>
 
           <div className="absolute bottom-2 left-2 flex">
-            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} variant="overlay" />
+            <TrackRating meta={track._scd_meta} videos={track.videos} onArt />
           </div>
         </div>
 

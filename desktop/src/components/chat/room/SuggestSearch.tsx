@@ -5,6 +5,7 @@ import { Loader2, Search } from '../../../lib/icons';
 import { MIN_SEARCH_QUERY, useCatalogTracks } from '../../../lib/search';
 import type { Track } from '../../../stores/player';
 import { useDebouncedValue } from '../../discover/useDebouncedValue';
+import { TrackRating } from '../../music/TrackRating';
 
 const SHOWN = 6;
 const DEBOUNCE_MS = 300;
@@ -26,6 +27,7 @@ function Row({ track, onPick }: { track: Track; onPick: (track: Track) => void }
         </span>
         <span className="block truncate text-[11px] text-ink-45">{track.user?.username}</span>
       </span>
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
     </button>
   );
 }

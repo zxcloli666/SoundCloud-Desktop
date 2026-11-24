@@ -5,6 +5,7 @@ import { art, dur } from '../../lib/formatters';
 import { Check, CircleCheck, Copy, musicIcon12, X } from '../../lib/icons';
 import { findDuplicates } from '../../lib/playlist-duplicates';
 import type { Track } from '../../stores/player';
+import { TrackRating } from '../music/TrackRating';
 
 function Cover({ track }: { track: Track }) {
   const cover = art(track.artwork_url, 't200x200');
@@ -27,6 +28,7 @@ function Line({ track }: { track: Track }) {
         <p className="truncate text-[13px] font-medium text-ink-90">{track.title}</p>
         <p className="truncate text-[11.5px] text-ink-45">{track.user.username}</p>
       </div>
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
       <span className="w-10 shrink-0 text-right text-[11px] tabular-nums text-ink-30">
         {dur(track.duration)}
       </span>

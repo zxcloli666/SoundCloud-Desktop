@@ -6,6 +6,7 @@ import { art, dur } from '../../lib/formatters';
 import { Music, pauseWhite14, playWhite14, ThumbsDown } from '../../lib/icons';
 import { useTrackPlay } from '../../lib/useTrackPlay';
 import type { Track } from '../../stores/player';
+import { TrackRating } from '../music/TrackRating';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 
 export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: { track: Track }) {
@@ -67,6 +68,8 @@ export const DislikedTrackRow = React.memo(function DislikedTrackRow({ track }: 
           className="flex flex-col justify-center"
         />
       </div>
+
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
 
       <span className="hidden sm:block text-[12px] text-ink-30 tabular-nums font-medium shrink-0 w-12 text-right">
         {dur(track.duration)}

@@ -8,6 +8,7 @@ import {
 import type { Track } from '../../../stores/player';
 import { usePlayerStore } from '../../../stores/player';
 import type { ClusterNeighborDto } from '../../music/cluster';
+import { TrackRating } from '../../music/TrackRating';
 
 interface Props {
   track: Track;
@@ -69,6 +70,7 @@ export function TrackRow({ track, onPlay, artist, framed = false }: Props) {
           {artist ? track.title : track.user?.username}
         </span>
       </span>
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
       <span className="shrink-0 pr-0.5 font-mono text-[11.5px] tabular-nums text-ink-35">
         {dur(track.duration)}
       </span>

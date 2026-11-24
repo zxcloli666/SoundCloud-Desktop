@@ -26,7 +26,7 @@ import {
 import { useTrackPlay } from '../../lib/useTrackPlay';
 import { type Track, usePlayerStore } from '../../stores/player';
 import { ArtistNameLinks } from '../music/ArtistNameLinks';
-import { TrackStatusBadges } from '../music/TrackStatusBadges';
+import { TrackRating } from '../music/TrackRating';
 import { UploadKindDot } from '../music/UploadKindDot';
 import { Skeleton } from '../ui/Skeleton';
 
@@ -149,7 +149,7 @@ const FeaturedCard = React.memo(
             </div>
           )}
           <div className="absolute bottom-2 left-2 flex">
-            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} variant="overlay" />
+            <TrackRating meta={track._scd_meta} videos={track.videos} onArt />
           </div>
         </div>
 

@@ -9,7 +9,7 @@ import { getAlbumTarget } from '../../../lib/track-display';
 import { useAddToPlaylistRequest } from '../../../stores/add-to-playlist';
 import { usePlayerStore } from '../../../stores/player';
 import { PlayerBlockButton } from '../../music/blocklist/PlayerBlockButton';
-import { RATING_CHIPS, tierOf, tierTitleKey } from '../../music/TrackStatusBadges';
+import { TrackRating } from '../../music/TrackRating';
 import { playerBtn } from './button-class';
 import { useCurrentTrackData } from './useTrackData';
 
@@ -85,21 +85,10 @@ export const BlockBtn = React.memo(() => {
   return <PlayerBlockButton keepSlot track={trackData ?? track} className={playerBtn(false)} />;
 });
 
-function RatingChip() {
-  const { t } = useTranslation();
+function PlayerRating() {
   const meta = usePlayerStore((s) => s.currentTrack?._scd_meta);
-  const tier = meta ? tierOf(meta, true) : null;
-  if (!meta || !tier) return null;
-  const { letter, chip } = RATING_CHIPS[tier];
-  return (
-    <span
-      data-ui="player-rating"
-      title={t(tierTitleKey(tier, meta))}
-      className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md border pl-[0.14em] text-[10px] font-semibold tracking-[0.14em] ${chip}`}
-    >
-      {letter}
-    </span>
-  );
+  const videos = usePlayerStore((s) => s.currentTrack?.videos);
+  return <TrackRating meta={meta} videos={videos} ui="player-rating" />;
 }
 
 export function QualityChips() {
@@ -116,19 +105,20 @@ export function QualityChips() {
       </span>
     );
   }
-  if (!quality) return null;
   return (
     <>
-      <span
-        className={`inline-flex h-6 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
-          quality !== 'sq'
-            ? 'border-ink/[0.14] bg-ink/[0.08] text-ink-92'
-            : 'border-ink/[0.08] bg-ink/[0.04] text-ink-68'
-        }`}
-      >
-        {t(QUALITY_LABEL_KEYS[quality])}
-      </span>
-      <RatingChip />
+      {quality && (
+        <span
+          className={`inline-flex h-6 items-center rounded-md border px-2 text-[9px] font-semibold tracking-[0.14em] ${
+            quality !== 'sq'
+              ? 'border-ink/[0.14] bg-ink/[0.08] text-ink-92'
+              : 'border-ink/[0.08] bg-ink/[0.04] text-ink-68'
+          }`}
+        >
+          {t(QUALITY_LABEL_KEYS[quality])}
+        </span>
+      )}
+      <PlayerRating />
     </>
   );
 }

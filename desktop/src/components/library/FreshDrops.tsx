@@ -16,6 +16,7 @@ import { useTrackContextMenu } from '../../lib/useTrackContextMenu';
 import { useTrackPlay } from '../../lib/useTrackPlay';
 import type { Track } from '../../stores/player';
 import { LikeButton } from '../music/LikeButton';
+import { TrackRating } from '../music/TrackRating';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 import { ReleaseActions } from '../releases/ReleaseActions';
 import { genreColor } from '../search/utils';
@@ -90,6 +91,7 @@ const FreshLead = memo(function FreshLead({
             {heard ? t('releases.heard') : t('library.freshNew')}
           </span>
           {when && <span className="text-[11px] tabular-nums text-ink-40">{when}</span>}
+          <TrackRating meta={track._scd_meta} videos={track.videos} />
         </div>
         <TrackTitleArtist track={track} highlight={isThis} size="lg" />
       </div>
@@ -149,6 +151,8 @@ const FreshDropRow = memo(function FreshDropRow({
         size="md"
         className="flex flex-col justify-center"
       />
+
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
 
       {when && (
         <span className="text-[11px] text-ink-30 tabular-nums shrink-0 w-10 text-right">

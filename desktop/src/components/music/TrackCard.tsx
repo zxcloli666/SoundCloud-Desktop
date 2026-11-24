@@ -16,7 +16,8 @@ import {AlbumLinkButton} from './AlbumLinkButton';
 import {ArtistNameLinks} from './ArtistNameLinks';
 import {LikeButton} from './LikeButton';
 import {PlayNextButton} from './PlayNextButton';
-import {sameVideos, TrackStatusBadges} from './TrackStatusBadges';
+import {sameScdMeta, sameVideos} from '../../lib/track-rating';
+import {TrackRating} from './TrackRating';
 import {UploadKindDot} from './UploadKindDot';
 
 interface TrackCardProps {
@@ -105,7 +106,7 @@ export const TrackCard = React.memo(
 
           {/* Cache / analysis badges — bottom left */}
           <div className="absolute bottom-2 left-2 flex">
-            <TrackStatusBadges meta={track._scd_meta} videos={track.videos} variant="overlay" />
+            <TrackRating meta={track._scd_meta} videos={track.videos} onArt />
           </div>
 
           {/* Like button — top left */}
@@ -182,8 +183,6 @@ export const TrackCard = React.memo(
     prev.track.user_favorite === next.track.user_favorite &&
     prev.track.title === next.track.title &&
     prev.track.enrichment === next.track.enrichment &&
-    prev.track._scd_meta?.storage_state === next.track._scd_meta?.storage_state &&
-    prev.track._scd_meta?.storage_quality === next.track._scd_meta?.storage_quality &&
-    prev.track._scd_meta?.index_state === next.track._scd_meta?.index_state &&
+    sameScdMeta(prev.track._scd_meta, next.track._scd_meta) &&
     sameVideos(prev.track.videos, next.track.videos),
 );

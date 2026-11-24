@@ -1,0 +1,92 @@
+.rating {
+  --size: var(--rating-size, 18px);
+  --line: max(1px, calc(var(--size) / 18));
+  --dot: calc(var(--size) * 0.3);
+  --fill: color-mix(in srgb, var(--tone) 15%, transparent);
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  width: var(--size);
+  height: var(--size);
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: calc(var(--size) * 0.3);
+  color: var(--tone);
+  font-size: calc(var(--size) * 0.56);
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
+}
+
+.rating::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--fill);
+  box-shadow: inset 0 0 0 var(--line) color-mix(in srgb, var(--tone) 30%, transparent);
+  content: "";
+}
+
+.rating[data-ui="player-rating"] {
+  --rating-size: 22px;
+}
+
+.rating[data-tier="analyzed"] {
+  --tone: var(--color-emerald-300);
+}
+
+.rating[data-tier="cached"] {
+  --tone: var(--color-amber-300);
+}
+
+.rating[data-tier="pending"] {
+  --tone: rgb(var(--ink) / 0.45);
+}
+
+.rating[data-tier="tooLong"] {
+  --tone: rgb(var(--ink) / 0.7);
+}
+
+.rating[data-tier="failed"] {
+  --tone: var(--color-rose-300);
+}
+
+.rating[data-art] {
+  --fill:
+    linear-gradient(
+      color-mix(in srgb, var(--tone) 18%, transparent),
+      color-mix(in srgb, var(--tone) 18%, transparent)
+    ),
+    rgb(12 12 14 / 0.82);
+}
+
+.rating[data-video]::before {
+  box-shadow: inset 0 0 0 calc(var(--line) * 1.6) var(--tone);
+}
+
+.rating[data-hq]::before {
+  --cut: calc(var(--dot) / 2 + var(--line) * 1.4);
+  -webkit-mask: radial-gradient(
+    circle at calc(100% - var(--line)) var(--line),
+    transparent var(--cut),
+    #000 calc(var(--cut) + 0.5px)
+  );
+  mask: radial-gradient(
+    circle at calc(100% - var(--line)) var(--line),
+    transparent var(--cut),
+    #000 calc(var(--cut) + 0.5px)
+  );
+}
+
+.rating[data-hq]::after {
+  position: absolute;
+  top: calc(var(--line) - var(--dot) / 2);
+  right: calc(var(--line) - var(--dot) / 2);
+  width: var(--dot);
+  height: var(--dot);
+  border-radius: 999px;
+  background: var(--tone);
+  content: "";
+}

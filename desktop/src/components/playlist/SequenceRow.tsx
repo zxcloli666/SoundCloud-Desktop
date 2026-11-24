@@ -18,7 +18,8 @@ import { useTrackColumns } from '../music/columns/TrackColumns';
 import { LikeButton } from '../music/LikeButton';
 import { PlayNextButton } from '../music/PlayNextButton';
 import { SaveOfflineRowButton } from '../music/SaveOfflineButton';
-import { sameScdMeta, sameVideos, TrackStatusBadges } from '../music/TrackStatusBadges';
+import { sameScdMeta, sameVideos } from '../../lib/track-rating';
+import { TrackRating } from '../music/TrackRating';
 import { TrackTitleArtist } from '../music/TrackTitleArtist';
 import { genreColor } from '../search/utils';
 import { DragGrip, LIFTED_ROW_STYLE, useSortableRow } from '../ui/SortableVirtualList';
@@ -92,11 +93,7 @@ function RowBody({
 
       <TrackTitleArtist track={track} highlight={isThis} size="sm" />
 
-      {columns.badges && (
-        <div className="flex shrink-0">
-          <TrackStatusBadges meta={track._scd_meta} videos={track.videos} />
-        </div>
-      )}
+      <TrackRating meta={track._scd_meta} videos={track.videos} />
 
       {columns.plays > 0 && (
         <span
