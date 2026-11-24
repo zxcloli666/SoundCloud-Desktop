@@ -1435,7 +1435,7 @@
     "appIconDesc": "Pencere, tepsi, görev çubuğu ve Dock.",
     "appIconDock": "Uygulama kapalıyken Dock standart simgeyi gösterir.",
     "appIcons": {
-      "classic": "Klasik",
+      "ember": "Kor",
       "glass": "Cam",
       "dusk": "Alacakaranlık",
       "wave": "Dalga",
@@ -1445,7 +1445,6 @@
       "aurora": "Aurora",
       "neon": "Neon",
       "moon": "Ay",
-      "ember": "Kor",
       "mono": "Mono",
       "holo": "Holo",
       "paper": "Kâğıt",
@@ -1455,7 +1454,8 @@
       "phones": "Kulaklık",
       "cat": "Kedi",
       "synthwave": "Synthwave",
-      "cassette": "Kaset"
+      "cassette": "Kaset",
+      "classic": "Klasik"
     },
     "fontTitle": "Arayüz yazı tipi",
     "fontDesc": "Menüler, başlıklar ve listeler için yazı tipi",

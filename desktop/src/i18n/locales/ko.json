@@ -1366,7 +1366,7 @@
     "appIconDesc": "창, 트레이, 작업 표시줄, Dock에 표시돼요.",
     "appIconDock": "앱이 꺼져 있으면 Dock에는 기본 아이콘이 보여요.",
     "appIcons": {
-      "classic": "클래식",
+      "ember": "불씨",
       "glass": "유리",
       "dusk": "노을",
       "wave": "웨이브",
@@ -1376,7 +1376,6 @@
       "aurora": "오로라",
       "neon": "네온",
       "moon": "달",
-      "ember": "불씨",
       "mono": "모노",
       "holo": "홀로그램",
       "paper": "종이",
@@ -1386,7 +1385,8 @@
       "phones": "헤드폰",
       "cat": "고양이",
       "synthwave": "신스웨이브",
-      "cassette": "카세트"
+      "cassette": "카세트",
+      "classic": "클래식"
     },
     "fontTitle": "인터페이스 글꼴",
     "fontDesc": "메뉴, 제목, 목록에 쓰이는 글꼴",

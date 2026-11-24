@@ -75,7 +75,7 @@ const AppIconTile = memo(function AppIconTile({
         decoding="async"
         className={`aspect-square w-full max-w-[72px] transition-transform duration-200 ${
           active ? '' : 'group-hover:scale-105'
-        } ${id === 'classic' ? 'rounded-[24%]' : ''}`}
+        }`}
       />
     </button>
   );

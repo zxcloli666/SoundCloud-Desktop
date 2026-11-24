@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import type { AppIconId } from '../lib/app-icons';
+import { type AppIconId, DEFAULT_APP_ICON } from '../lib/app-icons';
 import { normalizeAudioCacheLimit, normalizeImageCacheLimit } from '../lib/cache-limit';
 import type { CrossfadeCurve } from '../lib/crossfade-curve';
 import { EQ_CUSTOM_PRESET_LIMIT, EQ_PRESET_NAME_MAX, type EqCustomPreset } from '../lib/equalizer';
@@ -364,7 +364,7 @@ const DEFAULTS = {
   startupPage: 'home' as StartupPage,
   closeAction: 'tray' as CloseAction,
   uiScale: 100,
-  appIcon: 'classic' as AppIconId,
+  appIcon: DEFAULT_APP_ICON,
   miniPlayerOpacity: null as number | null,
   miniPlayerSolid: false,
   trackColumns: {} as Partial<Record<TrackColumnId, number>>,

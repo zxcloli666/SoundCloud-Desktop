@@ -1,6 +1,5 @@
-import classic from '../assets/app-icons/classic.png';
 import { useSettingsStore } from '../stores/settings';
-import type { AppIconId } from './app-icons';
+import { type AppIconId, DEFAULT_APP_ICON } from './app-icons';
 import { trackedInvoke as invoke, logError } from './diagnostics';
 
 const drawn = import.meta.glob<string>('../assets/app-icons/*.webp', {
@@ -11,7 +10,7 @@ const drawn = import.meta.glob<string>('../assets/app-icons/*.webp', {
 let pushing = Promise.resolve();
 
 export function appIconUrl(id: AppIconId): string {
-  return drawn[`../assets/app-icons/${id}.webp`] ?? classic;
+  return drawn[`../assets/app-icons/${id}.webp`];
 }
 
 export function initAppIcon() {
@@ -28,9 +27,8 @@ function push() {
 }
 
 async function send(id: AppIconId) {
-  const url = drawn[`../assets/app-icons/${id}.webp`];
-  if (!url) return invoke<void>('app_icon_reset');
-  return invoke<void>('app_icon_set', await toPng(url));
+  if (id === DEFAULT_APP_ICON) return invoke<void>('app_icon_reset');
+  return invoke<void>('app_icon_set', await toPng(appIconUrl(id)));
 }
 
 async function toPng(url: string): Promise<Uint8Array> {

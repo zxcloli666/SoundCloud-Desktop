@@ -1383,7 +1383,7 @@
     "appIconDesc": "The window, the tray, the taskbar and the Dock.",
     "appIconDock": "When the app is closed, the Dock shows the standard icon.",
     "appIcons": {
-      "classic": "Classic",
+      "ember": "Ember",
       "glass": "Glass",
       "dusk": "Dusk",
       "wave": "Wave",
@@ -1393,7 +1393,6 @@
       "aurora": "Aurora",
       "neon": "Neon",
       "moon": "Moon",
-      "ember": "Ember",
       "mono": "Mono",
       "holo": "Holo",
       "paper": "Paper",
@@ -1403,7 +1402,8 @@
       "phones": "Headphones",
       "cat": "Cat",
       "synthwave": "Synthwave",
-      "cassette": "Cassette"
+      "cassette": "Cassette",
+      "classic": "Classic"
     },
     "fontTitle": "Interface font",
     "fontDesc": "Typeface for menus, titles and lists",

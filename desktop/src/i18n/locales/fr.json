@@ -1402,7 +1402,7 @@
     "appIconDesc": "Fenêtre, zone de notification, barre des tâches et Dock.",
     "appIconDock": "Quand l'application est fermée, le Dock affiche l'icône standard.",
     "appIcons": {
-      "classic": "Classique",
+      "ember": "Braise",
       "glass": "Verre",
       "dusk": "Crépuscule",
       "wave": "Onde",
@@ -1412,7 +1412,6 @@
       "aurora": "Aurore",
       "neon": "Néon",
       "moon": "Lune",
-      "ember": "Braise",
       "mono": "Mono",
       "holo": "Holo",
       "paper": "Papier",
@@ -1422,7 +1421,8 @@
       "phones": "Casque",
       "cat": "Chat",
       "synthwave": "Synthwave",
-      "cassette": "Cassette"
+      "cassette": "Cassette",
+      "classic": "Classique"
     },
     "fontTitle": "Police de l'interface",
     "fontDesc": "Police pour les menus, titres et listes",

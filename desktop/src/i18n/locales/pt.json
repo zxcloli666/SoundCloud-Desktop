@@ -1421,7 +1421,7 @@
     "appIconDesc": "Janela, bandeja, barra de tarefas e Dock.",
     "appIconDock": "Com o aplicativo fechado, o Dock mostra o ícone padrão.",
     "appIcons": {
-      "classic": "Clássico",
+      "ember": "Brasa",
       "glass": "Vidro",
       "dusk": "Crepúsculo",
       "wave": "Onda",
@@ -1431,7 +1431,6 @@
       "aurora": "Aurora",
       "neon": "Neon",
       "moon": "Lua",
-      "ember": "Brasa",
       "mono": "Mono",
       "holo": "Holo",
       "paper": "Papel",
@@ -1441,7 +1440,8 @@
       "phones": "Fones",
       "cat": "Gato",
       "synthwave": "Synthwave",
-      "cassette": "Fita cassete"
+      "cassette": "Fita cassete",
+      "classic": "Clássico"
     },
     "fontTitle": "Fonte da interface",
     "fontDesc": "Tipo de letra de menus, títulos e listas",

@@ -1,5 +1,5 @@
 export const APP_ICONS = [
-  'classic',
+  'ember',
   'glass',
   'dusk',
   'wave',
@@ -9,7 +9,6 @@ export const APP_ICONS = [
   'aurora',
   'neon',
   'moon',
-  'ember',
   'mono',
   'holo',
   'paper',
@@ -20,6 +19,9 @@ export const APP_ICONS = [
   'cat',
   'synthwave',
   'cassette',
+  'classic',
 ] as const;
 
 export type AppIconId = (typeof APP_ICONS)[number];
+
+export const DEFAULT_APP_ICON: AppIconId = 'ember';
