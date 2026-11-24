@@ -39,7 +39,12 @@ export function Label({
   return (
     <span
       className={`overflow-hidden whitespace-nowrap ${className ?? ''}`}
-      style={{ maxWidth: collapsed ? 0 : '142px', opacity: collapsed ? 0 : 1, transition: LABEL_T }}
+      style={{
+        maxWidth: collapsed ? 0 : '142px',
+        paddingRight: collapsed ? 0 : undefined,
+        opacity: collapsed ? 0 : 1,
+        transition: LABEL_T,
+      }}
     >
       {children}
     </span>
