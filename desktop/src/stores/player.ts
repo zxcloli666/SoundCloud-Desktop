@@ -1,6 +1,6 @@
 import {create} from 'zustand';
 import {persist} from 'zustand/middleware';
-import {readVolume, type StoredVolume, storeVolume} from '../lib/legacy/volume';
+import { volumesByEar } from '../lib/legacy/volume';
 import type {QueueContext} from '../lib/queue-context';
 import {createThrottledJsonStorage} from '../lib/tauri-storage';
 
@@ -660,17 +660,15 @@ export const usePlayerStore = create<PlayerState>()(
     {
       name: 'sc-player',
       storage: createThrottledJsonStorage(),
-      version: 3,
-      merge: (stored, current) => ({
-        ...current,
-        ...(stored as Partial<PlayerState>),
-        ...readVolume((stored ?? {}) as Partial<StoredVolume>),
-      }),
+      version: 4,
+      migrate: (stored, version) =>
+        version === 3 ? volumesByEar(stored as Partial<PlayerState>) : {},
       partialize: (state) => {
         const start = Math.max(0, state.queueIndex - PERSISTED_QUEUE_BEHIND);
         const queue = state.queue.slice(start, start + PERSISTED_QUEUE_WINDOW);
         return {
-          ...storeVolume(state),
+          volume: state.volume,
+          volumeBeforeMute: state.volumeBeforeMute,
           currentTrack: state.currentTrack,
           queue,
           queueOrigins: withOrigins(state.queueOrigins, queue),

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { earVolume, linearVolume, readVolume, storeVolume } from '../src/lib/legacy/volume.ts';
+import { earVolume, volumesByEar } from '../src/lib/legacy/volume.ts';
 import { volumeGain } from '../src/lib/volume.ts';
 
 const everyPercent = Array.from({ length: 201 }, (_, percent) => percent);
@@ -34,31 +34,14 @@ test('an old volume keeps its loudness', () => {
   assert.equal(earVolume(140), 140);
 });
 
-test('a file of the previous version is converted once', () => {
-  const first = readVolume({ volume: 36, volumeBeforeMute: 81 });
-  assert.deepEqual(first, { volume: 60, volumeBeforeMute: 90 });
-  const second = readVolume(storeVolume({ volume: 60, volumeBeforeMute: 90 }));
-  assert.deepEqual(second, first);
-});
-
-test('every volume survives a save and a load', () => {
-  for (const percent of everyPercent) {
-    const pair = { volume: percent, volumeBeforeMute: percent };
-    assert.deepEqual(readVolume(storeVolume(pair)), pair);
-  }
-});
-
-test('the previous version finds the same loudness in its own fields', () => {
-  assert.deepEqual(storeVolume({ volume: 50, volumeBeforeMute: 120 }), {
-    volume: 25,
-    volumeBeforeMute: 120,
-    earVolume: 50,
-    earVolumeBeforeMute: 120,
+test('a file of the previous version keeps its loudness and everything else', () => {
+  assert.deepEqual(volumesByEar({ volume: 36, volumeBeforeMute: 81, shuffle: true }), {
+    volume: 60,
+    volumeBeforeMute: 90,
+    shuffle: true,
   });
-  assert.equal(linearVolume(0), 0);
-  assert.equal(linearVolume(3), 1);
 });
 
 test('an empty file leaves the defaults alone', () => {
-  assert.deepEqual(readVolume({}), {});
+  assert.deepEqual(volumesByEar({}), {});
 });
