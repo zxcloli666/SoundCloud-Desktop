@@ -3,6 +3,7 @@
 @import "./scheme.css";
 @import "./shell.css";
 @import "./home.css";
+@import "./sound.css";
 @import "./settings.css";
 @import "./marquee.css";
 @import "./queue.css";
@@ -1540,7 +1541,7 @@ html[data-zone-drag] * {
     display: block;
 }
 
-@container npb (width < 1096px) {
+@container npb (width < 1120px) {
     .npb-vol-slider {
         display: none;
     }

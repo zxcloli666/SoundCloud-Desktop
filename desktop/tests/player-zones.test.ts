@@ -13,7 +13,15 @@ import {
 
 test('default zones put track buttons left, shuffle before, repeat after, the rest right', () => {
   const bar = zoneIds(defaultPlacement('player'), true);
-  assert.deepEqual(bar.left, ['like', 'dislike', 'addToPlaylist', 'album', 'block', 'quality']);
+  assert.deepEqual(bar.left, [
+    'like',
+    'dislike',
+    'addToPlaylist',
+    'album',
+    'block',
+    'quality',
+    'more',
+  ]);
   assert.deepEqual(bar.before, ['shuffle']);
   assert.deepEqual(bar.after, ['repeat', 'abLoop']);
   assert.deepEqual(bar.title, []);
@@ -21,6 +29,16 @@ test('default zones put track buttons left, shuffle before, repeat after, the re
   assert.equal(defaultZone('deck', 'queue'), 'title');
   assert.equal(defaultZone('player', 'queue'), 'right');
   assert.equal(defaultPlacement('deck').length, PLAYER_IDS.length);
+});
+
+test('sound and track actions are shown from the start on both surfaces', () => {
+  const bar = zoneIds(defaultPlacement('player'));
+  assert.deepEqual(bar.left, ['like', 'more']);
+  assert.deepEqual(bar.right, ['together', 'sound', 'lyrics', 'queue', 'volume']);
+  const deck = zoneIds(defaultPlacement('deck'));
+  assert.deepEqual(deck.left, ['like', 'sound']);
+  assert.deepEqual(deck.title, ['more', 'queue']);
+  assert.deepEqual(deck.right, ['together', 'lyrics', 'volume']);
 });
 
 test('entries without a zone or with a zone the surface lacks fall back to the default', () => {
@@ -40,7 +58,7 @@ test('placing a button sets its zone and order and keeps the rest', () => {
   const moved = placeButton(start, 'player', 'like', 'after', 'repeat');
   const ids = zoneIds(moved);
   assert.deepEqual(ids.after, ['like', 'repeat']);
-  assert.deepEqual(ids.left, []);
+  assert.deepEqual(ids.left, ['more']);
   assert.equal(moved.length, start.length);
   assert.deepEqual(placeButton(start, 'player', 'like', 'title', null), start);
   assert.ok(isDefaultPlacement(start, 'player'));
@@ -57,8 +75,8 @@ test('arrange moves by 1-based position among shown peers and reports where it l
   const far = arrange(start, 'deck', 'eq', 'show', 'title', 99);
   assert.equal(far.state, 'ok');
   if (far.state !== 'ok') return;
-  assert.deepEqual(zoneIds(far.entries).title, ['queue', 'eq']);
-  assert.equal(far.position, 2);
+  assert.deepEqual(zoneIds(far.entries).title, ['more', 'queue', 'eq']);
+  assert.equal(far.position, 3);
   const hidden = arrange(start, 'deck', 'like', 'hide', null, null);
   assert.equal(hidden.state === 'ok' && hidden.hidden, true);
   assert.deepEqual(arrange(start, 'deck', 'play', 'hide', null, null), { state: 'no_button' });

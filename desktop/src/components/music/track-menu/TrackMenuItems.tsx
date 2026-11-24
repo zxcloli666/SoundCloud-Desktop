@@ -9,6 +9,7 @@ import {
   ArrowUpToLine,
   ClipboardCopy,
   Disc3,
+  DiscAlbum,
   Download,
   GalleryVerticalEnd,
   Heart,
@@ -37,15 +38,16 @@ import {
   saveTrackCover,
   saveTrackFile,
 } from '../../../lib/track-actions';
-import { getArtistDisplay, getArtistTarget } from '../../../lib/track-display';
+import { getAlbumTarget, getArtistDisplay, getArtistTarget } from '../../../lib/track-display';
 import { useAppMode } from '../../../stores/app-status';
 import { selectChatEnabled, useChatStore } from '../../../stores/chat';
 import { usePlayerStore } from '../../../stores/player';
 import { useSearchPrefsStore } from '../../../stores/searchPrefs';
-import { useTrackPicked, useTrackSelection } from '../../../stores/trackSelection';
 import { type TrackMenuTarget, useTrackMenuStore } from '../../../stores/trackMenu';
+import { useTrackPicked, useTrackSelection } from '../../../stores/trackSelection';
 import { SuperHeart } from '../superlike/SuperHeart';
 import { MenuItem, MenuSeparator } from './MenuItem';
+import { BlockItems, DislikeItem } from './TasteItems';
 
 function orderOf(scope: string | undefined, liked: boolean, superliked: boolean) {
   if (scope === LIKED_ORDER_SCOPE && liked) return likesOrder;
@@ -64,6 +66,7 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
   const playable = getArtistDisplay(track).availability === 'indexed';
   const remote = !isLocalUrn(track.urn);
   const artistPath = getArtistTarget(track);
+  const albumPath = getAlbumTarget(track);
   const order = online ? orderOf(target.scope, liked, superliked) : null;
   const chat = useChatStore(selectChatEnabled);
   const picked = useTrackPicked(track.urn);
@@ -230,6 +233,14 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
             onSelect={run(() => navigate(`/track/${encodeURIComponent(track.urn)}`))}
           />
         ),
+        online && remote && albumPath && (
+          <MenuItem
+            key="album"
+            icon={<DiscAlbum size={15} />}
+            label={t('trackMenu.goToAlbum')}
+            onSelect={run(() => navigate(albumPath))}
+          />
+        ),
         online && remote && artistPath && (
           <MenuItem
             key="artist"
@@ -266,6 +277,15 @@ export function TrackMenuItems({ target }: { target: TrackMenuTarget }) {
           onSelect={run(() => copyTrackLabel(track))}
         />,
       ],
+    ],
+    [
+      'taste',
+      online && remote
+        ? [
+            <DislikeItem key="dislike" track={track} run={run} />,
+            <BlockItems key="block" track={track} run={run} />,
+          ]
+        : [],
     ],
   ];
   const visible = groups

@@ -36,6 +36,7 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="nav-item"]` | A link in the left navigation |
 | `[data-ui="quick-access"]` | Quick access block in the left navigation: library shortcuts and pins |
 | `[data-ui="sidebar-pins"]` | Quick access rows, pinned playlists and artists in the left navigation |
+| `[data-ui="sidebar-more"]` | Sections hidden from the left navigation, unfolded by the More row |
 | `[data-ui="star-card"]` | STAR card in the left navigation; `data-tone` is `calm`, `warn` (7 days or less left, or a charge within 3 days) or `bad` (3 days or less left) |
 | `[data-ui="profile"]` | Your profile at the bottom of the left navigation |
 | `[data-ui="main"]` | Scrollable page area |
@@ -79,6 +80,14 @@ Tailwind class names change from release to release. These attributes do not.
 | `[data-ui="player-sleep"]` | Sleep timer button in the player |
 | `[data-ui="player-eq"]` | Equalizer button in the player |
 | `[data-ui="player-effects"]` | Effects button in the player (reverb, 8D, bass boost) |
+| `[data-ui="player-more"]` | Track actions button in the player |
+| `[data-ui="player-sound"]` | Sound button in the player; `data-live` is set while an effect, the equalizer, speed, pitch, the sleep timer or a loop is on |
+| `[data-ui="sound-console"]` | Sound panel that opens from that button |
+| `[data-ui="sound-effects"]`, `[data-ui="sound-effect"]` | Effect tiles and one tile in the sound panel |
+| `[data-ui="sound-eq"]`, `[data-ui="sound-eq-presets"]`, `[data-ui="sound-eq-curve"]` | Equalizer, its presets and its curve in the sound panel |
+| `[data-ui="sound-rate"]`, `[data-ui="sound-pitch"]` | Speed and pitch in the sound panel |
+| `[data-ui="sound-sleep"]`, `[data-ui="sound-loop"]` | Sleep timer and A-B loop in the sound panel |
+| `[data-ui="sound-remember"]`, `[data-ui="sound-reset"]` | Remember for this track and reset buttons in the sound panel |
 | `[data-ui="progress"]` | Progress bar in the full screen player |
 | `[data-ui="volume"]` | Volume |
 | `[data-ui="namecard"]` | Card that opens from the track title |

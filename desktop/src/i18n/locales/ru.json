@@ -47,7 +47,8 @@
     "pinArtistShort": "Закрепить",
     "pinnedArtist": "Закреплено",
     "artistPinned": "Закреплено в сайдбаре",
-    "artistUnpinned": "Убрано из сайдбара"
+    "artistUnpinned": "Убрано из сайдбара",
+    "more": "Ещё"
   },
   "player": {
     "queue": "Очередь",
@@ -98,7 +99,8 @@
     "copiedShort": "Скопировано",
     "seek": "Перемотка",
     "abLoopName": "Цикл A-B",
-    "qualityName": "Качество"
+    "qualityName": "Качество",
+    "more": "Действия с треком"
   },
   "queue": {
     "remove": "Убрать из очереди",
@@ -2968,7 +2970,10 @@
     "playLastDone": "В конце очереди: {{title}}",
     "linkCopied": "Ссылка скопирована",
     "labelCopied": "Артист и название скопированы",
-    "copyFailed": "Не удалось скопировать в буфер обмена"
+    "copyFailed": "Не удалось скопировать в буфер обмена",
+    "goToAlbum": "Открыть альбом",
+    "block": "Больше не слушать {{name}}",
+    "unblock": "Вернуть {{name}}"
   },
   "collectionSave": {
     "kicker": "Офлайн",
@@ -3277,5 +3282,17 @@
     "emptyPlaylists": "Лайкни плейлист, и он появится здесь",
     "emptyHistory": "Включи трек, и он появится здесь",
     "emptyReleases": "У твоих артистов пока ничего нового"
+  },
+  "sound": {
+    "title": "Звук",
+    "reset": "Сбросить звук",
+    "fx": {
+      "off": "Выкл",
+      "slowedReverb": "Медленно",
+      "spedUp": "Быстро",
+      "eightD": "8D",
+      "bass": "Бас",
+      "custom": "Свои"
+    }
   }
 }

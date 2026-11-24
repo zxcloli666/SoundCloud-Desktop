@@ -47,7 +47,8 @@
     "pinArtistShort": "Pin",
     "pinnedArtist": "Pinned",
     "artistPinned": "Pinned to sidebar",
-    "artistUnpinned": "Removed from sidebar"
+    "artistUnpinned": "Removed from sidebar",
+    "more": "More"
   },
   "player": {
     "queue": "Queue",
@@ -98,7 +99,8 @@
     "copiedShort": "Copied",
     "seek": "Seek",
     "abLoopName": "A-B loop",
-    "qualityName": "Quality"
+    "qualityName": "Quality",
+    "more": "Track actions"
   },
   "queue": {
     "remove": "Remove from queue",
@@ -2880,7 +2882,10 @@
     "playLastDone": "Added to the end of the queue: {{title}}",
     "linkCopied": "Link copied",
     "labelCopied": "Artist and title copied",
-    "copyFailed": "Could not copy to the clipboard"
+    "copyFailed": "Could not copy to the clipboard",
+    "goToAlbum": "Go to album",
+    "block": "Never play {{name}}",
+    "unblock": "Allow {{name}} again"
   },
   "collectionSave": {
     "kicker": "Offline",
@@ -3168,5 +3173,17 @@
     "emptyPlaylists": "Like a playlist and it shows up here",
     "emptyHistory": "Play a track and it shows up here",
     "emptyReleases": "Nothing new from your artists lately"
+  },
+  "sound": {
+    "title": "Sound",
+    "reset": "Reset sound",
+    "fx": {
+      "off": "Off",
+      "slowedReverb": "Slowed",
+      "spedUp": "Sped up",
+      "eightD": "8D",
+      "bass": "Bass",
+      "custom": "Custom"
+    }
   }
 }

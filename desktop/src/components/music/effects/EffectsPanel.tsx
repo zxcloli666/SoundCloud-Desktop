@@ -1,6 +1,6 @@
-import { type KeyboardEvent, memo, type ReactNode, useCallback, useMemo } from 'react';
+import { memo, type ReactNode, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { EFFECT_PRESETS, selectPreset, toggleEffects } from '../../../lib/effects';
+import { selectPreset, toggleEffects } from '../../../lib/effects';
 import { Lock, Waves, X } from '../../../lib/icons';
 import { usePremium } from '../../../lib/premium-cache';
 import { type EffectsPresetId, useEffectsStore } from '../../../stores/effects';
@@ -12,28 +12,9 @@ import { TrackSoundToggle } from '../TrackSoundToggle';
 import { EffectCanvas } from './EffectCanvas';
 import { EffectCard } from './EffectCard';
 import { EffectsManual } from './EffectsManual';
+import { EFFECT_CARDS, presetScene, QUIET, TEASER } from './presets';
+import { moveRadioFocus } from './radio-focus';
 import type { Scene } from './scene';
-
-const CARDS: EffectsPresetId[] = ['off', 'slowedReverb', 'spedUp', 'eightD', 'bass', 'custom'];
-
-const QUIET: Scene = { reverb: 0, room: 0.5, eightD: false, eightDHz: 0.15, bassDb: 0, rate: 1 };
-const TEASER: Scene = { reverb: 0.5, room: 0.7, eightD: true, eightDHz: 0.15, bassDb: 7, rate: 1 };
-
-function presetScene(id: EffectsPresetId): Scene {
-  if (id === 'off' || id === 'custom') return QUIET;
-  const preset = EFFECT_PRESETS[id];
-  return { ...QUIET, ...preset.fx, rate: preset.rate ?? 1 };
-}
-
-function moveFocus(event: KeyboardEvent<HTMLDivElement>) {
-  const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[event.key];
-  if (!step) return;
-  const radios = [...event.currentTarget.querySelectorAll<HTMLElement>('[role="radio"]')];
-  const at = radios.indexOf(document.activeElement as HTMLElement);
-  if (at < 0) return;
-  event.preventDefault();
-  radios[(at + step + radios.length) % radios.length].focus();
-}
 
 const LockedBanner = memo(function LockedBanner() {
   const { t } = useTranslation();
@@ -75,7 +56,7 @@ export const EffectsPanel = memo(function EffectsPanel({ children }: { children:
   const scenes = useMemo(
     () =>
       Object.fromEntries(
-        CARDS.map((id) => [
+        EFFECT_CARDS.map((id) => [
           id,
           id === 'custom' ? { reverb, room, eightD, eightDHz, bassDb, rate: 1 } : presetScene(id),
         ]),
@@ -121,10 +102,10 @@ export const EffectsPanel = memo(function EffectsPanel({ children }: { children:
           <div
             role="radiogroup"
             aria-label={t('effects.title')}
-            onKeyDown={moveFocus}
+            onKeyDown={moveRadioFocus}
             className="grid grid-cols-2 gap-2 sm:grid-cols-3"
           >
-            {CARDS.map((id) => (
+            {EFFECT_CARDS.map((id) => (
               <EffectCard
                 key={id}
                 id={id}

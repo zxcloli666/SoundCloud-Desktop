@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { AudioLines, Keyboard, Moon, SlidersHorizontal, Waves } from '../../../lib/icons';
+import { pressPlayerButton } from '../../../lib/player-trigger';
 import type { SettingsResult } from '../../../lib/settings-search/useSettingsSearch';
 import { useShortcutsStore } from '../../../stores/shortcuts';
 import { Mic } from '../../voice/icons';
@@ -20,6 +21,5 @@ export function openPointer(result: SettingsResult) {
     useShortcutsStore.getState().setOpen(true);
     return;
   }
-  const button = document.querySelector<HTMLElement>(`[data-ui="${result.trigger}"]`);
-  if (button && button.getClientRects().length > 0) button.click();
+  pressPlayerButton(result.trigger);
 }

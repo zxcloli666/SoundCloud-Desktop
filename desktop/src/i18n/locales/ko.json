@@ -47,7 +47,8 @@
     "pinArtistShort": "고정",
     "pinnedArtist": "고정됨",
     "artistPinned": "사이드바에 고정했어요",
-    "artistUnpinned": "사이드바에서 제거했어요"
+    "artistUnpinned": "사이드바에서 제거했어요",
+    "more": "더보기"
   },
   "player": {
     "queue": "대기열",
@@ -98,7 +99,8 @@
     "copiedShort": "복사됨",
     "seek": "탐색",
     "abLoopName": "A-B 반복",
-    "qualityName": "음질"
+    "qualityName": "음질",
+    "more": "트랙 작업"
   },
   "queue": {
     "remove": "대기열에서 빼기",
@@ -2695,7 +2697,10 @@
     "playLastDone": "대기열 끝에 추가했어요: {{title}}",
     "linkCopied": "링크를 복사했어요",
     "labelCopied": "아티스트와 제목을 복사했어요",
-    "copyFailed": "클립보드에 복사하지 못했어요"
+    "copyFailed": "클립보드에 복사하지 못했어요",
+    "goToAlbum": "앨범으로 이동",
+    "block": "{{name}} 더 이상 듣지 않기",
+    "unblock": "{{name}} 다시 듣기"
   },
   "collectionSave": {
     "kicker": "오프라인",
@@ -3103,5 +3108,17 @@
     "emptyPlaylists": "플레이리스트에 좋아요를 누르면 여기에 나타나요",
     "emptyHistory": "트랙을 재생하면 여기에 나타나요",
     "emptyReleases": "팔로우한 아티스트의 새 트랙이 아직 없어요"
+  },
+  "sound": {
+    "title": "사운드",
+    "reset": "사운드 초기화",
+    "fx": {
+      "off": "끄기",
+      "slowedReverb": "느리게",
+      "spedUp": "빠르게",
+      "eightD": "8D",
+      "bass": "베이스",
+      "custom": "사용자"
+    }
   }
 }

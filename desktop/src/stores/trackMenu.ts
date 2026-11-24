@@ -7,6 +7,7 @@ export interface TrackMenuTarget {
   y: number;
   queueIndex?: number;
   scope?: string;
+  above?: boolean;
 }
 
 interface TrackMenuState {
