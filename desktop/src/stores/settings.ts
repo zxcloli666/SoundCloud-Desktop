@@ -519,7 +519,7 @@ export const useSettingsStore = create<SettingsState>()(
           pinnedPlaylists: [
             playlist,
             ...s.pinnedPlaylists.filter((item) => item.urn !== playlist.urn),
-          ].slice(0, 8),
+          ],
         })),
       unpinPlaylist: (urn) =>
         set((s) => ({
@@ -533,10 +533,7 @@ export const useSettingsStore = create<SettingsState>()(
         })),
       pinArtist: (artist) =>
         set((s) => ({
-          pinnedArtists: [artist, ...s.pinnedArtists.filter((item) => item.id !== artist.id)].slice(
-            0,
-            8,
-          ),
+          pinnedArtists: [artist, ...s.pinnedArtists.filter((item) => item.id !== artist.id)],
         })),
       unpinArtist: (id) =>
         set((s) => ({

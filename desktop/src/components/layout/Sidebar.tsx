@@ -168,7 +168,7 @@ export const Sidebar = React.memo(() => {
       <div
         data-ui="quick-access"
         onContextMenu={quickMenu.onContextMenu}
-        className="flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-2 space-y-0.5"
+        className="edge-fade flex-1 min-h-0 overflow-y-auto scrollbar-hide [@media(max-height:560px)]:flex-none [@media(max-height:560px)]:overflow-visible px-2 pt-4 pb-4 space-y-0.5"
       >
         <div className="relative h-5 mx-1 mb-0.5">
           <span

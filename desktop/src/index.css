@@ -678,6 +678,7 @@ select,
 }
 
 /* ── Star modal scroll ──────────────────────────────────────── */
+.edge-fade,
 .star-scroll {
   mask-image: linear-gradient(
     to bottom,
