@@ -51,6 +51,141 @@ async fn the_bind_script_walks_the_widget_and_asks_for_the_bank_page() {
         sg.paths(),
         [
             "/widget/v1/init",
+            "/widget/v1/card/42424242424",
+            "/cds/v1/tokenize/elements",
+            "/cds/v1/tokenize/elements",
+            "/cds/v1/tokenize/elements",
+            "/widget/v1/payment"
+        ]
+    );
+}
+
+fn payment_card(sg: &FakeSg) -> Value {
+    let seen = sg.seen.lock().unwrap();
+    let payment = seen
+        .iter()
+        .find(|request| request.url.ends_with("/widget/v1/payment"))
+        .unwrap();
+    let body: Value = serde_json::from_slice(&payment.body).unwrap();
+    body["payment_details"]["card"]["encrypted_card"].clone()
+}
+
+#[tokio::test]
+async fn with_the_widget_key_the_card_is_sealed_like_the_widget_does_it() {
+    let sg = FakeSg::sealing(REDIRECT);
+    let outcome = bind(sg.clone(), "real-sealed").await;
+    assert_eq!(
+        outcome,
+        Outcome::Page {
+            page_url: "https://acs.payeko.ru/3ds?id=1".into()
+        }
+    );
+    assert_eq!(
+        sg.paths(),
+        [
+            "/widget/v1/init",
+            "/widget/v1/card/42424242424",
+            "/cds/v2/tokenize/elements",
+            "/cds/v2/tokenize/elements",
+            "/cds/v2/tokenize/elements",
+            "/widget/v1/payment"
+        ]
+    );
+    for request in sg.seen.lock().unwrap().iter() {
+        let body = String::from_utf8_lossy(&request.body).to_string();
+        assert!(
+            !body.contains(NUMBER) && !body.contains(CVV),
+            "{}",
+            request.url
+        );
+        if request.url.ends_with("/cds/v2/tokenize/elements") {
+            assert!(
+                request
+                    .headers
+                    .contains(&("Content-Type".into(), "text/plain".into()))
+            );
+            assert_eq!(body.split('.').count(), 5);
+        }
+    }
+    assert_eq!(
+        *sg.opened.lock().unwrap(),
+        [
+            json!({"card_elements": [{"ref": "card_number", "type": "card_number", "card_number": NUMBER}]}),
+            json!({"card_elements": [{"ref": "expire_date", "type": "expire_date", "expire_date": {"month": 12, "year": 28}}]}),
+            json!({"card_elements": [{"ref": "cvv", "type": "cvv", "cvv": CVV}]}),
+        ]
+    );
+    assert_eq!(
+        payment_card(&sg),
+        json!({"number_hash": "hash-card_number", "expiration_date_hash": "hash-expire_date", "security_code_hash": "hash-cvv"})
+    );
+}
+
+#[tokio::test]
+async fn a_sealed_field_the_gateway_refuses_goes_back_to_the_form() {
+    let sg = FakeSg::sealing_with(
+        PENDING,
+        Some(("card_number", 400)),
+        testkit::sealing_key(),
+        200,
+    );
+    assert_eq!(
+        bind(sg.clone(), "real-sealed-refused").await,
+        Outcome::Invalid {
+            field: "number".into()
+        }
+    );
+    assert!(!sg.paths().iter().any(|path| path.ends_with("/payment")));
+}
+
+#[tokio::test]
+async fn when_sealing_cannot_work_the_card_goes_the_plain_way() {
+    for (name, jwk, sealed_status) in [
+        ("real-sealed-outage", testkit::sealing_key(), 503),
+        (
+            "real-sealed-rsa",
+            json!({"kty": "RSA", "n": "AQAB", "e": "AQAB"}),
+            200,
+        ),
+    ] {
+        let sg = FakeSg::sealing_with(SUCCEEDED, None, jwk, sealed_status);
+        assert_eq!(
+            bind(sg.clone(), name).await,
+            Outcome::Succeeded { reason: None },
+            "{name}"
+        );
+        let plain = sg
+            .paths()
+            .iter()
+            .filter(|path| *path == "/cds/v1/tokenize/elements")
+            .count();
+        assert_eq!(plain, 3, "{name}");
+        assert_eq!(
+            payment_card(&sg)["number_hash"],
+            "hash-card_number",
+            "{name}"
+        );
+    }
+}
+
+#[tokio::test]
+async fn an_old_runner_without_sealing_keeps_the_old_requests() {
+    let script = format!("jwe_encrypt = nil\n{}", testkit::real("bind").script);
+    let sg = FakeSg::sealing(REDIRECT);
+    let outcome = testkit::session_with(&script, sg.clone(), "real-old-runner")
+        .submit(testkit::card())
+        .await
+        .unwrap();
+    assert_eq!(
+        outcome,
+        Outcome::Page {
+            page_url: "https://acs.payeko.ru/3ds?id=1".into()
+        }
+    );
+    assert_eq!(
+        sg.paths(),
+        [
+            "/widget/v1/init",
             "/cds/v1/tokenize/elements",
             "/cds/v1/tokenize/elements",
             "/cds/v1/tokenize/elements",
@@ -58,6 +193,18 @@ async fn the_bind_script_walks_the_widget_and_asks_for_the_bank_page() {
             "/widget/v1/payment"
         ]
     );
+    assert_eq!(payment_card(&sg)["cardholder_name_hash"], "hash-cardholder");
+    assert_eq!(
+        bind_old(FakeSg::refusing("cardholder", 400), &script).await,
+        Outcome::failed("tokenize_cardholder")
+    );
+}
+
+async fn bind_old(sg: Arc<FakeSg>, script: &str) -> Outcome {
+    testkit::session_with(script, sg, "real-old-holder")
+        .submit(testkit::card())
+        .await
+        .unwrap()
 }
 
 #[tokio::test]
@@ -77,9 +224,10 @@ async fn the_card_goes_only_into_tokenize_bodies_on_the_allowed_host() {
         if body.contains(NUMBER) || body.contains(CVV) {
             carriers.push(url.path().to_string());
         }
-        if body.contains("\"cardholder\"") {
-            assert!(body.contains("\"CARD HOLDER\""), "{body}");
-        }
+        assert!(
+            !body.contains("cardholder") && !body.contains("CARD HOLDER"),
+            "{body}"
+        );
     }
     assert_eq!(carriers, ["/cds/v1/tokenize/elements"; 2]);
     assert!(!format!("{outcome:?}").contains(NUMBER));
@@ -129,10 +277,6 @@ async fn a_refused_field_goes_back_to_the_form_before_any_payment() {
         );
         assert!(!sg.paths().iter().any(|path| path.ends_with("/payment")));
     }
-    assert_eq!(
-        bind(FakeSg::refusing("cardholder", 400), "real-holder").await,
-        Outcome::failed("tokenize_cardholder")
-    );
     for status in [429, 500, 503] {
         assert_eq!(
             bind(FakeSg::refusing("card_number", status), "real-outage").await,

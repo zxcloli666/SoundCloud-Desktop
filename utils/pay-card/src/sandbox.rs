@@ -133,6 +133,7 @@ fn register(
     globals.set("json_decode", lua.create_function(json_decode)?)?;
     globals.set("urlencode", lua.create_function(urlencode)?)?;
     globals.set("b64encode", lua.create_function(b64encode)?)?;
+    globals.set("jwe_encrypt", lua.create_function(jwe_encrypt)?)?;
 
     let guard = Guard::new(job.hosts, job.limits.max_calls);
     let fetch = job.fetch.clone();
@@ -240,6 +241,13 @@ fn urlencode(lua: &Lua, text: mlua::String) -> mlua::Result<mlua::String> {
 fn b64encode(lua: &Lua, text: mlua::String) -> mlua::Result<mlua::String> {
     use base64::Engine;
     lua.create_string(base64::engine::general_purpose::STANDARD.encode(text.as_bytes()))
+}
+
+fn jwe_encrypt(lua: &Lua, (key, text): (Value, mlua::String)) -> mlua::Result<mlua::String> {
+    let key: serde_json::Value = lua.from_value(key)?;
+    let compact = crate::jwe::encrypt(&key, &text.as_bytes())
+        .map_err(|e| mlua::Error::RuntimeError(format!("jwe_encrypt: {e}")))?;
+    lua.create_string(compact)
 }
 
 fn first_line(text: &str) -> String {

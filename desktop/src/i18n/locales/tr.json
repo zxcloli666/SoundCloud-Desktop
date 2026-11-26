@@ -2135,6 +2135,7 @@
         "unavailable": "Kartla ödeme şu an kullanılamıyor.",
         "bundle": "Kartla ödeme için uygulamanın yeni sürümü gerekli.",
         "declined": "Banka kartı kabul etmedi.",
+        "rejected": "Ödeme sistemi kartı reddetti.",
         "closed": "Banka onay penceresi kapatıldı.",
         "timeout": "Banka zamanında yanıt vermedi.",
         "expired": "Banka onayının süresi doldu. Tekrar deneyin.",

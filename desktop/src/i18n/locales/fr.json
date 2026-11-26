@@ -2247,6 +2247,7 @@
         "unavailable": "Le paiement par carte n'est pas disponible pour le moment.",
         "bundle": "Le paiement par carte nécessite une version plus récente de l'application.",
         "declined": "La banque n'a pas accepté la carte.",
+        "rejected": "Le système de paiement a refusé la carte.",
         "closed": "La confirmation bancaire a été fermée.",
         "timeout": "La banque n'a pas répondu à temps.",
         "expired": "La confirmation bancaire a expiré. Réessayez.",

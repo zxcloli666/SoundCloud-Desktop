@@ -10,6 +10,7 @@ use crate::bundle::tests::{key, keys, sample, signed};
 use crate::bundle::{Bundle, Keys};
 use crate::card::Card;
 use crate::fetch::{Fetch, Request, Response};
+use crate::jwe::tests as jwe_tests;
 use crate::serial::SerialStore;
 use crate::session::{self, Env, Session};
 
@@ -30,32 +31,80 @@ pub const CANCELLED_BARE: &str = r#"{"payment_session":{"status":"cancelled"}}"#
 
 pub struct FakeSg {
     pub seen: Mutex<Vec<Request>>,
+    pub opened: Mutex<Vec<Value>>,
     payment: &'static str,
     payment_status: u16,
     refuses: Option<(&'static str, u16)>,
+    jwk: Option<Value>,
+    sealed_status: u16,
 }
 
 impl FakeSg {
+    fn build(
+        payment: &'static str,
+        payment_status: u16,
+        refuses: Option<(&'static str, u16)>,
+    ) -> Self {
+        Self {
+            seen: Mutex::new(vec![]),
+            opened: Mutex::new(vec![]),
+            payment,
+            payment_status,
+            refuses,
+            jwk: None,
+            sealed_status: 200,
+        }
+    }
+
     pub fn new(payment: &'static str) -> Arc<Self> {
         Self::with_code(payment, 200)
     }
 
     pub fn with_code(payment: &'static str, payment_status: u16) -> Arc<Self> {
-        Arc::new(Self {
-            seen: Mutex::new(vec![]),
-            payment,
-            payment_status,
-            refuses: None,
-        })
+        Arc::new(Self::build(payment, payment_status, None))
     }
 
     pub fn refusing(kind: &'static str, status: u16) -> Arc<Self> {
+        Arc::new(Self::build(PENDING, 200, Some((kind, status))))
+    }
+
+    pub fn sealing(payment: &'static str) -> Arc<Self> {
+        Self::sealing_with(payment, None, jwe_tests::jwk(), 200)
+    }
+
+    pub fn sealing_with(
+        payment: &'static str,
+        refuses: Option<(&'static str, u16)>,
+        jwk: Value,
+        sealed_status: u16,
+    ) -> Arc<Self> {
         Arc::new(Self {
-            seen: Mutex::new(vec![]),
-            payment: PENDING,
-            payment_status: 200,
-            refuses: Some((kind, status)),
+            jwk: Some(jwk),
+            sealed_status,
+            ..Self::build(payment, 200, refuses)
         })
+    }
+
+    fn tokenized(&self, sent: &Value, sealed: bool) -> (u16, String) {
+        let kind = sent["card_elements"][0]["type"]
+            .as_str()
+            .unwrap()
+            .to_string();
+        match self.refuses {
+            Some((refused, code)) if refused == kind => (
+                code,
+                json!({ "error": { "code": format!("invalid_{kind}") } }).to_string(),
+            ),
+            _ if sealed => (
+                200,
+                json!({ "data": { kind.clone(): { "token": format!("hash-{kind}") } } })
+                    .to_string(),
+            ),
+            _ => (
+                200,
+                json!({ "data": { kind.clone(): format!("hash-{kind}") } }).to_string(),
+            ),
+        }
     }
 
     pub fn paths(&self) -> Vec<String> {
@@ -72,23 +121,24 @@ impl Fetch for FakeSg {
         let body = String::from_utf8_lossy(&request.body).to_string();
         self.seen.lock().unwrap().push(request);
         let (status, body) = match path.as_str() {
-            "/widget/v1/init" => (200, "{}".to_string()),
+            "/widget/v1/init" => match &self.jwk {
+                Some(jwk) => (200, json!({ "jwk": jwk, "extra_data": {} }).to_string()),
+                None => (200, "{}".to_string()),
+            },
             "/cds/v1/tokenize/elements" => {
-                let sent: Value = serde_json::from_str(&body).unwrap();
-                let kind = sent["card_elements"][0]["type"]
-                    .as_str()
-                    .unwrap()
-                    .to_string();
-                match self.refuses {
-                    Some((refused, code)) if refused == kind => (
-                        code,
-                        json!({ "error": { "code": format!("invalid_{kind}") } }).to_string(),
-                    ),
-                    _ => (
-                        200,
-                        json!({ "data": { kind.clone(): format!("hash-{kind}") } }).to_string(),
-                    ),
-                }
+                self.tokenized(&serde_json::from_str(&body).unwrap(), false)
+            }
+            "/cds/v2/tokenize/elements" if self.sealed_status != 200 => {
+                (self.sealed_status, r#"{"status":"error"}"#.to_string())
+            }
+            "/cds/v2/tokenize/elements" => {
+                let (_, plain) = jwe_tests::open(&body);
+                let sent: Value = serde_json::from_slice(&plain).unwrap();
+                self.opened.lock().unwrap().push(sent.clone());
+                self.tokenized(&sent, true)
+            }
+            card if card.starts_with("/widget/v1/card/") => {
+                (200, r#"{"card_brand":"visa"}"#.to_string())
             }
             "/widget/v1/payment" => (self.payment_status, self.payment.to_string()),
             _ => (404, "{}".to_string()),
@@ -99,6 +149,10 @@ impl Fetch for FakeSg {
             error: None,
         }
     }
+}
+
+pub fn sealing_key() -> Value {
+    jwe_tests::jwk()
 }
 
 pub fn serials(name: &str) -> SerialStore {

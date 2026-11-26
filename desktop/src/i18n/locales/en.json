@@ -2213,6 +2213,7 @@
         "unavailable": "Card payment isn't available right now.",
         "bundle": "Card payment needs a newer app version.",
         "declined": "The bank didn't accept the card.",
+        "rejected": "The payment system turned the card down.",
         "closed": "Bank confirmation was closed.",
         "timeout": "The bank didn't answer in time.",
         "expired": "Bank confirmation timed out. Try again.",

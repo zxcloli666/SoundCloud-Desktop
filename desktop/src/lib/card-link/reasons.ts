@@ -6,6 +6,7 @@ export type FailReason =
   | 'unavailable'
   | 'bundle'
   | 'declined'
+  | 'rejected'
   | 'closed'
   | 'expired'
   | 'inUse'
@@ -19,6 +20,8 @@ const FAILURE_OF_REASON: Record<string, FailReason> = {
   card_in_use: 'inUse',
   aborted: 'closed',
   bad_page: 'page',
+  operation_rejected: 'rejected',
+  suspected_fraud: 'rejected',
 };
 
 export function startRefusal(status: number, code: string | null): FailReason {

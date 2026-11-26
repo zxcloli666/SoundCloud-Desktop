@@ -70,14 +70,14 @@ export function begin(method: MethodId, trial: boolean, link: Link, ready: () =>
   };
 }
 
-export function fail(id: number, reason: FailReason, link: Link) {
+export function fail(id: number, reason: FailReason, link: Link, cause: string = reason) {
   link.finished.current = true;
   link.setStage({ kind: 'failed', reason });
-  leave(id, true);
+  leave(id, true, cause);
 }
 
-function leave(id: number | null, opened: boolean) {
+function leave(id: number | null, opened: boolean, cause?: string) {
   void cardNative.abort().catch(() => {});
   if (opened) void cardNative.close().catch(() => {});
-  if (id !== null) void payApi.bindCancel(id).catch(() => {});
+  if (id !== null) void payApi.bindCancel(id, cause).catch(() => {});
 }
