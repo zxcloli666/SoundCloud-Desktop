@@ -2247,6 +2247,7 @@
         "unavailable": "El pago con tarjeta no está disponible ahora.",
         "bundle": "El pago con tarjeta requiere una versión más reciente de la app.",
         "declined": "El banco no aceptó la tarjeta.",
+        "rejected": "El sistema de pago rechazó la tarjeta.",
         "closed": "Se cerró la confirmación del banco.",
         "timeout": "El banco no respondió a tiempo.",
         "expired": "La confirmación del banco expiró. Inténtalo de nuevo.",

@@ -4,11 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+aes-gcm = "0.10"
 base64 = "0.22"
 ed25519-dalek = "2"
 mlua = { version = "=0.10.5", features = ["lua54", "vendored", "serialize"] }
+p256 = { version = "0.13", default-features = false, features = ["ecdh", "std"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+sha2 = "0.10"
 thiserror = "2"
 tokio = { version = "1", features = ["rt", "time", "sync"] }
 url = "2"

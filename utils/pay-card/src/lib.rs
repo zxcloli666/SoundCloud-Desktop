@@ -2,6 +2,7 @@ mod bundle;
 mod card;
 mod fetch;
 mod guard;
+mod jwe;
 mod outcome;
 mod sandbox;
 mod serial;

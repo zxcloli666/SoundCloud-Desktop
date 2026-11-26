@@ -401,9 +401,11 @@ async function typeCard() {
   await sleep(200);
 }
 
-function cardEnd(end: 'timeout' | 'declined') {
+const CARD_REFUSALS = { declined: 'do_not_honor', rejected: 'operation_rejected' };
+
+function cardEnd(end: 'timeout' | keyof typeof CARD_REFUSALS) {
   cardNative.submit = async () =>
-    end === 'declined' ? { state: 'failed', reason: 'do_not_honor' } : { state: 'pending' };
+    end === 'timeout' ? { state: 'pending' } : { state: 'failed', reason: CARD_REFUSALS[end] };
   payApi.bindStep = async (id) => ({
     api: 2,
     session_id: id,
@@ -539,6 +541,17 @@ const STATES: { id: string; title: string; setup: Setup }[] = [
         await press('[data-star-act="card-retry"]');
         await sleep(400);
       });
+    },
+  },
+  {
+    id: 'card-rejected',
+    title: 'card turned down by the payment system',
+    setup: (kit) => {
+      kit.star(false);
+      world({ sub: FREE });
+      cardForm();
+      cardEnd('rejected');
+      kit.after(() => cardFailed());
     },
   },
   {

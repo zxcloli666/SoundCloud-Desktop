@@ -49,7 +49,7 @@ export function useCardLink(method: MethodId, trial = false) {
           return setStage({ kind: 'form', invalid: [outcome.field], card: fields });
         }
         if (outcome.state === 'failed') {
-          return fail(id, verdictFailure(outcome.reason), link);
+          return fail(id, verdictFailure(outcome.reason), link, outcome.reason);
         }
         let result: BindStep | FailReason;
         if (outcome.state === 'token') {

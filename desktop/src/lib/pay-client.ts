@@ -426,7 +426,8 @@ export const payApi = {
   bindStep: (sessionId: number) => post<BindStep>('/api/binds/step', { session_id: sessionId }),
   bindToken: (sessionId: number, token: string) =>
     post<BindStep>('/api/binds/token', { session_id: sessionId, token }),
-  bindCancel: (sessionId: number) => post<Binds>('/api/binds/cancel', { session_id: sessionId }),
+  bindCancel: (sessionId: number, reason?: string) =>
+    post<Binds>('/api/binds/cancel', { session_id: sessionId, reason }),
   bindRemove: (method: MethodId) => post<Binds>('/api/binds/remove', { method }),
   offer: (deviceId: string | null) => shaped<OfferResponse>(withDevice('/api/me/offer', deviceId)),
   offerShown: (id: string, deviceId: string | null) =>
